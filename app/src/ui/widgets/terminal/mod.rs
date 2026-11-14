@@ -20,20 +20,29 @@
 //! // in update, what the session printed (a batch a frame at most):
 //! Message::Session(Update::Batch { items, .. }) => {
 //!     let output = session::output(items);
-//!     for event in self.terminal.feed(&output.text) { self.terminal_event(event) }
+//!     let events = self.terminal.feed(&output.text);
 //!     if let Some(exit) = output.exit { self.terminal.notice(&exit_text(exit)) }
+//!     return self.told(events, ctx);
 //! }
-//! // and what the terminal says:
+//! // and what the terminal says, in order:
 //! Message::Terminal(message) => {
-//!     let (task, event) = self.terminal.update(message);
-//!     match event {
-//!         Some(terminal::Event::Input(bytes)) => self.session.input(bytes),
-//!         Some(terminal::Event::Resize { cols, rows }) => self.session.resize(cols, rows),
-//!         Some(terminal::Event::Copy(text)) => ctx.copy(text),
-//!         Some(terminal::Event::Open(url)) => ctx.open_url(url),
-//!         Some(terminal::Event::Title(_) | terminal::Event::Bell) | None => {}
+//!     let (task, events) = self.terminal.update(message);
+//!     return Task::batch([task.map(Message::Terminal), self.told(events, ctx)]);
+//! }
+//!
+//! fn told(&mut self, events: Vec<terminal::Event>, ctx: &Context<'_>) -> Task<Message> {
+//!     for event in events {
+//!         let sent = match event {
+//!             terminal::Event::Input(bytes) => self.session.input(bytes),
+//!             terminal::Event::Resize { cols, rows } => self.session.resize(cols, rows),
+//!             terminal::Event::Copy(text) => { ctx.copy(text); Ok(()) }
+//!             terminal::Event::Open(url) => { ctx.open_url(url); Ok(()) }
+//!             terminal::Event::Title(_) | terminal::Event::Bell => Ok(()),
+//!         };
+//!         // A session that can take no more says why: show it.
+//!         if let Err(error) = sent { self.failure = Some(Surfaced::new(error, "exec_input")) }
 //!     }
-//!     task.map(Message::Terminal)
+//!     Task::none()
 //! }
 //! ```
 //!
@@ -41,7 +50,8 @@
 //!   a frame (`data::streams`), so a program that prints 50 MB is read in
 //!   sixty slices a second and drawn once a frame. A batch of more than a
 //!   megabyte (a window that fell behind) is read a megabyte a frame
-//!   ([`state::READ_AT_ONCE`]), so `update` never stalls on it.
+//!   ([`state::READ_AT_ONCE`]), so `update` never stalls on it, and no
+//!   more than [`state::UNREAD_MAX`] waits: the oldest is dropped past it.
 //! - **The grid** is drawn row by row; a row that did not change is not
 //!   looked at again, and text is shaped once for as long as it shows
 //!   (`pane/rows.rs`). Box drawing and blocks are drawn as shapes.

@@ -44,7 +44,7 @@ const YES_TOTAL: usize = 50 * 1024 * 1024;
 const FRAME_BUDGET: Duration = Duration::from_millis(33);
 
 #[derive(Debug, Clone, Copy, Default)]
-struct Frame {
+pub(super) struct Frame {
     feed: Duration,
     key: Duration,
     view: Duration,
@@ -68,13 +68,13 @@ fn ms(duration: Duration) -> f64 {
 }
 
 /// The window without one: a renderer in software and the tree it keeps.
-struct Bench {
+pub(super) struct Bench {
     renderer: iced::Renderer,
     cache: Option<Cache>,
 }
 
 impl Bench {
-    fn new() -> Self {
+    pub(super) fn new() -> Self {
         let settings = settings();
         drop(Simulator::<(), Theme, iced::Renderer>::with_size(
             settings.clone(),
@@ -95,6 +95,11 @@ impl Bench {
 
     /// A frame of `state`, timed; what its redraw said back.
     fn frame(&mut self, state: &State) -> (Frame, Vec<Message>) {
+        self.frame_in(state, &Theme::Dark)
+    }
+
+    /// The same in `theme`.
+    pub(super) fn frame_in(&mut self, state: &State, theme: &Theme) -> (Frame, Vec<Message>) {
         let mut took = Frame::default();
         let start = Instant::now();
         let grid: Element<'_, Message> = Terminal::new(state, |message| message).view();
@@ -121,9 +126,9 @@ impl Bench {
         let start = Instant::now();
         ui.draw(
             &mut self.renderer,
-            &Theme::Dark,
+            theme,
             &renderer::Style {
-                text_color: Theme::Dark.tokens().foreground,
+                text_color: theme.tokens().foreground,
             },
             mouse::Cursor::Unavailable,
         );
@@ -138,7 +143,7 @@ impl Bench {
     }
 
     /// The first frames tell the terminal its room.
-    fn settle(&mut self, state: &mut State) {
+    pub(super) fn settle(&mut self, state: &mut State) {
         for _ in 0..3 {
             let (_, messages) = self.frame(state);
             for message in messages {
@@ -155,7 +160,7 @@ impl Bench {
         let start = Instant::now();
         let (_, typed) = state.update(Message::Input("q".to_owned()));
         let key = start.elapsed();
-        assert!(typed.is_some(), "the key is handled");
+        assert!(!typed.is_empty(), "the key is handled");
         let (mut frame, _) = self.frame(state);
         frame.feed = feed;
         frame.key = key;

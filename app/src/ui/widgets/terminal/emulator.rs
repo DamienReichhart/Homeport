@@ -135,9 +135,18 @@ impl Emulator {
         }
     }
 
-    /// Whether a synchronised update holds what was read back.
-    pub fn is_holding(&self) -> bool {
-        self.parser.sync_timeout().sync_timeout().is_some()
+    /// Until when a synchronised update holds what was read back, if one
+    /// does: the grid asks to be told again then.
+    pub fn holding_until(&self) -> Option<std::time::Instant> {
+        self.parser.sync_timeout().sync_timeout()
+    }
+
+    /// Draws what a synchronised update holds now: the app writes a line
+    /// of its own after it.
+    pub fn release(&mut self) {
+        if self.holding_until().is_some() {
+            self.parser.stop_sync(&mut self.term);
+        }
     }
 
     pub fn resize(&mut self, size: Size) {

@@ -4,7 +4,7 @@
 
 use alacritty_terminal::term::TermMode;
 
-use super::{answers, screen, sized};
+use super::{answers, screen, sized, told};
 use crate::ui::widgets::terminal::{Event, Message, Scroll, State, Viewport};
 
 fn lines(count: usize) -> String {
@@ -34,8 +34,8 @@ fn what_scrolls_off_the_screen_is_kept_and_typing_brings_the_view_back() {
     assert_eq!(screen_in_view(&state)[0], "line 0");
     let _ = state.update(Message::Scroll(Scroll::To(0.5)));
     assert_eq!(screen_in_view(&state)[0], "line 48");
-    let (_, event) = state.update(Message::Input("l".to_owned()));
-    assert_eq!(event, Some(Event::Input("l".to_owned())));
+    let event = told(&mut state, Message::Input("l".to_owned()));
+    assert_eq!(event, [Event::Input("l".to_owned())]);
     assert!(state.at_bottom());
 }
 
@@ -87,16 +87,16 @@ fn a_new_size_is_told_once_and_the_text_rewraps() {
     let mut state = sized(20, 5);
     let _ = state.feed("0123456789abcdefghij0123456789");
     assert_eq!(screen(&state)[..2], ["0123456789abcdefghij", "0123456789"]);
-    let (_, told) = state.update(viewport(40, 10));
-    assert_eq!(told, Some(Event::Resize { cols: 40, rows: 10 }));
+    let resized = told(&mut state, viewport(40, 10));
+    assert_eq!(resized, [Event::Resize { cols: 40, rows: 10 }]);
     assert_eq!(state.size(), (40, 10));
     assert_eq!(screen(&state)[0], "0123456789abcdefghij0123456789");
     // The same room again tells nothing.
-    let (_, again) = state.update(viewport(40, 10));
-    assert_eq!(again, None);
+    let again = told(&mut state, viewport(40, 10));
+    assert_eq!(again, []);
     // A terminal squeezed to nothing keeps two cells each way.
-    let (_, squeezed) = state.update(viewport(0, 0));
-    assert_eq!(squeezed, Some(Event::Resize { cols: 2, rows: 2 }));
+    let squeezed = told(&mut state, viewport(0, 0));
+    assert_eq!(squeezed, [Event::Resize { cols: 2, rows: 2 }]);
     // What a program asks of the size is answered in cells and pixels.
     let _ = state.update(viewport(80, 24));
     let events = state.feed("\x1b[18t\x1b[14t");
@@ -126,14 +126,14 @@ fn a_synchronised_update_shows_once_it_is_whole() {
 #[test]
 fn focus_is_reported_only_to_a_program_that_asked() {
     let mut state = sized(20, 5);
-    assert_eq!(state.update(Message::Focus(true)).1, None);
+    assert_eq!(told(&mut state, Message::Focus(true)).pop(), None);
     let _ = state.feed("\x1b[?1004h");
     assert_eq!(
-        state.update(Message::Focus(false)).1,
+        told(&mut state, Message::Focus(false)).pop(),
         Some(Event::Input("\x1b[O".to_owned()))
     );
     assert_eq!(
-        state.update(Message::Focus(true)).1,
+        told(&mut state, Message::Focus(true)).pop(),
         Some(Event::Input("\x1b[I".to_owned()))
     );
     assert!(state.is_focused());
@@ -142,7 +142,7 @@ fn focus_is_reported_only_to_a_program_that_asked() {
 #[test]
 fn a_paste_ends_its_lines_with_enter_is_bracketed_when_asked_and_cannot_end_the_brackets() {
     let mut state = sized(20, 5);
-    let pasted = |state: &mut State, text: &str| state.update(Message::Paste(text.to_owned())).1;
+    let pasted = |state: &mut State, text: &str| told(state, Message::Paste(text.to_owned())).pop();
     assert_eq!(
         pasted(&mut state, "ls\nps\r\n"),
         Some(Event::Input("ls\rps\r".to_owned()))
@@ -150,8 +150,9 @@ fn a_paste_ends_its_lines_with_enter_is_bracketed_when_asked_and_cannot_end_the_
     let _ = state.feed("\x1b[?2004h");
     assert_eq!(
         pasted(&mut state, "echo\x1b[201~; rm -rf /\n"),
+        // The Escape is taken out: what is left is text.
         Some(Event::Input(
-            "\x1b[200~echo; rm -rf /\r\x1b[201~".to_owned()
+            "\x1b[200~echo[201~; rm -rf /\r\x1b[201~".to_owned()
         ))
     );
     // An empty clipboard sends nothing, brackets or not.

@@ -20,7 +20,7 @@ fn press(state: &mut State, point: Point, click: Click, extend: bool) {
 }
 
 fn copied(state: &mut State) -> Option<String> {
-    match state.update(Message::Copy).1 {
+    match state.update(Message::Copy).1.pop() {
         Some(Event::Copy(text)) => Some(text),
         None => None,
         other => panic!("a copy gave {other:?}"),
@@ -91,7 +91,7 @@ fn a_line_that_wrapped_is_copied_as_one() {
 }
 
 #[test]
-fn select_all_takes_the_scrollback_and_escape_deselects() {
+fn select_all_takes_the_scrollback_and_a_press_lets_go_of_it() {
     let mut state = sized(20, 3);
     let lines: String = (0..10).map(|i| format!("line {i}\r\n")).collect();
     let _ = state.feed(&lines);
@@ -99,7 +99,8 @@ fn select_all_takes_the_scrollback_and_escape_deselects() {
     let all = copied(&mut state).unwrap();
     assert!(all.starts_with("line 0\nline 1\n"));
     assert!(all.trim_end().ends_with("line 9"));
-    let _ = state.update(Message::Deselect);
+    // A press elsewhere lets go of it.
+    press(&mut state, at(0, 0), Click::Single, false);
     assert!(!state.has_selection());
     assert_eq!(copied(&mut state), None);
 }

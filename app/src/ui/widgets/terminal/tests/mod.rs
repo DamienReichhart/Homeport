@@ -6,9 +6,10 @@ mod drawn;
 mod driven;
 mod emulation;
 mod keys;
+mod fixes;
 mod perf;
-mod search;
 mod mouse;
+mod search;
 mod select;
 mod transcripts;
 
@@ -30,7 +31,8 @@ pub(super) fn fixture(name: &str) -> Vec<u8> {
     std::fs::read(&path).unwrap_or_else(|e| panic!("{}: {e}", path.display()))
 }
 
-/// A terminal of `cols` by `rows`, as after its first layout.
+/// A terminal of `cols` by `rows`, as after its first layout, which told
+/// the session its size unless it was the size a terminal starts at.
 pub(super) fn sized(cols: usize, rows: usize) -> State {
     let mut state = State::new();
     let (_, resized) = state.update(Message::Viewport(Viewport {
@@ -39,11 +41,34 @@ pub(super) fn sized(cols: usize, rows: usize) -> State {
         cell_width: 7.2,
         cell_height: 16.0,
     }));
-    assert!(matches!(resized, Some(Event::Resize { .. }) | None));
+    let narrow = |n: usize| u16::try_from(n).unwrap();
+    let told = [Event::Resize {
+        cols: narrow(cols),
+        rows: narrow(rows),
+    }];
+    let expected: &[Event] = if (cols, rows) == (80, 24) { &[] } else { &told };
+    assert_eq!(resized, expected);
+    assert_eq!(state.size(), (cols, rows));
     state
 }
 
 /// What the rows of the screen say, their trailing blanks off.
+/// What the terminal says back for `message`, its tasks run and what
+/// they produced handed back (a regular expression built elsewhere).
+pub(super) fn drive(state: &mut State, message: Message) -> Vec<Event> {
+    let (task, mut events) = state.update(message);
+    let produced = iced::futures::executor::block_on(crate::test_support::tasks::messages(task));
+    for message in produced {
+        events.extend(drive(state, message));
+    }
+    events
+}
+
+/// What the terminal says back for `message`.
+pub(super) fn told(state: &mut State, message: Message) -> Vec<Event> {
+    state.update(message).1
+}
+
 pub(super) fn screen(state: &State) -> Vec<String> {
     let term = state.term();
     let (cols, rows) = state.size();

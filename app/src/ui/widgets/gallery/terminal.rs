@@ -187,38 +187,37 @@ impl Gallery {
                     Which::Shell => &mut terminals.shell,
                     Which::App => &mut terminals.app,
                 };
-                let (task, event) = state.update(message);
-                let task =
-                    task.map(move |message| Message::Terminal(Event::Terminal(which, message)));
-                let mut asked = vec![];
-                match event {
-                    // A page sends this to its session; the gallery echoes.
-                    Some(terminal::Event::Input(input)) => {
-                        if which == Which::Shell {
-                            asked = state.feed(&echoed(&input));
+                let (task, events) = state.update(message);
+                let mut tasks = vec![
+                    task.map(move |message| Message::Terminal(Event::Terminal(which, message)))
+                ];
+                let mut events: std::collections::VecDeque<_> = events.into();
+                while let Some(event) = events.pop_front() {
+                    match event {
+                        // A page sends this to its session; the gallery
+                        // echoes, and hears what the echo asked.
+                        terminal::Event::Input(input) => {
+                            if which == Which::Shell {
+                                events.extend(state.feed(&echoed(&input)));
+                            }
                         }
-                    }
-                    Some(terminal::Event::Copy(text)) => {
-                        let lines = text.lines().count();
-                        self.toasts
-                            .say(Kind::Info, move || format!("Copied {lines} lines"));
-                        return Task::batch([task, iced::clipboard::write(text)]);
-                    }
-                    Some(terminal::Event::Open(url)) => {
-                        // A page calls `ctx.open_url`: web, mail and phone links only.
-                        let opening = self.platform.open_url(url);
-                        return Task::batch([task, Task::perform(opening, |_| Message::Nothing)]);
-                    }
-                    Some(terminal::Event::Title(title)) => terminals.title = title,
-                    Some(terminal::Event::Bell) => terminals.bells += 1,
-                    Some(terminal::Event::Resize { .. }) | None => {}
-                }
-                for event in asked {
-                    if let terminal::Event::Title(title) = event {
-                        terminals.title = title;
+                        terminal::Event::Copy(text) => {
+                            let lines = text.lines().count();
+                            self.toasts
+                                .say(Kind::Info, move || format!("Copied {lines} lines"));
+                            tasks.push(iced::clipboard::write(text));
+                        }
+                        terminal::Event::Open(url) => {
+                            // A page calls `ctx.open_url`: web, mail and phone links only.
+                            let opening = self.platform.open_url(url);
+                            tasks.push(Task::perform(opening, |_| Message::Nothing));
+                        }
+                        terminal::Event::Title(title) => terminals.title = title,
+                        terminal::Event::Bell => terminals.bells += 1,
+                        terminal::Event::Resize { .. } => {}
                     }
                 }
-                task
+                Task::batch(tasks)
             }
             Event::Pour(pour) => {
                 terminals.pour = pour;

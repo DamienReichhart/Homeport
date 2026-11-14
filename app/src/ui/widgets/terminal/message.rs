@@ -66,7 +66,6 @@ pub enum Message {
     Paste(String),
     Copy,
     SelectAll,
-    Deselect,
     /// A press on the grid (`extend`: with Shift, from where the selection
     /// started).
     Press {
@@ -81,8 +80,9 @@ pub enum Message {
         side: Side,
     },
     Scroll(Scroll),
-    /// The next part of output that came faster than it is read: the
-    /// grid asks for it at each frame while there is some.
+    /// What waits: output that came faster than it is read (the grid asks
+    /// at each frame while there is some), a synchronised update that ran
+    /// out of time, matches to list again.
     Read,
     /// A link was opened (Ctrl or Cmd and a press).
     Open(String),
@@ -94,6 +94,9 @@ pub enum Message {
     Regex(bool),
     Next,
     Previous,
+    /// A query's matcher, built on another thread, for the query of this
+    /// number.
+    Compiled(u64, Box<super::search::Compiled>),
 }
 
 /// What the page does for its terminal.

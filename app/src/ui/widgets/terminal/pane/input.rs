@@ -330,10 +330,15 @@ fn frame<Message>(
     if geometry.viewport() != state.viewport() {
         send(shell, Action::Viewport(geometry.viewport()));
     }
-    if state.is_behind() {
-        // Output waits: the next part is read before the next frame.
-        send(shell, Action::Read);
-        shell.request_redraw();
+    // What waits (output, a synchronised update out of time, matches to
+    // list again) is read when it is due.
+    match state.due() {
+        Some(due) if due <= now => {
+            send(shell, Action::Read);
+            shell.request_redraw();
+        }
+        Some(due) => shell.request_redraw_at(due),
+        None => {}
     }
     let drawn = *internal.dark.borrow();
     if let Some(dark) = drawn.filter(|dark| *dark != state.is_dark()) {

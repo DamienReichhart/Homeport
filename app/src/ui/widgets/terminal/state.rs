@@ -12,12 +12,14 @@ use alacritty_terminal::{
     vte::ansi::{NamedColor, Rgb},
     Term,
 };
+use std::{collections::VecDeque, time::Instant};
+
 use iced::{advanced::widget::Id, widget::operation, Task};
 
 pub use super::message::{Click, Event, Message, Scroll, Viewport};
 use super::{
     emulator::{Emulator, Listener, Size},
-    search::Search,
+    search::{self, Search},
 };
 use crate::ui::{
     theme::{metrics::text as size, Theme},
@@ -39,6 +41,14 @@ pub const MAX_FONT_SIZE: f32 = 32.0;
 /// a backlog of megabytes in one batch (16 MB at most, `data::streams`),
 /// which is read a megabyte a frame, drawn in between.
 pub const READ_AT_ONCE: usize = 1024 * 1024;
+/// The most output that waits to be read: eight frames' worth. A program
+/// that writes faster than it is read (60 MB a second) has its oldest
+/// unread output dropped, from a line's start, as the stream's backlog
+/// drops the oldest when the window is behind; so what shows after
+/// Ctrl + C is never more than eight frames late.
+pub const UNREAD_MAX: usize = 8 * READ_AT_ONCE;
+/// The longest title kept and told, in characters.
+pub const TITLE_MAX: usize = 256;
 
 /// A terminal's state.
 #[derive(Debug)]
@@ -55,7 +65,9 @@ pub struct State {
     blinking: bool,
     title: Option<String>,
     /// Output not read yet: past [`READ_AT_ONCE`] of a batch.
-    unread: std::collections::VecDeque<u8>,
+    unread: VecDeque<u8>,
+    /// How many bytes of it were dropped past [`UNREAD_MAX`].
+    dropped: u64,
 }
 
 impl Default for State {
@@ -99,7 +111,8 @@ impl State {
             focused: false,
             blinking: true,
             title: None,
-            unread: std::collections::VecDeque::new(),
+            unread: VecDeque::new(),
+            dropped: 0,
         }
     }
 
@@ -126,6 +139,14 @@ impl State {
         self
     }
 
+    /// Drawn in a dark theme: what a program that asks for the colours is
+    /// told before the terminal was first drawn (the drawing tells it after).
+    #[must_use]
+    pub fn dark(mut self, dark: bool) -> Self {
+        self.dark = dark;
+        self
+    }
+
     /// The text's size changes: the grid is laid out again and its new
     /// size is told as any other.
     pub fn set_font_size(&mut self, size: f32) {
@@ -148,24 +169,47 @@ impl State {
     }
 
     /// Up to [`READ_AT_ONCE`] is read at once; the rest waits, in order,
-    /// for the next frames ([`State::is_behind`]).
+    /// for the next frames ([`State::is_behind`]), and no more than
+    /// [`UNREAD_MAX`] of it.
     pub fn feed_bytes(&mut self, output: &[u8]) -> Vec<Event> {
         if self.unread.is_empty() && output.len() <= READ_AT_ONCE {
             self.emulator.advance(output);
         } else {
             self.unread.extend(output);
+            self.bound_unread();
             self.read_unread();
         }
-        if self.search.is_active() {
-            self.search.refresh(&self.emulator.term);
-        }
+        self.search.output_came(&self.emulator.term);
         self.events()
+    }
+
+    /// Drops the oldest unread output past [`UNREAD_MAX`], up to the start
+    /// of a line, so what is read next starts where a line does.
+    fn bound_unread(&mut self) {
+        let Some(over) = self.unread.len().checked_sub(UNREAD_MAX) else {
+            return;
+        };
+        let line = self
+            .unread
+            .range(over..)
+            .position(|byte| *byte == b'\n')
+            .map_or(over, |at| over + at + 1);
+        self.unread.drain(..line);
+        self.dropped += line as u64;
     }
 
     fn read_unread(&mut self) {
         let take = self.unread.len().min(READ_AT_ONCE);
-        let part: Vec<u8> = self.unread.drain(..take).collect();
-        self.emulator.advance(&part);
+        let (front, back) = self.unread.as_slices();
+        if front.len() >= take {
+            self.emulator.advance(&front[..take]);
+        } else {
+            let mut part = Vec::with_capacity(take);
+            part.extend_from_slice(front);
+            part.extend_from_slice(&back[..take - front.len()]);
+            self.emulator.advance(&part);
+        }
+        self.unread.drain(..take);
     }
 
     /// Whether output came faster than it was read, and waits.
@@ -173,20 +217,52 @@ impl State {
         !self.unread.is_empty()
     }
 
+    /// How many bytes wait to be read, and how many were dropped.
+    pub fn unread(&self) -> usize {
+        self.unread.len()
+    }
+
+    pub fn dropped(&self) -> u64 {
+        self.dropped
+    }
+
+    /// When the grid should ask for [`Message::Read`]: at once while output
+    /// waits, when a synchronised update that never ended runs out of time,
+    /// or when the search's matches are due to be listed again.
+    pub fn due(&self) -> Option<Instant> {
+        let now = self.is_behind().then(Instant::now);
+        [now, self.emulator.holding_until(), self.search.due()]
+            .into_iter()
+            .flatten()
+            .min()
+    }
+
     /// A line of the app's, dimmed, after what the program printed: how a
     /// session ended (React's `\x1b[2m…\x1b[22m`). The text is the page's,
-    /// in the user's language.
+    /// in the user's language. What the program left unfinished (a string
+    /// it was writing, a synchronised update, its colours) doesn't hide or
+    /// colour it.
     pub fn notice(&mut self, text: &str) {
-        let line = format!("\r\n\x1b[2m{}\x1b[22m\r\n", text.replace('\x1b', ""));
+        while self.is_behind() {
+            self.read_unread();
+        }
+        self.emulator.release();
+        let text: String = text.chars().filter(|c| !c.is_control()).collect();
+        let line = format!("\x18\x1b[0m\r\n\x1b[2m{text}\x1b[22m\r\n");
         drop(self.feed(&line));
     }
 
     fn events(&mut self) -> Vec<Event> {
         let dark = self.dark;
-        let events = self
+        let mut events = self
             .emulator
             .events(self.viewport, |index| theme_colour(dark, index));
-        for event in &events {
+        for event in &mut events {
+            if let Event::Title(Some(title)) = event {
+                if title.chars().count() > TITLE_MAX {
+                    *title = title.chars().take(TITLE_MAX).collect();
+                }
+            }
             if let Event::Title(title) = event {
                 self.title.clone_from(title);
             }
@@ -267,25 +343,41 @@ impl State {
     }
 
     /// What the program is sent for `text` pasted: its line ends as Enter
-    /// (xterm.js's `prepareTextForTerminal`), between the brackets of a
-    /// bracketed paste when the program asked for them, and never
-    /// anything that would end the brackets early.
+    /// (xterm.js's `prepareTextForTerminal`), and between the brackets of
+    /// a bracketed paste when the program asked for them, with every
+    /// Escape taken out (as alacritty does), so nothing in it can end the
+    /// brackets early, however it is nested.
     pub fn pasted(&self, text: &str) -> String {
-        let text = text
-            .replace("\x1b[201~", "")
-            .replace("\r\n", "\r")
-            .replace('\n', "\r");
-        if !text.is_empty() && self.mode().contains(TermMode::BRACKETED_PASTE) {
-            format!("\x1b[200~{text}\x1b[201~")
-        } else {
-            text
+        let text = text.replace("\r\n", "\r").replace('\n', "\r");
+        if text.is_empty() || !self.mode().contains(TermMode::BRACKETED_PASTE) {
+            return text;
+        }
+        let text: String = text
+            .chars()
+            .filter(|c| !matches!(c, '\x1b' | '\u{9b}'))
+            .collect();
+        format!("\x1b[200~{text}\x1b[201~")
+    }
+
+    /// The search looks for something else: its matches are listed, and
+    /// the latest brought into view; a query that is not quick is built on
+    /// another thread first (the task).
+    fn query_with(&mut self, change: impl FnOnce(&mut Query)) -> Task<Message> {
+        let mut query = self.search.query.clone();
+        change(&mut query);
+        match self.search.set(query.clone()) {
+            Some(generation) => Task::perform(search::compile(query), move |compiled| {
+                Message::Compiled(generation, Box::new(compiled))
+            }),
+            None => {
+                self.found();
+                Task::none()
+            }
         }
     }
 
-    fn query_with(&mut self, change: impl FnOnce(&mut Query)) {
-        let mut query = self.search.query.clone();
-        change(&mut query);
-        self.search.set(query);
+    /// The matcher is there: the matches are listed and the latest shown.
+    fn found(&mut self) {
         self.search.refresh(&self.emulator.term);
         if let Some(found) = self
             .search
@@ -303,7 +395,10 @@ impl State {
         }
     }
 
-    pub fn update(&mut self, message: Message) -> (Task<Message>, Option<Event>) {
+    /// Takes a message of the widget's: what goes back to the session and
+    /// the page, in order, and a task to map (a search field given focus,
+    /// a regular expression built elsewhere).
+    pub fn update(&mut self, message: Message) -> (Task<Message>, Vec<Event>) {
         let event = match message {
             Message::Viewport(viewport) => self.resized(viewport),
             Message::Dark(dark) => {
@@ -336,10 +431,6 @@ impl State {
                 term.selection = Some(all);
                 None
             }
-            Message::Deselect => {
-                self.emulator.term.selection = None;
-                None
-            }
             Message::Press {
                 at,
                 side,
@@ -360,45 +451,39 @@ impl State {
                 None
             }
             Message::Read => {
-                self.read_unread();
-                if self.search.is_active() {
-                    self.search.refresh(&self.emulator.term);
+                self.emulator.settle_sync();
+                if self.is_behind() {
+                    self.read_unread();
+                    self.search.output_came(&self.emulator.term);
                 }
-                // What the program asked meanwhile: its answers as one
-                // input; a title is kept (`title()`), a bell is let go.
-                let answers: String = self
-                    .events()
-                    .into_iter()
-                    .filter_map(|event| match event {
-                        Event::Input(text) => Some(text),
-                        _ => None,
-                    })
-                    .collect();
-                (!answers.is_empty()).then_some(Event::Input(answers))
+                self.search.catch_up(&self.emulator.term);
+                return (Task::none(), self.events());
             }
             Message::Open(url) => Some(Event::Open(url)),
             Message::OpenSearch => {
                 self.search.open = true;
-                // What is selected is what is looked for, as in a browser.
-                if let Some(text) = self.selection_text().filter(|t| !t.contains('\n')) {
-                    self.query_with(|query| query.text = text);
-                }
-                return (operation::focus(self.search.id.clone()), None);
+                // What is selected is what is looked for, as in a browser;
+                // else what was looked for last.
+                let selected = self.selection_text().filter(|t| !t.contains('\n'));
+                let compiling = self.query_with(|query| {
+                    if let Some(text) = selected {
+                        query.text = text;
+                    }
+                });
+                let focus = operation::focus(self.search.id.clone());
+                return (Task::batch([compiling, focus]), vec![]);
             }
             Message::CloseSearch => {
-                self.search.open = false;
-                return (operation::focus(self.id.clone()), None);
+                self.search.close();
+                return (operation::focus(self.id.clone()), vec![]);
             }
-            Message::Query(text) => {
-                self.query_with(|query| query.text = text);
-                None
-            }
-            Message::Case(case) => {
-                self.query_with(|query| query.case = case);
-                None
-            }
-            Message::Regex(regex) => {
-                self.query_with(|query| query.regex = regex);
+            Message::Query(text) => return (self.query_with(|query| query.text = text), vec![]),
+            Message::Case(case) => return (self.query_with(|query| query.case = case), vec![]),
+            Message::Regex(regex) => return (self.query_with(|query| query.regex = regex), vec![]),
+            Message::Compiled(generation, compiled) => {
+                if self.search.compiled(generation, *compiled) {
+                    self.found();
+                }
                 None
             }
             Message::Next => {
@@ -410,7 +495,7 @@ impl State {
                 None
             }
         };
-        (Task::none(), event)
+        (Task::none(), event.into_iter().collect())
     }
 
     /// What is selected, as text: wrapped lines joined, trailing blanks off.
