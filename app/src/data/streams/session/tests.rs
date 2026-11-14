@@ -261,6 +261,37 @@ async fn typed_reaches(engine: &Engine, typed: &str) -> bool {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn keys_typed_after_a_resize_reach_the_program_after_it() {
+    let (state, _app) = state();
+    let engine = Engine::start();
+    let host_id = engine.host(&state).await;
+    let mut session = session(shell(&host_id));
+    let mut stream = Box::pin(updates(&session, &state));
+    let Some(Update::Started(id)) = stream.next().await else {
+        panic!("the terminal started");
+    };
+    let writer = tokio::spawn(session.started(state.clone(), id));
+    // The writer waits for the Engine's answer to a resize before it
+    // writes what was typed after.
+    session.resize(80, 24);
+    session.input("x".to_owned());
+    assert!(typed_reaches(&engine, "x").await);
+    let told = engine.terminal();
+    let resized = told
+        .iter()
+        .position(|told| told.contains("h=24") && told.contains("w=80"))
+        .expect("the resize reached it");
+    let typed = told
+        .iter()
+        .position(|told| told == "input x")
+        .expect("the key reached it");
+    assert!(resized < typed, "{told:?}");
+    engine.exit();
+    session.ended();
+    let _ = tokio::time::timeout(Duration::from_secs(2), writer).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn a_late_word_from_the_session_before_does_not_silence_the_next() {
     let (state, _app) = state();
     let engine = Engine::start();
