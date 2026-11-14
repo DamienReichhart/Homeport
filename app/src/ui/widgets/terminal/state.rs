@@ -130,6 +130,7 @@ impl State {
     pub fn with_scrollback(mut self, lines: usize) -> Self {
         self.emulator = Emulator::new(self.emulator.size(), lines);
         self.scrollback = lines;
+        self.search.scrollback = lines;
         self
     }
 

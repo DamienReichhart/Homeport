@@ -12,11 +12,14 @@
 //! Every match is listed, up to [`MAX_MATCHES`], while the bar is open:
 //! the list is made again when the query changes, and when output came,
 //! since new lines move the old ones up. A list is made at most every
-//! [`RESCAN_EVERY`] while output pours in. `alacritty_terminal` keeps no
-//! count of the lines it scrolled away once its scrollback is full, so
-//! a match can't be followed by its place alone, and only the new lines
-//! can't be read: the list is made whole, and the match the search stood
-//! on is found again by its place in its row and what its row says.
+//! [`RESCAN_EVERY`] while output pours in. Until the scrollback is full a
+//! row only moves up by the lines that came under it, so the match the
+//! search stood on is followed exactly. Once it is full,
+//! `alacritty_terminal` keeps no count of the lines it let go of: the
+//! match is found again by its place in its row and what its row says,
+//! the nearest at or above where it was (among rows that all say the
+//! same, the one now where it stood). As only the new lines can't be
+//! read either, the list is made whole each time.
 //! Closing the bar lets go of the matcher and the matches; the query stays.
 
 use std::time::{Duration, Instant};
@@ -75,11 +78,13 @@ pub async fn compile(query: Query) -> Compiled {
     }
 }
 
-/// Where the current match was: its place, and what its row said.
+/// Where the current match was: its place, what its row said, and how
+/// many lines the scrollback held then.
 #[derive(Debug, Clone)]
 struct Anchor {
     start: Point,
     row: String,
+    history: usize,
 }
 
 /// What `term`'s row `line` says.
@@ -111,6 +116,8 @@ pub struct Search {
     /// When the matches were last listed, and whether output came since.
     scanned: Option<Instant>,
     stale: bool,
+    /// How many lines the scrollback keeps.
+    pub(super) scrollback: usize,
     pub id: Id,
 }
 
@@ -127,6 +134,7 @@ impl Default for Search {
             generation: 0,
             scanned: None,
             stale: false,
+            scrollback: super::DEFAULT_SCROLLBACK,
             id: Id::unique(),
         }
     }
@@ -245,10 +253,25 @@ impl Search {
         self.remember(term);
     }
 
-    /// The match `anchor` was: the same place in a row that says the same,
-    /// as near below where it was as there is (new lines only move rows
-    /// up); the oldest when its row is gone.
+    /// The match `anchor` was: where its row moved up to while the
+    /// scrollback is not full, if it still says the same; else the same
+    /// place in a row that says the same, as near below where it was as
+    /// there is (new lines only move rows up); the oldest when its row is
+    /// gone.
     fn found_again<T>(&self, term: &Term<T>, anchor: &Anchor) -> usize {
+        let history = term.history_size();
+        if history < self.scrollback && history >= anchor.history {
+            let moved = i32::try_from(history - anchor.history).unwrap_or(i32::MAX);
+            let start = Point::new(anchor.start.line - moved, anchor.start.column);
+            if let Ok(index) = self
+                .matches
+                .binary_search_by(|found| found.start().cmp(&start))
+            {
+                if row_text(term, start.line) == anchor.row {
+                    return index;
+                }
+            }
+        }
         let mut rows: Vec<(Line, String)> = vec![];
         let mut best = None;
         for (index, found) in self.matches.iter().enumerate().rev() {
@@ -279,6 +302,7 @@ impl Search {
             .map(|found| Anchor {
                 start: *found.start(),
                 row: row_text(term, found.start().line),
+                history: term.history_size(),
             });
     }
 

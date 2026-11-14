@@ -105,6 +105,58 @@ fn the_current_match_stays_itself_as_new_lines_come() {
     assert_eq!(count(&state), (2, 7), "the same match, one more found");
 }
 
+/// A terminal of 20 × 5 keeping `scrollback` lines, `rows` rows of
+/// "same" written, searched for "same" and stepped five back from the
+/// latest; where the match it stands on starts.
+fn among_the_same(scrollback: usize, rows: usize) -> (State, i32) {
+    let mut state = State::new().with_scrollback(scrollback);
+    let _ = state.update(Message::Viewport(crate::ui::widgets::terminal::Viewport {
+        cols: 20,
+        rows: 5,
+        cell_width: 7.2,
+        cell_height: 16.0,
+    }));
+    let _ = state.feed(&"same\r\n".repeat(rows));
+    searched(&mut state, "same");
+    for _ in 0..5 {
+        let _ = drive(&mut state, Message::Previous);
+    }
+    let line = current_line(&state);
+    (state, line)
+}
+
+fn current_line(state: &State) -> i32 {
+    let at = state.search().current.unwrap();
+    state.search().matches[at].start().line.0
+}
+
+fn three_more(state: &mut State) {
+    let _ = state.feed(&"same\r\n".repeat(3));
+    std::thread::sleep(crate::ui::widgets::terminal::search::RESCAN_EVERY);
+    let _ = drive(state, Message::Read);
+}
+
+#[test]
+fn among_rows_that_say_the_same_the_current_match_moves_up_with_its_own() {
+    let (mut state, line) = among_the_same(1000, 20);
+    assert_eq!(count(&state), (15, 20));
+    three_more(&mut state);
+    assert_eq!(count(&state), (15, 23), "the same match, three more found");
+    assert_eq!(current_line(&state), line - 3, "moved up with its row");
+}
+
+#[test]
+fn once_the_scrollback_is_full_the_same_row_is_found_again_where_it_was() {
+    // 10 lines kept and 5 shown: the oldest are let go of, uncounted, so
+    // a row is known again only by what it says; among rows that all say
+    // the same, the one now where the current one was.
+    let (mut state, line) = among_the_same(10, 40);
+    assert_eq!(count(&state), (9, 14));
+    three_more(&mut state);
+    assert_eq!(count(&state), (9, 14));
+    assert_eq!(current_line(&state), line);
+}
+
 #[test]
 fn what_is_selected_is_what_the_search_opens_on() {
     let mut state = log();
