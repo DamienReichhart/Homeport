@@ -468,6 +468,52 @@ fn escape_in_the_image_s_suggestions_closes_them_and_not_the_run_dialog() {
 }
 
 #[test]
+fn in_the_run_dialog_the_image_s_suggestions_take_the_arrows_enter_and_tab() {
+    use crate::ui::domain::containers::run;
+    use iced::keyboard::key::Named;
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    let image = |tag: &str| homeport_engine::images::Image {
+        id: format!("sha256:{tag}"),
+        tags: vec![tag.to_owned()],
+        digests: vec![],
+        created: 0,
+        size: 0,
+        containers: 0,
+        labels: Default::default(),
+    };
+    let images = vec![image("nginx:1.27"), image("nginx:latest")];
+    rig.bench.data.set(&keys::host::images("h1"), images);
+    rig.send(Message::Run);
+    let name = run::form::Message::Typed(run::form::Line::Name, "edge-proxy".to_owned());
+    rig.send(Message::RunDialog(run::dialog::Message::Form(name)));
+    let image_now = |rig: &Rig| rig.state.run.as_ref().map(|d| d.fields.form.image.clone());
+    rig.frame(|frame| frame.typewrite("ngi"));
+    for key in [
+        Named::ArrowDown,
+        Named::ArrowDown,
+        Named::ArrowUp,
+        Named::Enter,
+    ] {
+        rig.frame(|frame| frame.tap_key(key));
+    }
+    assert_eq!(image_now(&rig).as_deref(), Some("nginx:1.27"));
+    assert!(!rig.shows("nginx:latest"), "the list closed");
+    assert!(
+        rig.state.run.as_ref().is_some_and(|run| run.is_shown()),
+        "Enter took the suggestion and ran nothing"
+    );
+    // Tab closes the list on its way to the name.
+    for _ in ":1.27".chars() {
+        rig.frame(|frame| frame.tap_key(Named::Backspace));
+    }
+    assert!(rig.shows("nginx:latest"), "the list opened again");
+    rig.frame(|frame| frame.tab());
+    assert!(!rig.shows("nginx:latest"), "Tab closed the list");
+    rig.frame(|frame| assert!(frame.is_focused("edge-proxy"), "the name has the keyboard"));
+}
+
+#[test]
 fn the_run_dialog_keeps_what_was_typed_when_closed() {
     let mut rig = Rig::populated();
     rig.send(Message::Run);

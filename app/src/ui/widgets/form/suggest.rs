@@ -16,6 +16,8 @@
 //!   suggestion read again meanwhile changes nothing of what Enter takes.
 //! - While an input method composes, the arrows and Escape are its own.
 //! - A press on a suggestion takes it; a press elsewhere closes the list.
+//! - A suggestion taken puts the caret at the end of the field, as the
+//!   browser does.
 //! - In Arabic the list hangs from the field's right edge.
 //!
 //! ```ignore
@@ -32,9 +34,14 @@
 //! ```
 
 use iced::{
+    advanced::{
+        layout, mouse, renderer,
+        widget::{self, tree, Operation, Tree},
+        Clipboard, Layout, Shell, Widget,
+    },
     keyboard::{key::Named, Key},
     widget::{container, scrollable, text},
-    Font, Length, Task,
+    Font, Length, Rectangle, Size, Task,
 };
 
 use super::input::input;
@@ -74,6 +81,9 @@ pub struct State {
     shown: Vec<String>,
     /// Among those shown.
     active: Option<usize>,
+    /// How many suggestions were taken: the field's caret goes to the end
+    /// each time.
+    taken: u64,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -174,6 +184,7 @@ impl State {
             }
             Message::Pick(picked) => {
                 self.close();
+                self.taken += 1;
                 Some(Event::Input(picked))
             }
             Message::Close => {
@@ -186,6 +197,9 @@ impl State {
                     .filter(|_| self.open)
                     .and_then(|at| self.shown.get(at).cloned());
                 self.close();
+                if chosen.is_some() {
+                    self.taken += 1;
+                }
                 Some(chosen.map_or(Event::Submit, Event::Input))
             }
         };
@@ -249,6 +263,10 @@ impl<'a> Suggest<'a> {
         // The arrows and Escape are the list's before the field's; Tab
         // closes it on its way (the window or the dialog moves focus on).
         // An input method that composes keeps its keys (`key_area`).
+        let field = AtEnd {
+            content: field.into(),
+            taken: self.state.taken,
+        };
         let field = key_area(field, |_, _| None)
             .before(move |key, _| match key {
                 Key::Named(Named::ArrowDown) => Some(Message::Step(1)),
@@ -301,6 +319,154 @@ impl<'a> Suggest<'a> {
             .max_item_height(LIST_HEIGHT)
             .style(theme::container::popover)
             .into()
+    }
+}
+
+/// The field, whose caret goes to the end when a suggestion was taken
+/// since it last looked (`taken` is the count; the tree keeps the one
+/// seen).
+struct AtEnd<'a> {
+    content: Element<'a, Message>,
+    taken: u64,
+}
+
+/// Puts the caret of every field it meets at the end.
+struct CaretToEnd;
+
+impl Operation for CaretToEnd {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn text_input(
+        &mut self,
+        _id: Option<&widget::Id>,
+        _bounds: Rectangle,
+        state: &mut dyn widget::operation::TextInput,
+    ) {
+        state.move_cursor_to_end();
+    }
+}
+
+impl Widget<Message, theme::Theme, iced::Renderer> for AtEnd<'_> {
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<u64>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(self.taken)
+    }
+
+    fn children(&self) -> Vec<Tree> {
+        vec![Tree::new(&self.content)]
+    }
+
+    fn diff(&self, tree: &mut Tree) {
+        tree.diff_children(std::slice::from_ref(&self.content));
+    }
+
+    fn size(&self) -> Size<Length> {
+        self.content.as_widget().size()
+    }
+
+    fn layout(
+        &mut self,
+        tree: &mut Tree,
+        renderer: &iced::Renderer,
+        limits: &layout::Limits,
+    ) -> layout::Node {
+        self.content
+            .as_widget_mut()
+            .layout(&mut tree.children[0], renderer, limits)
+    }
+
+    fn operate(
+        &mut self,
+        tree: &mut Tree,
+        layout: Layout<'_>,
+        renderer: &iced::Renderer,
+        operation: &mut dyn Operation,
+    ) {
+        self.content
+            .as_widget_mut()
+            .operate(&mut tree.children[0], layout, renderer, operation);
+    }
+
+    fn update(
+        &mut self,
+        tree: &mut Tree,
+        event: &iced::Event,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        renderer: &iced::Renderer,
+        clipboard: &mut dyn Clipboard,
+        shell: &mut Shell<'_, Message>,
+        viewport: &Rectangle,
+    ) {
+        let seen = tree.state.downcast_mut::<u64>();
+        if *seen != self.taken {
+            *seen = self.taken;
+            self.content.as_widget_mut().operate(
+                &mut tree.children[0],
+                layout,
+                renderer,
+                &mut CaretToEnd,
+            );
+        }
+        self.content.as_widget_mut().update(
+            &mut tree.children[0],
+            event,
+            layout,
+            cursor,
+            renderer,
+            clipboard,
+            shell,
+            viewport,
+        );
+    }
+
+    fn draw(
+        &self,
+        tree: &Tree,
+        renderer: &mut iced::Renderer,
+        theme: &theme::Theme,
+        style: &renderer::Style,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+    ) {
+        self.content.as_widget().draw(
+            &tree.children[0],
+            renderer,
+            theme,
+            style,
+            layout,
+            cursor,
+            viewport,
+        );
+    }
+
+    fn mouse_interaction(
+        &self,
+        tree: &Tree,
+        layout: Layout<'_>,
+        cursor: mouse::Cursor,
+        viewport: &Rectangle,
+        renderer: &iced::Renderer,
+    ) -> mouse::Interaction {
+        self.content.as_widget().mouse_interaction(
+            &tree.children[0],
+            layout,
+            cursor,
+            viewport,
+            renderer,
+        )
+    }
+}
+
+impl<'a> From<AtEnd<'a>> for Element<'a, Message> {
+    fn from(field: AtEnd<'a>) -> Self {
+        Element::new(field)
     }
 }
 
