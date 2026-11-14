@@ -140,7 +140,11 @@ export const commands = {
 	filesList: (hostId: string, containerId: string, path: string) => __TAURI_INVOKE<FileEntry[]>("files_list", { hostId, containerId, path }),
 	/**
 	 *  Saves a container path to `destination`; returns `true` when it was a
-	 *  directory saved as a `.tar` archive.
+	 *  directory saved as a `.tar` archive. The file is written beside
+	 *  `destination` and put in its place only once whole (see
+	 *  `homeport_engine::containers::files::download_counted`): the folder
+	 *  must be writable, a link at `destination` is replaced rather than
+	 *  written through, and an empty archive is an error.
 	 */
 	filesDownload: (hostId: string, containerId: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("files_download", { hostId, containerId, path, destination }),
 	filesUpload: (hostId: string, containerId: string, directory: string, sources: string[]) => __TAURI_INVOKE<null>("files_upload", { hostId, containerId, directory, sources }),
