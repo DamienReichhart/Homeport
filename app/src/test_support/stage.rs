@@ -308,6 +308,25 @@ impl<Message> Frame<'_, '_, Message> {
         produced
     }
 
+    /// [`Frame::perform`] of what is ready now: a writer that runs until
+    /// its session ends is let go of where it first waits.
+    pub fn perform_now<T: Send + 'static>(&mut self, task: iced::Task<T>) -> Vec<T> {
+        use iced::futures::{FutureExt, StreamExt};
+        let Some(mut actions) = iced_runtime::task::into_stream(task) else {
+            return vec![];
+        };
+        let mut produced = vec![];
+        while let Some(Some(action)) = actions.next().now_or_never() {
+            match action {
+                iced_runtime::Action::Output(message) => produced.push(message),
+                iced_runtime::Action::Widget(operation) => self.operate(operation),
+                _ => {}
+            }
+        }
+        self.redraw();
+        produced
+    }
+
     /// Whether a button shows a focus ring.
     pub fn shows_focus(&mut self) -> bool {
         let mut shown = crate::ui::widgets::focus::Shown(false);

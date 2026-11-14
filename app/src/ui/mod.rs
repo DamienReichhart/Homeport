@@ -235,8 +235,10 @@ impl Homeport {
         // What a page made next knows the theme on screen, which a
         // message may just have changed.
         let shown = self.shown();
+        let details = self.details.is_some();
         if let Some(shell) = &mut self.shell {
             shell.show_theme(shown);
+            shell.show_details(details);
         }
         task
     }

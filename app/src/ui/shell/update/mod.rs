@@ -51,6 +51,9 @@ impl<P: Pages> Shell<P> {
         message: Message<P::Message>,
         data: &mut Data,
     ) -> Task<Message<P::Message>> {
+        // A page told of the message knows what is over it: the palette
+        // may have opened with the message before.
+        self.world.overlaid = self.is_overlaid();
         // What the actions on their way did is told first: the message
         // may be the answer of one, for a page that is no longer there.
         let mut tasks = vec![self.report(data), self.apply(message, data)];
@@ -62,6 +65,7 @@ impl<P: Pages> Shell<P> {
                 break;
             }
         }
+        self.world.overlaid = self.is_overlaid();
         Task::batch(tasks)
     }
 

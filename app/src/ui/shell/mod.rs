@@ -176,6 +176,8 @@ pub struct Shell<P: Pages> {
     outcomes: Outcomes,
     palette: palette::State,
     help: bool,
+    /// The window shows the details of a failure over everything.
+    details: bool,
     switcher: menu::State,
     pickers: pickers::State,
     /// The version whose notice was dismissed.
@@ -209,6 +211,7 @@ impl<P: Pages> Shell<P> {
             outcomes: Outcomes::default(),
             palette: palette::State::default(),
             help: false,
+            details: false,
             switcher: menu::State::default(),
             pickers: pickers::State::default(),
             dismissed: None,
@@ -235,6 +238,19 @@ impl<P: Pages> Shell<P> {
     /// `ctx.world.theme`.
     pub fn show_theme(&mut self, theme: crate::ui::theme::Theme) {
         self.world.theme = theme;
+    }
+
+    /// The window shows the details of a failure over everything, or no
+    /// longer does.
+    pub fn show_details(&mut self, shown: bool) {
+        self.details = shown;
+        self.world.overlaid = self.is_overlaid();
+    }
+
+    /// Whether the palette, the shortcuts' sheet or the details of a
+    /// failure are over the page.
+    fn is_overlaid(&self) -> bool {
+        self.help || self.palette.is_open() || self.details
     }
 
     pub fn world(&self) -> &World {

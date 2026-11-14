@@ -302,7 +302,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             };
             let dark = ctx.world.theme.is_dark();
             let host = state.host_id.clone();
-            let dialog = state.actions.has_dialog();
+            // The page's dialog, or what is over the whole window.
+            let dialog = state.actions.has_dialog() || ctx.world.overlaid;
             let task = state.exec.update(message, (&host, &id), dark, dialog, ctx);
             return task.map(Message::Exec);
         }

@@ -498,3 +498,50 @@ fn the_program_is_told_the_terminal_s_size_once_it_is_laid_out() {
         live.engine.terminal()
     );
 }
+
+/// Hands the page what its streams send until the shell's session has
+/// started, each message's task done on `stage` as far as it is ready,
+/// and says whether any of them moved the keyboard.
+fn start_under(live: &mut Terminals, stage: &mut crate::test_support::stage::Stage) -> bool {
+    let mut moved = false;
+    for _ in 0..150 {
+        if live.rig.state.exec.shells[0].session.id().is_some() {
+            return moved;
+        }
+        let next = live.following.next(Duration::from_millis(20));
+        let Some(message) = live.rig.bench.app.runtime.block_on(next) else {
+            continue;
+        };
+        let runtime = live.rig.bench.app.runtime.handle().clone();
+        let _inside = runtime.enter();
+        let task = update(&mut live.rig.state, message, &live.rig.bench.ctx());
+        stage.frame(live.rig.view(), |frame| {
+            let before = frame.focused();
+            frame.perform_now(task);
+            moved |= frame.focused() != before;
+        });
+        live.sync();
+    }
+    panic!("the session never started");
+}
+
+#[test]
+fn a_session_that_starts_under_a_dialog_or_the_palette_leaves_the_keyboard_there() {
+    use crate::ui::widgets::overlay::menu;
+    let _english = in_language("en");
+    // Nothing over the page: the terminal takes the keyboard.
+    let mut stage = crate::test_support::stage::Stage::new(SIZE);
+    assert!(start_under(&mut Terminals::at("exec"), &mut stage));
+    // The page's dialog: its field keeps it.
+    let mut live = Terminals::at("exec");
+    live.rig.send(Message::More(menu::Event::Toggle));
+    live.rig.frame(|frame| frame.click("Commit to image…"));
+    assert!(live.rig.state.actions.has_dialog());
+    let mut stage = crate::test_support::stage::Stage::new(SIZE);
+    assert!(!start_under(&mut live, &mut stage), "the dialog keeps it");
+    // The palette over the window.
+    let mut live = Terminals::at("exec");
+    live.rig.bench.world.overlaid = true;
+    let mut stage = crate::test_support::stage::Stage::new(SIZE);
+    assert!(!start_under(&mut live, &mut stage), "the palette keeps it");
+}

@@ -64,6 +64,10 @@ pub struct World {
     /// when they follow it. For what draws its own colours and must know
     /// them before it draws (a terminal a program asks them of).
     pub theme: Theme,
+    /// Something over the whole window keeps the keyboard: the palette,
+    /// the shortcuts' sheet, the details of a failure. What would take it
+    /// as it opens (a terminal whose session started) leaves it there.
+    pub overlaid: bool,
 }
 
 impl World {
@@ -84,6 +88,7 @@ impl World {
             local_engines: Resource::Idle,
             local_clusters: Resource::Idle,
             theme: Theme::Light,
+            overlaid: false,
         }
     }
 

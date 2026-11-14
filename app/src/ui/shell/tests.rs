@@ -570,6 +570,24 @@ fn alt_and_the_arrows_step_through_the_hosts_round_the_ends() {
 }
 
 #[test]
+fn the_pages_know_when_the_palette_or_a_failure_s_details_are_over_them() {
+    let mut rig = docker_and_prod();
+    assert!(!rig.shell.world().overlaid);
+    let ctrl_k = Press {
+        ctrl: true,
+        ..Press::of("k")
+    };
+    rig.send(key(ctrl_k.clone()));
+    assert!(rig.shell.world().overlaid, "the palette");
+    rig.send(key(ctrl_k));
+    assert!(!rig.shell.world().overlaid);
+    rig.shell.show_details(true);
+    assert!(rig.shell.world().overlaid, "the details of a failure");
+    rig.shell.show_details(false);
+    assert!(!rig.shell.world().overlaid);
+}
+
+#[test]
 fn the_palette_opens_runs_a_row_and_closes() {
     let _english = in_language("en");
     let mut rig = docker_and_prod();
