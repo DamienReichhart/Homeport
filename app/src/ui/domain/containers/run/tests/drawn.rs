@@ -63,3 +63,50 @@ fn the_run_dialog_in_the_dark_says_what_it_cannot_read() {
         || shown(&dialog, &ctx),
     );
 }
+
+/// Where the dialog's content lies in a window 828 wide: the dialog is
+/// 672 wide, centred, and pads its content by 16 on each side.
+const CONTENT: (f32, f32) = (78.0 + 16.0, 750.0 - 16.0);
+
+#[test]
+fn the_advanced_area_s_tabs_stay_inside_the_dialog_in_every_language() {
+    use crate::ui::domain::containers::run::form::Section;
+    let (mut bench, _engine, host) = bench();
+    networks(&mut bench, &host);
+    let mut dialog = filled(&bench, &host);
+    let open = Message::Form(Field::Switch(Switch::Advanced, true));
+    send(&mut dialog, &bench, open);
+    for language in crate::i18n::LOCALES.iter().map(|locale| locale.tag) {
+        let _language = crate::test_support::snapshot::in_language(language);
+        let ctx = bench.ctx();
+        let mut drawn = crate::test_support::window::window((828.0, 1400.0), shown(&dialog, &ctx));
+        for section in Section::ALL {
+            let label = section.label();
+            let found = drawn
+                .find(label.as_str())
+                .unwrap_or_else(|_| panic!("{language}: {label} is drawn"));
+            let bounds = found.bounds();
+            assert!(
+                bounds.x >= CONTENT.0 && bounds.x + bounds.width <= CONTENT.1,
+                "{language}: {label} at {bounds:?} is outside the dialog"
+            );
+        }
+    }
+}
+
+#[test]
+fn the_advanced_area_mirrors_in_arabic_and_its_tabs_fit_in_german() {
+    let (mut bench, _engine, host) = bench();
+    networks(&mut bench, &host);
+    let mut dialog = filled(&bench, &host);
+    let open = Message::Form(Field::Switch(Switch::Advanced, true));
+    send(&mut dialog, &bench, open);
+    type_in(&mut dialog, &bench, Line::Cpus, "half");
+    let ctx = bench.ctx();
+    for language in ["ar", "de"] {
+        let name = format!("container-run-advanced-{language}");
+        assert_snapshot(&name, language, &Theme::Light, (828.0, 1300.0), || {
+            shown(&dialog, &ctx)
+        });
+    }
+}
