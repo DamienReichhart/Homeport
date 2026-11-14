@@ -21,9 +21,10 @@ fn a_release_is_reported_even_with_shift_held() {
 }
 
 /// xterm's first encoding stops at cell 95 here, not 223: a value over
-/// 127 is one byte xterm sends raw, and a session's input is text
-/// (`exec_input` and its kin take a `String`), whose bytes over 127 come
-/// in pairs. Such a report would name another cell; none is sent, and a
+/// 127 is one byte xterm sends raw, and input is a `String` through the
+/// session's API (`Event::Input`, `TerminalSession::input`, the five
+/// `*_input` use cases; the runtimes' writers under them take bytes),
+/// whose bytes over 127 come in pairs. Such a report would name another cell; none is sent, and a
 /// program that wants far cells asks for SGR (`?1006h`), as vim, tmux
 /// and htop do.
 #[test]

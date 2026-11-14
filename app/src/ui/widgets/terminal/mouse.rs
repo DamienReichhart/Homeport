@@ -99,8 +99,11 @@ pub fn report(
     // The first encodings have no release of a given button.
     let code = if release { 3 + (code & !3) } else { code };
     let utf8 = mode.contains(TermMode::UTF8_MOUSE);
-    // Each value is sent plus 32, as one character: a byte up to 127
-    // (what text holds as itself), or up to 2047 with UTF-8.
+    // Each value is sent plus 32, as one character: a byte up to 127, or
+    // up to 2047 with UTF-8. Not up to 255 as xterm's raw byte: input is a
+    // `String` through the session's API (`Event::Input`,
+    // `TerminalSession::input`, the five `*_input` use cases), where a
+    // byte over 127 can't stand alone.
     let most = if utf8 { 2015 } else { 95 };
     let cell = |value: usize| -> Option<char> {
         if value > most {

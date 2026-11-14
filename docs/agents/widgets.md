@@ -253,7 +253,7 @@ Its limits:
 
 - **Memory** is `alacritty_terminal`'s: 24 bytes a cell, so 10,000 lines of 200 columns are 48 MB; the scrollback's length is the page's to choose.
 - **A link** is found on one row: a link a program wrapped onto the next row is opened up to the row's end (OSC 8 links have no such limit). A regular expression of the search does not anchor `^` and `$` to lines.
-- **xterm's first pointer encoding** stops at cell 95, not 223: a value over 127 is a byte xterm sends raw, and a session's input is text (`exec_input` and its kin take a `String`), whose bytes over 127 come in pairs and would name another cell. Programs that want far cells ask for SGR (`?1006h`), as vim, tmux and htop do.
+- **xterm's first pointer encoding** stops at cell 95, not 223: a value over 127 is a byte xterm sends raw, and input is a `String` through the session's API (`terminal::Event::Input`, `TerminalSession::input` and the five `*_input` use cases; the runtimes' writers under them take bytes), whose bytes over 127 come in pairs and would name another cell. Programs that want far cells ask for SGR (`?1006h`), as vim, tmux and htop do.
 - **Colours** are worked out once a look and kept, 4,096 looks at most (a program of 24-bit colours has as many as it likes).
 - **Glyphs of the system's fonts** (CJK, emoji, other scripts) are placed at their cells but drawn as the font draws them: an emoji the font has no colour for is drawn in the text's colour.
 - **Not done**: the kitty keyboard protocol, a block selection (Alt and a drag), vi mode, the primary selection of X11 (a middle press pastes nothing), images (sixel), double-width and double-height lines (`DECDWL`, which `alacritty_terminal` ignores too).
