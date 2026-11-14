@@ -31,7 +31,7 @@ use crate::{
             form::{field, suggest::suggest},
             line,
             overlay::{tooltip, Side},
-            paragraph, stack,
+            paragraph, stack, start,
         },
     },
 };
@@ -106,10 +106,12 @@ pub(super) fn ports<'a>(form: &'a Form, lists: &Lists, errors: &Errors) -> Eleme
     let mut rows = vec![];
     for (i, port) in form.form.ports.iter().enumerate() {
         let wrong = errors.ports.contains(&i);
-        // `w-24`, at the start of the room the row's end keeps.
+        // `w-24`, at the start of the room the row's end keeps, the way
+        // the language reads: beside the field, away from the ×.
         let protocol =
             container(container(choice(form, Choice::Protocol(i), lists, false)).width(96))
-                .width(TRAILING);
+                .width(TRAILING)
+                .align_x(start());
         rows.push(
             line(vec![
                 grow_field(typed(
@@ -180,7 +182,7 @@ pub(super) fn mounts(form: &Form) -> Element<'_, Message> {
                     false,
                     false,
                 )),
-                container(read_only).width(TRAILING).into(),
+                container(read_only).width(TRAILING).align_x(start()).into(),
                 remove(Rows::Mounts, i, t!("containers.run.removeVolume")),
             ])
             .spacing(space::S2)

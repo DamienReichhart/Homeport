@@ -157,3 +157,42 @@ fn the_fields_of_the_ports_and_the_volumes_line_up() {
         });
     }
 }
+
+#[test]
+fn a_row_s_protocol_and_read_only_stand_by_its_fields_both_ways() {
+    use crate::test_support::{snapshot::in_language, stage::Stage};
+    let (bench, _engine, host) = bench();
+    // How far from the end of a row's second field its trailing part's
+    // text starts, the way the language reads.
+    let mut gaps = vec![];
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let dialog = filled(&bench, &host);
+        let ctx = bench.ctx();
+        let mut stage = Stage::new(SIZE);
+        stage.frame(shown(&dialog, &ctx), |frame| {
+            let read_only = crate::t!("containers.run.readOnly");
+            let found = |frame: &mut crate::test_support::stage::Frame<'_, '_, Message>,
+                         l: &str| {
+                frame.find(l).unwrap_or_else(|| panic!("{language}: {l}"))
+            };
+            let (port, tcp) = (found(frame, "80"), found(frame, "tcp"));
+            let (target, ro) = (
+                found(frame, "/usr/share/nginx/html"),
+                found(frame, &read_only),
+            );
+            let gap = |field: iced::Rectangle, part: iced::Rectangle| {
+                if language == "ar" {
+                    field.x - (part.x + part.width)
+                } else {
+                    part.x - (field.x + field.width)
+                }
+            };
+            gaps.push((language, gap(port, tcp), gap(target, ro)));
+        });
+    }
+    let (_, en_tcp, en_ro) = gaps[0];
+    let (_, ar_tcp, ar_ro) = gaps[1];
+    assert!((en_tcp - ar_tcp).abs() < 1.0, "{gaps:?}");
+    assert!((en_ro - ar_ro).abs() < 1.0, "{gaps:?}");
+}
