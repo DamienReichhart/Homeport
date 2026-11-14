@@ -70,3 +70,6 @@ ui-log-skipped = { $count ->
        *[other] — تم تخطي { NUM($count) } سطر —
     }
 ui-log-searchFailed = توقف البحث قبل قراءة كل الأسطر
+ui-terminal-find = البحث في الطرفية
+ui-terminal-closeSearch = إغلاق البحث
+ui-terminal-atLeast = { $count }+

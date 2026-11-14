@@ -35,15 +35,23 @@ use crate::{
 const SEARCH_WIDTH: f32 = 176.0;
 /// What stands for "match case" and "regular expression" everywhere: no
 /// language writes them otherwise, and each has its name under the pointer.
-const CASE: &str = "Aa";
-const REGEX: &str = ".*";
+pub(in crate::ui::widgets) const CASE: &str = "Aa";
+pub(in crate::ui::widgets) const REGEX: &str = ".*";
 
 /// One toggle, alone: `Toggle variant="outline"`.
-fn toggle<'a, M: Clone + 'a>(look: Toggle, on: bool, message: M) -> Element<'a, M> {
+pub(in crate::ui::widgets) fn toggle<'a, M: Clone + 'a>(
+    look: Toggle,
+    on: bool,
+    message: M,
+) -> Element<'a, M> {
     toggle_group(vec![look], move |_| on, true, move |_| message.clone())
 }
 
-fn action<'a, M: Clone + 'a>(glyph: Icon, says: String, message: Option<M>) -> Element<'a, M> {
+pub(in crate::ui::widgets) fn action<'a, M: Clone + 'a>(
+    glyph: Icon,
+    says: String,
+    message: Option<M>,
+) -> Element<'a, M> {
     let button = button::icon(glyph)
         .variant(Variant::Ghost)
         .size(ButtonSize::Sm)

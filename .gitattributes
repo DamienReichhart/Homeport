@@ -12,3 +12,5 @@
 *.tar binary
 *.gz binary
 *.db binary
+# Bytes programs wrote to a terminal: their CR LF are what is tested.
+*.bin binary

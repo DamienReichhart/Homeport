@@ -60,3 +60,6 @@ ui-log-skipped = { $count ->
        *[other] — 已跳过 { NUM($count) } 行 —
     }
 ui-log-searchFailed = 搜索在读完所有行之前已停止
+ui-terminal-find = 在终端中查找
+ui-terminal-closeSearch = 关闭搜索
+ui-terminal-atLeast = { $count }+

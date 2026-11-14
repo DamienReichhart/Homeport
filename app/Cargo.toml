@@ -76,6 +76,8 @@ jiff.workspace = true
 regex.workspace = true
 # How many cells a character of a log takes: wide, narrow, or none.
 unicode-width.workspace = true
+# The terminal widget's emulation (`ui/widgets/terminal`).
+alacritty_terminal.workspace = true
 # The platform layer: what the OS has to open a link or a folder with.
 open.workspace = true
 

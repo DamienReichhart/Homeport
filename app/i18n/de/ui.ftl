@@ -62,3 +62,6 @@ ui-log-skipped = { $count ->
        *[other] — { NUM($count) } Zeilen übersprungen —
     }
 ui-log-searchFailed = Die Suche wurde abgebrochen, bevor alle Zeilen gelesen waren
+ui-terminal-find = Im Terminal suchen
+ui-terminal-closeSearch = Suche schließen
+ui-terminal-atLeast = { $count }+

@@ -69,7 +69,7 @@ mod pane;
 pub mod search;
 pub mod selection;
 pub mod state;
-mod toolbar;
+pub(in crate::ui::widgets) mod toolbar;
 mod update;
 
 use iced::{

@@ -216,6 +216,38 @@ pub fn is_typing_within<Message>(
         .is_some_and(|focused| typing.fields.contains(&focused))
 }
 
+/// What a widget that needs every key (the terminal) reports of itself
+/// with `Operation::custom`: whether it has focus. The shell's shortcuts
+/// keep out of it while it does.
+pub struct EveryKey(pub bool);
+
+struct KeysKept(bool);
+
+impl Operation for KeysKept {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn custom(&mut self, _id: Option<&Id>, _bounds: Rectangle, state: &mut dyn std::any::Any) {
+        if let Some(EveryKey(focused)) = state.downcast_ref::<EveryKey>() {
+            self.0 |= *focused;
+        }
+    }
+}
+
+/// Whether a widget under `widget` that needs every key has focus: a key
+/// it used is the program's in it, and no shortcut's.
+pub fn is_every_key_within<Message>(
+    widget: &mut dyn Widget<Message, Theme, iced::Renderer>,
+    tree: &mut Tree,
+    layout: Layout<'_>,
+    renderer: &iced::Renderer,
+) -> bool {
+    let mut kept = KeysKept(false);
+    widget.operate(tree, layout, renderer, &mut kept);
+    kept.0
+}
+
 struct Cover(bool);
 
 impl Operation for Cover {

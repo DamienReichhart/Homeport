@@ -57,4 +57,7 @@ export default {
   'ui.log.invalidRegex': '正規表現が正しくありません',
   'ui.log.skipped': '{count, plural, other {— # 行をスキップ —}}',
   'ui.log.searchFailed': 'すべての行を読み終える前に検索が停止しました',
+  'ui.terminal.find': 'ターミナル内を検索',
+  'ui.terminal.closeSearch': '検索を閉じる',
+  'ui.terminal.atLeast': '{count}+',
 } satisfies Translation<typeof en>;

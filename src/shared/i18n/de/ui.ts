@@ -58,4 +58,7 @@ export default {
   'ui.log.skipped':
     '{count, plural, one {— # Zeile übersprungen —} other {— # Zeilen übersprungen —}}',
   'ui.log.searchFailed': 'Die Suche wurde abgebrochen, bevor alle Zeilen gelesen waren',
+  'ui.terminal.find': 'Im Terminal suchen',
+  'ui.terminal.closeSearch': 'Suche schließen',
+  'ui.terminal.atLeast': '{count}+',
 } satisfies Translation<typeof en>;

@@ -11,7 +11,8 @@
 //! - [`chart`]: lines of live values over a time axis that moves with them;
 //! - [`data`]: a folder's listing, a JSON document, labelled values;
 //! - [`table`]: the data table, which builds only the rows in view;
-//! - [`log`]: the log viewer, which lays out only the lines in view.
+//! - [`log`]: the log viewer, which lays out only the lines in view;
+//! - [`terminal`]: the terminal emulator of every exec and console.
 //!
 //! A row is written start to end and drawn in the language's direction:
 //! build rows with [`line`] and align with [`start`] and [`end`], and a
@@ -29,6 +30,7 @@ pub mod layout;
 pub mod log;
 pub mod overlay;
 pub mod table;
+pub mod terminal;
 
 use iced::{
     alignment::{Horizontal, Vertical},

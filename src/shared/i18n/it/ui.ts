@@ -57,4 +57,7 @@ export default {
   'ui.log.invalidRegex': 'Espressione regolare non valida',
   'ui.log.skipped': '{count, plural, one {— # riga saltata —} other {— # righe saltate —}}',
   'ui.log.searchFailed': 'La ricerca si è interrotta prima di leggere tutte le righe',
+  'ui.terminal.find': 'Trova nel terminale',
+  'ui.terminal.closeSearch': 'Chiudi ricerca',
+  'ui.terminal.atLeast': '{count}+',
 } satisfies Translation<typeof en>;

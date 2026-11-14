@@ -62,3 +62,6 @@ ui-log-skipped = { $count ->
        *[other] — { NUM($count) } linhas ignoradas —
     }
 ui-log-searchFailed = A busca parou antes de ler todas as linhas
+ui-terminal-find = Localizar no terminal
+ui-terminal-closeSearch = Fechar busca
+ui-terminal-atLeast = { $count }+

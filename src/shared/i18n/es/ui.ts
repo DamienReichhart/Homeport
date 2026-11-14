@@ -57,4 +57,7 @@ export default {
   'ui.log.invalidRegex': 'No es una expresión regular válida',
   'ui.log.skipped': '{count, plural, one {— # línea omitida —} other {— # líneas omitidas —}}',
   'ui.log.searchFailed': 'La búsqueda se detuvo antes de leer todas las líneas',
+  'ui.terminal.find': 'Buscar en el terminal',
+  'ui.terminal.closeSearch': 'Cerrar búsqueda',
+  'ui.terminal.atLeast': '{count}+',
 } satisfies Translation<typeof en>;

@@ -60,3 +60,6 @@ ui-log-skipped = { $count ->
        *[other] — { NUM($count) }줄 건너뜀 —
     }
 ui-log-searchFailed = 모든 줄을 읽기 전에 검색이 중단되었습니다
+ui-terminal-find = 터미널에서 찾기
+ui-terminal-closeSearch = 검색 닫기
+ui-terminal-atLeast = { $count }+

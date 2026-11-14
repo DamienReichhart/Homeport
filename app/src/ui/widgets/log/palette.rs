@@ -28,7 +28,7 @@ pub fn source(terminal: &Terminal, id: u16) -> Color {
 
 /// One of the 256 colours past the theme's 16: the 6 × 6 × 6 cube, then
 /// 24 greys.
-pub(super) fn fixed(index: u8) -> Color {
+pub fn fixed(index: u8) -> Color {
     const STEPS: [u8; 6] = [0, 95, 135, 175, 215, 255];
     if index >= 232 {
         let grey = 8 + 10 * (index - 232);

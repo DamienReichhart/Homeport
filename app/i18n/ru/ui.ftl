@@ -66,3 +66,6 @@ ui-log-skipped = { $count ->
        *[other] — пропущено { NUM($count) } строки —
     }
 ui-log-searchFailed = Поиск остановился, не прочитав все строки
+ui-terminal-find = Найти в терминале
+ui-terminal-closeSearch = Закрыть поиск
+ui-terminal-atLeast = { $count }+

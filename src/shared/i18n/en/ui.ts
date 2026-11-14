@@ -54,4 +54,7 @@ export default {
   'ui.log.invalidRegex': 'Not a valid regular expression',
   'ui.log.skipped': '{count, plural, one {— # line skipped —} other {— # lines skipped —}}',
   'ui.log.searchFailed': 'The search stopped before reading every line',
+  'ui.terminal.find': 'Find in terminal',
+  'ui.terminal.closeSearch': 'Close search',
+  'ui.terminal.atLeast': '{count}+',
 } as const;

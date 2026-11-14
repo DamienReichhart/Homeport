@@ -62,3 +62,6 @@ ui-log-skipped = { $count ->
        *[other] — { NUM($count) } righe saltate —
     }
 ui-log-searchFailed = La ricerca si è interrotta prima di leggere tutte le righe
+ui-terminal-find = Trova nel terminale
+ui-terminal-closeSearch = Chiudi ricerca
+ui-terminal-atLeast = { $count }+

@@ -58,4 +58,7 @@ export default {
   'ui.log.skipped':
     '{count, plural, zero {— لم يُتخطَّ أي سطر —} one {— تم تخطي سطر واحد —} two {— تم تخطي سطرين —} few {— تم تخطي # أسطر —} many {— تم تخطي # سطرًا —} other {— تم تخطي # سطر —}}',
   'ui.log.searchFailed': 'توقف البحث قبل قراءة كل الأسطر',
+  'ui.terminal.find': 'البحث في الطرفية',
+  'ui.terminal.closeSearch': 'إغلاق البحث',
+  'ui.terminal.atLeast': '{count}+',
 } satisfies Translation<typeof en>;

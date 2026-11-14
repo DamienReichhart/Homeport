@@ -50,7 +50,7 @@ const FAILED_KEY: &str = "ui.log.searchFailed";
 
 /// A query that can't be read, with why in its detail (the `regex`
 /// crate's words, which are not translated).
-fn invalid(why: &str) -> AppError {
+pub(in crate::ui::widgets) fn invalid(why: &str) -> AppError {
     AppError::validation(Text {
         key: INVALID_KEY,
         en: "Not a valid regular expression",

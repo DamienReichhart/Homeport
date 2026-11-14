@@ -92,6 +92,10 @@ tar = "0.4"
 regex = "1"
 # The cells a character takes in a terminal, for the log viewer.
 unicode-width = "0.2"
+# The terminal widget's emulation: the grid, its scrollback, the escape
+# sequences (vte), selection and search. Apache-2.0. Its own pty and event
+# loop are not used: a terminal's bytes come from a session's stream.
+alacritty_terminal = { version = "=0.26.0", default-features = false }
 zip = { version = "2", default-features = false, features = ["deflate"] }
 shell-words = "1"
 tempfile = "3"

@@ -56,4 +56,7 @@ export default {
   'ui.log.invalidRegex': '正则表达式无效',
   'ui.log.skipped': '{count, plural, other {— 已跳过 # 行 —}}',
   'ui.log.searchFailed': '搜索在读完所有行之前已停止',
+  'ui.terminal.find': '在终端中查找',
+  'ui.terminal.closeSearch': '关闭搜索',
+  'ui.terminal.atLeast': '{count}+',
 } satisfies Translation<typeof en>;

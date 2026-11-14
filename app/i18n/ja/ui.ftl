@@ -60,3 +60,6 @@ ui-log-skipped = { $count ->
        *[other] — { NUM($count) } 行をスキップ —
     }
 ui-log-searchFailed = すべての行を読み終える前に検索が停止しました
+ui-terminal-find = ターミナル内を検索
+ui-terminal-closeSearch = 検索を閉じる
+ui-terminal-atLeast = { $count }+

@@ -21,6 +21,7 @@ pub struct KeyArea<'a, Message> {
     content: Element<'a, Message>,
     on_key: OnKey<'a, Message>,
     on_captured: Option<OnKey<'a, Message>>,
+    on_terminal: Option<OnKey<'a, Message>>,
     before: Option<OnKey<'a, Message>>,
     always: bool,
 }
@@ -35,6 +36,7 @@ pub fn key_area<'a, Message>(
         content: content.into(),
         on_key: Box::new(on_key),
         on_captured: None,
+        on_terminal: None,
         before: None,
         always: false,
     }
@@ -48,6 +50,15 @@ impl<'a, Message> KeyArea<'a, Message> {
     #[must_use]
     pub fn on_captured(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
         self.on_captured = Some(Box::new(on_key));
+        self
+    }
+
+    /// A handler for the keys a terminal inside used while it has focus,
+    /// in place of [`KeyArea::on_captured`]: a terminal needs every key,
+    /// so what fires from a field must not fire from it.
+    #[must_use]
+    pub fn on_terminal(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
+        self.on_terminal = Some(Box::new(on_key));
         self
     }
 
@@ -153,7 +164,19 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for KeyArea<'_, Message> {
             return;
         };
         if shell.is_event_captured() {
-            if let Some(message) = self.on_captured.as_ref().and_then(|on| on(key, *modifiers)) {
+            let terminal = self.on_terminal.is_some()
+                && super::is_every_key_within(
+                    self.content.as_widget_mut(),
+                    &mut tree.children[0],
+                    layout,
+                    renderer,
+                );
+            let handler = if terminal {
+                self.on_terminal.as_ref()
+            } else {
+                self.on_captured.as_ref()
+            };
+            if let Some(message) = handler.and_then(|on| on(key, *modifiers)) {
                 shell.publish(message);
             }
             return;
