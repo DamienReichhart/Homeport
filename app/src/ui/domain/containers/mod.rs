@@ -4,11 +4,13 @@
 //!
 //! - [`model`]: its tone, its ports, its Stack, the search and its usage;
 //! - [`actions`]: its start and stop button, its menu, and the dialogs
-//!   and confirmations they open (`ContainerRowMenu`).
+//!   and confirmations they open (`ContainerRowMenu`);
+//! - [`run`]: the Run dialog, which Duplicate and Edit fill in.
 
 pub mod actions;
 pub mod cells;
 pub mod model;
+pub mod run;
 
 pub use self::actions::{Actions, Bulk, Target};
 
