@@ -136,6 +136,11 @@ fn cancel_id() -> iced::advanced::widget::Id {
     iced::advanced::widget::Id::new("confirm-cancel")
 }
 
+/// What names a confirmation's field of the name to type.
+fn name_id() -> iced::advanced::widget::Id {
+    iced::advanced::widget::Id::new("confirm-name")
+}
+
 /// The dialog for `ask`.
 pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
     confirm_dialog_with(ask, state, None, |message| message)
@@ -162,6 +167,7 @@ pub fn confirm_dialog_with<'a, Page: Clone + 'a>(
     }
     if let Some(name) = &ask.typed {
         let field = text_input(name, &state.input)
+            .id(name_id())
             .size(size::SM)
             .padding([space::S1, control::PADDING_X])
             .on_input_maybe((!state.busy).then(|| {
@@ -204,9 +210,16 @@ pub fn confirm_dialog_with<'a, Page: Clone + 'a>(
             .into()
     };
     // Cancel takes focus as it opens, whatever stands before it (Radix's
-    // `AlertDialog`): Enter must never confirm what can't be undone.
+    // `AlertDialog`): Enter must never confirm what can't be undone. A
+    // name to type is typed first, as in React's dialogs that ask for one:
+    // Enter does nothing until it is the name.
+    let first = if ask.typed.is_some() {
+        name_id()
+    } else {
+        cancel_id()
+    };
     modal(content.footer(vec![cancel.into(), action]))
-        .focus_first(cancel_id())
+        .focus_first(first)
         .key("confirm")
         .on_close_maybe((!state.busy).then(|| wrap(Message::Cancel)))
 }
@@ -251,5 +264,19 @@ mod tests {
         // A space pasted around the name is not a different name.
         state.update(Message::Input(" prod-db ".to_owned()), &ask);
         assert_eq!(state.update(Message::Confirm, &ask), Outcome::Confirmed);
+    }
+
+    #[test]
+    fn a_typed_confirmation_opens_on_its_name_and_others_on_cancel() {
+        use crate::test_support::{snapshot::in_language, stage::Stage};
+        let _english = in_language("en");
+        let state = State::default();
+        for (ask, first) in [(remove().typed("prod-db"), "prod-db"), (remove(), "Cancel")] {
+            let shown = Some(confirm_dialog(&ask, &state));
+            let page = crate::ui::widgets::overlay::over(iced::widget::Space::new(), shown);
+            Stage::new((640.0, 480.0)).frame(page, |frame| {
+                assert!(frame.is_focused(first), "{first} first");
+            });
+        }
     }
 }
