@@ -145,3 +145,15 @@ fn only_the_names_a_replacement_makes_are_its_own() {
     }
     assert!(is_unfinished(".homeport-0123456789ab.part"));
 }
+
+#[test]
+fn a_synced_replacement_is_put_in_place_by_a_rename() {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join("note.txt");
+    let saved = Replacement::new(&path).unwrap();
+    std::io::Write::write_all(&mut saved.file(), b"hello").unwrap();
+    saved.file().sync_all().unwrap();
+    saved.commit_synced().unwrap();
+    assert_eq!(std::fs::read(&path).unwrap(), b"hello");
+    assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 1);
+}

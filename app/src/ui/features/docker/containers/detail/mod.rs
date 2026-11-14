@@ -64,7 +64,9 @@
 //!   said. A download shows its bytes (of how many, for a file) and Cancel
 //!   drops it at once, leaving no file. A file is read out of the
 //!   Engine's archive as it comes, in one pass, beside its place, and put
-//!   there only once whole and if not cancelled meanwhile; so its folder
+//!   there only once whole and if not cancelled meanwhile (but for a
+//!   Cancel in the instant of the rename that puts it there, after the
+//!   last check: a rename can't be undone); so its folder
 //!   must be writable, and a link at the destination is replaced, not
 //!   written through (the Tauri app's download now does the same). A
 //!   `.homeport-….part` left by an app killed mid-transfer is taken away

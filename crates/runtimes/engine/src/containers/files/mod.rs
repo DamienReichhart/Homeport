@@ -213,7 +213,8 @@ pub async fn download(
 ///   a failure, a cut connection or the future dropped part way leaves no
 ///   file, and whatever was at `destination` as it was. Once the future
 ///   was dropped, nothing is put in place, even by the last step, which
-///   runs on a thread of its own.
+///   runs on a thread of its own, but for the time a rename takes (see
+///   [`put_in_place`]).
 /// - So the folder of `destination` must be one the app can write in; a
 ///   symbolic link at `destination` is replaced, not written through, and
 ///   a file with other hard links gets a new one. The file takes the
@@ -308,7 +309,13 @@ pub async fn download_counted(
 
 /// Puts `saved` at `destination` with the permissions it should have,
 /// once on disk; not if `stopped` says the download was dropped
-/// meanwhile, in which case `saved` goes. Blocks: a sync and a rename.
+/// meanwhile, in which case `saved` goes. Blocks: a sync, then a rename.
+///
+/// The flag is read between the two, so a Cancel during the sync, the
+/// long step, still puts nothing in place. One that comes after the read,
+/// in the time a rename takes, can't be seen: the file then lands though
+/// the download was cancelled. A rename can't be taken back, nor a flag
+/// read in it.
 fn put_in_place(saved: Replacement, destination: &Path, stopped: &AtomicBool) -> AppResult<()> {
     mode_of(&saved, destination);
     saved
@@ -318,7 +325,7 @@ fn put_in_place(saved: Replacement, destination: &Path, stopped: &AtomicBool) ->
     if stopped.load(Ordering::SeqCst) {
         return Ok(());
     }
-    saved.commit()
+    saved.commit_synced()
 }
 
 /// Says, once dropped, that the future holding it was.

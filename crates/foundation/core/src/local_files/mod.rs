@@ -112,6 +112,21 @@ impl Replacement {
         if let Err(e) = self.temp.as_file().sync_all() {
             return Err((e, self));
         }
+        self.try_rename()
+    }
+
+    /// Puts the file at `path` as it is, by a rename alone: for a caller
+    /// that flushed it to disk itself ([`std::fs::File::sync_all`]) and
+    /// must decide between that and the rename, which this keeps as short
+    /// as it can be.
+    pub fn commit_synced(self) -> AppResult<()> {
+        self.try_rename().map_err(|(e, unfinished)| {
+            let path = unfinished.path.clone();
+            local_file(&path, e)
+        })
+    }
+
+    fn try_rename(self) -> Result<(), (io::Error, Self)> {
         let Self { temp, path } = self;
         temp.persist(&path)
             .map(|_| ())
