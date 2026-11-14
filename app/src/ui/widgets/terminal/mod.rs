@@ -57,6 +57,7 @@
 mod colors;
 mod emulator;
 pub mod keys;
+mod message;
 pub mod mouse;
 mod pane;
 pub mod search;
