@@ -110,3 +110,18 @@ fn the_advanced_area_mirrors_in_arabic_and_its_tabs_fit_in_german() {
         });
     }
 }
+
+#[test]
+fn the_dialog_opens_on_its_first_field_in_the_order_the_language_reads() {
+    use crate::test_support::{snapshot::in_language, stage::Stage};
+    let (bench, _engine, host) = bench();
+    for language in ["en", "ar"] {
+        let _language = in_language(language);
+        let dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+        let ctx = bench.ctx();
+        let mut stage = Stage::new(SIZE);
+        stage.frame(shown(&dialog, &ctx), |frame| {
+            assert!(frame.is_focused("nginx"), "{language}: the image first");
+        });
+    }
+}

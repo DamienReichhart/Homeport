@@ -44,6 +44,8 @@ pub struct Modal<'a, Message> {
     width: f32,
     close_on_scrim: bool,
     key: u64,
+    /// What takes focus as it opens, when not its first in reading order.
+    first: Option<iced::advanced::widget::Id>,
 }
 
 /// `dialog` as a modal dialog. Stack it over the page with [`over`].
@@ -54,6 +56,7 @@ pub fn modal<'a, Message>(dialog: impl Into<Element<'a, Message>>) -> Modal<'a, 
         width: WIDTH,
         close_on_scrim: false,
         key: 0,
+        first: None,
     }
 }
 
@@ -80,6 +83,7 @@ impl<'a, Message: 'a> Modal<'a, Message> {
             width: self.width,
             close_on_scrim: self.close_on_scrim,
             key: self.key,
+            first: self.first,
         }
     }
 
@@ -112,6 +116,15 @@ impl<'a, Message: 'a> Modal<'a, Message> {
     #[must_use]
     pub fn width(mut self, width: f32) -> Self {
         self.width = width;
+        self
+    }
+
+    /// What takes focus as it opens (named by its `id`): an alert's Cancel
+    /// (Radix's `AlertDialog`), whatever stands before it. Without one,
+    /// the first of what takes focus in the order the language reads.
+    #[must_use]
+    pub fn focus_first(mut self, id: iced::advanced::widget::Id) -> Self {
+        self.first = Some(id);
         self
     }
 
@@ -224,7 +237,12 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Messag
                 .focused
                 .is_none()
             {
-                focus::move_within(content, inner, dialog, renderer, Move::First, true);
+                let rtl = crate::i18n::direction().is_rtl();
+                let first =
+                    focus::first_index(content, inner, dialog, renderer, self.first.as_ref(), rtl);
+                if let Some(first) = first {
+                    focus::move_within(content, inner, dialog, renderer, Move::Index(first), true);
+                }
                 shell.request_redraw();
             }
         }

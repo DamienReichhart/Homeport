@@ -329,3 +329,53 @@ fn the_recreate_confirmation_and_the_commit_dialog_look_as_react_s() {
         || overlay::over(iced::widget::Space::new(), actions.dialog(&ctx)),
     );
 }
+
+#[test]
+fn the_loss_confirmation_starts_on_cancel_whenever_the_losses_come() {
+    use crate::test_support::stage::Stage;
+    let _english = in_language("en");
+    let (bench, engine, web) = bench();
+    engine.inspects_as(document(true, false, false));
+    engine.changed_paths(2);
+    // The losses came before the confirmation was first drawn.
+    let mut actions = Actions::of_host();
+    confirming(&mut actions, &bench, &web);
+    let mut stage = Stage::new(SIZE);
+    let ctx = bench.ctx();
+    stage.frame(
+        overlay::over(iced::widget::Space::new(), actions.dialog(&ctx)),
+        |frame| {
+            assert!(frame.find("Commit to an image first…").is_some());
+            assert!(
+                frame.is_focused("Cancel"),
+                "Enter must not throw the edit away"
+            );
+        },
+    );
+    // And after: drawn with its spinner first.
+    let mut actions = Actions::of_host();
+    send(&mut actions, &bench, Action::AskEdit(web.clone()));
+    let runtime = bench.app.runtime.handle().clone();
+    let _inside = runtime.enter();
+    let read = actions.update(
+        Action::Forms(Message::Edit(edit::Message::Submit)),
+        &bench.ctx(),
+    );
+    let mut stage = Stage::new(SIZE);
+    let ctx = bench.ctx();
+    stage.frame(
+        overlay::over(iced::widget::Space::new(), actions.dialog(&ctx)),
+        |frame| assert!(frame.is_focused("Cancel")),
+    );
+    for answer in bench.run(read) {
+        send(&mut actions, &bench, answer);
+    }
+    let ctx = bench.ctx();
+    stage.frame(
+        overlay::over(iced::widget::Space::new(), actions.dialog(&ctx)),
+        |frame| {
+            assert!(frame.find("Commit to an image first…").is_some());
+            assert!(frame.is_focused("Cancel"));
+        },
+    );
+}

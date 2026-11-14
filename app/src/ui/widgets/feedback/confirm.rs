@@ -131,6 +131,11 @@ impl State {
     }
 }
 
+/// What names a confirmation's Cancel.
+fn cancel_id() -> iced::advanced::widget::Id {
+    iced::advanced::widget::Id::new("confirm-cancel")
+}
+
 /// The dialog for `ask`.
 pub fn confirm_dialog<'a>(ask: &Ask, state: &State) -> Modal<'a, Message> {
     confirm_dialog_with(ask, state, None, |message| message)
@@ -176,6 +181,7 @@ pub fn confirm_dialog_with<'a, Page: Clone + 'a>(
     }
     let cancel = button::text(t!("common.cancel"))
         .variant(Variant::Outline)
+        .id(cancel_id())
         .on_press_maybe((!state.busy).then(|| wrap(Message::Cancel)));
     let confirm = (state.allowed(ask)).then(|| wrap(Message::Confirm));
     let action: Element<'a, Page> = if ask.destructive {
@@ -197,7 +203,10 @@ pub fn confirm_dialog_with<'a, Page: Clone + 'a>(
             .on_press_maybe(confirm)
             .into()
     };
+    // Cancel takes focus as it opens, whatever stands before it (Radix's
+    // `AlertDialog`): Enter must never confirm what can't be undone.
     modal(content.footer(vec![cancel.into(), action]))
+        .focus_first(cancel_id())
         .key("confirm")
         .on_close_maybe((!state.busy).then(|| wrap(Message::Cancel)))
 }

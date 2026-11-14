@@ -103,6 +103,56 @@ impl Operation for Give {
     }
 }
 
+/// Where each widget that takes focus is, and its name, in tree order.
+struct Spots(Vec<(Option<Id>, Rectangle)>);
+
+impl Operation for Spots {
+    fn traverse(&mut self, operate: &mut dyn FnMut(&mut dyn Operation)) {
+        operate(self);
+    }
+
+    fn focusable(&mut self, id: Option<&Id>, bounds: Rectangle, _state: &mut dyn Focusable) {
+        self.0.push((id.cloned(), bounds));
+    }
+}
+
+/// What takes focus first under `widget` (a dialog that opens): the one
+/// named `first` when there is one, else the first in the order the
+/// language reads: of the topmost row, the one at its start (the right
+/// in Arabic). Tree order would give a mirrored row's end, as `line`
+/// lays a right-to-left row out from the left.
+pub fn first_index<Message>(
+    widget: &mut dyn Widget<Message, Theme, iced::Renderer>,
+    tree: &mut Tree,
+    layout: Layout<'_>,
+    renderer: &iced::Renderer,
+    first: Option<&Id>,
+    rtl: bool,
+) -> Option<usize> {
+    let mut spots = Spots(vec![]);
+    widget.operate(tree, layout, renderer, &mut spots);
+    let spots = spots.0;
+    if let Some(at) =
+        first.and_then(|first| spots.iter().position(|(id, _)| id.as_ref() == Some(first)))
+    {
+        return Some(at);
+    }
+    reading_first(spots.iter().map(|(_, bounds)| *bounds), rtl)
+}
+
+/// Of `bounds`, the first in reading order: the topmost row (those that
+/// start above the middle of the topmost), then its start.
+pub fn reading_first(bounds: impl Iterator<Item = Rectangle> + Clone, rtl: bool) -> Option<usize> {
+    let top = bounds.clone().min_by(|a, b| a.y.total_cmp(&b.y))?;
+    let row = top.y + top.height / 2.0;
+    let edge = |b: &Rectangle| if rtl { -(b.x + b.width) } else { b.x };
+    bounds
+        .enumerate()
+        .filter(|(_, b)| b.y < row)
+        .min_by(|(_, a), (_, b)| edge(a).total_cmp(&edge(b)))
+        .map(|(at, _)| at)
+}
+
 /// What takes focus under `widget`, and which of them has it.
 pub fn find<Message>(
     widget: &mut dyn Widget<Message, Theme, iced::Renderer>,
