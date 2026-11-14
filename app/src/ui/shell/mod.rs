@@ -104,6 +104,9 @@ pub enum Event {
     Failed(Option<Said>, Surfaced),
     /// Something to say in a toast: what an action did.
     Said(toast::Kind, Said),
+    /// The same with a button: its label, and where it goes when pressed
+    /// (back to the shell as `Message::Go`).
+    SaidGoing(toast::Kind, Said, Said, Request),
     /// The Details of a failure, asked for.
     Details(Surfaced),
     /// The theme was chosen in the palette.

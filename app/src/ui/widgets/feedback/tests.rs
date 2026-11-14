@@ -271,8 +271,10 @@ fn a_failures_toast_opens_its_details() {
     assert!(pressed.contains(&toast::Message::Details(failed)));
     let opened = pressed
         .into_iter()
-        .filter_map(|message| toasts.update(message))
-        .next();
+        .find_map(|message| match toasts.update(message) {
+            Some(toast::Pressed::Details(surfaced)) => Some(surfaced),
+            _ => None,
+        });
     assert_eq!(opened, Some(surfaced()));
     assert_eq!(toasts.visible().len(), 1);
 }

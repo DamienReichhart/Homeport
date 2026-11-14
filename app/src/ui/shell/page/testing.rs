@@ -165,6 +165,11 @@ impl Bench {
         }
         for outcome in self.outcomes.take() {
             asked.extend(outcome.said.map(|said| Asked::Said(said.now())));
+            asked.extend(
+                outcome
+                    .action
+                    .map(|(label, request)| Asked::Going(label.now(), request)),
+            );
             asked.extend(outcome.failed.map(|(title, surfaced)| {
                 Asked::Failed(title.map(|title| title.now()), surfaced.error)
             }));
@@ -261,6 +266,8 @@ pub enum Asked {
     Details(AppError),
     Copy(String),
     Picker,
+    /// The button of that toast: its label, and where it goes.
+    Going(String, Request),
     /// A toast that says what was done, in the language of the moment.
     Said(String),
     OpenUrl(String),

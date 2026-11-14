@@ -266,7 +266,7 @@ impl Gallery {
             Message::Page(page) => self.page = page,
             Message::Tab(back) => return focus::traverse(back),
             Message::Toast(message) => {
-                if let Some(surfaced) = self.toasts.update(message) {
+                if let Some(toast::Pressed::Details(surfaced)) = self.toasts.update(message) {
                     self.details = Some(Details::new(surfaced));
                 }
             }

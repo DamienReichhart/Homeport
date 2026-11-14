@@ -71,8 +71,14 @@ impl<P: Pages> Shell<P> {
     fn report(&mut self, data: &mut Data) -> Task<Message<P::Message>> {
         let mut tasks = vec![];
         for outcome in self.outcomes.take() {
-            if let Some(said) = outcome.said {
-                self.events.push(Event::Said(toast::Kind::Success, said));
+            match (outcome.said, outcome.action) {
+                (Some(said), Some((label, request))) => {
+                    let kind = toast::Kind::Success;
+                    self.events
+                        .push(Event::SaidGoing(kind, said, label, request));
+                }
+                (Some(said), None) => self.events.push(Event::Said(toast::Kind::Success, said)),
+                (None, _) => {}
             }
             if let Some((title, surfaced)) = outcome.failed {
                 self.events.push(Event::Failed(title, surfaced));

@@ -11,8 +11,15 @@
 //! dialog keeps Tab to itself, so those toasts are for the pointer. A toast keeps what
 //! it was told, not its text: it is said again in the language of the
 //! moment every time it is drawn.
+//!
+//! A toast may offer one action (Sonner's `action: { label, onClick }`):
+//! a button after its words that hands back what it was given
+//! ([`Toasts::say_acting`], [`Pressed::Action`]) and dismisses the toast,
+//! as Sonner's did. It stays as long as any toast; the pointer resting on
+//! it stops the clock, and Tab reaches its button as any other.
 
 use std::{
+    any::Any,
     fmt,
     sync::Arc,
     time::{Duration, Instant},
@@ -103,11 +110,44 @@ impl fmt::Debug for Said {
     }
 }
 
+/// What a toast's action hands back when pressed: whatever the window
+/// gave it (a page to go to), which only the window knows the type of.
+#[derive(Clone)]
+pub struct Then(Arc<dyn Any + Send + Sync>);
+
+impl Then {
+    pub fn new<T: Send + Sync + 'static>(then: T) -> Self {
+        Self(Arc::new(then))
+    }
+
+    /// What it was given, if it was a `T`.
+    pub fn get<T: 'static>(&self) -> Option<&T> {
+        self.0.downcast_ref()
+    }
+}
+
+impl fmt::Debug for Then {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("Then(..)")
+    }
+}
+
+/// What a press on a toast asks of the window.
+#[derive(Debug, Clone)]
+pub enum Pressed {
+    /// The Details of a failure.
+    Details(Surfaced),
+    /// The toast's action.
+    Action(Then),
+}
+
 #[derive(Debug, Clone)]
 enum Body {
     Said {
         title: Said,
         description: Option<Said>,
+        /// The button's label and what it hands back.
+        action: Option<(Said, Then)>,
     },
     /// A failure, with the title that names what failed when the message
     /// alone wouldn't say.
@@ -131,7 +171,9 @@ impl Toast {
     /// The title and the line under it, in the app's language.
     pub fn text(&self) -> (String, Option<String>) {
         match &self.body {
-            Body::Said { title, description } => (title.now(), description.as_ref().map(Said::now)),
+            Body::Said {
+                title, description, ..
+            } => (title.now(), description.as_ref().map(Said::now)),
             Body::Failure {
                 title: Some(title),
                 surfaced,
@@ -163,6 +205,8 @@ pub enum Message {
     Tick(Instant),
     /// The Details button of a failure's toast.
     Details(u64),
+    /// The action's button of this toast.
+    Act(u64),
 }
 
 /// The toasts on screen and those waiting, oldest first.
@@ -198,6 +242,34 @@ impl Toasts {
         let body = Body::Said {
             title: Said::new(title),
             description: None,
+            action: None,
+        };
+        self.add(kind, body, LIFETIME)
+    }
+
+    /// A toast of `kind` that says `title`, with a button `label` whose
+    /// press hands `then` back ([`Pressed::Action`]) and dismisses it.
+    pub fn say_acting<T: Send + Sync + 'static>(
+        &mut self,
+        kind: Kind,
+        title: impl Fn() -> String + Send + Sync + 'static,
+        label: impl Fn() -> String + Send + Sync + 'static,
+        then: T,
+    ) -> u64 {
+        self.say_with(
+            kind,
+            Said::new(title),
+            Said::new(label),
+            Then(Arc::new(then)),
+        )
+    }
+
+    /// The same, from what a page said and what it hands back.
+    pub fn say_with(&mut self, kind: Kind, title: Said, label: Said, then: Then) -> u64 {
+        let body = Body::Said {
+            title,
+            description: None,
+            action: Some((label, then)),
         };
         self.add(kind, body, LIFETIME)
     }
@@ -212,6 +284,7 @@ impl Toasts {
         let body = Body::Said {
             title: Said::new(title),
             description: Some(Said::new(description)),
+            action: None,
         };
         self.add(kind, body, LIFETIME)
     }
@@ -263,9 +336,10 @@ impl Toasts {
         self.list.retain(|toast| !toast.left.is_zero());
     }
 
-    /// Returns the failure whose Details were asked for, for the window to
-    /// open the dialog; the toast goes, as its job is done.
-    pub fn update(&mut self, message: Message) -> Option<Surfaced> {
+    /// Returns what a press asked for: the failure whose Details the
+    /// window opens, or what the toast's action hands back. The toast
+    /// goes either way, as its job is done.
+    pub fn update(&mut self, message: Message) -> Option<Pressed> {
         match message {
             Message::Tick(now) => {
                 let passed = self
@@ -293,7 +367,22 @@ impl Toasts {
                         Body::Said { .. } => None,
                     });
                 self.remove(id);
-                return surfaced;
+                return surfaced.map(Pressed::Details);
+            }
+            Message::Act(id) => {
+                let then =
+                    self.list
+                        .iter()
+                        .find(|t| t.id == id)
+                        .and_then(|toast| match &toast.body {
+                            Body::Said {
+                                action: Some((_, then)),
+                                ..
+                            } => Some(then.clone()),
+                            _ => None,
+                        });
+                self.remove(id);
+                return then.map(Pressed::Action);
             }
         }
         None
@@ -376,6 +465,18 @@ fn toast(toast: &Toast) -> Element<'_, Message> {
             .into(),
         stack(words).spacing(space::S0_5).into(),
     ];
+    if let Body::Said {
+        action: Some((label, _)),
+        ..
+    } = &toast.body
+    {
+        parts.push(
+            button::text(label.now())
+                .size(ButtonSize::Xs)
+                .on_press(Message::Act(toast.id))
+                .into(),
+        );
+    }
     if matches!(toast.body, Body::Failure { .. }) {
         parts.push(
             button::text(t!("common.details"))

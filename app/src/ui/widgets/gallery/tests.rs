@@ -177,7 +177,12 @@ fn the_dialogs_and_the_toasts() {
             || "Started web".to_owned(),
             || "On prod-eu-1.".to_owned(),
         );
-        toasts.say(Kind::Warning, || "The disk is nearly full".to_owned());
+        toasts.say_acting(
+            Kind::Warning,
+            || "The disk is nearly full".to_owned(),
+            || "Clean up".to_owned(),
+            (),
+        );
         toasts.failure(Surfaced::at(failure(), Some("containers_act"), at));
         let name = format!("widgets-toasts-{look}");
         assert_snapshot(&name, language, &theme, (480.0, 300.0), || {

@@ -21,7 +21,12 @@ use crate::{
     },
     ui::{
         shell,
-        widgets::feedback::{error_details, error_message::Event, toast::Kind, Surfaced},
+        widgets::feedback::{
+            error_details,
+            error_message::Event,
+            toast::{self, Kind},
+            Surfaced,
+        },
     },
 };
 
@@ -280,4 +285,38 @@ async fn the_pages_know_the_theme_on_screen_whoever_chose_it() {
     assert_eq!(shown(&window), Some(Theme::Light));
     let _ = window.update(Message::ThemeChanged(Setting::System));
     assert_eq!(shown(&window), Some(Theme::Dark));
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_toast_s_button_goes_where_its_action_said_and_the_toast_goes() {
+    let _english = in_language("en");
+    let crate::app::testing::TestApp {
+        state,
+        events: _events,
+        dir: _dir,
+    } = crate::app::testing::app();
+    let mut window = Homeport::new(Fake::new().platform());
+    let _ = window.update(Message::Started(Ok(Arc::new(state))));
+    let images = shell::router::Request::to(shell::router::Route::Images);
+    let label = toast::Said::new(|| "Open images".to_owned());
+    let said = toast::Said::new(|| "Committed to web:backup".to_owned());
+    let _ = window.asked(shell::Event::SaidGoing(Kind::Success, said, label, images));
+    // Drawn with its button, which the pointer or the keyboard presses.
+    let pressed = drive(
+        (640.0, 400.0),
+        || window.toasts.view().unwrap(),
+        |corner| {
+            corner.click("Open images").expect("the action's button");
+        },
+    );
+    assert_eq!(pressed.len(), 1);
+    for message in pressed {
+        let _ = window.update(Message::Toast(message));
+    }
+    assert!(window.toasts.is_empty(), "the toast goes once pressed");
+    let route = window
+        .shell
+        .as_ref()
+        .map(|shell| shell.location().route.clone());
+    assert_eq!(route, Some(shell::router::Route::Images));
 }

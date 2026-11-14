@@ -18,7 +18,10 @@ use tokio::sync::mpsc::{unbounded_channel, UnboundedReceiver, UnboundedSender};
 
 use crate::{
     data::{Data, Key},
-    ui::widgets::feedback::{toast::Said, Surfaced},
+    ui::{
+        shell::router::Request,
+        widgets::feedback::{toast::Said, Surfaced},
+    },
 };
 
 /// A value an action answered, filed in the data layer as a read's would.
@@ -29,6 +32,8 @@ pub(in crate::ui::shell) type Put = Box<dyn FnOnce(&mut Data) + Send>;
 pub struct Outcome {
     /// What it did, for a toast (`toast.success`).
     pub(in crate::ui::shell) said: Option<Said>,
+    /// The toast's button: its label and where it goes (`action`).
+    pub(in crate::ui::shell) action: Option<(Said, Request)>,
     /// Why it failed, for one toast that leads to its Details, under a
     /// title when the message alone wouldn't say what failed.
     pub(in crate::ui::shell) failed: Option<(Option<Said>, Surfaced)>,
@@ -58,6 +63,18 @@ impl Outcome {
     #[must_use]
     pub fn saying(mut self, say: impl Fn() -> String + Send + Sync + 'static) -> Self {
         self.said = Some(Said::new(say));
+        self
+    }
+
+    /// The toast of [`Outcome::saying`] has a button `label` that goes to
+    /// `request` (Sonner's `action: { label, onClick: navigate(..) }`).
+    #[must_use]
+    pub fn going(
+        mut self,
+        label: impl Fn() -> String + Send + Sync + 'static,
+        request: impl Into<Request>,
+    ) -> Self {
+        self.action = Some((Said::new(label), request.into()));
         self
     }
 

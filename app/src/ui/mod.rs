@@ -309,8 +309,17 @@ impl Homeport {
             }
             Message::Tab(back) => focus::traverse(back),
             Message::Toast(message) => {
-                if let Some(surfaced) = self.toasts.update(message) {
-                    self.details = Some(Details::new(surfaced));
+                match self.toasts.update(message) {
+                    Some(toast::Pressed::Details(surfaced)) => {
+                        self.details = Some(Details::new(surfaced));
+                    }
+                    // A toast's button goes where its action said.
+                    Some(toast::Pressed::Action(then)) => {
+                        if let Some(request) = then.get::<shell::router::Request>() {
+                            return self.hand_shell(shell::Message::Go(request.clone()));
+                        }
+                    }
+                    None => {}
                 }
                 Task::none()
             }
@@ -371,6 +380,10 @@ impl Homeport {
             }
             shell::Event::Said(kind, said) => {
                 self.toasts.say(kind, move || said.now());
+            }
+            shell::Event::SaidGoing(kind, said, label, request) => {
+                self.toasts
+                    .say_with(kind, said, label, toast::Then::new(request));
             }
             shell::Event::Failed(None, surfaced) => {
                 self.toasts.failure(surfaced);

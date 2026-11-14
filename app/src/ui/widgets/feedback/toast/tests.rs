@@ -115,8 +115,11 @@ fn details_hands_the_failure_over_and_the_toast_goes() {
     let mut toasts = Toasts::default();
     let said = toasts.say(Kind::Info, || "one".to_owned());
     let failed = toasts.failure_of(|| "Could not start web".to_owned(), failure());
-    assert_eq!(toasts.update(Message::Details(said)), None);
-    assert_eq!(toasts.update(Message::Details(failed)), Some(failure()));
+    assert!(toasts.update(Message::Details(said)).is_none());
+    assert!(matches!(
+        toasts.update(Message::Details(failed)),
+        Some(Pressed::Details(surfaced)) if surfaced == failure()
+    ));
     assert!(toasts.is_empty());
 }
 
@@ -134,4 +137,26 @@ fn a_failure_says_its_message_and_its_hint_or_what_failed_and_its_message() {
         toasts.visible()[1].text(),
         ("Could not start web".to_owned(), Some(message))
     );
+}
+
+#[test]
+fn an_action_s_button_hands_its_payload_back_once_and_the_toast_goes() {
+    let mut toasts = Toasts::default();
+    let id = toasts.say_acting(
+        Kind::Success,
+        || "Committed to web:backup".to_owned(),
+        || "Open images".to_owned(),
+        "images",
+    );
+    // It stays as long as any toast (Sonner's action changes no clock).
+    toasts.advance(LIFETIME - TICK);
+    assert_eq!(ids(&toasts), [id]);
+    let Some(Pressed::Action(then)) = toasts.update(Message::Act(id)) else {
+        panic!("the action is handed back");
+    };
+    assert_eq!(then.get::<&str>(), Some(&"images"));
+    assert_eq!(then.get::<u64>(), None, "only as what it was given");
+    // Pressed, the toast goes, as Sonner's did, and a second press is nothing.
+    assert!(toasts.is_empty());
+    assert!(toasts.update(Message::Act(id)).is_none());
 }
