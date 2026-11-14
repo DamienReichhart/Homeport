@@ -178,6 +178,8 @@ containers-health-showMore = Mostrar { $count ->
     }
 containers-health-exit = salida { $code }
 containers-health-took = · tardó { $duration }
+containers-health-milliseconds = { $duration } ms
+containers-health-seconds = { $duration } s
 containers-exec-startFirst = Inicia el contenedor para abrir un terminal.
 containers-exec-shell = Shell
 containers-exec-shellNumber = Shell { $number }

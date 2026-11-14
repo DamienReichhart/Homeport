@@ -156,6 +156,8 @@ export default {
   'containers.health.showMore': '{count, plural, other {#줄 더 보기}}',
   'containers.health.exit': '종료 코드 {code}',
   'containers.health.took': '· 소요 시간 {duration}',
+  'containers.health.milliseconds': '{duration}밀리초',
+  'containers.health.seconds': '{duration}초',
 
   'containers.exec.startFirst': '터미널을 열려면 컨테이너를 시작하세요.',
   'containers.exec.shell': '셸',

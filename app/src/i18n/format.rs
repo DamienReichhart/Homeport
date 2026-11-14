@@ -299,6 +299,11 @@ pub fn percent_with(value: f64, digits: u8) -> String {
     formats().formats.percent_with(value, digits)
 }
 
+/// `value` with `digits` decimals, in the app's language: `2.5`, `2,5`.
+pub fn decimal(value: f64, digits: u8) -> String {
+    formats().formats.decimals(value, digits)
+}
+
 /// `12345` → `12,345`, in the app's language.
 pub fn number(value: f64) -> String {
     formats().formats.number(value)

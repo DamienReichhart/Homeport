@@ -175,6 +175,8 @@ containers-health-showMore = 再显示 { $count ->
     }
 containers-health-exit = 退出码 { $code }
 containers-health-took = · 耗时 { $duration }
+containers-health-milliseconds = { $duration } 毫秒
+containers-health-seconds = { $duration } 秒
 containers-exec-startFirst = 启动容器后才能打开终端。
 containers-exec-shell = Shell
 containers-exec-shellNumber = Shell { $number }

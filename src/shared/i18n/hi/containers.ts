@@ -165,6 +165,8 @@ export default {
     '{count, plural, one {# और पंक्ति दिखाएँ} other {# और पंक्तियाँ दिखाएँ}}',
   'containers.health.exit': 'एग्ज़िट {code}',
   'containers.health.took': '· {duration} लगे',
+  'containers.health.milliseconds': '{duration} मि.से.',
+  'containers.health.seconds': '{duration} से.',
 
   // Exec
   'containers.exec.startFirst': 'टर्मिनल खोलने के लिए कंटेनर शुरू करें।',

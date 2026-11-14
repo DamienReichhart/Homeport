@@ -174,6 +174,8 @@ containers-health-showMore = { $count ->
     }
 containers-health-exit = 종료 코드 { $code }
 containers-health-took = · 소요 시간 { $duration }
+containers-health-milliseconds = { $duration }밀리초
+containers-health-seconds = { $duration }초
 containers-exec-startFirst = 터미널을 열려면 컨테이너를 시작하세요.
 containers-exec-shell = 셸
 containers-exec-shellNumber = 셸 { $number }

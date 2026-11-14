@@ -4,14 +4,11 @@
 
 pub mod inspect;
 
-#[cfg(test)]
-pub mod tests;
-
 use jiff::tz::TimeZone;
 
 use homeport_engine::containers::health::HealthConfig;
 
-use crate::t;
+use crate::{i18n::format, t, ui::widgets::basic::technical};
 
 /// The clock times are said on: this computer's. In a test it is UTC, so
 /// that a snapshot is the same wherever it is drawn.
@@ -42,13 +39,17 @@ pub fn format_duration(seconds: u32) -> String {
 
 /// The healthcheck's timing, as `every 30s, timeout 30s, 3 retries, start
 /// period 0s`: what is unset is the Engine's default (`healthTiming`).
+///
+/// The durations are written as `docker run --health-interval` reads
+/// them, a syntax of no language, laid out as such.
 pub fn health_timing(config: &HealthConfig) -> String {
+    let duration = |seconds| technical(&format_duration(seconds));
     t!(
         "containers.health.timing",
-        interval = format_duration(config.interval_s.unwrap_or(30)),
-        timeout = format_duration(config.timeout_s.unwrap_or(30)),
+        interval = duration(config.interval_s.unwrap_or(30)),
+        timeout = duration(config.timeout_s.unwrap_or(30)),
         retries = config.retries.unwrap_or(3),
-        start = format_duration(config.start_period_s.unwrap_or(0))
+        start = duration(config.start_period_s.unwrap_or(0))
     )
 }
 
@@ -62,14 +63,25 @@ pub fn check_duration(start: &str, end: &str) -> Option<String> {
     if millis < 0 {
         return None;
     }
+    #[allow(clippy::cast_precision_loss)]
     Some(if millis < 1000 {
-        format!("{millis} ms")
+        t!(
+            "containers.health.milliseconds",
+            duration = format::decimal(millis as f64, 0)
+        )
     } else {
-        #[allow(clippy::cast_precision_loss)]
         let seconds = millis as f64 / 1000.0;
-        format!("{seconds:.1} s")
+        t!(
+            "containers.health.seconds",
+            duration = format::decimal(seconds, 1)
+        )
     })
 }
 
 /// Outputs longer than this many lines are folded (`OUTPUT_LINES`).
 pub const OUTPUT_LINES: usize = 6;
+
+// At the end: what follows `#[cfg(test)]` is read as tests by the
+// catalogue check (`scripts/i18n/keys.ts`).
+#[cfg(test)]
+pub mod tests;

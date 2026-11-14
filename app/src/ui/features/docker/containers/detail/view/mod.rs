@@ -167,7 +167,7 @@ fn body<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Eleme
         Tab::Files => files::view(&state.files, running).map(Message::Files),
         Tab::Health => {
             let read = state.health_read(container, ctx);
-            health::view(&state.health, &read, state.is_wide()).map(Message::Health)
+            health::view(&state.health, &read).map(Message::Health)
         }
         // A shell needs a running container, as React's tab said.
         Tab::Exec if !running => paragraph(t!("containers.exec.startFirst"))

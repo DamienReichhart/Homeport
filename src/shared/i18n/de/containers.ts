@@ -158,6 +158,8 @@ export default {
     '{count, plural, one {# weitere Zeile} other {# weitere Zeilen}} anzeigen',
   'containers.health.exit': 'Exit {code}',
   'containers.health.took': '· dauerte {duration}',
+  'containers.health.milliseconds': '{duration} ms',
+  'containers.health.seconds': '{duration} s',
 
   'containers.exec.startFirst': 'Starten Sie den Container, um ein Terminal zu öffnen.',
   'containers.exec.shell': 'Shell',

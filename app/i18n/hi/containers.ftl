@@ -178,6 +178,8 @@ containers-health-showMore = { $count ->
     }
 containers-health-exit = एग्ज़िट { $code }
 containers-health-took = · { $duration } लगे
+containers-health-milliseconds = { $duration } मि.से.
+containers-health-seconds = { $duration } से.
 containers-exec-startFirst = टर्मिनल खोलने के लिए कंटेनर शुरू करें।
 containers-exec-shell = शेल
 containers-exec-shellNumber = शेल { $number }

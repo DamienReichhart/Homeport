@@ -8,7 +8,7 @@ use super::{
     check_duration, format_duration, health_timing,
     inspect::{unix, Details, Inspected},
 };
-use crate::test_support::snapshot::in_language;
+use crate::{test_support::snapshot::in_language, ui::widgets::basic::technical};
 
 #[test]
 fn unset_timings_are_the_engine_s_defaults() {
@@ -20,14 +20,21 @@ fn unset_timings_are_the_engine_s_defaults() {
         retries: Some(1),
         start_period_s: None,
     };
+    let syntax = technical;
     assert_eq!(
         health_timing(&config),
-        "every 10s, timeout 30s, 1 retry, start period 0s"
+        format!(
+            "every {}, timeout {}, 1 retry, start period {}",
+            syntax("10s"),
+            syntax("30s"),
+            syntax("0s")
+        )
     );
 }
 
 #[test]
 fn a_check_says_how_long_it_took() {
+    let _english = in_language("en");
     let took = |start, end| check_duration(start, end);
     assert_eq!(
         took("2026-11-04T10:00:00.000Z", "2026-11-04T10:00:00.250Z").as_deref(),
@@ -40,6 +47,13 @@ fn a_check_says_how_long_it_took() {
     assert_eq!(took("", "x"), None);
     // An end before its start is no duration.
     assert_eq!(took("2026-11-04T10:00:02Z", "2026-11-04T10:00:00Z"), None);
+    // In the language's words and with its decimal sign.
+    drop(_english);
+    let _french = in_language("fr");
+    assert_eq!(
+        took("2026-11-04T10:00:00Z", "2026-11-04T10:00:02.5Z").as_deref(),
+        Some("2,5 s")
+    );
 }
 
 #[test]

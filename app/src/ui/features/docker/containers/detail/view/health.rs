@@ -176,11 +176,7 @@ fn results<'a>(tab: &Tab, health: &Health) -> Element<'a, Message> {
     card(body).title(t!("containers.health.lastResults")).into()
 }
 
-pub fn view<'a>(
-    tab: &'a Tab,
-    read: &Resource<Arc<Option<Health>>>,
-    wide: bool,
-) -> Element<'a, Message> {
+pub fn view<'a>(tab: &'a Tab, read: &Resource<Arc<Option<Health>>>) -> Element<'a, Message> {
     // `isPending ? <Spinner />`, then the failure, then what was read.
     if read.is_pending() {
         return spinner();
@@ -193,18 +189,10 @@ pub fn view<'a>(
             .style(theme::text::muted)
             .into();
     };
-    let (check, results) = (check(health), results(tab, health));
-    if wide {
-        // `lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]`
-        line(vec![
-            container(check).width(Length::FillPortion(1)).into(),
-            container(results).width(Length::FillPortion(2)).into(),
-        ])
+    // The healthcheck over its results, each as wide as the page: a
+    // command reads on a line or two, where a third of the width (React's
+    // `lg` grid) cut it over four.
+    stack(vec![check(health), results(tab, health)])
         .spacing(space::S4)
-        .width(Length::Fill)
-        .align_y(iced::alignment::Vertical::Top)
         .into()
-    } else {
-        stack(vec![check, results]).spacing(space::S4).into()
-    }
 }

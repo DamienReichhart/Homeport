@@ -54,6 +54,8 @@ fn unhealthy() -> Health {
 fn with(status: &str, read: Option<Health>) -> Rig {
     let mut list = sample();
     list[0].health = Some(status.to_owned());
+    // The Engine's status says the health too.
+    list[0].status = format!("Up 3 hours ({status})");
     let mut rig = Rig::on(
         connected_host(),
         route(WEB, Some("health")).into(),
@@ -69,9 +71,15 @@ fn with(status: &str, read: Option<Health>) -> Rig {
 fn an_unhealthy_container_shows_its_failing_output_and_exit_codes() {
     let _english = in_language("en");
     let rig = with("unhealthy", Some(unhealthy()));
+    let timing = format!(
+        "every {}, timeout {}, 3 retries, start period {}",
+        technical("10s"),
+        technical("30s"),
+        technical("0s")
+    );
     for said in [
         "exit 7",
-        "every 10s, timeout 30s, 3 retries, start period 0s",
+        timing.as_str(),
         "No output.",
         "· took 300 ms",
         "· took 2.5 s",

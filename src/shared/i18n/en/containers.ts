@@ -157,6 +157,8 @@ export default {
   'containers.health.showMore': 'Show {count, plural, one {# more line} other {# more lines}}',
   'containers.health.exit': 'exit {code}',
   'containers.health.took': '· took {duration}',
+  'containers.health.milliseconds': '{duration} ms',
+  'containers.health.seconds': '{duration} s',
 
   // Exec
   'containers.exec.startFirst': 'Start the container to open a terminal.',

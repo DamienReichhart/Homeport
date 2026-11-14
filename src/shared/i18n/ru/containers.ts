@@ -163,6 +163,8 @@ export default {
     'Показать ещё {count, plural, one {# строку} few {# строки} many {# строк} other {# строки}}',
   'containers.health.exit': 'код выхода {code}',
   'containers.health.took': '· заняло {duration}',
+  'containers.health.milliseconds': '{duration} мс',
+  'containers.health.seconds': '{duration} с',
 
   'containers.exec.startFirst': 'Запустите контейнер, чтобы открыть терминал.',
   'containers.exec.shell': 'Оболочка',

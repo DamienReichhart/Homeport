@@ -224,7 +224,7 @@ fn state_said(details: &Details) -> String {
 fn restart_said(details: &Details) -> String {
     let count = details.restart_count;
     match &details.restart {
-        None => NO_POLICY.to_owned(),
+        None => technical(NO_POLICY),
         Some((policy, 0)) => t!(
             "containers.inspect.restarted",
             policy = technical(policy),

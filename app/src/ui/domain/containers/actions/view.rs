@@ -243,9 +243,10 @@ impl Actions {
         vec![toggle, restart, pause, remove.into()]
     }
 
-    /// The items of the menu beside those buttons: Rename, and Kill, which
-    /// the React page left to the list's menu. Edit, Duplicate, Commit and
-    /// Export are there and can't be chosen, as in [`Actions::menu`].
+    /// The items of the menu beside those buttons: Rename, Kill (which the
+    /// React page left to the list's menu) and Export. Edit, Duplicate and
+    /// Commit are there and can't be chosen, as in [`Actions::menu`]: they
+    /// are the Run dialog's ticket (#259).
     pub fn more(target: &Target) -> Vec<Item<Message>> {
         vec![
             item(

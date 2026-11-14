@@ -66,7 +66,13 @@
 //!   and the shell says how it ended; React's export stopped when its
 //!   dialog went with the page.
 //! - Two cards a row from a window 1 024 wide (`lg`), taken from the
-//!   window's size, as the layout has no breakpoints.
+//!   window's size, as the layout has no breakpoints. The Health tab's
+//!   healthcheck stands over its results, each as wide as the page: in a
+//!   third of the width (React's `lg` grid) a command wrapped over four
+//!   lines.
+//! - A healthcheck's timing is written in the syntax `docker run` reads
+//!   (`30s`, `1m30s`), laid out as such; how long a check took is said in
+//!   the language's units and decimal sign. React wrote both in English.
 //! - The charts of the Stats tab say a stream that could not start; React
 //!   showed empty charts.
 //! - Technical text (names, images, paths, ids, values, labels, outputs)

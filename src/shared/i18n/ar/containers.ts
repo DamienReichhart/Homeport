@@ -163,6 +163,8 @@ export default {
     '{count, plural, zero {عرض 0 سطر إضافي} one {عرض سطر إضافي واحد} two {عرض سطرين إضافيين} few {عرض # أسطر إضافية} many {عرض # سطرًا إضافيًا} other {عرض # سطر إضافي}}',
   'containers.health.exit': 'رمز الخروج {code}',
   'containers.health.took': '· استغرق {duration}',
+  'containers.health.milliseconds': '{duration} مللي ثانية',
+  'containers.health.seconds': '{duration} ث',
 
   'containers.exec.startFirst': 'شغّل الحاوية لفتح طرفية.',
   'containers.exec.shell': 'الصدفة',

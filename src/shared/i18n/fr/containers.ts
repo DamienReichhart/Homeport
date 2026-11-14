@@ -166,6 +166,8 @@ export default {
     'Afficher {count, plural, one {# ligne de plus} other {# lignes de plus}}',
   'containers.health.exit': 'code {code}',
   'containers.health.took': '· a pris {duration}',
+  'containers.health.milliseconds': '{duration} ms',
+  'containers.health.seconds': '{duration} s',
 
   // Exec
   'containers.exec.startFirst': 'Démarrez le conteneur pour ouvrir un terminal.',

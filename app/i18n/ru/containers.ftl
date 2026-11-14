@@ -208,6 +208,8 @@ containers-health-showMore = Показать ещё { $count ->
     }
 containers-health-exit = код выхода { $code }
 containers-health-took = · заняло { $duration }
+containers-health-milliseconds = { $duration } мс
+containers-health-seconds = { $duration } с
 containers-exec-startFirst = Запустите контейнер, чтобы открыть терминал.
 containers-exec-shell = Оболочка
 containers-exec-shellNumber = Оболочка { $number }

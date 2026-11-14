@@ -25,7 +25,15 @@ fn key(state: &str) -> crate::data::Key {
 
 /// The page on its Inspect tab, the document read.
 fn read() -> Rig {
-    let mut rig = Rig::at(WEB, "inspect");
+    // The document's healthcheck fails: the list says so too.
+    let mut list = sample();
+    list[0].health = Some("unhealthy".to_owned());
+    "Up 3 hours (unhealthy)".clone_into(&mut list[0].status);
+    let mut rig = Rig::on(
+        connected_host(),
+        route(WEB, Some("inspect")).into(),
+        Some(list),
+    );
     rig.bench
         .data
         .set(&key("running"), Inspected::of(&document()));

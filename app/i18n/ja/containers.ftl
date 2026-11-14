@@ -174,6 +174,8 @@ containers-health-showMore = さらに { $count ->
     }を表示
 containers-health-exit = 終了コード { $code }
 containers-health-took = · 所要時間 { $duration }
+containers-health-milliseconds = { $duration } ミリ秒
+containers-health-seconds = { $duration } 秒
 containers-exec-startFirst = ターミナルを開くには、コンテナを起動してください。
 containers-exec-shell = シェル
 containers-exec-shellNumber = シェル { $number }

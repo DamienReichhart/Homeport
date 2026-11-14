@@ -26,6 +26,7 @@ use crate::{
             Element, Icon,
         },
         widgets::{
+            basic::truncated,
             feedback::skeleton,
             focus::pressable,
             form::checkbox::{checkbox, Check},
@@ -131,10 +132,15 @@ where
     /// The header of a column: a button when it sorts, with the arrow of
     /// the way it does.
     fn header(&self, column: &Column<'a, T, Message>) -> (Element<'a, Message>, Option<Message>) {
-        let label = text(column.header.clone()).font(font::medium());
         if column.compare.is_none() {
+            // Cut where its column ends, with an ellipsis at the end the
+            // language reads to, and whole under the pointer.
+            let label = truncated(column.header.clone())
+                .font(font::medium())
+                .with_tip();
             return (label.into(), None);
         }
+        let label = text(column.header.clone()).font(font::medium());
         let arrow = self.state.sort.of(column.id).map(|order| {
             icon(match order {
                 Order::Ascending => Icon::ArrowUp,
