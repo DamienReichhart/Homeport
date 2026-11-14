@@ -22,6 +22,7 @@
 //! [`Streams`]: homeport_core::streams::Streams
 
 mod channel;
+pub mod session;
 pub mod shapes;
 #[cfg(test)]
 mod tests;

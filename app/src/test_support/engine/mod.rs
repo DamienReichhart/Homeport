@@ -15,7 +15,8 @@
 //! What it answers: `_ping`, `version`, `info`, `events` (held open),
 //! a container's inspect document (`json`, when it started as told),
 //! `logs` and `stats` (streamed), its `archive` (stat, download, upload)
-//! and its `export`. Anything else is `404`.
+//! and its `export`, and a terminal (`exec`: created, started on the
+//! connection, resized, inspected). Anything else is `404`.
 
 use std::{
     collections::HashMap,
@@ -27,9 +28,10 @@ use std::{
     time::Duration,
 };
 
+mod exec;
+mod transfer;
 mod wire;
 
-use base64::Engine as _;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
     net::{UnixListener, UnixStream},
@@ -38,8 +40,8 @@ use tokio::{
 
 use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
-pub use self::wire::Stall;
-use self::wire::{archive_of, entry_names, inspected, query_value, stat_of, Held};
+use self::wire::{inspected, Held};
+pub use self::{transfer::EXPORTED, wire::Stall};
 use crate::{api::hosts::hosts_create, app::AppState};
 
 /// A stream the fake keeps open.
@@ -49,6 +51,8 @@ pub enum Stream {
     Stats,
     /// A download or an upload that has not been answered.
     Transfer,
+    /// A terminal in the container.
+    Exec,
 }
 
 /// What is sent to the streams that are open.
@@ -57,6 +61,9 @@ enum Push {
     Log(Vec<u8>),
     EndLogs,
     Sample(String),
+    /// What a terminal's program prints, and its end.
+    Print(Vec<u8>),
+    Exit,
 }
 
 #[derive(Default)]
@@ -78,6 +85,9 @@ struct Shared {
     stall: Mutex<Option<Stall>>,
     /// When the container last started, if it was said.
     started: Mutex<Option<String>>,
+    /// What each exec was created with, and what its terminals were sent.
+    execs: Mutex<Vec<String>>,
+    typed: Mutex<Vec<u8>>,
 }
 
 /// Counts a stream as open until dropped.
@@ -200,6 +210,26 @@ impl Engine {
     /// Ends every open log stream, as a container that stopped.
     pub fn end_logs(&self) {
         let _ = self.pushes.send(Push::EndLogs);
+    }
+
+    /// Prints `text` on every open terminal.
+    pub fn print(&self, text: &str) {
+        let _ = self.pushes.send(Push::Print(text.as_bytes().to_vec()));
+    }
+
+    /// Ends every open terminal, as a shell that exits.
+    pub fn exit(&self) {
+        let _ = self.pushes.send(Push::Exit);
+    }
+
+    /// What the terminals were sent, all together.
+    pub fn typed(&self) -> String {
+        String::from_utf8_lossy(&self.shared.typed.lock().unwrap()).into_owned()
+    }
+
+    /// What each exec was created with: the Engine API's JSON.
+    pub fn execs(&self) -> Vec<String> {
+        self.shared.execs.lock().unwrap().clone()
     }
 
     /// The container started (again) at `at`, as its inspect says.
@@ -452,101 +482,6 @@ impl Connection {
         }
     }
 
-    /// Waits while transfers are held; `false` when the client let go.
-    async fn held(&mut self) -> bool {
-        let mut closed = [0_u8; 64];
-        while *self.held.borrow() {
-            tokio::select! {
-                _ = self.held.changed() => {}
-                read = self.socket.read(&mut closed) => {
-                    if !matches!(read, Ok(read) if read > 0) {
-                        self.shared.abandoned.fetch_add(1, Ordering::SeqCst);
-                        return false;
-                    }
-                }
-            }
-        }
-        true
-    }
-
-    async fn archive(&mut self, request: &Request) -> bool {
-        let path = query_value(&request.query, "path").unwrap_or_default();
-        let _open = Open::new(&self.shared, Stream::Transfer);
-        if request.method == "PUT" {
-            if !self.held().await {
-                return false;
-            }
-            let names = entry_names(&request.body);
-            let refused = self.shared.refused.lock().unwrap().clone();
-            if refused.is_some_and(|name| names.contains(&name)) {
-                let refusal = r#"{"message":"no space left on device"}"#;
-                return self.json("500 Internal Server Error", refusal).await;
-            }
-            self.shared.uploaded.lock().unwrap().push((path, names));
-            return self.answer("200 OK", &[], b"").await;
-        }
-        let held = self.shared.files.lock().unwrap().get(&path).cloned();
-        let Some(held) = held else {
-            let missing = r#"{"message":"no such file or directory"}"#;
-            return self.json("404 Not Found", missing).await;
-        };
-        let name = path.rsplit('/').next().unwrap_or_default().to_owned();
-        let stat = base64::engine::general_purpose::STANDARD.encode(stat_of(&name, &held));
-        let headers = [
-            ("X-Docker-Container-Path-Stat", stat),
-            ("Content-Type", "application/x-tar".to_owned()),
-        ];
-        if request.method == "HEAD" {
-            return self.answer("200 OK", &headers, b"").await;
-        }
-        let stall = *self.shared.stall.lock().unwrap();
-        if stall.is_none() && !self.held().await {
-            return false;
-        }
-        let archive = archive_of(&name, &held);
-        let cut = self.shared.cut.load(Ordering::SeqCst);
-        let data_end = BLOCK
-            + if let Held::File(bytes) = &held {
-                bytes.len()
-            } else {
-                0
-            };
-        let pause = match stall {
-            Some(Stall::BeforeLastByte) => Some(data_end - 1),
-            Some(Stall::AfterData) => Some(data_end),
-            None => cut.then_some(archive.len() / 2),
-        };
-        if let Some(at) = pause {
-            // Says the whole length, sends up to `at`, then waits (or,
-            // cut, hangs up).
-            let head = format!(
-                "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: application/x-tar\r\n\r\n",
-                archive.len()
-            );
-            let _ = self.socket.write_all(head.as_bytes()).await;
-            let _ = self.socket.write_all(&archive[..at]).await;
-            // Cut now, or once released if told to cut meanwhile.
-            if cut || !self.held().await || self.shared.cut.load(Ordering::SeqCst) {
-                let _ = self.socket.shutdown().await;
-                return false;
-            }
-            return self.socket.write_all(&archive[at..]).await.is_ok();
-        }
-        self.answer("200 OK", &headers, &archive).await
-    }
-
-    /// A container's filesystem, as `docker export` streams it: three
-    /// megabytes, so the export reports its progress on the way.
-    async fn export(&mut self) -> bool {
-        let _open = Open::new(&self.shared, Stream::Transfer);
-        if !self.held().await {
-            return false;
-        }
-        let body = vec![b'x'; EXPORTED];
-        let tar = [("Content-Type", "application/x-tar".to_owned())];
-        self.answer("200 OK", &tar, &body).await
-    }
-
     async fn run(mut self) {
         while let Some(request) = self.request().await {
             let line = format!("{} {}?{}", request.method, request.path, request.query);
@@ -577,6 +512,13 @@ impl Connection {
                     self.json("200 OK", &inspected(started.as_deref())).await
                 }
                 (_, ["containers", _, "archive"]) => self.archive(&request).await,
+                ("POST", ["containers", _, "exec"]) => self.create_exec(&request).await,
+                ("POST", ["exec", _, "start"]) => {
+                    self.start_exec().await;
+                    false
+                }
+                ("POST", ["exec", _, "resize"]) => self.answer("201 Created", &[], b"").await,
+                ("GET", ["exec", _, "json"]) => self.inspect_exec().await,
                 ("GET", ["containers", _, "export"]) => self.export().await,
                 _ => {
                     self.json("404 Not Found", r#"{"message":"not found"}"#)
@@ -589,11 +531,5 @@ impl Connection {
         }
     }
 }
-
-/// How many bytes an export sends.
-pub const EXPORTED: usize = 3 * 1024 * 1024;
-
-/// A tar block.
-const BLOCK: usize = 512;
 
 const VERSION: &str = r#"{"Version":"27.0.0","ApiVersion":"1.47","MinAPIVersion":"1.24","Os":"linux","Arch":"amd64"}"#;
