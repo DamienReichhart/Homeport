@@ -320,6 +320,21 @@ fn the_recreate_confirmation_and_the_commit_dialog_look_as_react_s() {
         assert_snapshot(&name, language, &Theme::Light, (828.0, 560.0), || {
             overlay::over(iced::widget::Space::new(), actions.dialog(&ctx))
         });
+        // A line of what is lost hugs its words: one told to fill is drawn
+        // out of place in Arabic (where this one is shorter than the room).
+        let _language = in_language(language);
+        let short = edit::loss_text(&homeport_engine::containers::recreate::Loss::Downtime);
+        let width = |view: crate::ui::theme::Element<'_, Action>| {
+            let found = window(SIZE, view).find(short.as_str());
+            found.map(|t| t.bounds().width).unwrap_or_default()
+        };
+        let line = width(overlay::over(
+            iced::widget::Space::new(),
+            actions.dialog(&ctx),
+        ));
+        let words = width(crate::ui::widgets::paragraph(short.clone()).into());
+        let hugs = language != "ar" || (line - words).abs() < 1.0;
+        assert!(hugs, "{language}: {line} {words}");
     }
     let mut actions = Actions::of_host();
     send(&mut actions, &bench, Action::AskCommit(web));

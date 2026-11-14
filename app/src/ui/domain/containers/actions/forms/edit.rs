@@ -34,6 +34,7 @@ use crate::{
                 confirm::{self, Ask, Outcome as Confirmed},
                 confirm_dialog_with, error_message, spinner, Surfaced,
             },
+            filling,
             overlay::{dialog, modal, modal::WIDTH_WIDE, Modal},
             paragraph, stack,
         },
@@ -319,7 +320,7 @@ impl Edit {
                 parts.extend(list.iter().map(|loss| {
                     crate::ui::widgets::line(vec![
                         iced::widget::text("\u{2022}").into(),
-                        paragraph(loss_text(loss)).width(Length::Fill).into(),
+                        filling(paragraph(loss_text(loss))).into(),
                     ])
                     .spacing(space::S2)
                     .width(Length::Fill)
