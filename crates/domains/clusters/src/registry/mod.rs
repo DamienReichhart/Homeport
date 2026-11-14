@@ -109,7 +109,6 @@ impl ClusterRegistry {
     /// (Re)starts a Cluster's supervisor, e.g. after it was edited or
     /// refreshed; its exec plugin runs again.
     pub fn restart(&self, id: &str) {
-        self.forget_issued(id);
         // The entry is reset before the task that fills it starts, and the
         // task is numbered: one that was replaced may still be running when
         // it is aborted, until its next await, and what it says then is
@@ -129,6 +128,9 @@ impl ClusterRegistry {
         entry.status = ClusterStatus::Connecting;
         entry.client = None;
         entry.generation = generation;
+        // What the plugin issued is asked again; forgotten with the
+        // entries held, so a replaced supervisor's can't come back after.
+        self.forget_issued(id);
         // The task waits for the lock before it tells its first status.
         entry.task = Some(tokio::spawn(supervise(
             self.me.clone(),
@@ -138,11 +140,13 @@ impl ClusterRegistry {
     }
 
     pub fn remove(&self, id: &str) {
-        self.forget_issued(id);
-        if let Some(entry) = self.lock().remove(id) {
-            if let Some(task) = entry.task {
-                task.abort();
-            }
+        let entry = {
+            let mut entries = self.lock();
+            self.forget_issued(id);
+            entries.remove(id)
+        };
+        if let Some(task) = entry.and_then(|entry| entry.task) {
+            task.abort();
         }
     }
 
@@ -216,10 +220,13 @@ impl ClusterRegistry {
         &self,
         cluster: &Cluster,
         secrets: &ClusterSecrets,
+        generation: u64,
     ) -> AppResult<(ClusterClient, ClusterStatus)> {
         match secrets {
             ClusterSecrets::Kubernetes(secrets) => {
-                let (client, status) = self.connect_kubernetes(cluster, secrets).await?;
+                let (client, status) = self
+                    .connect_kubernetes(cluster, secrets, generation)
+                    .await?;
                 Ok((ClusterClient::Kubernetes(client), status))
             }
             ClusterSecrets::Nomad(secrets) => {
@@ -261,12 +268,15 @@ impl ClusterRegistry {
         &self,
         cluster: &Cluster,
         secrets: &KubernetesSecrets,
+        generation: u64,
     ) -> AppResult<(kube::Client, ClusterStatus)> {
-        let issued = self.credentials(cluster, secrets, false).await?;
+        let issued = self
+            .credentials(cluster, secrets, false, generation)
+            .await?;
         let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
         match version(cluster, &client).await {
             Err(e) if e.is(ErrorCode::ClusterUnauthorized) && secrets.exec.is_some() => {
-                let issued = self.credentials(cluster, secrets, true).await?;
+                let issued = self.credentials(cluster, secrets, true, generation).await?;
                 let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
                 let status = version(cluster, &client).await?;
                 Ok((client, status))
@@ -293,7 +303,7 @@ impl ClusterRegistry {
         if !due {
             return Ok(None);
         }
-        let issued = self.credentials(cluster, secrets, true).await?;
+        let issued = self.credentials(cluster, secrets, true, generation).await?;
         let client = client::client(&cluster.kube()?, secrets, issued.as_ref())?;
         if let Some(entry) = self
             .lock()
@@ -305,13 +315,15 @@ impl ClusterRegistry {
         Ok(Some(client))
     }
 
-    /// What `cluster`'s exec plugin issued: kept until it is about to expire,
+    /// What `cluster`'s exec plugin issued: kept until it is about to expire
+    /// (when the supervisor `generation` asking is still the live one),
     /// asked again when `force`. `None` for a Cluster without a plugin.
     async fn credentials(
         &self,
         cluster: &Cluster,
         secrets: &KubernetesSecrets,
         force: bool,
+        generation: u64,
     ) -> AppResult<Option<IssuedCredentials>> {
         let Some(plugin) = &secrets.exec else {
             return Ok(None);
@@ -333,7 +345,16 @@ impl ClusterRegistry {
         let context = connection.source.as_ref().map(|s| s.context.as_str());
         let issued = credentials::run(&cluster.name, context, plugin, &info).await?;
         let credentials = issued.credentials.clone();
-        self.lock_issued().insert(cluster.id.clone(), issued);
+        // Kept with the entries held, as a restart forgets them: what a
+        // replaced supervisor's plugin issued (from the secrets before an
+        // edit) is not kept for the one that replaced it.
+        let entries = self.lock();
+        if entries
+            .get(&cluster.id)
+            .is_some_and(|entry| entry.generation == generation)
+        {
+            self.lock_issued().insert(cluster.id.clone(), issued);
+        }
         Ok(Some(credentials))
     }
 

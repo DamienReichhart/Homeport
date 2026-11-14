@@ -50,7 +50,7 @@ pub(super) async fn supervise(registry: Weak<ClusterRegistry>, id: ClusterId, ge
             }
         };
 
-        let (error, was_connected) = match reg.connect(&cluster, &secrets).await {
+        let (error, was_connected) = match reg.connect(&cluster, &secrets, generation).await {
             Ok((client, status)) => {
                 backoff = 1;
                 reg.set_status(&id, generation, status, Some(client.clone()));

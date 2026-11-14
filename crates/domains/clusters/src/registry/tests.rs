@@ -247,11 +247,11 @@ mod exec_plugins {
 
         let cluster = registry.store.get(&id).unwrap();
         let secrets = kubernetes_secrets(&registry, &id);
+        let generation = registry.lock()[&id].generation;
         registry
-            .credentials(&cluster, &secrets, false)
+            .credentials(&cluster, &secrets, false, generation)
             .await
             .unwrap();
-        let generation = registry.lock()[&id].generation;
         assert!(registry
             .renewed(&cluster, &secrets, generation)
             .await
@@ -269,11 +269,11 @@ mod exec_plugins {
         let cluster = registry.store.get(&id).unwrap();
         let secrets = kubernetes_secrets(&registry, &id);
         registry
-            .credentials(&cluster, &secrets, false)
+            .credentials(&cluster, &secrets, false, 0)
             .await
             .unwrap();
         registry
-            .credentials(&cluster, &secrets, false)
+            .credentials(&cluster, &secrets, false, 0)
             .await
             .unwrap();
         assert_eq!(runs(dir.path()), 2, "an expired token is asked for again");
@@ -300,6 +300,40 @@ mod exec_plugins {
         assert!(
             matches!(status, ClusterStatus::Unauthorized { .. }),
             "{status:?}"
+        );
+        assert_eq!(runs(dir.path()), 2);
+    }
+
+    #[tokio::test]
+    async fn what_a_replaced_supervisor_s_plugin_issued_is_not_kept() {
+        let dir = tempfile::tempdir().unwrap();
+        let server = fake_api("200 OK", VERSION).await;
+        let (registry, id) =
+            with_plugin(&server, counting_plugin(dir.path(), "2099-01-01T00:00:00Z"));
+        registry.lock().insert(
+            id.clone(),
+            Entry {
+                status: ClusterStatus::Connecting,
+                client: None,
+                task: None,
+                generation: 2,
+            },
+        );
+        let cluster = registry.store.get(&id).unwrap();
+        let secrets = kubernetes_secrets(&registry, &id);
+        // The supervisor before the live one asks its plugin, late.
+        registry
+            .credentials(&cluster, &secrets, false, 1)
+            .await
+            .unwrap();
+        assert!(!registry.lock_issued().contains_key(&id), "not kept");
+        registry
+            .credentials(&cluster, &secrets, false, 2)
+            .await
+            .unwrap();
+        assert!(
+            registry.lock_issued().contains_key(&id),
+            "the live one's is"
         );
         assert_eq!(runs(dir.path()), 2);
     }
