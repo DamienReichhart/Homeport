@@ -229,6 +229,18 @@ fn the_lines_searched_follow_the_view() {
 }
 
 #[test]
+fn opening_the_open_bar_only_gives_its_field_the_keyboard() {
+    let mut state = log();
+    searched(&mut state, "ERROR");
+    let _ = drive(&mut state, Message::Next);
+    let _ = drive(&mut state, Message::Next);
+    assert_eq!(count(&state), (2, 6));
+    let _ = drive(&mut state, Message::OpenSearch);
+    assert_eq!(count(&state), (2, 6), "the search goes on where it stood");
+    assert_eq!(state.search().query.text, "ERROR");
+}
+
+#[test]
 fn what_is_selected_is_what_the_search_opens_on() {
     let mut state = log();
     let _ = drive(

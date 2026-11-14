@@ -478,6 +478,11 @@ impl State {
                 return (Task::none(), self.events());
             }
             Message::Open(url) => Some(Event::Open(url)),
+            Message::OpenSearch if self.search.open => {
+                // Open already: its field takes the keyboard, the search
+                // goes on where it stood.
+                return (operation::focus(self.search.id.clone()), vec![]);
+            }
             Message::OpenSearch => {
                 self.search.open = true;
                 // What is selected is what is looked for, as in a browser;
