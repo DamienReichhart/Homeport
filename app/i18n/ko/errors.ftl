@@ -335,6 +335,7 @@ errors-file-notRegular = { $path }은(는) 일반 파일이 아닙니다.
 errors-file-notText = { $path } 파일은 텍스트 파일이 아닙니다.
 errors-file-tooLarge = { $path } 파일은 키, 인증서 또는 compose 파일이라기에는 너무 큽니다.
 errors-file-tooLarge-hint = 1MB 미만의 파일을 선택하세요.
+errors-files-cutArchive = 이 파일에 대한 Docker Engine의 아카이브가 파일보다 먼저 끝났습니다.
 errors-files-emptyArchive = Docker Engine이 이 파일에 대해 빈 아카이브를 보냈습니다.
 errors-files-noTools = 이 컨테이너에는 find와 stat 도구가 없으므로 파일 목록을 표시할 수 없습니다.
 errors-files-noTools-hint = 최소 이미지(distroless, scratch)에는 이 도구가 없습니다. 대신 터미널에서 docker cp로 파일을 복사하세요.

@@ -335,6 +335,7 @@ errors-file-notRegular = { $path } не является обычным файл
 errors-file-notText = { $path } — не текстовый файл.
 errors-file-tooLarge = { $path } слишком велик для ключа, сертификата или файла compose.
 errors-file-tooLarge-hint = Выберите файл меньше 1 МБ.
+errors-files-cutArchive = Архив этого файла от Docker Engine закончился раньше, чем сам файл.
 errors-files-emptyArchive = Docker Engine прислал пустой архив для этого файла.
 errors-files-noTools = В этом контейнере нет инструментов find и stat, поэтому его файлы нельзя перечислить.
 errors-files-noTools-hint = В минимальных образах (distroless, scratch) их нет. Копируйте файлы командой docker cp из терминала.

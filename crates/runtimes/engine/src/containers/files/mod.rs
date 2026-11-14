@@ -3,7 +3,13 @@
 //! Listing runs `find … -exec stat` in the container (the archive API would
 //! return whole directory trees); transfers use the archive API.
 
-use std::path::Path;
+use std::{
+    path::Path,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+};
 
 use bollard::{
     body_full,
@@ -21,10 +27,13 @@ use tokio::io::AsyncWriteExt;
 
 use homeport_core::{
     error::{local_file, AppError, AppResult, ErrorCode},
-    local_files::Replacement,
+    local_files::{self, Replacement},
 };
 
+use self::untar::Untar;
 use crate::messages as msg;
+
+mod untar;
 
 /// Go's `os.ModeDir`, as reported by the archive stat endpoint.
 const GO_MODE_DIR: u32 = 1 << 31;
@@ -192,10 +201,27 @@ pub async fn download(
 
 /// [`download`], telling `progress` how many bytes of the Engine's archive
 /// came, of how many if the Engine said (a file's size; a folder's is not
-/// known). The archive goes to disk as it comes, so memory stays bounded,
-/// and the file is written beside `destination` and put in its place only
-/// once whole: a failure, or the future dropped part way, leaves no file
-/// and whatever was at `destination` as it was.
+/// known).
+///
+/// What it writes, and how (the Tauri command and the volume browser
+/// call it through [`download`] too):
+///
+/// - The file goes to disk as the Engine sends it, so memory stays
+///   bounded: a folder's archive as it is, a file read out of its archive
+///   on the way, in one pass. It is written beside `destination`, in a
+///   hidden `.homeport-….part` file, and put in its place only once whole:
+///   a failure, a cut connection or the future dropped part way leaves no
+///   file, and whatever was at `destination` as it was. Once the future
+///   was dropped, nothing is put in place, even by the last step, which
+///   runs on a thread of its own.
+/// - So the folder of `destination` must be one the app can write in; a
+///   symbolic link at `destination` is replaced, not written through, and
+///   a file with other hard links gets a new one. The file takes the
+///   permissions of the one it replaces, or what any new file gets.
+/// - An archive with nothing in it is an error, not an empty file.
+/// - A `.part` file left by a write the app was killed in (or a panic,
+///   which aborts) stays until a download into that folder takes it
+///   away, once it is a day old.
 pub async fn download_counted(
     docker: &Docker,
     container_id: &str,
@@ -218,9 +244,19 @@ pub async fn download_counted(
     let total = (!is_dir).then(|| u64::try_from(stat.size).unwrap_or(0));
     progress(0, total);
 
-    // The archive, as it comes: the folder's own file, or a file of its
-    // own beside the destination for a file, read back once whole.
-    let archive = Replacement::new(destination)?;
+    let folder = local_files::folder_of(destination).to_owned();
+    tokio::task::spawn_blocking(move || local_files::sweep_unfinished(&folder))
+        .await
+        .map_err(|e| AppError::from(std::io::Error::other(e)))?;
+    // Set when this future is dropped (a Cancel): nothing is put in place
+    // after that, by the step that runs on a thread of its own either.
+    let dropped = Dropped::default();
+    let saved = Replacement::new(destination)?;
+    let file = saved
+        .file()
+        .try_clone()
+        .map_err(|e| local_file(destination, e))?;
+    let mut out = tokio::io::BufWriter::new(tokio::fs::File::from_std(file));
     let mut stream = docker.download_from_container(
         container_id,
         Some(
@@ -229,61 +265,70 @@ pub async fn download_counted(
                 .build(),
         ),
     );
-    let file = archive
-        .file()
-        .try_clone()
-        .map_err(|e| local_file(destination, e))?;
-    let mut out = tokio::io::BufWriter::new(tokio::fs::File::from_std(file));
+    // A folder is saved as its archive; a file is read out of it.
+    let mut untar = (!is_dir).then(Untar::default);
     let mut received = 0_u64;
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;
-        out.write_all(&chunk)
+        received += chunk.len() as u64;
+        let data = match &mut untar {
+            None => std::borrow::Cow::Borrowed(&chunk[..]),
+            Some(untar) => untar.feed(&chunk)?,
+        };
+        out.write_all(&data)
             .await
             .map_err(|e| local_file(destination, e))?;
-        received += chunk.len() as u64;
         // A file's archive is a little more than the file: its header.
         progress(total.map_or(received, |total| received.min(total)), total);
+        if untar.as_ref().is_some_and(Untar::is_done) {
+            break;
+        }
     }
     out.flush().await.map_err(|e| local_file(destination, e))?;
     drop(out);
-    if received == 0 {
+    if received == 0 || untar.as_ref().is_some_and(Untar::is_empty) {
         return Err(AppError::new(
             ErrorCode::EngineError,
             msg::FILES_EMPTY_ARCHIVE,
         ));
     }
-    if is_dir {
-        mode_of(&archive, destination);
-        archive.commit()?;
-        return Ok(true);
+    if untar.as_ref().is_some_and(|untar| !untar.is_done()) {
+        return Err(AppError::new(
+            ErrorCode::EngineError,
+            msg::FILES_CUT_ARCHIVE,
+        ));
     }
     let destination = destination.to_owned();
-    tokio::task::spawn_blocking(move || extract_first(&archive, &destination))
+    let stopped = dropped.0.clone();
+    tokio::task::spawn_blocking(move || put_in_place(saved, &destination, &stopped))
         .await
         .map_err(|e| AppError::from(std::io::Error::other(e)))??;
-    Ok(false)
+    Ok(is_dir)
 }
 
-/// Writes the first entry of the tar in `archive` to `destination`, whole
-/// or not at all. `archive` goes when it is dropped.
-fn extract_first(archive: &Replacement, destination: &Path) -> AppResult<()> {
-    use std::io::{Seek, SeekFrom};
-    let mut file = archive
-        .file()
-        .try_clone()
-        .map_err(|e| local_file(destination, e))?;
-    file.seek(SeekFrom::Start(0))
-        .map_err(|e| local_file(destination, e))?;
-    let mut tar = tar::Archive::new(file);
-    let mut entry = tar
-        .entries()?
-        .next()
-        .ok_or_else(|| AppError::new(ErrorCode::EngineError, msg::FILES_EMPTY_ARCHIVE))??;
-    let saved = Replacement::new(destination)?;
-    let mut out = saved.file();
-    std::io::copy(&mut entry, &mut out).map_err(|e| local_file(destination, e))?;
+/// Puts `saved` at `destination` with the permissions it should have,
+/// once on disk; not if `stopped` says the download was dropped
+/// meanwhile, in which case `saved` goes. Blocks: a sync and a rename.
+fn put_in_place(saved: Replacement, destination: &Path, stopped: &AtomicBool) -> AppResult<()> {
     mode_of(&saved, destination);
+    saved
+        .file()
+        .sync_all()
+        .map_err(|e| local_file(destination, e))?;
+    if stopped.load(Ordering::SeqCst) {
+        return Ok(());
+    }
     saved.commit()
+}
+
+/// Says, once dropped, that the future holding it was.
+#[derive(Default)]
+struct Dropped(Arc<AtomicBool>);
+
+impl Drop for Dropped {
+    fn drop(&mut self) {
+        self.0.store(true, Ordering::SeqCst);
+    }
 }
 
 /// The permissions a saved file gets: those of the file it replaces, or
@@ -362,6 +407,21 @@ mod tests {
         assert_eq!(entries[1].path, "/etc/a|b");
         assert_eq!(entries[3].kind, FileKind::Symlink);
         assert_eq!(entries[2].size, 12);
+    }
+
+    #[test]
+    fn a_download_dropped_before_its_file_is_in_place_puts_nothing_there() {
+        let dir = tempfile::tempdir().unwrap();
+        let destination = dir.path().join("note.txt");
+        let put = |stopped: bool| {
+            let saved = Replacement::new(&destination).unwrap();
+            std::io::Write::write_all(&mut saved.file(), b"hello").unwrap();
+            put_in_place(saved, &destination, &AtomicBool::new(stopped)).unwrap();
+        };
+        put(true);
+        assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
+        put(false);
+        assert_eq!(std::fs::read(&destination).unwrap(), b"hello");
     }
 
     #[test]

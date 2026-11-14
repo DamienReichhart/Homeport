@@ -31,6 +31,8 @@ homeport_core::messages! {
     FILES_SESSION_NOT_OPENED = "errors.files.sessionNotOpened" => "The Docker Engine didn't open the command's session.";
     /// Downloading a file the Engine sent no archive entry for.
     FILES_EMPTY_ARCHIVE = "errors.files.emptyArchive" => "The Docker Engine sent an empty archive for this file.";
+    /// Downloading a file whose archive ended before the file did.
+    FILES_CUT_ARCHIVE = "errors.files.cutArchive" => "The Docker Engine's archive of this file ended before the file did.";
     /// Uploading a path without a file name, such as `/`.
     FILES_NOT_A_FILE = "errors.files.notAFile" => "{path} is not a file.";
 

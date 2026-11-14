@@ -25,7 +25,11 @@ pub async fn files_list(
 }
 
 /// Saves a container path to `destination`; returns `true` when it was a
-/// directory saved as a `.tar` archive.
+/// directory saved as a `.tar` archive. The file is written beside
+/// `destination` and put in its place only once whole (see
+/// `homeport_engine::containers::files::download_counted`): the folder
+/// must be writable, a link at `destination` is replaced rather than
+/// written through, and an empty archive is an error.
 #[tauri::command]
 #[specta::specta]
 pub async fn files_download(

@@ -331,6 +331,7 @@
   "errors.file.notText": "{path} isn't a text file.",
   "errors.file.tooLarge": "{path} is too large to be a key, certificate or compose file.",
   "errors.file.tooLarge.hint": "Pick a file under 1 MB.",
+  "errors.files.cutArchive": "The Docker Engine's archive of this file ended before the file did.",
   "errors.files.emptyArchive": "The Docker Engine sent an empty archive for this file.",
   "errors.files.noTools": "This container has no find and stat tools, so its files can't be listed.",
   "errors.files.noTools.hint": "Minimal images (distroless, scratch) leave them out. Copy files with docker cp from a terminal instead.",

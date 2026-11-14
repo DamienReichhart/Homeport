@@ -331,6 +331,7 @@
   "errors.file.notText": "{path} टेक्स्ट फ़ाइल नहीं है।",
   "errors.file.tooLarge": "{path} कुंजी, प्रमाणपत्र या compose फ़ाइल होने के लिए बहुत बड़ी है।",
   "errors.file.tooLarge.hint": "1 MB से छोटी फ़ाइल चुनें।",
+  "errors.files.cutArchive": "इस फ़ाइल के लिए Docker Engine का आर्काइव फ़ाइल से पहले ही समाप्त हो गया।",
   "errors.files.emptyArchive": "Docker Engine ने इस फ़ाइल के लिए एक खाली आर्काइव भेजा।",
   "errors.files.noTools": "इस कंटेनर में find और stat टूल नहीं हैं, इसलिए इसकी फ़ाइलों की सूची नहीं बन सकती।",
   "errors.files.noTools.hint": "न्यूनतम इमेज (distroless, scratch) इन्हें शामिल नहीं करतीं। इसकी बजाय टर्मिनल से docker cp से फ़ाइलें कॉपी करें।",

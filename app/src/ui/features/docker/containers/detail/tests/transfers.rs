@@ -6,7 +6,10 @@ use std::time::Duration;
 
 use super::{streams::Live, *};
 use crate::{
-    test_support::{engine::Stream, tasks::messages},
+    test_support::{
+        engine::{Stall, Stream},
+        tasks::messages,
+    },
     ui::{
         features::docker::containers::detail::tabs::files::{self, Doing},
         shell::page::testing::Asked,
@@ -249,26 +252,124 @@ fn cancel_drops_a_download_and_leaves_no_file() {
     assert!(live.rig.state.files.transfer.is_none());
 }
 
-#[test]
-fn a_download_that_breaks_part_way_leaves_no_file_and_says_why() {
-    let _english = crate::test_support::snapshot::in_language("en");
-    let mut live = live(vec![entry("note.txt", false)]);
-    live.engine.file("/note.txt", &[b'x'; 64 * 1024]);
-    live.engine.cut_downloads();
+/// The unfinished file beside the destination, once it holds `bytes`:
+/// what a download writes as the bytes come.
+fn part_with(live: &Live, bytes: u64) -> bool {
+    for _ in 0..200 {
+        let grown = std::fs::read_dir(live.rig.bench.os.dir())
+            .unwrap()
+            .filter_map(Result::ok)
+            .filter(|entry| entry.file_name().to_string_lossy().ends_with(".part"))
+            .any(|entry| entry.metadata().is_ok_and(|found| found.len() >= bytes));
+        if grown {
+            return true;
+        }
+        std::thread::sleep(Duration::from_millis(10));
+    }
+    false
+}
+
+/// A large file, and the page about to download it over a file there.
+fn large_over_last_week(live: &mut Live) -> std::path::PathBuf {
+    live.engine.file("/note.txt", &[b'x'; 256 * 1024]);
     let saved = live.rig.bench.os.dir().join("note.txt");
     std::fs::write(&saved, b"last week's").unwrap();
     live.rig.bench.os.answer(&saved);
+    saved
+}
+
+#[test]
+fn a_download_that_breaks_after_most_of_the_file_came_leaves_the_file_there() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    let saved = large_over_last_week(&mut live);
+    live.engine.stall(Stall::BeforeLastByte);
+    let download = browse(file_browser::Message::Download("/note.txt".to_owned()));
+    let transfer = begin(&mut live, download);
+    // The bytes are on disk as they come, beside the file, which is
+    // untouched (a download held in memory would show nothing here).
+    assert!(part_with(&live, 256 * 1024 - 1), "written as it comes");
+    assert_eq!(std::fs::read(&saved).unwrap(), b"last week's");
+    // The connection drops before the last byte.
+    live.engine.cut_downloads();
+    live.engine.release();
+    finish(&mut live, transfer);
+    let told = live.rig.bench.took();
+    assert!(
+        told.iter()
+            .any(|asked| matches!(asked, Asked::Failed(None, _))),
+        "{told:?}"
+    );
+    assert_eq!(std::fs::read(&saved).unwrap(), b"last week's");
+    assert!(no_part_left(&live));
+}
+
+#[test]
+fn a_file_is_in_place_once_its_bytes_came_without_waiting_for_the_archive_s_end() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    let saved = large_over_last_week(&mut live);
+    live.engine.stall(Stall::AfterData);
+    let download = browse(file_browser::Message::Download("/note.txt".to_owned()));
+    let transfer = begin(&mut live, download);
+    // Read out of the archive in one pass: whole while the Engine has
+    // not even sent the archive's end.
+    let whole = (0..200).any(|_| {
+        let done = std::fs::metadata(&saved).is_ok_and(|found| found.len() == 256 * 1024);
+        if !done {
+            std::thread::sleep(Duration::from_millis(10));
+        }
+        done
+    });
+    assert!(whole, "in place before the archive ended");
+    live.engine.release();
+    finish(&mut live, transfer);
+    assert!(no_part_left(&live));
+}
+
+#[test]
+fn a_download_takes_away_what_a_killed_one_left_a_day_ago() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    live.engine.file("/note.txt", b"hello\n");
+    let dir = live.rig.bench.os.dir().to_owned();
+    let week = std::time::SystemTime::now() - Duration::from_secs(7 * 24 * 60 * 60);
+    for (name, old) in [
+        (".homeport-killed.part", true),
+        (".homeport-running.part", false),
+        ("notes.part", true),
+    ] {
+        let path = dir.join(name);
+        std::fs::write(&path, "left").unwrap();
+        if old {
+            let file = std::fs::File::options().write(true).open(&path).unwrap();
+            file.set_modified(week).unwrap();
+        }
+    }
+    live.rig.bench.os.answer(dir.join("note.txt"));
     live.send(browse(file_browser::Message::Download(
         "/note.txt".to_owned(),
     )));
-    let told = live.rig.bench.took();
-    assert!(
-        matches!(told.as_slice(), [Asked::Failed(None, _)]),
-        "{told:?}"
-    );
-    // What was there stays as it was; nothing half written beside it.
+    assert!(!dir.join(".homeport-killed.part").exists());
+    // One of now may be a write that still runs; one not ours stays.
+    assert!(dir.join(".homeport-running.part").exists());
+    assert!(dir.join("notes.part").exists());
+}
+
+#[test]
+fn cancel_at_the_last_byte_leaves_no_file_and_nothing_beside_it() {
+    let mut live = live(vec![entry("note.txt", false)]);
+    let saved = large_over_last_week(&mut live);
+    live.engine.stall(Stall::BeforeLastByte);
+    let download = browse(file_browser::Message::Download("/note.txt".to_owned()));
+    let transfer = begin(&mut live, download);
+    assert!(part_with(&live, 256 * 1024 - 1));
+    live.send(Message::Files(files::Message::Cancel));
+    finish(&mut live, transfer);
+    live.engine.release();
     assert_eq!(std::fs::read(&saved).unwrap(), b"last week's");
     assert!(no_part_left(&live));
+    assert!(live.rig.bench.took().is_empty(), "a cancel says nothing");
 }
 
 /// Leaves the page while a transfer runs: what holds its Cancel goes.

@@ -335,6 +335,7 @@ errors-file-notRegular = { $path } ليس ملفًا عاديًا.
 errors-file-notText = { $path } ليس ملفًا نصيًا.
 errors-file-tooLarge = { $path } أكبر من أن يكون مفتاحًا أو شهادة أو ملف compose.
 errors-file-tooLarge-hint = اختر ملفًا أصغر من 1 MB.
+errors-files-cutArchive = انتهى أرشيف Docker Engine لهذا الملف قبل أن ينتهي الملف.
 errors-files-emptyArchive = أرسل محرك Docker أرشيفًا فارغًا لهذا الملف.
 errors-files-noTools = لا تحتوي هذه الحاوية على أداتي find وstat، لذا لا يمكن سرد ملفاتها.
 errors-files-noTools-hint = تستبعدهما الصور المصغّرة (distroless، scratch). انسخ الملفات باستخدام docker cp من الطرفية بدلًا من ذلك.

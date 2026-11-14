@@ -72,6 +72,17 @@ struct Shared {
     abandoned: AtomicUsize,
     /// A download's answer breaks off half way.
     cut: std::sync::atomic::AtomicBool,
+    /// Where a download's answer waits for [`Engine::release`].
+    stall: Mutex<Option<Stall>>,
+}
+
+/// Where a download's answer waits, once [`Engine::hold_transfers`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Stall {
+    /// Every byte of the file but its last has gone.
+    BeforeLastByte,
+    /// The file's bytes have gone, not the archive's end.
+    AfterData,
 }
 
 /// Counts a stream as open until dropped.
@@ -242,6 +253,12 @@ impl Engine {
     /// connection that drops.
     pub fn cut_downloads(&self) {
         self.shared.cut.store(true, Ordering::SeqCst);
+    }
+
+    /// A download's answer stops at `at` until [`Engine::release`].
+    pub fn stall(&self, at: Stall) {
+        *self.shared.stall.lock().unwrap() = Some(at);
+        self.hold_transfers();
     }
 
     /// How many transfers were let go of before they were answered.
@@ -484,20 +501,33 @@ impl Connection {
         if request.method == "HEAD" {
             return self.answer("200 OK", &headers, b"").await;
         }
-        if !self.held().await {
+        let stall = *self.shared.stall.lock().unwrap();
+        if stall.is_none() && !self.held().await {
             return false;
         }
         let archive = archive_of(&name, held.as_deref());
-        if self.shared.cut.load(Ordering::SeqCst) {
-            // Says the whole length, sends half, and hangs up.
+        let cut = self.shared.cut.load(Ordering::SeqCst);
+        let data_end = BLOCK + held.as_ref().map_or(0, Vec::len);
+        let pause = match stall {
+            Some(Stall::BeforeLastByte) => Some(data_end - 1),
+            Some(Stall::AfterData) => Some(data_end),
+            None => cut.then_some(archive.len() / 2),
+        };
+        if let Some(at) = pause {
+            // Says the whole length, sends up to `at`, then waits (or,
+            // cut, hangs up).
             let head = format!(
                 "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nContent-Type: application/x-tar\r\n\r\n",
                 archive.len()
             );
             let _ = self.socket.write_all(head.as_bytes()).await;
-            let _ = self.socket.write_all(&archive[..archive.len() / 2]).await;
-            let _ = self.socket.shutdown().await;
-            return false;
+            let _ = self.socket.write_all(&archive[..at]).await;
+            // Cut now, or once released if told to cut meanwhile.
+            if cut || !self.held().await || self.shared.cut.load(Ordering::SeqCst) {
+                let _ = self.socket.shutdown().await;
+                return false;
+            }
+            return self.socket.write_all(&archive[at..]).await.is_ok();
         }
         self.answer("200 OK", &headers, &archive).await
     }
@@ -555,5 +585,8 @@ impl Connection {
 
 /// How many bytes an export sends.
 pub const EXPORTED: usize = 3 * 1024 * 1024;
+
+/// A tar block.
+const BLOCK: usize = 512;
 
 const VERSION: &str = r#"{"Version":"27.0.0","ApiVersion":"1.47","MinAPIVersion":"1.24","Os":"linux","Arch":"amd64"}"#;

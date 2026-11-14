@@ -335,6 +335,7 @@ errors-file-notRegular = { $path } non è un file normale.
 errors-file-notText = { $path } non è un file di testo.
 errors-file-tooLarge = { $path } è troppo grande per essere una chiave, un certificato o un file compose.
 errors-file-tooLarge-hint = Scegli un file inferiore a 1 MB.
+errors-files-cutArchive = L’archivio di questo file inviato dal Docker Engine è terminato prima del file.
 errors-files-emptyArchive = Il Docker Engine ha inviato un archivio vuoto per questo file.
 errors-files-noTools = Questo container non ha gli strumenti find e stat, quindi i suoi file non possono essere elencati.
 errors-files-noTools-hint = Le immagini minime (distroless, scratch) non li includono. Copia invece i file con docker cp da un terminale.

@@ -331,6 +331,7 @@
   "errors.file.notText": "{path} n’est pas un fichier texte.",
   "errors.file.tooLarge": "{path} est trop volumineux pour être une clé, un certificat ou un fichier compose.",
   "errors.file.tooLarge.hint": "Choisissez un fichier de moins de 1 Mo.",
+  "errors.files.cutArchive": "L’archive de ce fichier envoyée par Docker Engine s’est terminée avant le fichier.",
   "errors.files.emptyArchive": "Le Docker Engine a envoyé une archive vide pour ce fichier.",
   "errors.files.noTools": "Ce conteneur n’a pas les outils find et stat : ses fichiers ne peuvent donc pas être listés.",
   "errors.files.noTools.hint": "Les images minimales (distroless, scratch) ne les incluent pas. Copiez plutôt les fichiers avec docker cp depuis un terminal.",

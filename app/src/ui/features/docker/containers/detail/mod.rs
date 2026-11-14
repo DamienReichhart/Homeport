@@ -62,7 +62,13 @@
 //!   and can be stopped: Cancel stops before the next file, never in one,
 //!   so no file is left cut short in the container, and what went in is
 //!   said. A download shows its bytes (of how many, for a file) and Cancel
-//!   drops it at once, leaving no file. React sent the files in one
+//!   drops it at once, leaving no file. A file is read out of the
+//!   Engine's archive as it comes, in one pass, beside its place, and put
+//!   there only once whole and if not cancelled meanwhile; so its folder
+//!   must be writable, and a link at the destination is replaced, not
+//!   written through (the Tauri app's download now does the same). A
+//!   `.homeport-….part` left by an app killed mid-transfer is taken away
+//!   by the next download into that folder once it is a day old. React sent the files in one
 //!   archive and had neither progress nor Cancel.
 //! - A transfer or an export goes on to its end when the page is left,
 //!   and the shell says how it ended; React's export stopped when its
