@@ -169,6 +169,7 @@ fn cases() -> Vec<Case> {
                 type_in(d, b, Line::Image, "wireguard");
                 type_in(d, b, Line::Capability(Caps::Add), "net_admin");
                 field(d, b, Field::AddCapability(Caps::Add));
+                type_in(d, b, Line::Capability(Caps::Add), "cap_sys_module");
                 type_in(d, b, Line::Capability(Caps::Add), "cap_sys_module,");
                 type_in(d, b, Line::Capability(Caps::Drop), "ALL");
                 field(d, b, Field::AddCapability(Caps::Drop));

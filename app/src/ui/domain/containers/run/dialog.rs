@@ -212,6 +212,9 @@ impl Dialog {
     }
 
     fn submit(&mut self, ctx: &Context<'_>) -> (Task<Message>, Step) {
+        if !self.pending {
+            self.fields.add_drafts();
+        }
         if self.pending || !self.fields.is_ready() {
             return (Task::none(), Step::Stay);
         }

@@ -337,7 +337,13 @@ impl Form {
             Message::Switch(which, on) => self.switch(which, on),
             Message::Add(rows) => self.add(rows),
             Message::Remove(rows, index) => self.remove(rows, index),
-            Message::Section(section) => self.section = section,
+            Message::Section(section) => {
+                // Leaving the field adds what it holds (`onBlur`).
+                if self.section == Section::Security && section != Section::Security {
+                    self.add_drafts();
+                }
+                self.section = section;
+            }
             Message::AddCapability(caps) => self.add_capability(caps),
             Message::RemoveCapability(caps, index) => {
                 let list = self.capabilities(caps);
@@ -363,6 +369,17 @@ impl Form {
     }
 
     /// What was typed joins its list, as the list writes names, once.
+    /// What is typed in the lists of capabilities joins them, as React's
+    /// field added its draft when it lost focus: before the form is sent,
+    /// and when the section is left.
+    pub fn add_drafts(&mut self) {
+        for caps in [Caps::Add, Caps::Drop] {
+            if !self.drafts[caps as usize].trim().is_empty() {
+                self.add_capability(caps);
+            }
+        }
+    }
+
     fn add_capability(&mut self, caps: Caps) {
         let draft = std::mem::take(&mut self.drafts[caps as usize]);
         let typed = draft.trim();
@@ -423,11 +440,13 @@ impl Form {
             Line::Domainname => &mut a.identity.domainname,
             Line::LogDriver => &mut a.logging.driver,
             Line::Capability(caps) => {
-                // A comma ends a name, as Enter does.
-                let ends = value.ends_with(',');
-                self.drafts[caps as usize] = value;
-                if ends {
+                // The `,` key ends the name typed, wherever the cursor is,
+                // and is not part of it (`TokenInput`'s `onKeyDown`). A
+                // paste is no key: what it holds stays in the field.
+                if comma_typed(&self.drafts[caps as usize], &value) {
                     self.add_capability(caps);
+                } else {
+                    self.drafts[caps as usize] = value;
                 }
                 return;
             }
@@ -571,4 +590,15 @@ fn pod_names(lists: &Lists) -> Vec<String> {
         .data()
         .map(|list| list.iter().map(|p| p.name.clone()).collect())
         .unwrap_or_default()
+}
+
+/// Whether `now` is `before` with one comma typed into it.
+fn comma_typed(before: &str, now: &str) -> bool {
+    now.char_indices().any(|(at, c)| {
+        c == ',' && {
+            let mut without = now.to_owned();
+            without.remove(at);
+            without == before
+        }
+    })
 }

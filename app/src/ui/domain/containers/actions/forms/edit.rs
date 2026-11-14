@@ -157,6 +157,9 @@ impl Edit {
 
     /// Apply, or Enter: the confirmation opens, once the form can be sent.
     fn apply(&mut self, ctx: &Context<'_>) -> Task<Message> {
+        if !self.pending && self.confirming.is_none() {
+            self.fields.add_drafts();
+        }
         if !self.pending && self.confirming.is_none() && self.fields.is_ready() {
             return self.read_losses(ctx);
         }

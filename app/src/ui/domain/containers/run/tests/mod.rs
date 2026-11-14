@@ -177,7 +177,9 @@ fn capabilities_are_typed_a_name_at_a_time() {
         Message::Form(Field::AddCapability(Caps::Add)),
     );
     // A comma ends a name too; one already there is not added again.
+    type_in(&mut dialog, &bench, add, "sys_time");
     type_in(&mut dialog, &bench, add, "sys_time,");
+    type_in(&mut dialog, &bench, add, "NET_ADMIN");
     type_in(&mut dialog, &bench, add, "NET_ADMIN,");
     assert_eq!(
         dialog.fields.form.advanced.security.cap_add,
@@ -399,4 +401,51 @@ fn the_capabilities_not_chosen_and_the_usual_log_drivers_are_suggested() {
         suggest::Message::Pick("journald".to_owned()),
     );
     assert_eq!(dialog.fields.form.advanced.logging.driver, "journald");
+}
+
+#[test]
+fn a_capability_typed_and_not_added_is_sent_as_react_s_blur_added_it() {
+    let (bench, engine, host) = bench();
+    let mut dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+    type_in(&mut dialog, &bench, Line::Capability(Caps::Drop), "all");
+    // Run, with "all" still in the field: it is dropped, not forgotten.
+    let step = send(&mut dialog, &bench, Message::Submit);
+    assert_eq!(step, Step::Started("new-1".to_owned()));
+    let created = engine.created();
+    assert_eq!(
+        created[0].body["HostConfig"]["CapDrop"],
+        serde_json::json!(["ALL"])
+    );
+}
+
+#[test]
+fn leaving_the_security_section_adds_what_was_typed() {
+    let (bench, _engine, host) = bench();
+    let mut dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+    let security = Message::Form(Field::Section(
+        crate::ui::domain::containers::run::form::Section::Security,
+    ));
+    send(&mut dialog, &bench, security);
+    type_in(&mut dialog, &bench, Line::Capability(Caps::Add), "sys_time");
+    let resources = Message::Form(Field::Section(
+        crate::ui::domain::containers::run::form::Section::Resources,
+    ));
+    send(&mut dialog, &bench, resources);
+    assert_eq!(dialog.fields.form.advanced.security.cap_add, ["SYS_TIME"]);
+    assert!(dialog.fields.drafts[0].is_empty());
+}
+
+#[test]
+fn a_comma_typed_anywhere_ends_the_name_and_is_not_part_of_it() {
+    let (bench, _engine, host) = bench();
+    let mut dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+    let add = Line::Capability(Caps::Add);
+    type_in(&mut dialog, &bench, add, "NETADMIN");
+    // A comma typed between NET and ADMIN: React's `,` key added the name.
+    type_in(&mut dialog, &bench, add, "NET,ADMIN");
+    assert_eq!(dialog.fields.form.advanced.security.cap_add, ["NETADMIN"]);
+    assert!(dialog.fields.drafts[0].is_empty());
+    // A paste is no key: what it holds stays in the field.
+    type_in(&mut dialog, &bench, add, "CHOWN,KILL");
+    assert_eq!(dialog.fields.drafts[0], "CHOWN,KILL");
 }
