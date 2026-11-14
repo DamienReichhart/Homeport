@@ -34,6 +34,11 @@ pub const DEFAULT_FONT_SIZE: f32 = size::XS;
 pub const MIN_FONT_SIZE: f32 = 8.0;
 pub const MAX_FONT_SIZE: f32 = 32.0;
 
+/// The most output read in one `update`: a window that fell behind gets
+/// a backlog of megabytes in one batch (16 MB at most, `data::streams`),
+/// which is read a megabyte a frame, drawn in between.
+pub const READ_AT_ONCE: usize = 1024 * 1024;
+
 /// How much room the terminal had at its last layout: its cells and their
 /// size in pixels.
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -111,6 +116,9 @@ pub enum Message {
         side: Side,
     },
     Scroll(Scroll),
+    /// The next part of output that came faster than it is read: the
+    /// grid asks for it at each frame while there is some.
+    Read,
     /// A link was opened (Ctrl or Cmd and a press).
     Open(String),
     /// The search bar, and what it searches.
@@ -158,6 +166,8 @@ pub struct State {
     focused: bool,
     blinking: bool,
     title: Option<String>,
+    /// Output not read yet: past [`READ_AT_ONCE`] of a batch.
+    unread: std::collections::VecDeque<u8>,
 }
 
 impl Default for State {
@@ -201,6 +211,7 @@ impl State {
             focused: false,
             blinking: true,
             title: None,
+            unread: std::collections::VecDeque::new(),
         }
     }
 
@@ -238,6 +249,7 @@ impl State {
     pub fn reset(&mut self) {
         self.emulator = Emulator::new(self.emulator.size(), self.scrollback);
         self.title = None;
+        self.unread.clear();
         self.search.refresh(&self.emulator.term);
     }
 
@@ -247,12 +259,30 @@ impl State {
         self.feed_bytes(output.as_bytes())
     }
 
+    /// Up to [`READ_AT_ONCE`] is read at once; the rest waits, in order,
+    /// for the next frames ([`State::is_behind`]).
     pub fn feed_bytes(&mut self, output: &[u8]) -> Vec<Event> {
-        self.emulator.advance(output);
+        if self.unread.is_empty() && output.len() <= READ_AT_ONCE {
+            self.emulator.advance(output);
+        } else {
+            self.unread.extend(output);
+            self.read_unread();
+        }
         if self.search.is_active() {
             self.search.refresh(&self.emulator.term);
         }
         self.events()
+    }
+
+    fn read_unread(&mut self) {
+        let take = self.unread.len().min(READ_AT_ONCE);
+        let part: Vec<u8> = self.unread.drain(..take).collect();
+        self.emulator.advance(&part);
+    }
+
+    /// Whether output came faster than it was read, and waits.
+    pub fn is_behind(&self) -> bool {
+        !self.unread.is_empty()
     }
 
     /// A line of the app's, dimmed, after what the program printed: how a
@@ -440,6 +470,23 @@ impl State {
             Message::Scroll(scroll) => {
                 self.scroll(scroll);
                 None
+            }
+            Message::Read => {
+                self.read_unread();
+                if self.search.is_active() {
+                    self.search.refresh(&self.emulator.term);
+                }
+                // What the program asked meanwhile: its answers as one
+                // input; a title is kept (`title()`), a bell is let go.
+                let answers: String = self
+                    .events()
+                    .into_iter()
+                    .filter_map(|event| match event {
+                        Event::Input(text) => Some(text),
+                        _ => None,
+                    })
+                    .collect();
+                (!answers.is_empty()).then_some(Event::Input(answers))
             }
             Message::Open(url) => Some(Event::Open(url)),
             Message::OpenSearch => {

@@ -114,3 +114,28 @@ fn a_full_screen_program_s_frame_in_both_themes() {
         });
     }
 }
+
+/// Rule 6 of the migration guide: the search bar draws no literal. Its
+/// "Aa" and ".*" are the log viewer's, the exception the rule names.
+#[test]
+fn the_search_bar_draws_no_literal_of_its_own() {
+    let source = include_str!("../toolbar.rs");
+    let lookup: String = ['t', '!', '('].iter().collect();
+    let code: String = source
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("//"))
+        .collect::<Vec<_>>()
+        .join("\n");
+    let mut literals = vec![];
+    let mut rest = code.as_str();
+    while let Some(start) = rest.find('"') {
+        let before = &rest[..start];
+        let after = &rest[start + 1..];
+        let end = after.find('"').expect("a closed literal");
+        if !before.trim_end().ends_with(&lookup) {
+            literals.push(after[..end].to_owned());
+        }
+        rest = &after[end + 1..];
+    }
+    assert_eq!(literals, Vec::<String>::new());
+}

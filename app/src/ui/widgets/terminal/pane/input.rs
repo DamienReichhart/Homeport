@@ -327,6 +327,11 @@ fn frame<Message>(
     if geometry.viewport() != state.viewport() {
         send(shell, Action::Viewport(geometry.viewport()));
     }
+    if state.is_behind() {
+        // Output waits: the next part is read before the next frame.
+        send(shell, Action::Read);
+        shell.request_redraw();
+    }
     let drawn = *internal.dark.borrow();
     if let Some(dark) = drawn.filter(|dark| *dark != state.is_dark()) {
         send(shell, Action::Dark(dark));

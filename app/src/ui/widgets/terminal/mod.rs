@@ -39,7 +39,9 @@
 //!
 //! - **Output** is read a batch at a time, and a batch comes at most once
 //!   a frame (`data::streams`), so a program that prints 50 MB is read in
-//!   sixty slices a second and drawn once a frame.
+//!   sixty slices a second and drawn once a frame. A batch of more than a
+//!   megabyte (a window that fell behind) is read a megabyte a frame
+//!   ([`state::READ_AT_ONCE`]), so `update` never stalls on it.
 //! - **The grid** is drawn row by row; a row that did not change is not
 //!   looked at again, and text is shaped once for as long as it shows
 //!   (`pane/rows.rs`). Box drawing and blocks are drawn as shapes.

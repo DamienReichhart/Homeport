@@ -183,3 +183,29 @@ fn a_reset_forgets_the_last_session_but_keeps_the_size() {
     assert!(!state.mode().contains(TermMode::ALT_SCREEN));
     assert!(screen(&state).iter().all(String::is_empty));
 }
+
+#[test]
+fn a_flood_is_read_a_megabyte_a_frame_in_order() {
+    use crate::ui::widgets::terminal::state::READ_AT_ONCE;
+    let mut state = sized(20, 5);
+    let lines: String = (0..400_000).map(|i| format!("{i:07}\r\n")).collect();
+    assert!(lines.len() > 3 * READ_AT_ONCE);
+    let mut whole = sized(20, 5);
+    let mut rest = lines.as_bytes();
+    while !rest.is_empty() {
+        let (part, after) = rest.split_at(rest.len().min(READ_AT_ONCE));
+        let _ = whole.feed_bytes(part);
+        rest = after;
+    }
+    let _ = state.feed(&lines);
+    assert!(state.is_behind(), "a megabyte is read, the rest waits");
+    assert_ne!(screen(&state), screen(&whole));
+    let mut frames = 0;
+    while state.is_behind() {
+        let _ = state.update(Message::Read);
+        frames += 1;
+    }
+    assert_eq!(frames, lines.len().div_ceil(READ_AT_ONCE) - 1);
+    assert_eq!(screen(&state), screen(&whole));
+    assert_eq!(screen(&state)[3], "0399999");
+}

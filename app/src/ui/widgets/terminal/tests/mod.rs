@@ -6,6 +6,7 @@ mod drawn;
 mod driven;
 mod emulation;
 mod keys;
+mod perf;
 mod search;
 mod select;
 mod transcripts;
