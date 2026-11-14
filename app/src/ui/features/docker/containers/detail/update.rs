@@ -7,7 +7,7 @@ use iced::Task;
 use super::{
     queries, restarts,
     state::Tab,
-    tabs::{exec::Exec, files, health, inspect, processes},
+    tabs::{files, health, inspect, processes},
     view, Message, State,
 };
 use crate::{
@@ -52,14 +52,19 @@ fn needs(state: &mut State, ctx: &Context<'_>) -> Task<Message> {
 /// What the tab that shows reads, watched and counted in `wanted`.
 fn reads(state: &mut State, wanted: &mut HashSet<Key>, ctx: &Context<'_>) -> Task<Message> {
     let Some(container) = state.container(ctx) else {
+        // Not in the list (gone, or read again): its terminals' sessions
+        // go, and open again if it comes back running.
+        state.exec.park();
         return Task::none();
     };
     state.found = Some(container.id.clone());
     let host = state.host_id.clone();
-    if state.tab != Tab::Exec || container.state != "running" {
-        // Left, or stopped: the terminals' sessions are let go of, and
-        // the tab starts over when it shows a running container again.
-        state.exec.let_go();
+    if state.tab != Tab::Exec {
+        // Left: the tab starts over, as React's was unmounted.
+        state.exec.leave();
+    } else if container.state != "running" {
+        // Stopped or paused: the sessions go, what each ran is kept.
+        state.exec.park();
     }
     match state.tab {
         Tab::Inspect => {
@@ -93,12 +98,12 @@ fn reads(state: &mut State, wanted: &mut HashSet<Key>, ctx: &Context<'_>) -> Tas
             Task::none()
         }
         Tab::Exec if container.state == "running" => {
-            if !state.exec.is_stale() {
-                return Task::none();
+            // A shell the first time, those kept after a stop; each told
+            // the theme on screen.
+            if state.exec.needs_opening() {
+                let dark = ctx.world.theme.is_dark();
+                state.exec.open(&host, &container.id, dark);
             }
-            // As React's tab mounted: a shell, told the theme on screen.
-            let dark = ctx.world.theme.is_dark();
-            state.exec = Exec::new(&host, &container.id, dark);
             Task::none()
         }
         _ => Task::none(),
@@ -297,7 +302,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             };
             let dark = ctx.world.theme.is_dark();
             let host = state.host_id.clone();
-            let task = state.exec.update(message, (&host, &id), dark, ctx);
+            let dialog = state.actions.has_dialog();
+            let task = state.exec.update(message, (&host, &id), dark, dialog, ctx);
             return task.map(Message::Exec);
         }
         Message::Inspect(message) => return inspect(state, message, ctx),

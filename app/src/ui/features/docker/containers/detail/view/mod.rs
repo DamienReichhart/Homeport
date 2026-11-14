@@ -2,6 +2,8 @@
 //! shows.
 
 mod exec;
+#[cfg(test)]
+pub(super) use exec::view as exec_view;
 mod files;
 mod health;
 pub(super) mod inspect;

@@ -27,20 +27,17 @@ use crate::{
 /// What the tab row and the gap under it take of the height.
 const TABS: f32 = 44.0;
 
-/// The popover of "New terminal" (`w-80`).
+/// The popover of "New terminal" (`w-80`). Enter in its fields does
+/// nothing, as in React, whose fields were in no form: Open opens.
 fn asking(exec: &Exec) -> Element<'_, Message> {
     let draft = &exec.draft;
     let typed = |which: Draft| move |text| Message::Typed(which, text);
     let command = input(&t!("containers.exec.commandPlaceholder"), &draft.command)
         .font(theme::font::MONO)
-        .on_input(typed(Draft::Command))
-        .on_submit(Message::Open);
-    let user = input(&t!("containers.exec.default"), &draft.user)
-        .on_input(typed(Draft::User))
-        .on_submit(Message::Open);
-    let directory = input(&t!("containers.exec.default"), &draft.directory)
-        .on_input(typed(Draft::Directory))
-        .on_submit(Message::Open);
+        .on_input(typed(Draft::Command));
+    let user = input(&t!("containers.exec.default"), &draft.user).on_input(typed(Draft::User));
+    let directory =
+        input(&t!("containers.exec.default"), &draft.directory).on_input(typed(Draft::Directory));
     let half = |part: Element<'static, Message>| -> Element<'static, Message> {
         container(part).width(Length::Fill).into()
     };

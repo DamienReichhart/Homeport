@@ -25,6 +25,7 @@ use crate::{
     t,
     ui::{
         shell::Context,
+        widgets::basic::technical,
         widgets::{
             feedback::{error_message, Surfaced},
             terminal,
@@ -97,7 +98,8 @@ impl Title {
         match self {
             Self::Shell => t!("containers.exec.shell"),
             Self::Numbered(number) => t!("containers.exec.shellNumber", number = *number),
-            Self::Command(command) => command.clone(),
+            // What the container runs: machine text, laid out left to right.
+            Self::Command(command) => technical(command),
         }
     }
 }
@@ -114,6 +116,29 @@ pub struct Shell {
     pub failure: Option<Surfaced>,
 }
 
+/// A terminal let go of while the container doesn't run: what reopens it.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Parked {
+    pub key: u32,
+    pub title: Title,
+    pub spec: Spec,
+}
+
+/// Where the tab's terminals stand.
+#[derive(Debug, Default)]
+enum Phase {
+    /// None made: a shell opens when the tab shows a running container.
+    #[default]
+    Left,
+    /// Their sessions run, or ran.
+    Live,
+    /// The container stopped (or paused, or left the list): the sessions
+    /// and their screens were let go of, and each terminal opens again
+    /// with what it ran, on a new session, once it runs (React's tab
+    /// kept its list and mounted each terminal again).
+    Parked(Vec<Parked>),
+}
+
 #[derive(Debug, Default)]
 pub struct Exec {
     pub shells: Vec<Shell>,
@@ -122,9 +147,7 @@ pub struct Exec {
     /// "New terminal"'s popover, and what is typed in it.
     pub asking: bool,
     pub draft: Spec,
-    /// The sessions were let go of (the tab was left, or the container
-    /// stopped): the tab starts over when it shows a running container.
-    stale: bool,
+    phase: Phase,
 }
 
 /// What a session's end says, in the terminal, dimmed.
@@ -136,38 +159,76 @@ pub fn exit_text(exit: &Exit) -> String {
 }
 
 impl Exec {
-    /// The tab as React's mounted: one shell.
-    pub fn new(host_id: &str, container_id: &str, dark: bool) -> Self {
-        let mut exec = Self::default();
-        let shell = Shell::open(
-            1,
-            Title::Shell,
-            Spec::default(),
-            host_id,
-            container_id,
-            dark,
-        );
-        exec.shells.push(shell);
-        exec.active = 1;
-        exec
+    /// No terminal yet: a shell opens when the tab shows a running
+    /// container, as React's tab mounted.
+    pub fn left() -> Self {
+        Self::default()
     }
 
-    /// No terminal yet: they are made when the tab shows a running
-    /// container.
-    pub fn left() -> Self {
-        Self {
-            stale: true,
-            ..Self::default()
+    /// The tab was left: everything goes, and it starts over with a shell
+    /// (React's tab was unmounted).
+    pub fn leave(&mut self) {
+        if !matches!(self.phase, Phase::Left) {
+            *self = Self::left();
         }
     }
 
-    /// The sessions are let go of; the tab starts over next time.
-    pub fn let_go(&mut self) {
-        self.stale = true;
+    /// The container doesn't run: the sessions, their writers and their
+    /// screens go; what each terminal ran is kept.
+    pub fn park(&mut self) {
+        if matches!(self.phase, Phase::Live) {
+            let parked = self
+                .shells
+                .drain(..)
+                .map(|shell| Parked {
+                    key: shell.key,
+                    title: shell.title,
+                    spec: shell.spec,
+                })
+                .collect();
+            self.phase = Phase::Parked(parked);
+        }
     }
 
-    pub fn is_stale(&self) -> bool {
-        self.stale
+    /// Whether the terminals are to be opened: the tab shows a running
+    /// container and they are not.
+    pub fn needs_opening(&self) -> bool {
+        !matches!(self.phase, Phase::Live)
+    }
+
+    /// What is kept of the terminals while the container doesn't run.
+    pub fn parked(&self) -> &[Parked] {
+        match &self.phase {
+            Phase::Parked(parked) => parked,
+            _ => &[],
+        }
+    }
+
+    /// Opens the terminals on `container_id`: a shell the first time, the
+    /// ones kept (each on a new session) after the container stopped.
+    pub fn open(&mut self, host_id: &str, container_id: &str, dark: bool) {
+        let parked = match std::mem::replace(&mut self.phase, Phase::Live) {
+            Phase::Parked(parked) => parked,
+            Phase::Left => {
+                self.active = 1;
+                vec![Parked {
+                    key: 1,
+                    title: Title::Shell,
+                    spec: Spec::default(),
+                }]
+            }
+            Phase::Live => return,
+        };
+        self.shells = parked
+            .into_iter()
+            .map(|p| Shell::open(p.key, p.title, p.spec, host_id, container_id, dark))
+            .collect();
+    }
+
+    /// Whether the terminal `key` takes the keyboard as its session opens:
+    /// the one that shows, and not from under a dialog.
+    pub fn focuses(&self, key: u32, dialog: bool) -> bool {
+        key == self.active && !dialog
     }
 
     fn shell(&mut self, key: u32) -> Option<&mut Shell> {
@@ -192,14 +253,16 @@ impl Exec {
         message: Message,
         target: (&str, &str),
         dark: bool,
+        dialog: bool,
         ctx: &Context<'_>,
     ) -> Task<Message> {
         match message {
             Message::Session(key, said) => {
+                let focus = self.focuses(key, dialog);
                 let Some(shell) = self.shell(key) else {
                     return Task::none();
                 };
-                return shell.said(said, ctx);
+                return shell.said(said, focus, ctx);
             }
             Message::Written(key, written) => {
                 if let Some(shell) = self.shell(key) {
@@ -285,7 +348,7 @@ impl Shell {
     }
 
     /// What its session said.
-    fn said(&mut self, said: SessionUpdate, ctx: &Context<'_>) -> Task<Message> {
+    fn said(&mut self, said: SessionUpdate, focus: bool, ctx: &Context<'_>) -> Task<Message> {
         // What a session before this one said late is let go of.
         let Some(update) = self.session.take(said) else {
             return Task::none();
@@ -295,11 +358,12 @@ impl Shell {
             Update::Started(id) => {
                 let writes = self.session.started(ctx.state.clone(), id);
                 // The terminal takes the keyboard once it opened (`onOpen`).
+                let writes = Task::perform(writes, move |written| Message::Written(key, written));
+                if !focus {
+                    return writes;
+                }
                 let focus = iced::widget::operation::focus(self.terminal.id());
-                return Task::batch([
-                    Task::perform(writes, move |written| Message::Written(key, written)),
-                    focus,
-                ]);
+                return Task::batch([writes, focus]);
             }
             Update::Batch { items, .. } => {
                 let output = session::output(items);

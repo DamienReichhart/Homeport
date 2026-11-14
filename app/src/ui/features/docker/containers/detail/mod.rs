@@ -32,12 +32,13 @@
 //! | Health: read again when the list's status changes, and once per check interval | status in the key; a timer while the tab shows | done |
 //! | Health: "no healthcheck", "no check has run", failure with Retry | the same | done |
 //! | Exec: a shell when the tab shows a running container (`startExec`, command and user empty) | `tabs::exec`, kit terminal on a `TerminalSession` | done |
-//! | Exec: tabs "Shell", "Shell n" or the command, each with "Close …"; the last opened shows; closing the shown one shows the last | the same | done |
-//! | Exec: "New terminal" popover: command (`bash, or sh when missing`), user, directory (`default`), Open; the draft is kept | the same | done |
-//! | Exec: output, keys, sizes; the terminal takes focus once open; "[process exited with code n]" dimmed at the end | `session::output`, `notice`, `operation::focus` | done |
+//! | Exec: tabs "Shell", "Shell n" or the command, each with "Close …"; the last opened shows; closing the shown one shows the last | the same; a command laid out left to right (`technical`) | done |
+//! | Exec: "New terminal" popover: command (`bash, or sh when missing`), user, directory (`default`), Open; the draft is kept; Enter in a field does nothing | the same | done |
+//! | Exec: output, keys, sizes; the terminal takes focus once open; "[process exited with code n]" dimmed at the end | `session::output`, `notice`, `operation::focus` (the terminal that shows, and not from under a dialog) | done |
 //! | Exec: a command the container lacks (126, 127) or a broken session: the error in red in the terminal | the failure over the grid (`error_message`, Details) | differs (kit) |
 //! | Exec: every terminal stays open while another shows; none left: "No terminal open." | sessions of every tab followed; the one that shows is drawn | done |
-//! | Exec: stopped: "Start the container to open a terminal."; leaving the tab closes every session | the same; the tab starts over when it shows a running container again | done |
+//! | Exec: stopped or paused: "Start the container to open a terminal."; the list of terminals is kept and each opens again with its command, user and folder once it runs, the same one shown | `Exec::park`, `open`: the sessions and their screens go, what each ran is kept | done |
+//! | Exec: leaving the tab closes every session; it starts over with a shell | `Exec::leave` | done |
 //! | Files: browse, refresh, download (save dialog, name or name.tar), "Upload here" (open dialog), toasts | kit file browser, `ctx.platform`, `ctx.act` | done |
 //! | Files: a stopped container | "Start the container to browse its files." | done |
 //! | — | Files: transfer's progress (files put, bytes come) and Cancel; a failure per file; a download written whole or not at all | added |

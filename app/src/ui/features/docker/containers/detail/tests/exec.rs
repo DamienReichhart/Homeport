@@ -225,7 +225,7 @@ fn another_terminal_runs_its_command_as_its_user_and_closes() {
     // It shows, under its command; one opened without is numbered after
     // the highest open (`Math.max(..keys) + 1`): "Shell 2" again.
     assert_eq!(live.rig.state.exec.active, 2);
-    assert!(live.rig.shows("psql") && live.rig.shows("Shell"));
+    assert!(live.rig.shows("\u{2066}psql\u{2069}") && live.rig.shows("Shell"));
     live.exec(Exec::Close(2));
     assert!(live.until(|live| live.engine.open(Stream::Exec) == 1));
     assert_eq!(live.rig.state.exec.active, 1);
@@ -373,4 +373,128 @@ fn a_terminal_is_made_in_the_theme_on_screen_when_the_settings_follow_the_os() {
     bench.history.push(route(WEB, Some("exec")).into());
     let rig = Rig::open_on(bench);
     assert!(!rig.state.exec.shells[0].terminal.is_dark());
+}
+
+#[test]
+fn a_container_that_stops_keeps_its_terminals_and_reopens_each_as_it_ran() {
+    let _english = in_language("en");
+    let mut live = Terminals::at("exec");
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 1));
+    live.exec(Exec::Typed(Draft::Command, "psql".to_owned()));
+    live.exec(Exec::Typed(Draft::User, "postgres".to_owned()));
+    live.exec(Exec::Open);
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 2));
+    let host = live.rig.state.host_id.clone();
+    let list = |state: &str| {
+        let mut list = sample();
+        state.clone_into(&mut list[0].state);
+        list
+    };
+    // Paused: the sessions go, and their screens; what they ran stays.
+    live.rig
+        .bench
+        .data
+        .set(&keys::host::containers(&host), list("paused"));
+    live.send(Message::Resized(WINDOW.into()));
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 0));
+    assert!(
+        live.rig.state.exec.shells.is_empty(),
+        "nothing holds a screen"
+    );
+    let parked: Vec<_> = live.rig.state.exec.parked().iter().map(|p| p.key).collect();
+    assert_eq!(parked, [1, 2]);
+    // Running again: both open, each on a new session, the second shown.
+    live.rig
+        .bench
+        .data
+        .set(&keys::host::containers(&host), list("running"));
+    live.send(Message::Resized(WINDOW.into()));
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 2));
+    assert_eq!(live.rig.state.exec.active, 2);
+    let created = live.engine.execs();
+    assert_eq!(created.len(), 4);
+    assert!(created
+        .iter()
+        .skip(2)
+        .any(|e| e.contains(r#""User":"postgres""#)));
+    assert!(live.rig.shows("\u{2066}psql\u{2069}") && live.rig.shows("Shell"));
+}
+
+#[test]
+fn a_container_that_leaves_the_list_lets_go_of_its_sessions() {
+    let mut live = Terminals::at("exec");
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 1));
+    let host = live.rig.state.host_id.clone();
+    live.rig
+        .bench
+        .data
+        .set(&keys::host::containers(&host), Vec::<Container>::new());
+    live.send(Message::Resized(WINDOW.into()));
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 0));
+    assert!(live.rig.state.exec.shells.is_empty());
+    // Back: a new session, not the old one followed again.
+    live.rig
+        .bench
+        .data
+        .set(&keys::host::containers(&host), sample());
+    live.send(Message::Resized(WINDOW.into()));
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 1));
+    assert_eq!(live.engine.execs().len(), 2);
+}
+
+#[test]
+fn a_terminal_takes_the_keyboard_only_if_it_shows_and_no_dialog_is_up() {
+    let mut exec = super::super::tabs::exec::Exec::left();
+    exec.open("h", "c", false);
+    assert!(exec.focuses(1, false));
+    assert!(!exec.focuses(1, true), "a dialog keeps the keyboard");
+    assert!(!exec.focuses(2, false), "a terminal that doesn't show");
+}
+
+#[test]
+fn a_command_as_a_title_reads_left_to_right() {
+    use super::super::tabs::exec::Title;
+    let title = Title::Command("psql -U app".to_owned()).text();
+    assert_eq!(title, "\u{2066}psql -U app\u{2069}");
+}
+
+#[test]
+fn enter_in_new_terminal_s_fields_opens_nothing() {
+    let _english = in_language("en");
+    let mut exec = super::super::tabs::exec::Exec::left();
+    exec.asking = true;
+    exec.draft.command = "psql".to_owned();
+    let messages = crate::test_support::window::drive(
+        SIZE,
+        || super::super::view::exec_view(&exec, 600.0),
+        |window| {
+            window.click("psql").unwrap();
+            window.tap_key(iced::keyboard::key::Named::Enter);
+        },
+    );
+    assert!(
+        !messages.iter().any(|m| matches!(m, Exec::Open)),
+        "{messages:?}"
+    );
+}
+
+#[test]
+fn the_program_is_told_the_terminal_s_size_once_it_is_laid_out() {
+    let mut live = Terminals::at("exec");
+    assert!(live.until(|live| live.engine.open(Stream::Exec) == 1));
+    // Drawn in the window: the grid makes as many cells as fit, and the
+    // program is told.
+    let mut stage = crate::test_support::stage::Stage::new(SIZE);
+    let messages = stage.frame(live.rig.view(), |frame| frame.redraw());
+    for message in messages {
+        live.send(message);
+    }
+    let size = live.terminal(1).size();
+    assert_ne!(size, (80, 24), "the window holds another size");
+    let told = format!("resize h={}&w={}", size.1, size.0);
+    assert!(
+        live.until(|live| live.engine.terminal().contains(&told)),
+        "{told} in {:?}",
+        live.engine.terminal()
+    );
 }
