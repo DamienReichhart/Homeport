@@ -23,6 +23,7 @@ fn sent_in(key: Key, modifiers: Modifiers, text: Option<&str>, mode: TermMode) -
         modifiers,
         text,
         location: Location::Standard,
+        physical: None,
     };
     action(&press, mode, false)
 }
@@ -201,6 +202,7 @@ fn the_keypad_sends_its_own_codes_when_the_program_asks() {
             modifiers: NONE,
             text: Some(c),
             location: Location::Numpad,
+            physical: None,
         };
         action(&press, mode, false)
     };
@@ -223,6 +225,7 @@ fn the_keypad_sends_its_own_codes_when_the_program_asks() {
         modifiers: NONE,
         text: None,
         location: Location::Numpad,
+        physical: None,
     };
     assert_eq!(
         action(&press, application, false),
@@ -240,6 +243,7 @@ fn the_terminal_s_own_keys_with_ctrl_and_shift_or_cmd_on_macos() {
             modifiers,
             text: None,
             location: Location::Standard,
+            physical: None,
         };
         action(&press, mode, mac)
     };
@@ -298,9 +302,98 @@ fn what_is_left_to_the_app_never_reaches_the_program() {
         modifiers: LOGO,
         text: Some("k"),
         location: Location::Standard,
+        physical: None,
     };
     assert_eq!(action(&press, mode, true), None);
     // A key that types nothing and that xterm has no code for.
     assert_eq!(sent_in(named(Named::CapsLock), NONE, None, mode), None);
-    assert_eq!(sent_in(character("é"), CTRL, None, mode), None);
+}
+
+/// A key pressed where `physical` is on a US layout.
+fn at(key: Key, physical: char, modifiers: Modifiers, text: Option<&str>) -> Option<Action> {
+    let press = Press {
+        key: &key,
+        modifiers,
+        text,
+        location: Location::Standard,
+        physical: Some(physical),
+    };
+    action(&press, TermMode::empty(), false)
+}
+
+#[test]
+fn on_a_layout_without_latin_letters_ctrl_goes_by_where_the_key_is() {
+    let send = |bytes: &str| Some(Action::Send(bytes.to_owned()));
+    // A Russian layout: С is where C is, В where D, Я where Z.
+    assert_eq!(at(character("с"), 'c', CTRL, None), send("\x03"));
+    assert_eq!(at(character("в"), 'd', CTRL, None), send("\x04"));
+    assert_eq!(at(character("я"), 'z', CTRL, None), send("\x1a"));
+    assert_eq!(at(character("х"), '[', CTRL, None), send("\x1b"));
+    // The terminal's own keys too.
+    let own = with(&[CTRL, SHIFT]);
+    assert_eq!(at(character("С"), 'c', own, None), Some(Action::Copy));
+    assert_eq!(at(character("М"), 'v', own, None), Some(Action::Paste));
+    assert_eq!(at(character("А"), 'f', own, None), Some(Action::Find));
+    assert_eq!(at(character("Ф"), 'a', own, None), Some(Action::SelectAll));
+    // A Latin letter of the layout wins over its place (AZERTY's A is
+    // where Q is).
+    assert_eq!(at(character("a"), 'q', CTRL, None), send("\x01"));
+    // Typing, without Ctrl, types the layout's letter.
+    assert_eq!(at(character("с"), 'c', NONE, Some("с")), send("с"));
+}
+
+#[test]
+fn altgr_on_windows_types_its_text_and_ctrl_alt_elsewhere_is_escape_and_control() {
+    let send = |bytes: &str| Some(Action::Send(bytes.to_owned()));
+    let altgr = with(&[CTRL, ALT]);
+    // German AltGr + Q is @, reported as Ctrl and Alt with the text.
+    assert_eq!(at(character("@"), 'q', altgr, Some("@")), send("@"));
+    assert_eq!(at(character("€"), 'e', altgr, Some("€")), send("€"));
+    // Ctrl + Alt + X, whose text (if any) is a control character.
+    assert_eq!(
+        at(character("x"), 'x', altgr, Some("\x18")),
+        send("\x1b\x18")
+    );
+    assert_eq!(at(character("x"), 'x', altgr, None), send("\x1b\x18"));
+}
+
+#[test]
+fn every_ctrl_or_alt_combination_is_the_terminal_s_away_from_macos() {
+    let mode = TermMode::empty();
+    let send = |bytes: &str| Some(Action::Send(bytes.to_owned()));
+    // The app's Mod + 1..9, Mod + , and the like are Ctrl's here: xterm
+    // sends the sign itself, and no shortcut fires.
+    assert_eq!(sent_in(character("1"), CTRL, None, mode), send("1"));
+    assert_eq!(sent_in(character("9"), CTRL, None, mode), send("9"));
+    assert_eq!(sent_in(character(","), CTRL, None, mode), send(","));
+    assert_eq!(sent_in(character("."), CTRL, None, mode), send("."));
+    assert_eq!(sent_in(character(";"), CTRL, None, mode), send(";"));
+    assert_eq!(sent_in(character("="), CTRL, None, mode), send("="));
+    assert_eq!(sent_in(character("é"), CTRL, None, mode), send("é"));
+    // A key xterm has no code for, with Ctrl or Alt, sends nothing but
+    // is kept from the app.
+    assert_eq!(
+        sent_in(named(Named::CapsLock), CTRL, None, mode),
+        Some(Action::Nothing)
+    );
+    assert_eq!(
+        sent_in(named(Named::PrintScreen), ALT, None, mode),
+        Some(Action::Nothing)
+    );
+    // Ctrl + Tab still leaves.
+    assert_eq!(sent_in(named(Named::Tab), CTRL, None, mode), None);
+}
+
+#[test]
+fn the_us_place_of_a_key_is_read_from_its_code() {
+    use crate::ui::widgets::terminal::keys::latin;
+    use iced::keyboard::key::{Code, NativeCode, Physical};
+    assert_eq!(latin(&Physical::Code(Code::KeyC)), Some('c'));
+    assert_eq!(latin(&Physical::Code(Code::Digit7)), Some('7'));
+    assert_eq!(latin(&Physical::Code(Code::BracketRight)), Some(']'));
+    assert_eq!(latin(&Physical::Code(Code::F1)), None);
+    assert_eq!(
+        latin(&Physical::Unidentified(NativeCode::Unidentified)),
+        None
+    );
 }

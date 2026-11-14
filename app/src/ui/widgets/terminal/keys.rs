@@ -11,13 +11,22 @@
 //! | Shift + Home, End                          | the oldest line kept, the screen               |
 //! | Ctrl + Tab, Ctrl + Shift + Tab             | not the terminal's: they leave it              |
 //! | Cmd with any other key (macOS)             | not the terminal's: the app's shortcuts        |
+//! | any other Ctrl or Alt combination          | the program's, or nothing: never the app's     |
 //! | anything else                              | the program's, as xterm encodes it             |
+//!
+//! Ctrl and the terminal's own letters go by where the key is on a US
+//! layout when the layout's letter there is not Latin (Ctrl + С on a
+//! Russian layout is ^C). Ctrl and Alt together that type text (AltGr on
+//! Windows) send the text.
 //!
 //! The Shift + Page and Home keys are the program's on the alternate
 //! screen, which has no scrollback.
 
 use alacritty_terminal::term::TermMode;
-use iced::keyboard::{key::Named, Key, Location, Modifiers};
+use iced::keyboard::{
+    key::{Code, Named, Physical},
+    Key, Location, Modifiers,
+};
 
 use super::state::Scroll;
 
@@ -31,6 +40,9 @@ pub enum Action {
     Find,
     SelectAll,
     Scroll(ScrollTo),
+    /// The terminal's, though it sends nothing: a Ctrl or Alt
+    /// combination xterm has no code for still reaches no shortcut.
+    Nothing,
 }
 
 /// Where Shift with Page Up, Page Down, Home and End take the view.
@@ -61,6 +73,68 @@ pub struct Press<'a> {
     /// What the key types in the user's layout, if anything.
     pub text: Option<&'a str>,
     pub location: Location,
+    /// The ASCII character of the key where it is on a US layout
+    /// ([`latin`]): what Ctrl and the terminal's own keys go by on a layout
+    /// whose letters are not Latin (Ctrl + С on a Russian one is ^C).
+    pub physical: Option<char>,
+}
+
+/// The character the key at `physical` has on a US layout.
+pub fn latin(physical: &Physical) -> Option<char> {
+    let Physical::Code(code) = physical else {
+        return None;
+    };
+    let letters = [
+        (Code::KeyA, 'a'),
+        (Code::KeyB, 'b'),
+        (Code::KeyC, 'c'),
+        (Code::KeyD, 'd'),
+        (Code::KeyE, 'e'),
+        (Code::KeyF, 'f'),
+        (Code::KeyG, 'g'),
+        (Code::KeyH, 'h'),
+        (Code::KeyI, 'i'),
+        (Code::KeyJ, 'j'),
+        (Code::KeyK, 'k'),
+        (Code::KeyL, 'l'),
+        (Code::KeyM, 'm'),
+        (Code::KeyN, 'n'),
+        (Code::KeyO, 'o'),
+        (Code::KeyP, 'p'),
+        (Code::KeyQ, 'q'),
+        (Code::KeyR, 'r'),
+        (Code::KeyS, 's'),
+        (Code::KeyT, 't'),
+        (Code::KeyU, 'u'),
+        (Code::KeyV, 'v'),
+        (Code::KeyW, 'w'),
+        (Code::KeyX, 'x'),
+        (Code::KeyY, 'y'),
+        (Code::KeyZ, 'z'),
+        (Code::Digit0, '0'),
+        (Code::Digit1, '1'),
+        (Code::Digit2, '2'),
+        (Code::Digit3, '3'),
+        (Code::Digit4, '4'),
+        (Code::Digit5, '5'),
+        (Code::Digit6, '6'),
+        (Code::Digit7, '7'),
+        (Code::Digit8, '8'),
+        (Code::Digit9, '9'),
+        (Code::BracketLeft, '['),
+        (Code::BracketRight, ']'),
+        (Code::Backslash, '\\'),
+        (Code::Minus, '-'),
+        (Code::Equal, '='),
+        (Code::Slash, '/'),
+        (Code::Backquote, '`'),
+        (Code::Comma, ','),
+        (Code::Period, '.'),
+        (Code::Semicolon, ';'),
+        (Code::Quote, '\''),
+        (Code::Space, ' '),
+    ];
+    letters.iter().find(|(at, _)| at == code).map(|(_, c)| *c)
 }
 
 /// xterm's number for the modifiers of a key: 1, plus 1 for Shift, 2 for
@@ -195,6 +269,23 @@ fn keypad(c: char) -> Option<String> {
     Some(format!("\x1bO{letter}"))
 }
 
+/// The key's ASCII character, lowered: its own when the layout has one
+/// there, else the one of its place on a US layout.
+fn letter(press: &Press<'_>) -> Option<char> {
+    let own = match press.key {
+        Key::Character(c) => c.chars().next().filter(char::is_ascii),
+        _ => None,
+    };
+    own.or(press.physical).map(|c| c.to_ascii_lowercase())
+}
+
+/// What the layout typed, if it is text and not a control character.
+fn typed<'a>(press: &Press<'a>) -> Option<&'a str> {
+    press
+        .text
+        .filter(|text| !text.is_empty() && !text.chars().any(char::is_control))
+}
+
 /// The terminal's own keys: copy, paste, search, select all and the
 /// scrollback's. With Shift and Ctrl elsewhere, with Cmd on macOS.
 fn own(press: &Press<'_>, mode: TermMode, mac: bool) -> Option<Action> {
@@ -205,14 +296,12 @@ fn own(press: &Press<'_>, mode: TermMode, mac: bool) -> Option<Action> {
         modifiers.control() && modifiers.shift() && !modifiers.logo()
     };
     if command && !modifiers.alt() {
-        if let Key::Character(c) = press.key {
-            match c.to_lowercase().as_str() {
-                "c" => return Some(Action::Copy),
-                "v" => return Some(Action::Paste),
-                "f" => return Some(Action::Find),
-                "a" => return Some(Action::SelectAll),
-                _ => {}
-            }
+        match letter(press) {
+            Some('c') => return Some(Action::Copy),
+            Some('v') => return Some(Action::Paste),
+            Some('f') => return Some(Action::Find),
+            Some('a') => return Some(Action::SelectAll),
+            _ => {}
         }
     }
     let shift_only =
@@ -235,6 +324,9 @@ fn own(press: &Press<'_>, mode: TermMode, mac: bool) -> Option<Action> {
 }
 
 /// What `press` does in a terminal in `mode`; `None` leaves it to the app.
+/// Away from macOS every combination with Ctrl or Alt is the terminal's
+/// (what xterm sends, or [`Action::Nothing`]), but Ctrl + Tab: the app's
+/// shortcuts with Mod are Ctrl's there, and programs need them.
 pub fn action(press: &Press<'_>, mode: TermMode, mac: bool) -> Option<Action> {
     if let Some(own) = own(press, mode, mac) {
         return Some(own);
@@ -244,8 +336,13 @@ pub fn action(press: &Press<'_>, mode: TermMode, mac: bool) -> Option<Action> {
     if modifiers.logo() || (modifiers.control() && press.key == &Key::Named(Named::Tab)) {
         return None;
     }
+    let chord = modifiers.control() || modifiers.alt();
     let bytes = match press.key {
-        Key::Named(key) => named(*key, modifiers, mode, press.location)?,
+        Key::Named(key) => match named(*key, modifiers, mode, press.location) {
+            Some(bytes) => bytes,
+            None if chord => return Some(Action::Nothing),
+            None => return None,
+        },
         Key::Character(c) => {
             let c = c.as_str();
             let first = c.chars().next()?;
@@ -254,26 +351,31 @@ pub fn action(press: &Press<'_>, mode: TermMode, mac: bool) -> Option<Action> {
                     return Some(Action::Send(code));
                 }
             }
-            if modifiers.control() {
-                let code = control(first)?;
-                with_alt(&code.to_string(), modifiers)
+            if modifiers.control() && modifiers.alt() && typed(press).is_some() && !mac {
+                // AltGr, which Windows reports as Ctrl and Alt: what it
+                // types (`@` with Q on a German layout).
+                typed(press).unwrap_or(c).to_owned()
+            } else if modifiers.control() {
+                match letter(press).and_then(control) {
+                    Some(code) => with_alt(&code.to_string(), modifiers),
+                    // A sign with no control character: xterm sends it as
+                    // it is (Ctrl + 1 is "1").
+                    None => with_alt(typed(press).unwrap_or(c), modifiers),
+                }
             } else if modifiers.alt() && !mac {
                 // Alt and a letter is Escape and the letter, as typed.
-                with_alt(press.text.filter(|t| !t.is_empty()).unwrap_or(c), modifiers)
+                with_alt(typed(press).unwrap_or(c), modifiers)
             } else {
                 // What the layout types (Option's letters on macOS
                 // included), or the key's own character.
-                press
-                    .text
-                    .filter(|text| !text.is_empty() && !text.chars().any(char::is_control))
-                    .unwrap_or(c)
-                    .to_owned()
+                typed(press).unwrap_or(c).to_owned()
             }
         }
-        Key::Unidentified => press
-            .text
-            .filter(|text| !text.is_empty() && !text.chars().any(char::is_control))?
-            .to_owned(),
+        Key::Unidentified => match typed(press) {
+            Some(text) => text.to_owned(),
+            None if chord => return Some(Action::Nothing),
+            None => return None,
+        },
     };
     Some(Action::Send(bytes))
 }

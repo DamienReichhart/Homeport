@@ -275,6 +275,7 @@ fn key<Message>(
         modifiers,
         text,
         location,
+        physical_key,
         ..
     } = event
     else {
@@ -285,6 +286,7 @@ fn key<Message>(
         modifiers: *modifiers,
         text: text.as_deref(),
         location: *location,
+        physical: keys::latin(physical_key),
     };
     let state = pane.state;
     let Some(action) = keys::action(&press, state.mode(), pane.mac) else {
@@ -297,6 +299,7 @@ fn key<Message>(
         KeyAction::Find => Some(Action::OpenSearch),
         KeyAction::SelectAll => Some(Action::SelectAll),
         KeyAction::Scroll(to) => Some(Action::Scroll(to.into())),
+        KeyAction::Nothing => None,
     };
     if let Some(message) = message {
         shell.publish((pane.on_event)(message));
