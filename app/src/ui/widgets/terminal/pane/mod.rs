@@ -12,9 +12,9 @@
 //! text they shaped.
 
 mod boxes;
-mod draw;
+pub(in crate::ui::widgets::terminal) mod draw;
 mod input;
-pub mod rows;
+pub(in crate::ui::widgets::terminal) mod rows;
 
 use std::{cell::RefCell, collections::HashMap, time::Instant};
 

@@ -2,13 +2,14 @@
 //! the keys, the pointer, the selection, the search, the size, and what
 //! it draws.
 
+mod cache;
 mod drawn;
 mod driven;
 mod emulation;
-mod keys;
 mod fixes;
-mod perf;
+mod keys;
 mod mouse;
+mod perf;
 mod search;
 mod select;
 mod transcripts;
@@ -52,7 +53,6 @@ pub(super) fn sized(cols: usize, rows: usize) -> State {
     state
 }
 
-/// What the rows of the screen say, their trailing blanks off.
 /// What the terminal says back for `message`, its tasks run and what
 /// they produced handed back (a regular expression built elsewhere).
 pub(super) fn drive(state: &mut State, message: Message) -> Vec<Event> {
@@ -69,6 +69,7 @@ pub(super) fn told(state: &mut State, message: Message) -> Vec<Event> {
     state.update(message).1
 }
 
+/// What the rows of the screen say, their trailing blanks off.
 pub(super) fn screen(state: &State) -> Vec<String> {
     let term = state.term();
     let (cols, rows) = state.size();

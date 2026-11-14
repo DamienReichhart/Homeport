@@ -87,11 +87,33 @@ pub(super) fn span_on(
 
 /// The colours of `style`, kept for the next draw.
 fn colours_of(internal: &Internal, terminal: &Terminal, style: Style) -> (Color, Option<Color>) {
-    *internal
-        .colours
-        .borrow_mut()
-        .entry(style)
-        .or_insert_with(|| palette::colours(terminal, style))
+    let mut colours = internal.colours.borrow_mut();
+    if let Some(known) = colours.get(&style) {
+        return *known;
+    }
+    // A program of 24-bit colours has as many looks as it likes: past a
+    // screen's worth of them, they are worked out again.
+    if colours.len() >= COLOURS_KEPT {
+        colours.clear();
+    }
+    #[cfg(test)]
+    COLOURED.with(|coloured| coloured.set(coloured.get() + 1));
+    let worked_out = palette::colours(terminal, style);
+    colours.insert(style, worked_out);
+    #[cfg(test)]
+    HELD.with(|held| held.set(held.get().max(colours.len())));
+    worked_out
+}
+
+/// How many looks' colours are kept between draws.
+pub(in crate::ui::widgets::terminal) const COLOURS_KEPT: usize = 4_096;
+
+#[cfg(test)]
+thread_local! {
+    /// How many looks' colours this thread worked out.
+    pub(crate) static COLOURED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    /// The most looks it held at once.
+    pub(crate) static HELD: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
 fn row<Message>(

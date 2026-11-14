@@ -44,6 +44,14 @@ use crate::ui::{
     },
 };
 
+#[cfg(test)]
+thread_local! {
+    /// How many rows this thread built, and how many pieces of text it
+    /// shaped: what a test counts to hold a layout to what changed.
+    pub(crate) static BUILT: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+    pub(crate) static SHAPED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 /// What a piece of a row is drawn as.
 #[derive(Clone)]
 pub enum Kind {
@@ -158,6 +166,8 @@ impl Glyphs {
             return paragraph.clone();
         }
         self.shaped += 1;
+        #[cfg(test)]
+        SHAPED.with(|shaped| shaped.set(shaped.get() + 1));
         let paragraph = shape(content, italic, self.size, self.height);
         map.insert(content.to_owned(), (paragraph.clone(), now));
         paragraph
@@ -362,6 +372,8 @@ fn build(
     glyphs: &mut Glyphs,
     cell: f32,
 ) -> Row {
+    #[cfg(test)]
+    BUILT.with(|built| built.set(built.get() + 1));
     let mut pieces = vec![];
     let mut text = String::with_capacity(cols);
     // The cell of each byte of `text`.
@@ -441,7 +453,16 @@ pub fn lay(state: &State, previous: Laid, glyphs: &mut Glyphs, geometry: &Geomet
     let cols = term.columns();
     let screen = term.screen_lines();
     let colours = term.colors();
-    let palette = palette_signature(colours);
+    // What a row is laid out at is part of what it is: a row of another
+    // size of text or another cell is laid out again.
+    let palette = {
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        palette_signature(colours).hash(&mut hasher);
+        state.font_size().to_bits().hash(&mut hasher);
+        geometry.cell.width.to_bits().hash(&mut hasher);
+        geometry.cell.height.to_bits().hash(&mut hasher);
+        hasher.finish()
+    };
     glyphs.begin(state.font_size(), geometry.cell.height);
     let mut kept: HashMap<u64, Vec<Row>> = HashMap::with_capacity(previous.rows.len());
     for row in previous.rows {
