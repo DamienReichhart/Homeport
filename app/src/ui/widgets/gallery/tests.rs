@@ -438,3 +438,72 @@ fn a_popover_opens_and_closes_on_escape() {
     });
     assert!(!gallery.popover);
 }
+
+#[test]
+fn a_field_with_suggestions_offers_them_as_typed_and_keeps_free_text() {
+    let _english = in_language("en");
+    // A field that holds `start`, clicked, then typed in.
+    let typed = |start: &str, act: &dyn Fn(&mut Window<'_, Message>)| {
+        let mut gallery = Gallery {
+            image: start.to_owned(),
+            ..controls()
+        };
+        let start = start.to_owned();
+        play(&mut gallery, WINDOW, |window| {
+            window.click(start.as_str()).unwrap();
+            act(window);
+        });
+        gallery
+    };
+    // The list opens on what holds what is typed; Down twice and Enter
+    // take the second.
+    let gallery = typed("n", &|w| {
+        w.typewrite("gi");
+        keys(w, &[Named::ArrowDown, Named::ArrowDown, Named::Enter]);
+    });
+    assert_eq!(gallery.image, "nginx:latest");
+    assert!(!gallery.images.is_open());
+    // Free text stays: Enter with nothing highlighted takes nothing.
+    let gallery = typed("m", &|w| {
+        w.typewrite("y-own:1");
+        keys(w, &[Named::Enter]);
+    });
+    assert_eq!(gallery.image, "my-own:1");
+    // Escape closes the list (each frame is drawn anew: the list is
+    // open before Escape comes).
+    let mut gallery = typed("p", &|w| {
+        w.typewrite("o");
+    });
+    assert!(gallery.images.is_open());
+    play(&mut gallery, WINDOW, |window| {
+        window.click("po").unwrap();
+        keys(window, &[Named::Escape]);
+    });
+    assert_eq!(gallery.image, "po");
+    assert!(!gallery.images.is_open());
+    // A press on a suggestion takes it.
+    let mut gallery = typed("p", &|w| {
+        w.typewrite("o");
+    });
+    assert!(gallery.images.is_open());
+    play(&mut gallery, WINDOW, |window| {
+        window.click("postgres:16").unwrap();
+    });
+    assert_eq!(gallery.image, "postgres:16");
+    assert!(!gallery.images.is_open());
+}
+
+#[test]
+fn a_field_with_suggestions_in_both_themes_and_mirrored() {
+    for (look, language, theme) in LOOKS {
+        let mut gallery = controls();
+        let _ = gallery.update(Message::Image(super::suggest::Message::Typed(
+            "nginx".to_owned(),
+        )));
+        let _ = gallery.update(Message::Image(super::suggest::Message::Step(1)));
+        let name = format!("widgets-suggest-{look}");
+        assert_snapshot(&name, language, &theme, (420.0, 200.0), || {
+            on_page(container(gallery.suggestion()).width(280).into())
+        });
+    }
+}

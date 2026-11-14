@@ -19,8 +19,8 @@ use crate::ui::{
             card, progress, scroll_area, separator, BadgeVariant,
         },
         form::{
-            field, input, input_group, number_input, password, segmented, select, tabs, textarea,
-            toggle_group, Addon, Number, TabsVariant, Toggle,
+            field, input, input_group, number_input, password, segmented, select, suggest, tabs,
+            textarea, toggle_group, Addon, Number, TabsVariant, Toggle,
         },
         line,
         overlay::{menu, popover, tooltip, Side},
@@ -118,6 +118,7 @@ impl Gallery {
             Message::Port,
         );
         let notes = textarea(&self.notes, Message::Notes);
+        let image = self.suggestion();
         line(vec![
             column(vec![
                 field("Build argument", name)
@@ -125,6 +126,9 @@ impl Gallery {
                     .error(self.errors.message("argument"))
                     .into(),
                 field("Search", search).into(),
+                field("Image", image)
+                    .help("Free text, or one of the suggestions.")
+                    .into(),
                 field("Disabled", disabled).optional().into(),
             ])
             .into(),
@@ -155,6 +159,30 @@ impl Gallery {
         .spacing(space::S6)
         .align_y(iced::alignment::Vertical::Top)
         .into()
+    }
+
+    /// The images a field with suggestions offers, kept for as long as the
+    /// program runs.
+    pub(super) fn image_tags() -> &'static [String] {
+        static TAGS: std::sync::LazyLock<Vec<String>> = std::sync::LazyLock::new(|| {
+            [
+                "nginx:1.27",
+                "nginx:latest",
+                "postgres:16",
+                "redis:7-alpine",
+            ]
+            .map(str::to_owned)
+            .to_vec()
+        });
+        &TAGS
+    }
+
+    /// A field of free text with suggestions (`<datalist>`).
+    pub(super) fn suggestion(&self) -> Element<'_, Message> {
+        suggest(&self.images, Self::image_tags(), &self.image)
+            .placeholder("nginx:latest")
+            .view()
+            .map(Message::Image)
     }
 
     pub(super) fn selects(&self) -> Element<'_, Message> {

@@ -11,33 +11,34 @@ The theme has its own, `cargo run -p homeport-app --example gallery --features g
 
 ## From the React primitives
 
-| `src/shared/ui/primitives` | In the iced app                                                                                                       |
-| -------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `button`                   | `basic::button::{text, icon, labelled}` with `Variant` and `ButtonSize`                                               |
-| `badge`                    | `basic::badge` (`BadgeVariant::Passed` and `Failed`: a check's outcome, outlined in its colour)                       |
-| `card`                     | `basic::card` (`.aside(..)` is the muted figure beside its title: `CPU · 12.5%`)                                      |
-| `separator`                | `basic::separator`, `separator_vertical` (iced's `rule`)                                                              |
-| `progress`                 | `basic::progress` (iced's `progress_bar`)                                                                             |
-| `scroll-area`              | `basic::scroll_area` (iced's `scrollable`)                                                                            |
-| `collapsible`              | `basic::collapsible`                                                                                                  |
-| `skeleton`                 | `feedback::skeleton`                                                                                                  |
-| `alert`                    | `feedback::error_message` for a failure; `feedback::alert` for a notice (a copy's shared ports, a privileged warning) |
-| `sonner`                   | `feedback::Toasts`                                                                                                    |
-| `dialog`                   | `overlay::dialog` in `overlay::modal(..).close_on_scrim()`                                                            |
-| `alert-dialog`             | `overlay::dialog` in `overlay::modal`; `feedback::confirm_dialog` for the usual                                       |
-| `popover`                  | `overlay::popover`                                                                                                    |
-| `tooltip`                  | `overlay::tooltip`                                                                                                    |
-| `dropdown-menu`            | `overlay::menu::dropdown`                                                                                             |
-| `select`                   | `form::select`                                                                                                        |
-| `command`                  | `form::select(..).searchable(true)`; the palette itself is the shell's                                                |
-| `tabs`                     | `form::tabs`                                                                                                          |
-| `toggle`, `toggle-group`   | `form::toggle_group`, `form::segmented`                                                                               |
-| `input`                    | `form::input` (iced's `text_input`)                                                                                   |
-| `input-group`              | `form::input_group`; `form::password`, `form::number_input` are built on it                                           |
-| `textarea`                 | `form::textarea` (iced's `text_editor`, growing with its text)                                                        |
-| `label`                    | `form::field`, which also holds the help and the error                                                                |
-| `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme; `form::checkbox` where it is `indeterminate` or must take focus |
-| `table`                    | `table::Table` (_The data table_)                                                                                     |
+| `src/shared/ui/primitives` | In the iced app                                                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `button`                   | `basic::button::{text, icon, labelled}` with `Variant` and `ButtonSize`                                                 |
+| `badge`                    | `basic::badge` (`BadgeVariant::Passed` and `Failed`: a check's outcome, outlined in its colour)                         |
+| `card`                     | `basic::card` (`.aside(..)` is the muted figure beside its title: `CPU · 12.5%`)                                        |
+| `separator`                | `basic::separator`, `separator_vertical` (iced's `rule`)                                                                |
+| `progress`                 | `basic::progress` (iced's `progress_bar`)                                                                               |
+| `scroll-area`              | `basic::scroll_area` (iced's `scrollable`)                                                                              |
+| `collapsible`              | `basic::collapsible`                                                                                                    |
+| `skeleton`                 | `feedback::skeleton`                                                                                                    |
+| `alert`                    | `feedback::error_message` for a failure; `feedback::alert` for a notice (a copy's shared ports, a privileged warning)   |
+| `sonner`                   | `feedback::Toasts`                                                                                                      |
+| `dialog`                   | `overlay::dialog` in `overlay::modal(..).close_on_scrim()`                                                              |
+| `alert-dialog`             | `overlay::dialog` in `overlay::modal`; `feedback::confirm_dialog` for the usual                                         |
+| `popover`                  | `overlay::popover`                                                                                                      |
+| `tooltip`                  | `overlay::tooltip`                                                                                                      |
+| `dropdown-menu`            | `overlay::menu::dropdown`                                                                                               |
+| `select`                   | `form::select`                                                                                                          |
+| `command`                  | `form::select(..).searchable(true)`; the palette itself is the shell's                                                  |
+| `tabs`                     | `form::tabs`                                                                                                            |
+| `toggle`, `toggle-group`   | `form::toggle_group`, `form::segmented`                                                                                 |
+| `input`                    | `form::input` (iced's `text_input`)                                                                                     |
+| `input` with a `datalist`  | `form::suggest`: free text, with the suggestions that hold what is typed under it (arrows, Enter, Escape, Tab, a press) |
+| `input-group`              | `form::input_group`; `form::password`, `form::number_input` are built on it                                             |
+| `textarea`                 | `form::textarea` (iced's `text_editor`, growing with its text)                                                          |
+| `label`                    | `form::field`, which also holds the help and the error                                                                  |
+| `checkbox`, `switch`       | iced's `checkbox` and `toggler`, styled by the theme; `form::checkbox` where it is `indeterminate` or must take focus   |
+| `table`                    | `table::Table` (_The data table_)                                                                                       |
 
 `LogViewer` (`src/features/containers/ui/logs`, the read-only `XTerm` every log view drew) is `log::Viewer` (_The log viewer_). `XTerm` (`src/shared/ui/terminal`), every terminal's, is `terminal::Terminal` (_The terminal_), and its session is `data::streams::session`. A row of controls that goes on a second line when it lacks room (`flex flex-wrap`, with `ms-auto` on what goes to the end) is `basic::flow(items).push_from(index)`: it wraps the way the language reads, which iced's own wrapping row doesn't.
 
@@ -277,6 +278,7 @@ A key typed during each of those frames was handled in 0.001 ms of `update`: bat
 - **The JSON view** (`data::json`): a document as a tree in the kit's table, a name and a value a row. The page reads the document once, `json::Document::parse(text)` or `Document::of(&value)` (a pass over all of it: in a task when it may be megabytes), and keeps `json::State::new(document)`; `json::View::new(&state, Message::Json).max_height(..).view()` draws it and `state.update(message)` returns a task to map and `Some(json::Event::Copy(text))` for `ctx.copy`. A press or Enter on an object or an array closes and opens it; a row's menu copies its path as `jq` writes it (`.Config.Env[0]`, `.Labels["com.docker.compose.project"]`) or its value on indented lines; the Copy button copies the whole document, as React's did. The search field is `state.search_id()` for `/`; Enter there goes to the next match and Shift + Enter to the one before, round at the ends, opening what holds the match and scrolling to it. It looks in members' names and in values as JSON writes them, whatever the case.
 - **Labelled values** (`data::key_value(vec![Item::text(label, value), Item::mono(..), Item::new(label, element), Item::maybe(label, option)])`): the labels in a column as wide as the longest (240 px at most), the values in the rest, wrapped anywhere, a dash for a value there is none of.
 - **The search field** (`form::search`) has a button at its end that empties it once it holds something, and Escape empties it and stays in it; on an empty field Escape leaves it. What is typed reaches the page at once. `form::Debounce` keeps the text and tells, 250 ms after the last letter, whether nothing was typed since: `self.search.input(text).map(Message::Paused)`, then `self.search.settled(ticket)` is the query to run.
+- **A field with suggestions** (`form::suggest`) is the browser's `<input list>` over a `<datalist>`: what is typed stays free text, and a list under the field offers the suggestions that hold it, whatever the case (Chromium's and WebKit's filter), but the one typed whole; every one over an empty field. The page keeps a `suggest::State` and the suggestions (`&[String]`, built once, not in `view`): `suggest(&state, &suggestions, &value).placeholder(..).font(..).view()`, and `state.update(message, &value, &suggestions)` returns a task (focus that leaves on Tab) and `Some(Event::Input(text))` for what the field holds now or `Some(Event::Submit)` for Enter with nothing highlighted (the form's Enter). The list opens as the text changes or on Down; Down and Up highlight (round at the ends) while the keyboard stays in the field; Enter takes the highlighted suggestion, Escape closes the list and only the list (a dialog around stays), Tab and Shift + Tab close it and leave, a press takes one and a press elsewhere closes it. It hangs from the field's start: the right edge in Arabic. The gallery's _Controls_ page has one (`widgets-suggest-*`).
 - **A copy button's feedback**: `feedback::Copied<T>` says which button of several copied (`copied.is(&what)`), and a button pressed again goes on saying "Copied" until its own second and a half is over: `copied.start(what).map(Message::CopyShown)`, then `copied.finish(ticket)`.
 
 Their limits:

@@ -41,7 +41,7 @@ use super::{
         About, Surfaced, Toasts,
     },
     focus,
-    form::{select, Errors},
+    form::{select, suggest, Errors},
     line, log as log_widget,
     overlay::{self, menu},
     stack, table as table_widget,
@@ -95,6 +95,9 @@ pub struct Gallery {
     pub layout: usize,
     pub bold: [bool; 3],
     pub name: String,
+    /// The field with suggestions: what it holds, and its list.
+    pub image: String,
+    pub images: suggest::State,
     pub secret: String,
     pub revealed: bool,
     pub port: String,
@@ -141,6 +144,7 @@ pub enum Message {
     Layout(usize),
     Bold(usize),
     Name(String),
+    Image(suggest::Message),
     Secret(String),
     Reveal,
     Port(String),
@@ -195,6 +199,8 @@ impl Gallery {
             layout: 0,
             bold: [true, false, false],
             name: "TOKEN=abc".to_owned(),
+            image: String::new(),
+            images: suggest::State::default(),
             secret: "hunter2".to_owned(),
             revealed: false,
             port: "80a".to_owned(),
@@ -353,6 +359,13 @@ impl Gallery {
                 // Editing the field takes away what was wrong with it.
                 self.errors.clear("argument");
                 self.name = name;
+            }
+            Message::Image(message) => {
+                let (task, event) = self.images.update(message, &self.image, Self::image_tags());
+                if let Some(suggest::Event::Input(text)) = event {
+                    self.image = text;
+                }
+                return task;
             }
             Message::Secret(secret) => self.secret = secret,
             Message::Reveal => self.revealed = !self.revealed,

@@ -1,7 +1,8 @@
 //! Forms: a [`field`] is a control with its label, its help and why its
 //! value is refused; the controls are iced's own where it has one (the
 //! checkbox, the radio, the switch and the slider, which the theme styles)
-//! and the kit's for the rest: [`input`] and its group, [`password`],
+//! and the kit's for the rest: [`input`] and its group, [`suggest`] (free
+//! text with suggestions, `<datalist>`), [`password`],
 //! [`search`], [`number_input`], [`textarea`], [`select`], [`tabs`], [`toggle_group`]
 //! and [`segmented`]; [`checkbox`] is the one with three values, for the
 //! rows of a table.
@@ -15,6 +16,7 @@ pub mod input;
 pub mod number;
 pub mod search;
 pub mod select;
+pub mod suggest;
 pub mod tabs;
 
 pub use self::{
@@ -24,5 +26,6 @@ pub use self::{
     number::{number_input, Number},
     search::{focus_search, search, Debounce},
     select::select,
+    suggest::suggest,
     tabs::{segmented, tabs, toggle_group, TabsVariant, Toggle},
 };
