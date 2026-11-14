@@ -51,6 +51,18 @@ pub(super) fn half<'a>(part: impl Into<Element<'a, Message>>) -> Element<'a, Mes
     container(part).width(Length::Fill).into()
 }
 
+/// The face of a field of machine text: the monospaced one once it holds
+/// something. Empty, it says its placeholder in the language's face: the
+/// monospaced one has no Arabic, Hindi or CJK, which a fallback spaces
+/// out of place.
+pub(super) fn machine_face(value: &str) -> iced::Font {
+    if value.is_empty() {
+        font::SANS
+    } else {
+        font::MONO
+    }
+}
+
 /// A one-line field: its text, what it says when empty, in the app's
 /// face or the monospaced one, marked when it can't be read.
 pub(super) fn typed<'a>(
@@ -59,15 +71,19 @@ pub(super) fn typed<'a>(
     placeholder: &str,
     mono: bool,
     wrong: bool,
-) -> Element<'a, Message> {
+) -> iced::widget::TextInput<'a, Message, crate::ui::theme::Theme> {
     let field = input(placeholder, value)
         .on_input(move |typed| Message::Typed(which, typed))
         .on_submit(Message::Submit);
-    let field = if mono { field.font(font::MONO) } else { field };
-    if wrong {
-        field.style(theme::text_input::invalid).into()
+    let field = if mono {
+        field.font(machine_face(value))
     } else {
-        field.into()
+        field
+    };
+    if wrong {
+        field.style(theme::text_input::invalid)
+    } else {
+        field
     }
 }
 

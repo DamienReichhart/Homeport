@@ -32,8 +32,15 @@ const TABS: f32 = 44.0;
 fn asking(exec: &Exec) -> Element<'_, Message> {
     let draft = &exec.draft;
     let typed = |which: Draft| move |text| Message::Typed(which, text);
+    // Monospaced once it holds a command; its placeholder is words of the
+    // language, which the monospaced face may not have.
+    let face = if draft.command.is_empty() {
+        theme::font::SANS
+    } else {
+        theme::font::MONO
+    };
     let command = input(&t!("containers.exec.commandPlaceholder"), &draft.command)
-        .font(theme::font::MONO)
+        .font(face)
         .on_input(typed(Draft::Command));
     let user = input(&t!("containers.exec.default"), &draft.user).on_input(typed(Draft::User));
     let directory =

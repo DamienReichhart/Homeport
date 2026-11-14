@@ -125,3 +125,35 @@ fn the_dialog_opens_on_its_first_field_in_the_order_the_language_reads() {
         });
     }
 }
+
+#[test]
+fn the_fields_of_the_ports_and_the_volumes_line_up() {
+    use crate::test_support::{snapshot::in_language, stage::Stage};
+    let (bench, _engine, host) = bench();
+    for language in ["en", "de", "ar"] {
+        let _language = in_language(language);
+        let dialog = filled(&bench, &host);
+        let ctx = bench.ctx();
+        let mut stage = Stage::new(SIZE);
+        stage.frame(shown(&dialog, &ctx), |frame| {
+            let (host_port, source) = (frame.find("8080"), frame.find("site"));
+            let (port, target) = (frame.find("80"), frame.find("/usr/share/nginx/html"));
+            let (Some(host_port), Some(source), Some(port), Some(target)) =
+                (host_port, source, port, target)
+            else {
+                panic!("{language}: the rows are drawn");
+            };
+            // The fields' texts start at the same place and run as far.
+            let ltr = language != "ar";
+            let start = |b: iced::Rectangle| if ltr { b.x } else { b.x + b.width };
+            assert!(
+                (start(host_port) - start(source)).abs() < 1.0,
+                "{language}: {host_port:?} {source:?}"
+            );
+            assert!(
+                (start(port) - start(target)).abs() < 1.0,
+                "{language}: {port:?} {target:?}"
+            );
+        });
+    }
+}

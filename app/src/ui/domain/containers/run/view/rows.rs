@@ -65,6 +65,28 @@ fn add<'a>(rows: Rows, label: String) -> Element<'a, Message> {
         .into()
 }
 
+/// What stands between a row's second field and its ×, as wide in the
+/// rows of ports as in those of volumes, so their fields line up: the
+/// protocol, or "read-only" (as long as German makes it).
+const TRAILING: f32 = 144.0;
+
+/// A field of a row, as tall as the select beside it (`h-9` both).
+fn in_row(
+    field: iced::widget::TextInput<'_, Message, crate::ui::theme::Theme>,
+) -> Element<'_, Message> {
+    field
+        .padding([6.0, control::PADDING_X])
+        .line_height(iced::widget::text::LineHeight::Relative(size::LEADING_SM))
+        .into()
+}
+
+/// A field that takes its share of the row.
+fn grow_field(
+    field: iced::widget::TextInput<'_, Message, crate::ui::theme::Theme>,
+) -> Element<'_, Message> {
+    grow(in_row(field))
+}
+
 /// A part of a row that takes its share of it.
 fn grow<'a>(part: Element<'a, Message>) -> Element<'a, Message> {
     container(part).width(Length::Fill).into()
@@ -84,10 +106,13 @@ pub(super) fn ports<'a>(form: &'a Form, lists: &Lists, errors: &Errors) -> Eleme
     let mut rows = vec![];
     for (i, port) in form.form.ports.iter().enumerate() {
         let wrong = errors.ports.contains(&i);
-        let protocol = container(choice(form, Choice::Protocol(i), lists, false)).width(96);
+        // `w-24`, at the start of the room the row's end keeps.
+        let protocol =
+            container(container(choice(form, Choice::Protocol(i), lists, false)).width(96))
+                .width(TRAILING);
         rows.push(
             line(vec![
-                grow(typed(
+                grow_field(typed(
                     Line::HostPort(i),
                     &port.host_port,
                     &t!("containers.run.hostPortPlaceholder"),
@@ -95,7 +120,7 @@ pub(super) fn ports<'a>(form: &'a Form, lists: &Lists, errors: &Errors) -> Eleme
                     wrong,
                 )),
                 arrow(),
-                grow(typed(
+                grow_field(typed(
                     Line::ContainerPort(i),
                     &port.container_port,
                     &t!("containers.run.containerPort"),
@@ -139,7 +164,7 @@ pub(super) fn mounts(form: &Form) -> Element<'_, Message> {
                 .text_size(size::SM)
                 .on_toggle(move |on| Message::Switch(Switch::ReadOnly(i), on));
             line(vec![
-                grow(typed(
+                grow_field(typed(
                     Line::Source(i),
                     &mount.source,
                     &t!("containers.run.sourcePlaceholder"),
@@ -148,14 +173,14 @@ pub(super) fn mounts(form: &Form) -> Element<'_, Message> {
                 )),
                 arrow(),
                 // A path's sample, of no language.
-                grow(typed(
+                grow_field(typed(
                     Line::Target(i),
                     &mount.target,
                     "/container/path",
                     false,
                     false,
                 )),
-                read_only.into(),
+                container(read_only).width(TRAILING).into(),
                 remove(Rows::Mounts, i, t!("containers.run.removeVolume")),
             ])
             .spacing(space::S2)
@@ -189,7 +214,7 @@ pub(super) fn devices(form: &Form) -> Element<'_, Message> {
                 false,
             );
             line(vec![
-                grow(typed(
+                grow_field(typed(
                     Line::HostDevice(i),
                     &device.host_path,
                     "/dev/dri",
@@ -197,14 +222,14 @@ pub(super) fn devices(form: &Form) -> Element<'_, Message> {
                     false,
                 )),
                 arrow(),
-                grow(typed(
+                grow_field(typed(
                     Line::ContainerDevice(i),
                     &device.container_path,
                     &t!("containers.advanced.samePath"),
                     true,
                     false,
                 )),
-                container(permissions).width(80).into(),
+                container(in_row(permissions)).width(80).into(),
                 remove(Rows::Devices, i, t!("containers.advanced.removeDevice")),
             ])
             .spacing(space::S2)
@@ -267,7 +292,7 @@ pub(super) fn capabilities<'a>(
         draft,
     )
     .placeholder(sample)
-    .font(theme::font::MONO)
+    .font(super::machine_face(draft))
     .view()
     .map(move |message| Message::Suggest(Hint::Capability(caps), message));
     let empty = draft.is_empty();

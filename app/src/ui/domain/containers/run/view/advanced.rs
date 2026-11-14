@@ -303,7 +303,7 @@ fn logging(form: &Form) -> Element<'_, Message> {
                 &logging.driver,
             )
             .placeholder(t!("containers.advanced.logDriverPlaceholder"))
-            .font(crate::ui::theme::font::MONO)
+            .font(super::machine_face(&logging.driver))
             .view()
             .map(|message| Message::Suggest(Hint::LogDriver, message)),
         )

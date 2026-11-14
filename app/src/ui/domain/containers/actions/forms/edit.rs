@@ -316,11 +316,18 @@ impl Edit {
             Some(Ok(list)) => {
                 let mut parts: Vec<Element<'a, Message>> =
                     vec![paragraph(t!("containers.edit.keptBut")).into()];
-                // `list-disc ps-5`: a bullet, a sign of no language.
-                parts.extend(
-                    list.iter()
-                        .map(|loss| paragraph(format!("\u{2022} {}", loss_text(loss))).into()),
-                );
+                // `list-disc ps-5`: a bullet, a sign of no language, before
+                // lines that hang under the first.
+                parts.extend(list.iter().map(|loss| {
+                    crate::ui::widgets::line(vec![
+                        iced::widget::text("\u{2022}").into(),
+                        paragraph(loss_text(loss)).width(Length::Fill).into(),
+                    ])
+                    .spacing(space::S2)
+                    .width(Length::Fill)
+                    .align_y(iced::alignment::Vertical::Top)
+                    .into()
+                }));
                 if list
                     .iter()
                     .any(|l| matches!(l, Loss::FilesystemChanges { .. }))
