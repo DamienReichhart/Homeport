@@ -160,8 +160,14 @@ impl Dialog {
         offers_pods: bool,
         ctx: &Context<'_>,
     ) -> Self {
+        // A pod only where pods are offered: a form that names one leaves
+        // the ports and the network to it.
         let form = RunForm {
-            pod: pod.to_owned(),
+            pod: if offers_pods {
+                pod.to_owned()
+            } else {
+                String::new()
+            },
             ..RunForm::new(image)
         };
         let mut fields = Form::new(host_id, form);

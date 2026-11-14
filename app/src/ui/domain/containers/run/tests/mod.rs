@@ -107,7 +107,7 @@ fn networks(bench: &mut Bench, host: &str) {
 #[test]
 fn run_waits_for_an_image_and_for_what_it_can_read() {
     let _english = in_language("en");
-    let (bench, _engine, host) = bench();
+    let (bench, engine, host) = bench();
     let mut dialog = Dialog::run(&host, "", "", false, &bench.ctx());
     assert!(!dialog.fields.is_ready(), "no image");
     type_in(&mut dialog, &bench, Line::Image, "nginx");
@@ -124,6 +124,7 @@ fn run_waits_for_an_image_and_for_what_it_can_read() {
     drop(drawn);
     // Run can't be pressed: sending it asks nothing.
     assert_eq!(send(&mut dialog, &bench, Message::Submit), Step::Stay);
+    assert!(engine.created().is_empty());
 }
 
 #[test]
@@ -484,4 +485,19 @@ fn a_run_that_failed_after_its_dialog_went_is_said_in_a_toast() {
         matches!(took.as_slice(), [Asked::Failed(None, error)] if error.detail.as_deref().is_some_and(|d| d.contains("conflict"))),
         "{took:?}"
     );
+}
+
+#[test]
+fn a_pod_is_only_ever_taken_where_pods_are_offered() {
+    let (bench, engine, host) = bench();
+    // A pod named, on a Host that offers none: the container is run as
+    // any, with its ports and network, never half in a pod.
+    let mut dialog = Dialog::run(&host, "nginx", "shop", false, &bench.ctx());
+    send(&mut dialog, &bench, Message::Form(Field::Add(Rows::Ports)));
+    type_in(&mut dialog, &bench, Line::ContainerPort(0), "80");
+    assert!(!dialog.fields.in_pod());
+    assert_eq!(dialog.fields.form.to_spec().ports.len(), 1);
+    let step = send(&mut dialog, &bench, Message::Submit);
+    assert_eq!(step, Step::Started("new-1".to_owned()));
+    assert!(engine.created()[0].body["HostConfig"]["PortBindings"].is_object());
 }
