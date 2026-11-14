@@ -228,6 +228,33 @@ fn the_lines_searched_follow_the_view() {
     );
 }
 
+/// Lists the matches again once their time comes, as the grid asks.
+fn listed_again(state: &mut State) {
+    std::thread::sleep(crate::ui::widgets::terminal::search::RESCAN_EVERY);
+    let _ = drive(state, Message::Read);
+}
+
+#[test]
+fn typing_or_pasting_brings_the_lines_searched_down_with_the_view() {
+    for typed in [
+        Message::Input("q".to_owned()),
+        Message::Paste("q".to_owned()),
+    ] {
+        let mut state = long_log();
+        searched(&mut state, "error");
+        let _ = drive(&mut state, Message::Scroll(Scroll::Top));
+        listed_again(&mut state);
+        let first = state.search().matches[0].start().line;
+        assert_eq!(first, state.term().grid().topmost_line());
+        // What is typed goes where the program writes: the view goes down.
+        let _ = drive(&mut state, typed);
+        assert!(state.at_bottom());
+        listed_again(&mut state);
+        let last = state.search().matches.last().unwrap().start().line;
+        assert_eq!(last.0, 3, "the screen's last line is listed");
+    }
+}
+
 #[test]
 fn opening_the_open_bar_only_gives_its_field_the_keyboard() {
     let mut state = log();

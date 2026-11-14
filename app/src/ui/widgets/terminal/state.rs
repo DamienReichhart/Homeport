@@ -289,6 +289,8 @@ impl State {
             }
         };
         term.scroll_display(to);
+        // Whatever moved the view, the matches near it are listed soon.
+        self.search.view_moved();
     }
 
     /// Shows `point` if it is out of view, a few lines from the top.
@@ -430,7 +432,6 @@ impl State {
             }
             Message::Scroll(scroll) => {
                 self.scroll(scroll);
-                self.search.view_moved();
                 None
             }
             Message::Read => {
