@@ -15,8 +15,10 @@
 //! What it answers: `_ping`, `version`, `info`, `events` (held open),
 //! a container's inspect document (`json`, when it started as told),
 //! `logs` and `stats` (streamed), its `archive` (stat, download, upload)
-//! and its `export`, and a terminal (`exec`: created, started on the
-//! connection, resized, inspected). Anything else is `404`.
+//! and its `export`, a terminal (`exec`: created, started on the
+//! connection, resized, inspected), and what Run, Edit and Commit ask
+//! (`create`: an image's inspect, a container created, started, stopped,
+//! renamed and removed, its changes, a commit). Anything else is `404`.
 
 use std::{
     collections::HashMap,
@@ -28,6 +30,7 @@ use std::{
     time::Duration,
 };
 
+mod create;
 mod exec;
 mod transfer;
 mod wire;
@@ -41,7 +44,7 @@ use tokio::{
 use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
 use self::wire::{inspected, Held};
-pub use self::{transfer::EXPORTED, wire::Stall};
+pub use self::{create::Created, transfer::EXPORTED, wire::Stall};
 use crate::{api::hosts::hosts_create, app::AppState};
 
 /// A stream the fake keeps open.
@@ -92,6 +95,15 @@ struct Shared {
     terminal: Mutex<Vec<String>>,
     /// What an exec's inspect says it exited with.
     exit_code: Mutex<i64>,
+    /// The containers created, and the commits asked for (their query).
+    created: Mutex<Vec<Created>>,
+    commits: Mutex<Vec<String>>,
+    /// What a container's inspect says, when a test said it.
+    inspect: Mutex<Option<String>>,
+    /// How many paths `docker diff` lists.
+    changes: AtomicUsize,
+    /// Why a create is refused, when it is.
+    refused_create: Mutex<Option<String>>,
 }
 
 /// Counts a stream as open until dropped.
@@ -524,9 +536,17 @@ impl Connection {
                     false
                 }
                 ("GET", ["containers", _, "json"]) => {
+                    let said = self.shared.inspect.lock().unwrap().clone();
                     let started = self.shared.started.lock().unwrap().clone();
-                    self.json("200 OK", &inspected(started.as_deref())).await
+                    let document = said.unwrap_or_else(|| inspected(started.as_deref()));
+                    self.json("200 OK", &document).await
                 }
+                ("GET", ["images", .., "json"]) => self.inspect_image().await,
+                ("POST", ["containers", "create"]) => self.create_container(&request).await,
+                ("POST", ["containers", _, "start" | "stop" | "rename"])
+                | ("DELETE", ["containers", _]) => self.done().await,
+                ("GET", ["containers", _, "changes"]) => self.changes().await,
+                ("POST", ["commit"]) => self.commit(&request).await,
                 (_, ["containers", _, "archive"]) => self.archive(&request).await,
                 ("POST", ["containers", _, "exec"]) => self.create_exec(&request).await,
                 ("POST", ["exec", _, "start"]) => {
@@ -549,3 +569,6 @@ impl Connection {
 }
 
 const VERSION: &str = r#"{"Version":"27.0.0","ApiVersion":"1.47","MinAPIVersion":"1.24","Os":"linux","Arch":"amd64"}"#;
+
+#[cfg(test)]
+mod tests;
