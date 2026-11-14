@@ -479,12 +479,16 @@ impl Notifier for Racing {
                     }
                 });
                 // The restart goes first if it can; it may wait for us.
-                for _ in 0..20 {
-                    if restart.is_finished() {
+                // The restarted supervisor tells its first status before
+                // this one if nothing keeps it from it: a second at most.
+                let before = self.told.lock().unwrap().len();
+                for _ in 0..100 {
+                    if self.told.lock().unwrap().len() > before {
                         break;
                     }
                     std::thread::sleep(Duration::from_millis(10));
                 }
+                drop(restart);
             }
         }
         self.told.lock().unwrap().push(status.clone());
@@ -494,6 +498,17 @@ impl Notifier for Racing {
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
 async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
+    // An Engine that takes connections and never answers: a supervisor
+    // stays "connecting" on it.
+    let dir = tempfile::tempdir().unwrap();
+    let socket = dir.path().join("silent.sock");
+    let listener = tokio::net::UnixListener::bind(&socket).unwrap();
+    tokio::spawn(async move {
+        let mut held = vec![];
+        while let Ok((socket, _)) = listener.accept().await {
+            held.push(socket);
+        }
+    });
     let db = Arc::new(Db::open_in_memory().unwrap());
     let store = Arc::new(HostStore::new(
         db.clone(),
@@ -503,7 +518,7 @@ async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
         .create(HostDraft {
             name: "local".into(),
             connection: HostConnection::Local {
-                socket_path: "/nonexistent/homeport-race.sock".into(),
+                socket_path: socket.display().to_string(),
             },
             engine: crate::EngineKind::Docker,
             secrets: None,
@@ -516,24 +531,19 @@ async fn what_is_told_last_is_what_the_entry_holds_when_a_restart_races_it() {
     });
     let reg = HostRegistry::new(store, EventStore::new(db), racing.clone());
     reg.restart(&id);
-    // Let the first supervisor say its first words and sleep on its retry.
-    wait_for(&reg, &id, |s| matches!(s, HostStatus::Unreachable { .. })).await;
     *racing.registry.lock().unwrap() = Some((
         Arc::downgrade(&reg),
         id.clone(),
         tokio::runtime::Handle::current(),
     ));
+    // The live supervisor's word, with a restart racing it.
     let live = reg.lock()[&id].generation;
     reg.set_status(&id, live, HostStatus::Disabled, None);
     *racing.registry.lock().unwrap() = None;
-    // The restarted supervisor says its own words: connecting, unreachable.
-    wait_for(&reg, &id, |s| matches!(s, HostStatus::Unreachable { .. })).await;
-    tokio::time::sleep(Duration::from_millis(200)).await;
-    let last = racing.told.lock().unwrap().last().cloned();
-    assert_eq!(
-        last.as_ref(),
-        Some(&reg.status(&id)),
-        "{:?}",
-        racing.told.lock().unwrap()
-    );
+    // The restarted supervisor says "connecting", and then nothing for a
+    // while: the Engine never answers.
+    tokio::time::sleep(Duration::from_millis(300)).await;
+    assert_eq!(reg.status(&id), HostStatus::Connecting);
+    let told = racing.told.lock().unwrap().clone();
+    assert_eq!(told.last(), Some(&HostStatus::Connecting), "{told:?}");
 }
