@@ -20,27 +20,66 @@
 //! typed:
 //!
 //! ```ignore
-//! // made once, at the terminal's size:
-//! let (cols, rows) = terminal.size();
-//! let session = TerminalSession::new(backend, cols, rows);
+//! // made once, at the terminal's size (to open it again, make another):
+//! self.session = TerminalSession::new(backend, self.terminal.size());
 //!
 //! // in subscription:
-//! self.session.subscription(ctx.state, self.number).map(Message::Session)
+//! self.session.subscription(ctx.state).map(Message::Session)
 //!
-//! // in update:
-//! Message::Session(Update::Started(id)) => {
-//!     let writes = self.session.started(ctx.state.clone(), id);
-//!     return Task::perform(writes, Message::Written);
+//! // in update (`tests.rs` runs this against the fake Engine):
+//! Message::Session(said) => {
+//!     // What a session before this one said late is let go of.
+//!     let Some(update) = self.session.take(said) else { return Task::none() };
+//!     match update {
+//!         Update::Started(id) => {
+//!             let writes = self.session.started(ctx.state.clone(), id);
+//!             return Task::perform(writes, Message::Written);
+//!         }
+//!         Update::Batch { items, .. } => {
+//!             let output = session::output(items);
+//!             let events = self.terminal.feed(&output.text);
+//!             if let Some(error) = output.error {
+//!                 self.failure = Some(Surfaced::new(error, "exec_start"));
+//!             }
+//!             if let Some(exit) = output.exit {
+//!                 self.session.ended();
+//!                 self.terminal.notice(&exit_text(&exit));
+//!             }
+//!             return self.told(events, ctx);
+//!         }
+//!         Update::Failed(error) => {
+//!             self.session.ended();
+//!             self.failure = Some(Surfaced::new(error, "exec_start"));
+//!         }
+//!         Update::Ended => self.session.ended(),
+//!     }
+//!     Task::none()
 //! }
-//! Message::Written(result) => self.session.written(result), // then show `session.failure()`, if any
-//! Message::Session(Update::Batch { items, .. }) => {
-//!     let output = session::output(items);
-//!     for event in self.terminal.feed(&output.text) { /* as below */ }
+//! Message::Written(written) => {
+//!     // A write that failed is shown, once; an old writer's word is let go of.
+//!     self.session.written(written);
+//!     if let Some(error) = self.session.failure() {
+//!         self.failure = Some(Surfaced::new(error.clone(), "exec_input"));
+//!     }
+//!     Task::none()
 //! }
-//! Message::Terminal(message) => match self.terminal.update(message) {
-//!     (_, Some(terminal::Event::Input(bytes))) => self.session.input(bytes),
-//!     (_, Some(terminal::Event::Resize { cols, rows })) => self.session.resize(cols, rows),
-//!     ..
+//! Message::Terminal(message) => {
+//!     let (task, events) = self.terminal.update(message);
+//!     Task::batch([task.map(Message::Terminal), self.told(events, ctx)])
+//! }
+//!
+//! // what the terminal says goes to the session, in order:
+//! fn told(&mut self, events: Vec<terminal::Event>, ctx: &Context<'_>) -> Task<Message> {
+//!     for event in events {
+//!         match event {
+//!             terminal::Event::Input(bytes) => self.session.input(bytes),
+//!             terminal::Event::Resize { cols, rows } => self.session.resize(cols, rows),
+//!             terminal::Event::Copy(text) => ctx.copy(text),
+//!             terminal::Event::Open(url) => ctx.open_url(url),
+//!             terminal::Event::Title(_) | terminal::Event::Bell => {}
+//!         }
+//!     }
+//!     Task::none()
 //! }
 //! ```
 //!
@@ -65,10 +104,16 @@
 use std::{
     future::Future,
     hash::{Hash, Hasher},
-    sync::Arc,
+    sync::{
+        atomic::{AtomicU64, Ordering},
+        Arc,
+    },
 };
 
-use iced::{futures::Stream, Subscription};
+use iced::{
+    futures::{Stream, StreamExt},
+    Subscription,
+};
 use tokio::sync::mpsc;
 
 use homeport_core::error::{AppError, AppResult};
@@ -138,7 +183,6 @@ fn close_nomad(state: &AppState, id: u32) {
 /// [`TerminalSession::started`]), then its output. Dropping the stream
 /// closes the session.
 fn open(state: Arc<AppState>, backend: Backend) -> impl Stream<Item = Update<ExecEvent>> + Send {
-    use iced::futures::StreamExt;
     match backend {
         Backend::Engine {
             host_id,
@@ -214,19 +258,19 @@ fn open(state: Arc<AppState>, backend: Backend) -> impl Stream<Item = Update<Exe
     }
 }
 
-/// What a page follows a terminal by: its own number for it (two
+/// What a page follows a terminal by: its session's own key (two
 /// terminals on the same container are two sessions) and the backend,
 /// sized (its size is not part of what tells two apart: a terminal
 /// resized goes on with its session).
 #[derive(Debug, Clone)]
 pub struct Opened {
-    pub number: u64,
+    pub key: u64,
     pub backend: Backend,
 }
 
 impl Hash for Opened {
     fn hash<H: Hasher>(&self, hasher: &mut H) {
-        self.number.hash(hasher);
+        self.key.hash(hasher);
         self.backend.kind().hash(hasher);
         self.backend.identity().hash(hasher);
     }
@@ -263,6 +307,29 @@ pub fn output(items: Vec<ExecEvent>) -> Output {
     output
 }
 
+/// What a session's stream tells the page, marked with the session it is
+/// of: give it to [`TerminalSession::take`], which lets go of what a
+/// session before this one said late.
+#[derive(Debug, Clone, PartialEq)]
+pub struct SessionUpdate {
+    key: u64,
+    update: Update<ExecEvent>,
+}
+
+/// What a session's writer ended with, marked with the writer: give it to
+/// [`TerminalSession::written`], which lets go of an old writer's.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Written {
+    writer: u64,
+    result: AppResult<()>,
+}
+
+/// A number no session or writer had before: what tells them apart.
+fn fresh() -> u64 {
+    static NEXT: AtomicU64 = AtomicU64::new(1);
+    NEXT.fetch_add(1, Ordering::Relaxed)
+}
+
 /// What is sent to a session, in order.
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum Op {
@@ -274,6 +341,10 @@ enum Op {
 /// order, from `update`, without waiting.
 #[derive(Debug)]
 pub struct TerminalSession {
+    /// What tells this session's stream from any other's.
+    key: u64,
+    /// Which writer is this session's now ([`TerminalSession::started`]).
+    writer: u64,
     backend: Backend,
     id: Option<u32>,
     /// The size the program's terminal is to be: what it is opened at,
@@ -289,14 +360,17 @@ pub struct TerminalSession {
 }
 
 impl TerminalSession {
-    /// A session of `backend` for a terminal of `cols` by `rows` cells
-    /// (`terminal::State::size`; 1 by 1 at least). Whatever size the
-    /// backend's options say is not used.
-    pub fn new(backend: Backend, cols: u16, rows: u16) -> Self {
+    /// A session of `backend` for a terminal of `cols` by `rows` cells, as
+    /// `terminal::State::size` says them (1 by 1 at least). Whatever size
+    /// the backend's options say is not used.
+    pub fn new(backend: Backend, (cols, rows): (usize, usize)) -> Self {
+        let cells = |n: usize| u16::try_from(n).unwrap_or(u16::MAX).max(1);
         Self {
+            key: fresh(),
+            writer: 0,
             backend,
             id: None,
-            size: (cols.max(1), rows.max(1)),
+            size: (cells(cols), cells(rows)),
             pending: vec![],
             sender: None,
             done: false,
@@ -306,20 +380,28 @@ impl TerminalSession {
 
     /// The terminal as a subscription, opened at the size the session has
     /// then: it runs while the page returns it, and its session is closed
-    /// when the page no longer does.
-    pub fn subscription(
-        &self,
-        state: &Arc<AppState>,
-        number: u64,
-    ) -> Subscription<Update<ExecEvent>> {
+    /// when the page no longer does. A session is opened once: to open the
+    /// terminal again, make a new one.
+    pub fn subscription(&self, state: &Arc<AppState>) -> Subscription<SessionUpdate> {
         super::subscription(
             state,
             Opened {
-                number,
+                key: self.key,
                 backend: self.sized(),
             },
-            |source: &Source<Opened>| open(source.state.clone(), source.params.backend.clone()),
+            |source: &Source<Opened>| {
+                let key = source.params.key;
+                open(source.state.clone(), source.params.backend.clone())
+                    .map(move |update| SessionUpdate { key, update })
+            },
         )
+    }
+
+    /// What `update` says, if it is of this session: what a session before
+    /// it said late (the page opened the terminal again meanwhile) is let
+    /// go of.
+    pub fn take(&self, update: SessionUpdate) -> Option<Update<ExecEvent>> {
+        (update.key == self.key).then_some(update.update)
     }
 
     /// The backend at the session's size.
@@ -330,8 +412,9 @@ impl TerminalSession {
 
     /// The terminal's output, opened at the session's size: what the
     /// subscription follows.
-    fn opened(&self, state: Arc<AppState>) -> impl Stream<Item = Update<ExecEvent>> + Send {
-        open(state, self.sized())
+    fn opened(&self, state: Arc<AppState>) -> impl Stream<Item = SessionUpdate> + Send {
+        let key = self.key;
+        open(state, self.sized()).map(move |update| SessionUpdate { key, update })
     }
 
     /// The session's id, once it started.
@@ -343,13 +426,13 @@ impl TerminalSession {
     /// again on a terminal that kept its size is told it too), then what
     /// was asked for meanwhile, and everything after, in order, by the
     /// future this returns (for `Task::perform`). It ends with the first
-    /// write that fails, or once the session ended or this was dropped;
-    /// give what it ended with to [`TerminalSession::written`].
+    /// write that fails, or once the session ended, was started again or
+    /// was dropped; give what it ended with to [`TerminalSession::written`].
     pub fn started(
         &mut self,
         state: Arc<AppState>,
         id: u32,
-    ) -> impl Future<Output = AppResult<()>> + Send + 'static {
+    ) -> impl Future<Output = Written> + Send + 'static {
         let (sender, receiver) = mpsc::unbounded_channel();
         if !self.pending.iter().any(|op| matches!(op, Op::Resize(..))) {
             let (cols, rows) = self.size;
@@ -362,12 +445,26 @@ impl TerminalSession {
         self.sender = Some(sender);
         self.done = false;
         self.failure = None;
-        write(state, self.backend.kind(), id, receiver)
+        let writer = fresh();
+        self.writer = writer;
+        let writes = write(state, self.backend.kind(), id, receiver);
+        async move {
+            Written {
+                writer,
+                result: writes.await,
+            }
+        }
     }
 
     /// What the writer of [`TerminalSession::started`] ended with: nothing
-    /// more is sent, and a failure is kept for the page to show.
-    pub fn written(&mut self, result: AppResult<()>) {
+    /// more is sent, and a failure is kept for the page to show. What an
+    /// older writer ended with (the session was started again, or this is
+    /// a new session) is let go of.
+    pub fn written(&mut self, written: Written) {
+        let Written { writer, result } = written;
+        if writer != self.writer {
+            return;
+        }
         self.sender = None;
         self.done = true;
         if let Err(failure) = result {

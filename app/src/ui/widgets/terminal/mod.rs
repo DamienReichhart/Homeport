@@ -7,7 +7,8 @@
 //! The page keeps a [`State`] per terminal, feeds it what the session
 //! printed and hands it the terminal's [`Message`]s; it sends the session
 //! what comes out as [`Event`]s. `data::streams::session` is the session
-//! side, the same for the five backends:
+//! side, the same for the five backends; its module has the whole of a
+//! page's code for a terminal, which its tests run. The terminal's part:
 //!
 //! ```ignore
 //! // state: terminal::State, made once: terminal::State::new()
@@ -18,22 +19,18 @@
 //!     .view()
 //!
 //! // in update, what the session printed (a batch a frame at most):
-//! Message::Session(Update::Batch { items, .. }) => {
-//!     let output = session::output(items);
-//!     let events = self.terminal.feed(&output.text);
-//!     if let Some(exit) = output.exit { self.terminal.notice(&exit_text(exit)) }
-//!     return self.told(events, ctx);
+//! let output = session::output(items);
+//! let events = self.terminal.feed(&output.text);
+//! if let Some(exit) = output.exit {
+//!     self.session.ended();
+//!     self.terminal.notice(&exit_text(&exit));
 //! }
+//! return self.told(events, ctx);
+//!
 //! // and what the terminal says, in order:
 //! Message::Terminal(message) => {
 //!     let (task, events) = self.terminal.update(message);
 //!     return Task::batch([task.map(Message::Terminal), self.told(events, ctx)]);
-//! }
-//!
-//! // what the session's writer ended with: a failure is shown, once.
-//! Message::Written(result) => {
-//!     self.session.written(result);
-//!     self.failure = self.session.failure().map(|e| Surfaced::new(e.clone(), "exec_input"));
 //! }
 //!
 //! fn told(&mut self, events: Vec<terminal::Event>, ctx: &Context<'_>) -> Task<Message> {
