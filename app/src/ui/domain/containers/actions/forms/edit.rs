@@ -155,6 +155,14 @@ impl Edit {
         }
     }
 
+    /// Apply, or Enter: the confirmation opens, once the form can be sent.
+    fn apply(&mut self, ctx: &Context<'_>) -> Task<Message> {
+        if !self.pending && self.confirming.is_none() && self.fields.is_ready() {
+            return self.read_losses(ctx);
+        }
+        Task::none()
+    }
+
     /// Reads what recreating the container loses.
     fn read_losses(&mut self, ctx: &Context<'_>) -> Task<Message> {
         self.number += 1;
@@ -178,12 +186,15 @@ impl Edit {
     pub fn update(&mut self, message: Message, ctx: &Context<'_>) -> (Task<Message>, Step) {
         let stay = |task| (task, Step::Stay);
         match message {
-            Message::Form(run::form::Message::Submit) | Message::Submit => {
-                if !self.pending && self.confirming.is_none() && self.fields.is_ready() {
-                    return stay(self.read_losses(ctx));
+            Message::Submit => return stay(self.apply(ctx)),
+            Message::Form(message) => {
+                let (task, submits) = self.fields.update(message, ctx);
+                let task = task.map(Message::Form);
+                if submits {
+                    return stay(Task::batch([task, self.apply(ctx)]));
                 }
+                return stay(task);
             }
-            Message::Form(message) => self.fields.update(message, ctx),
             Message::Close if !self.pending => return (Task::none(), Step::Closed),
             Message::Close => {}
             Message::Losses(number, result) => {

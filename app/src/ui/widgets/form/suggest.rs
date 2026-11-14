@@ -178,7 +178,7 @@ impl State {
 /// A field with suggestions, being described.
 pub struct Suggest<'a> {
     state: &'a State,
-    suggestions: &'a [String],
+    suggestions: std::borrow::Cow<'a, [String]>,
     value: &'a str,
     placeholder: String,
     font: Option<Font>,
@@ -189,11 +189,24 @@ pub struct Suggest<'a> {
 pub fn suggest<'a>(state: &'a State, suggestions: &'a [String], value: &'a str) -> Suggest<'a> {
     Suggest {
         state,
-        suggestions,
+        suggestions: std::borrow::Cow::Borrowed(suggestions),
         value,
         placeholder: String::new(),
         font: None,
         invalid: false,
+    }
+}
+
+/// The same over suggestions the view builds from what it reads (the
+/// Host's images).
+pub fn suggest_owned<'a>(
+    state: &'a State,
+    suggestions: Vec<String>,
+    value: &'a str,
+) -> Suggest<'a> {
+    Suggest {
+        suggestions: std::borrow::Cow::Owned(suggestions),
+        ..suggest(state, &[], value)
     }
 }
 
@@ -237,7 +250,7 @@ impl<'a> Suggest<'a> {
             Key::Named(Named::Tab) if open => Some(Message::Leave(modifiers.shift())),
             _ => None,
         });
-        let shown = matching(self.suggestions, self.value);
+        let shown = matching(&self.suggestions, self.value);
         let list = (open && !shown.is_empty()).then(|| self.list(&shown));
         anchored(
             field,

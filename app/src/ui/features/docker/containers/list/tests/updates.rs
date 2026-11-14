@@ -429,3 +429,30 @@ fn what_lacks_room_wraps_onto_the_row_s_second_line_before_it_is_cut() {
         assert!(exited.height > 30.0, "on one line: {exited:?}");
     });
 }
+
+#[test]
+fn escape_in_the_image_s_suggestions_closes_them_and_not_the_run_dialog() {
+    let _english = in_language("en");
+    let mut rig = Rig::populated();
+    let images = vec![homeport_engine::images::Image {
+        id: "sha256:a".to_owned(),
+        tags: vec!["nginx:1.27".to_owned()],
+        digests: vec![],
+        created: 0,
+        size: 0,
+        containers: 0,
+        labels: Default::default(),
+    }];
+    rig.bench.data.set(&keys::host::images("h1"), images);
+    rig.send(Message::Run);
+    // The dialog gives the image's field the keyboard as it opens.
+    rig.frame(|frame| {
+        frame.typewrite("ngi");
+    });
+    assert!(rig.shows("nginx:1.27"), "the suggestion shows");
+    rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
+    assert!(rig.state.run.is_some(), "the dialog stays");
+    assert!(!rig.shows("nginx:1.27"));
+    rig.frame(|frame| frame.tap_key(iced::keyboard::key::Named::Escape));
+    assert!(rig.state.run.is_none(), "the next Escape is the dialog's");
+}

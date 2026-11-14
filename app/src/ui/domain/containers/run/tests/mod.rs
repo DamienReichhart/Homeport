@@ -11,7 +11,7 @@ use homeport_engine::{containers::run::RestartPolicy, networks::NetworkView, pod
 
 use super::{
     dialog::{Dialog, Message, Step},
-    form::{Caps, Choice, Line, Message as Field, Rows, Switch},
+    form::{Caps, Choice, Hint, Line, Message as Field, Rows, Switch},
     model::advanced::Field as Checked,
 };
 use crate::{
@@ -22,7 +22,10 @@ use crate::{
             page::testing::{Asked, Bench},
             router::Route,
         },
-        widgets::{form::select, overlay},
+        widgets::{
+            form::{select, suggest},
+            overlay,
+        },
     },
 };
 
@@ -301,4 +304,99 @@ fn a_container_run_into_a_pod_leaves_it_its_ports_and_network() {
     assert!(engine.created().is_empty());
     let refused = dialog.failure().map(|failure| failure.error.code);
     assert_eq!(refused, Some(ErrorCode::EngineUnsupported));
+}
+
+fn image(tags: &[&str]) -> homeport_engine::images::Image {
+    homeport_engine::images::Image {
+        id: format!("sha256:{}", tags.join("-")),
+        tags: tags.iter().map(|t| (*t).to_owned()).collect(),
+        digests: vec![],
+        created: 0,
+        size: 0,
+        containers: 0,
+        labels: Default::default(),
+    }
+}
+
+fn hinted(dialog: &mut Dialog, bench: &Bench, hint: Hint, message: suggest::Message) -> Step {
+    send(dialog, bench, Message::Form(Field::Suggest(hint, message)))
+}
+
+#[test]
+fn the_image_is_suggested_from_the_host_s_tags_and_typed_freely() {
+    let (mut bench, engine, host) = bench();
+    let images = vec![
+        image(&["nginx:1.27", "nginx:latest"]),
+        image(&["postgres:16"]),
+    ];
+    bench.data.set(&keys::host::images(&host), images);
+    let mut dialog = Dialog::run(&host, "", "", false, &bench.ctx());
+    let lists = dialog.fields.lists(&bench.ctx());
+    let offered = dialog.fields.suggestions(Hint::Image, &lists);
+    assert_eq!(offered, ["nginx:1.27", "nginx:latest", "postgres:16"]);
+    hinted(
+        &mut dialog,
+        &bench,
+        Hint::Image,
+        suggest::Message::Typed("ngi".to_owned()),
+    );
+    assert_eq!(dialog.fields.form.image, "ngi");
+    assert!(dialog.fields.hint(Hint::Image).is_open());
+    hinted(&mut dialog, &bench, Hint::Image, suggest::Message::Step(1));
+    hinted(&mut dialog, &bench, Hint::Image, suggest::Message::Step(1));
+    hinted(&mut dialog, &bench, Hint::Image, suggest::Message::Submit);
+    assert_eq!(dialog.fields.form.image, "nginx:latest");
+    assert!(
+        engine.created().is_empty(),
+        "taking a suggestion runs nothing"
+    );
+    // Enter with nothing highlighted runs, as the form's Enter.
+    let step = hinted(&mut dialog, &bench, Hint::Image, suggest::Message::Submit);
+    assert_eq!(step, Step::Started("new-1".to_owned()));
+}
+
+#[test]
+fn the_capabilities_not_chosen_and_the_usual_log_drivers_are_suggested() {
+    let (bench, _engine, host) = bench();
+    let mut dialog = Dialog::run(&host, "nginx", "", false, &bench.ctx());
+    let lists = dialog.fields.lists(&bench.ctx());
+    let add = Hint::Capability(Caps::Add);
+    let all = dialog.fields.suggestions(add, &lists);
+    assert_eq!(
+        all.len(),
+        homeport_engine::containers::run::CAPABILITIES.len()
+    );
+    hinted(
+        &mut dialog,
+        &bench,
+        add,
+        suggest::Message::Typed("net_ad".to_owned()),
+    );
+    hinted(&mut dialog, &bench, add, suggest::Message::Step(1));
+    hinted(&mut dialog, &bench, add, suggest::Message::Submit);
+    assert_eq!(dialog.fields.drafts[0], "NET_ADMIN");
+    // Enter adds what the field holds, as `TokenInput` did.
+    hinted(&mut dialog, &bench, add, suggest::Message::Submit);
+    assert_eq!(dialog.fields.form.advanced.security.cap_add, ["NET_ADMIN"]);
+    let lists = dialog.fields.lists(&bench.ctx());
+    let left = dialog.fields.suggestions(add, &lists);
+    assert!(!left.contains(&"NET_ADMIN".to_owned()) && left.len() == all.len() - 1);
+    let drivers = dialog.fields.suggestions(Hint::LogDriver, &lists);
+    assert_eq!(
+        drivers,
+        ["json-file", "local", "journald", "syslog", "none"]
+    );
+    hinted(
+        &mut dialog,
+        &bench,
+        Hint::LogDriver,
+        suggest::Message::Typed("jou".to_owned()),
+    );
+    hinted(
+        &mut dialog,
+        &bench,
+        Hint::LogDriver,
+        suggest::Message::Pick("journald".to_owned()),
+    );
+    assert_eq!(dialog.fields.form.advanced.logging.driver, "journald");
 }

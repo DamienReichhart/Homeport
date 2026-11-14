@@ -7,7 +7,9 @@ use crate::{
     t,
     ui::{
         domain::containers::run::{
-            form::{Caps, Choice, Form, Line, Lists, Message, Section, Switch, Text},
+            form::{
+                Caps, Choice, Form, Hint, Line, Lists, Message, Section, Switch, Text, DRIVERS,
+            },
             model::{
                 advanced::{Field, GpuMode, HealthMode},
                 Errors,
@@ -16,7 +18,7 @@ use crate::{
         theme::{metrics::space, Element},
         widgets::{
             feedback::alert,
-            form::{field, tabs, TabsVariant},
+            form::{field, suggest::suggest_owned, tabs, TabsVariant},
             stack,
         },
     },
@@ -115,18 +117,18 @@ fn resources<'a>(form: &'a Form, errors: &Errors) -> Element<'a, Message> {
     .into()
 }
 
-fn security(form: &Form) -> Element<'_, Message> {
+fn security<'a>(form: &'a Form, lists: &Lists) -> Element<'a, Message> {
     let security = &form.form.advanced.security;
     let mut parts = vec![
         pair(
             field(
                 t!("containers.advanced.capAdd"),
-                rows::capabilities(form, Caps::Add, "NET_ADMIN"),
+                rows::capabilities(form, lists, Caps::Add, "NET_ADMIN"),
             )
             .help(t!("containers.advanced.capAddHint")),
             field(
                 t!("containers.advanced.capDrop"),
-                rows::capabilities(form, Caps::Drop, "ALL"),
+                rows::capabilities(form, lists, Caps::Drop, "ALL"),
             )
             .help(t!("containers.advanced.capDropHint")),
         ),
@@ -295,13 +297,15 @@ fn logging(form: &Form) -> Element<'_, Message> {
     pair(
         field(
             t!("containers.advanced.logDriver"),
-            typed(
-                Line::LogDriver,
+            suggest_owned(
+                form.hint(Hint::LogDriver),
+                DRIVERS.map(str::to_owned).to_vec(),
                 &logging.driver,
-                &t!("containers.advanced.logDriverPlaceholder"),
-                true,
-                false,
-            ),
+            )
+            .placeholder(t!("containers.advanced.logDriverPlaceholder"))
+            .font(crate::ui::theme::font::MONO)
+            .view()
+            .map(|message| Message::Suggest(Hint::LogDriver, message)),
         )
         .help(t!("containers.advanced.logDriverHint")),
         field(
@@ -339,7 +343,7 @@ pub(super) fn view<'a>(form: &'a Form, lists: &Lists, errors: &Errors) -> Elemen
         )
         .help(t!("containers.advanced.labelsHint"))
         .into(),
-        Section::Security => security(form),
+        Section::Security => security(form, lists),
         Section::Devices => devices(form, lists, errors),
         Section::Health => health(form, lists, errors),
         Section::Network => identity(form),

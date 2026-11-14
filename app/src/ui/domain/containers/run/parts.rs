@@ -138,3 +138,14 @@ impl Section {
         fields.iter().any(|field| errors.has(*field))
     }
 }
+
+/// A field with suggestions (React's `datalist`).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Hint {
+    /// The Host's images, by tag.
+    Image,
+    /// The capabilities not chosen yet.
+    Capability(Caps),
+    /// The log drivers most Hosts have.
+    LogDriver,
+}

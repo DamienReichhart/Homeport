@@ -12,7 +12,7 @@ use iced::{
 
 use homeport_registries::Registry;
 
-use super::form::{Choice, Form, Line, Lists, Message, Switch, Text};
+use super::form::{Choice, Form, Hint, Line, Lists, Message, Switch, Text};
 use crate::{
     data::Resource,
     t,
@@ -24,7 +24,7 @@ use crate::{
         },
         widgets::{
             basic::collapsible,
-            form::{field, input, select::select_owned, textarea},
+            form::{field, input, select::select_owned, suggest::suggest_owned, textarea},
             line, stack,
         },
     },
@@ -139,11 +139,15 @@ pub fn fields<'a>(
 ) -> Element<'a, Message> {
     let run = &form.form;
     let errors = form.errors();
-    let mut image = field(
-        t!("containers.run.image"),
-        typed(Line::Image, &run.image, IMAGE_SAMPLE, false, false),
+    let images = suggest_owned(
+        form.hint(Hint::Image),
+        form.suggestions(Hint::Image, lists),
+        &run.image,
     )
-    .view();
+    .placeholder(IMAGE_SAMPLE)
+    .view()
+    .map(|message| Message::Suggest(Hint::Image, message));
+    let mut image = field(t!("containers.run.image"), images).view();
     if let Some(shown) = registry.and_then(login) {
         image = stack(vec![image, shown]).spacing(space::S1_5).into();
     }

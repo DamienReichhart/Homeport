@@ -175,10 +175,16 @@ impl Dialog {
 
     pub fn update(&mut self, message: Message, ctx: &Context<'_>) -> (Task<Message>, Step) {
         match message {
-            Message::Form(form::Message::Submit) | Message::Submit => return self.submit(ctx),
+            Message::Submit => return self.submit(ctx),
             Message::Form(message) => {
-                self.fields.update(message, ctx);
+                let (task, submits) = self.fields.update(message, ctx);
                 self.read_login(ctx);
+                let task = task.map(Message::Form);
+                if submits {
+                    let (sent, step) = self.submit(ctx);
+                    return (Task::batch([task, sent]), step);
+                }
+                return (task, Step::Stay);
             }
             Message::Close => return (Task::none(), Step::Closed),
             Message::Ran(number, result) if number == self.number && self.pending => {
