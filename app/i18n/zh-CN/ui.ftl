@@ -63,3 +63,4 @@ ui-log-searchFailed = 搜索在读完所有行之前已停止
 ui-terminal-find = 在终端中查找
 ui-terminal-closeSearch = 关闭搜索
 ui-terminal-atLeast = { $count }+
+ui-terminal-noneNear = 附近无匹配项

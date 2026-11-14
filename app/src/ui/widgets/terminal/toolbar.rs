@@ -50,7 +50,10 @@ fn found<'a, M: 'a>(state: &State) -> Element<'a, M> {
     // Counts of matches: far below what an `f64` holds whole.
     #[allow(clippy::cast_precision_loss)]
     let number = |count: usize| format::number(count as f64);
-    let says = if total == 0 {
+    let says = if total == 0 && capped {
+        // Lines further off were not looked at: Enter goes on to them.
+        t!("ui.terminal.noneNear")
+    } else if total == 0 {
         t!("ui.log.noMatches")
     } else {
         let count = if capped {

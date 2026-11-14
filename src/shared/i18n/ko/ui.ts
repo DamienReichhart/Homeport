@@ -60,4 +60,5 @@ export default {
   'ui.terminal.find': '터미널에서 찾기',
   'ui.terminal.closeSearch': '검색 닫기',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': '근처에 일치 항목 없음',
 } satisfies Translation<typeof en>;

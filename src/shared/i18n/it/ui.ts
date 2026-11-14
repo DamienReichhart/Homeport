@@ -60,4 +60,5 @@ export default {
   'ui.terminal.find': 'Trova nel terminale',
   'ui.terminal.closeSearch': 'Chiudi ricerca',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': 'Nessun risultato nelle vicinanze',
 } satisfies Translation<typeof en>;

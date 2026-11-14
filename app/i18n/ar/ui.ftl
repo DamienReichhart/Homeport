@@ -73,3 +73,4 @@ ui-log-searchFailed = توقف البحث قبل قراءة كل الأسطر
 ui-terminal-find = البحث في الطرفية
 ui-terminal-closeSearch = إغلاق البحث
 ui-terminal-atLeast = { $count }+
+ui-terminal-noneNear = لا توجد نتائج قريبة

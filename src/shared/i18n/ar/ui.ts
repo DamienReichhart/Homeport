@@ -61,4 +61,5 @@ export default {
   'ui.terminal.find': 'البحث في الطرفية',
   'ui.terminal.closeSearch': 'إغلاق البحث',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': 'لا توجد نتائج قريبة',
 } satisfies Translation<typeof en>;

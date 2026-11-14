@@ -65,3 +65,4 @@ ui-log-searchFailed = Die Suche wurde abgebrochen, bevor alle Zeilen gelesen war
 ui-terminal-find = Im Terminal suchen
 ui-terminal-closeSearch = Suche schließen
 ui-terminal-atLeast = { $count }+
+ui-terminal-noneNear = Keine Treffer in der Nähe

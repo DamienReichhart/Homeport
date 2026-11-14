@@ -65,3 +65,4 @@ ui-log-searchFailed = La ricerca si è interrotta prima di leggere tutte le righ
 ui-terminal-find = Trova nel terminale
 ui-terminal-closeSearch = Chiudi ricerca
 ui-terminal-atLeast = { $count }+
+ui-terminal-noneNear = Nessun risultato nelle vicinanze

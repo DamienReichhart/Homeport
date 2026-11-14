@@ -59,4 +59,5 @@ export default {
   'ui.terminal.find': '在终端中查找',
   'ui.terminal.closeSearch': '关闭搜索',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': '附近无匹配项',
 } satisfies Translation<typeof en>;

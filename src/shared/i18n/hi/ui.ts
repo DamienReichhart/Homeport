@@ -61,4 +61,5 @@ export default {
   'ui.terminal.find': 'टर्मिनल में खोजें',
   'ui.terminal.closeSearch': 'खोज बंद करें',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': 'आसपास कोई मिलान नहीं',
 } satisfies Translation<typeof en>;

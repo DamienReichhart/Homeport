@@ -9,10 +9,17 @@
 //! to 256 bytes is made into its matcher where it is typed; anything else
 //! is built on a thread that may block ([`compile`]).
 //!
-//! Every match is listed, up to [`MAX_MATCHES`], while the bar is open:
-//! the list is made again when the query changes, and when output came,
-//! since new lines move the old ones up. A list is made at most every
-//! [`RESCAN_EVERY`] while output pours in. Until the scrollback is full a
+//! The matches near the view are listed, [`NEAR`] lines above and below
+//! it and up to [`MAX_MATCHES`], while the bar is open: the list is made
+//! again when the query changes, when the view moved, and when output
+//! came, since new lines move the old ones up. A list is made at most
+//! every [`RESCAN_EVERY`] while output pours in. A list of the whole
+//! scrollback (10,000 lines of 120 columns) took 18 to 28 ms in a build
+//! that is optimised, most of a frame; the lines near the view take a
+//! fifth of it. The bar counts what is listed, with a "+" when lines
+//! further off were not looked at; next and previous go on past the
+//! lines listed with `alacritty_terminal`'s own search, through the whole
+//! scrollback and round its ends, and the list follows the view there. Until the scrollback is full a
 //! row only moves up by the lines that came under it, so the match the
 //! search stood on is followed exactly. Once it is full,
 //! `alacritty_terminal` keeps no count of the lines it let go of: the
@@ -26,7 +33,7 @@ use std::time::{Duration, Instant};
 
 use alacritty_terminal::{
     grid::Dimensions,
-    index::{Column, Direction, Line, Point},
+    index::{Boundary, Column, Direction, Line, Point, Side},
     term::{
         cell::Flags,
         search::{Match, RegexIter, RegexSearch},
@@ -40,6 +47,8 @@ use crate::ui::widgets::log::search::{invalid, Query};
 
 /// The most matches counted: past it the count says so ("10,000+").
 pub const MAX_MATCHES: usize = 10_000;
+/// How many lines above and below the view are searched.
+pub const NEAR: usize = 1000;
 /// The least time between two lists of the matches while output comes.
 pub const RESCAN_EVERY: Duration = Duration::from_millis(250);
 
@@ -116,6 +125,8 @@ pub struct Search {
     /// When the matches were last listed, and whether output came since.
     scanned: Option<Instant>,
     stale: bool,
+    /// The list holds every line's matches, not only those near the view.
+    whole: bool,
     /// How many lines the scrollback keeps.
     pub(super) scrollback: usize,
     pub id: Id,
@@ -134,6 +145,7 @@ impl Default for Search {
             generation: 0,
             scanned: None,
             stale: false,
+            whole: true,
             scrollback: super::DEFAULT_SCROLLBACK,
             id: Id::unique(),
         }
@@ -210,6 +222,19 @@ impl Search {
         }
     }
 
+    /// The view moved: the lines near it are listed soon, unless every
+    /// line already is.
+    pub fn view_moved(&mut self) {
+        if self.is_active() && !self.whole {
+            self.stale = true;
+        }
+    }
+
+    /// Whether only the lines near the view are listed.
+    pub fn is_near_only(&self) -> bool {
+        !self.whole
+    }
+
     /// When the matches should be listed again, if output came since.
     pub fn due(&self) -> Option<Instant> {
         if !self.stale || !self.is_active() {
@@ -228,8 +253,21 @@ impl Search {
         }
     }
 
-    /// Lists the matches of what `term` holds now. The current match
-    /// stays the one it was; a new query starts on the latest.
+    /// The lines near the view: from [`NEAR`] above it to [`NEAR`] below.
+    fn near<T>(term: &Term<T>) -> (Line, Line) {
+        let near = i32::try_from(NEAR).unwrap_or(i32::MAX);
+        let offset = i32::try_from(term.grid().display_offset()).unwrap_or(i32::MAX);
+        let rows = i32::try_from(term.screen_lines()).unwrap_or(i32::MAX);
+        let top = (-offset).saturating_sub(near).max(term.topmost_line().0);
+        let bottom = (rows - 1 - offset)
+            .saturating_add(near)
+            .min(term.bottommost_line().0);
+        (Line(top), Line(bottom))
+    }
+
+    /// Lists the matches near the view in what `term` holds now. The
+    /// current match stays the one it was; a new query starts on the
+    /// latest of them.
     pub fn refresh<T>(&mut self, term: &Term<T>) {
         self.matches.clear();
         self.stale = false;
@@ -241,34 +279,47 @@ impl Search {
                 return;
             }
         };
-        let start = Point::new(term.topmost_line(), Column(0));
-        let end = Point::new(term.bottommost_line(), term.last_column());
+        let (top, bottom) = Self::near(term);
+        self.whole = top <= term.topmost_line() && bottom >= term.bottommost_line();
+        let start = Point::new(top, Column(0));
+        let end = Point::new(bottom, term.last_column());
         self.matches
             .extend(RegexIter::new(start, end, Direction::Right, term, compiled).take(MAX_MATCHES));
         self.current = match &self.anchor {
             _ if self.matches.is_empty() => None,
             None => Some(self.matches.len() - 1),
-            Some(anchor) => Some(self.found_again(term, anchor)),
+            // A match off the lines listed is not lost: it is stepped on from.
+            Some(anchor) => self.found_again(term, anchor).or(self.whole.then_some(0)),
         };
-        self.remember(term);
+        if self.current.is_some() {
+            self.remember(term);
+        }
+    }
+
+    /// Where `anchor`'s match is now while the scrollback is not full:
+    /// moved up by the lines it gained.
+    fn moved<T>(&self, term: &Term<T>, anchor: &Anchor) -> Option<Point> {
+        let history = term.history_size();
+        if history >= self.scrollback || history < anchor.history {
+            return None;
+        }
+        let moved = i32::try_from(history - anchor.history).unwrap_or(i32::MAX);
+        Some(Point::new(anchor.start.line - moved, anchor.start.column))
     }
 
     /// The match `anchor` was: where its row moved up to while the
     /// scrollback is not full, if it still says the same; else the same
     /// place in a row that says the same, as near below where it was as
     /// there is (new lines only move rows up); the oldest when its row is
-    /// gone.
-    fn found_again<T>(&self, term: &Term<T>, anchor: &Anchor) -> usize {
-        let history = term.history_size();
-        if history < self.scrollback && history >= anchor.history {
-            let moved = i32::try_from(history - anchor.history).unwrap_or(i32::MAX);
-            let start = Point::new(anchor.start.line - moved, anchor.start.column);
+    /// gone, or off the lines listed.
+    fn found_again<T>(&self, term: &Term<T>, anchor: &Anchor) -> Option<usize> {
+        if let Some(start) = self.moved(term, anchor) {
             if let Ok(index) = self
                 .matches
                 .binary_search_by(|found| found.start().cmp(&start))
             {
                 if row_text(term, start.line) == anchor.row {
-                    return index;
+                    return Some(index);
                 }
             }
         }
@@ -292,18 +343,21 @@ impl Search {
                 break;
             }
         }
-        best.unwrap_or(0)
+        best
     }
 
     fn remember<T>(&mut self, term: &Term<T>) {
-        self.anchor = self
-            .current
-            .and_then(|index| self.matches.get(index))
-            .map(|found| Anchor {
-                start: *found.start(),
-                row: row_text(term, found.start().line),
-                history: term.history_size(),
-            });
+        if let Some(found) = self.current.and_then(|index| self.matches.get(index)) {
+            self.anchor = Some(Self::anchor(term, *found.start()));
+        }
+    }
+
+    fn anchor<T>(term: &Term<T>, start: Point) -> Anchor {
+        Anchor {
+            start,
+            row: row_text(term, start.line),
+            history: term.history_size(),
+        }
     }
 
     /// Goes to the next match (towards the latest line), or the one before,
@@ -313,18 +367,52 @@ impl Search {
             self.refresh(term);
         }
         let count = self.matches.len();
-        if count == 0 {
+        let next = match (self.current, forward) {
+            (Some(at), true) if at + 1 < count => Some(at + 1),
+            (Some(at), false) if at > 0 => Some(at - 1),
+            // Round the ends of a list that holds every line.
+            _ if count == 0 || !self.whole => None,
+            (_, true) => Some(0),
+            (_, false) => Some(count - 1),
+        };
+        if let Some(next) = next {
+            self.current = Some(next);
+            self.remember(term);
+            return Some(*self.matches[next].start());
+        }
+        if self.whole {
             return None;
         }
-        let next = match (self.current, forward) {
-            (None, true) => 0,
-            (None, false) => count - 1,
-            (Some(at), true) => (at + 1) % count,
-            (Some(at), false) => (at + count - 1) % count,
+        self.beyond(term, forward)
+    }
+
+    /// The next match (or the one before) past the lines listed, through
+    /// the whole scrollback and round its ends: from the current match,
+    /// else from the edge of the lines listed. The list follows once the
+    /// view is there ([`Search::refresh`]).
+    fn beyond<T>(&mut self, term: &Term<T>, forward: bool) -> Option<Point> {
+        let from = self
+            .anchor
+            .as_ref()
+            .map(|anchor| self.moved(term, anchor).unwrap_or(anchor.start));
+        let (top, bottom) = Self::near(term);
+        let origin = match (from, forward) {
+            (Some(at), true) => at.add(term, Boundary::None, 1),
+            (Some(at), false) => at.sub(term, Boundary::None, 1),
+            (None, true) => Point::new(bottom, term.last_column()).add(term, Boundary::None, 1),
+            (None, false) => Point::new(top, Column(0)).sub(term, Boundary::None, 1),
         };
-        self.current = Some(next);
-        self.remember(term);
-        Some(*self.matches[next].start())
+        let direction = if forward {
+            Direction::Right
+        } else {
+            Direction::Left
+        };
+        let compiled = self.compiled.as_mut()?;
+        let found = term.search_next(compiled, origin, direction, Side::Left, None)?;
+        let start = *found.start();
+        self.anchor = Some(Self::anchor(term, start));
+        self.current = None;
+        Some(start)
     }
 
     /// The matches that touch the lines `top..=bottom`, each with whether
@@ -338,14 +426,15 @@ impl Search {
             .map(move |(index, found)| (found, Some(first + index) == self.current))
     }
 
-    /// Which match is current, from one, and how many there are; whether
-    /// the count stopped at [`MAX_MATCHES`].
+    /// Which match is current, from one, and how many are listed; whether
+    /// there may be more (the count stopped at [`MAX_MATCHES`], or lines
+    /// far from the view were not looked at).
     pub fn counted(&self) -> (usize, usize, bool) {
         let current = self.current.map_or(0, |at| at + 1);
         (
             current,
             self.matches.len(),
-            self.matches.len() >= MAX_MATCHES,
+            self.matches.len() >= MAX_MATCHES || !self.whole,
         )
     }
 }

@@ -61,4 +61,5 @@ export default {
   'ui.terminal.find': 'Im Terminal suchen',
   'ui.terminal.closeSearch': 'Suche schließen',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': 'Keine Treffer in der Nähe',
 } satisfies Translation<typeof en>;

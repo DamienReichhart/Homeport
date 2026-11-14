@@ -2,8 +2,10 @@
 //! expression, whatever the case or not, counted, stepped through round
 //! the ends, brought into view, and found again as new lines come.
 
+use alacritty_terminal::grid::Dimensions;
+
 use super::{drive, sized};
-use crate::ui::widgets::terminal::{Message, State};
+use crate::ui::widgets::terminal::{search::NEAR, Message, Scroll, State};
 
 fn searched(state: &mut State, text: &str) {
     let _ = drive(state, Message::OpenSearch);
@@ -155,6 +157,75 @@ fn once_the_scrollback_is_full_the_same_row_is_found_again_where_it_was() {
     three_more(&mut state);
     assert_eq!(count(&state), (9, 14));
     assert_eq!(current_line(&state), line);
+}
+
+/// 3,000 lines that each say "ERROR", in a terminal of 40 × 5.
+fn long_log() -> State {
+    let mut state = sized(40, 5);
+    let lines: String = (0..3000).map(|i| format!("{i:04} ERROR\r\n")).collect();
+    let _ = state.feed(&lines);
+    state
+}
+
+fn current_row(state: &State) -> String {
+    let at = state.search().current.expect("a current match");
+    let line = state.search().matches[at].start().line;
+    let row = &state.term().grid()[line];
+    (0..4)
+        .map(|col| row[alacritty_terminal::index::Column(col)].c)
+        .collect()
+}
+
+#[test]
+fn only_the_lines_near_the_view_are_searched_and_the_count_says_so() {
+    let mut state = long_log();
+    searched(&mut state, "error");
+    let (current, total, more) = state.search().counted();
+    // The screen's four lines and the thousand above them.
+    assert_eq!((current, total), (NEAR + 4, NEAR + 4));
+    assert!(more, "lines further off may hold more");
+    assert_eq!(current_row(&state), "2999");
+}
+
+#[test]
+fn stepping_past_the_lines_searched_goes_on_through_the_scrollback() {
+    let mut state = long_log();
+    searched(&mut state, "error");
+    // Round the end from the latest: the oldest line, three thousand up.
+    let _ = drive(&mut state, Message::Next);
+    assert_eq!(current_row(&state), "0000");
+    assert!(!state.at_bottom());
+    let _ = drive(&mut state, Message::Previous);
+    assert_eq!(current_row(&state), "2999", "and round back");
+    assert!(state.at_bottom());
+    let _ = drive(&mut state, Message::Previous);
+    let _ = drive(&mut state, Message::Previous);
+    assert_eq!(current_row(&state), "2997");
+}
+
+#[test]
+fn a_match_far_from_the_view_is_stepped_to_though_none_is_near() {
+    let mut state = long_log();
+    searched(&mut state, "0000 ERROR");
+    assert_eq!(state.search().counted(), (0, 0, true), "none near");
+    let _ = drive(&mut state, Message::Previous);
+    assert_eq!(current_row(&state), "0000");
+    assert_eq!(state.search().counted(), (1, 1, true));
+}
+
+#[test]
+fn the_lines_searched_follow_the_view() {
+    let mut state = long_log();
+    searched(&mut state, "error");
+    let _ = drive(&mut state, Message::Scroll(Scroll::Top));
+    std::thread::sleep(crate::ui::widgets::terminal::search::RESCAN_EVERY);
+    let _ = drive(&mut state, Message::Read);
+    let first = state.search().matches[0].start().line;
+    assert_eq!(
+        first,
+        state.term().grid().topmost_line(),
+        "listed near the top"
+    );
 }
 
 #[test]

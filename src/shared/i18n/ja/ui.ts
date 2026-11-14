@@ -60,4 +60,5 @@ export default {
   'ui.terminal.find': 'ターミナル内を検索',
   'ui.terminal.closeSearch': '検索を閉じる',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': '近くに一致なし',
 } satisfies Translation<typeof en>;

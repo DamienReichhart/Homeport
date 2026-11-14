@@ -65,3 +65,4 @@ ui-log-searchFailed = सभी पंक्तियाँ पढ़ने स�
 ui-terminal-find = टर्मिनल में खोजें
 ui-terminal-closeSearch = खोज बंद करें
 ui-terminal-atLeast = { $count }+
+ui-terminal-noneNear = आसपास कोई मिलान नहीं

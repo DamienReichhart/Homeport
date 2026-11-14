@@ -57,4 +57,5 @@ export default {
   'ui.terminal.find': 'Find in terminal',
   'ui.terminal.closeSearch': 'Close search',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': 'No matches nearby',
 } as const;

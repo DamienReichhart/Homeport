@@ -62,4 +62,5 @@ export default {
   'ui.terminal.find': 'Найти в терминале',
   'ui.terminal.closeSearch': 'Закрыть поиск',
   'ui.terminal.atLeast': '{count}+',
+  'ui.terminal.noneNear': 'Поблизости нет совпадений',
 } satisfies Translation<typeof en>;

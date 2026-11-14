@@ -69,3 +69,4 @@ ui-log-searchFailed = Поиск остановился, не прочитав �
 ui-terminal-find = Найти в терминале
 ui-terminal-closeSearch = Закрыть поиск
 ui-terminal-atLeast = { $count }+
+ui-terminal-noneNear = Поблизости нет совпадений

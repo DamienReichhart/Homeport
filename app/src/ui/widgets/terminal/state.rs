@@ -405,6 +405,10 @@ impl State {
     fn step(&mut self, forward: bool) {
         if let Some(start) = self.search.step(&self.emulator.term, forward) {
             self.reveal(start);
+            // Only the lines near the view were listed: those near it now.
+            if self.search.is_near_only() {
+                self.search.refresh(&self.emulator.term);
+            }
         }
     }
 
@@ -461,6 +465,7 @@ impl State {
             }
             Message::Scroll(scroll) => {
                 self.scroll(scroll);
+                self.search.view_moved();
                 None
             }
             Message::Read => {
