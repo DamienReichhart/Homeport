@@ -216,6 +216,38 @@ fn after_the_end_the_start_is_read_when_the_entry_changes_and_two_seconds_apart(
     assert_eq!(live.engine.asked("/logs").len(), 1);
 }
 
+#[test]
+fn an_entry_that_changed_while_its_start_was_read_is_read_again() {
+    let mut live = Live::at("logs");
+    assert!(live.settles(Stream::Logs, 1));
+    live.engine.end_logs();
+    assert!(live.until(|live| live.rig.state.logs.is_over()));
+    let key = keys::host::containers(&live.rig.state.host_id);
+    let mut up = sample();
+    // The entry changes: a read goes (held here, not answered yet).
+    "Up 4 hours (unhealthy)".clone_into(&mut up[0].status);
+    live.rig.bench.data.set(&key, up.clone());
+    let _on_its_way = refresh(&mut live.rig.state, &live.rig.bench.ctx());
+    let held = live.rig.state.restarts.last_asked();
+    // Restarted meanwhile: the entry changes again, while that read is
+    // on its way, so no other goes now.
+    live.engine.started_at("2026-05-01T13:00:00.5Z");
+    "Up Less than a second (healthy)".clone_into(&mut up[0].status);
+    live.rig.bench.data.set(&key, up);
+    let task = refresh(&mut live.rig.state, &live.rig.bench.ctx());
+    assert!(live.rig.bench.run(task).is_empty());
+    assert_eq!(live.rig.state.restarts.last_asked(), held);
+    // That read answers with the start of before the restart: the entry
+    // it was for is not the one now, which is read too, and restarted.
+    let generation = live.rig.state.logs.generation();
+    let before = Some("2026-05-01T10:00:00.000000001Z".to_owned());
+    live.send(Message::Started(held, before));
+    // Nothing else came meanwhile: that answer alone led to the read.
+    assert_eq!(live.rig.state.logs.generation(), generation + 1);
+    assert!(live.until(|live| live.engine.asked("/logs").len() == 2));
+    assert!(live.settles(Stream::Logs, 1));
+}
+
 fn chunk(text: &str) -> Update<LogEvent> {
     let line = LogLine {
         source: None,

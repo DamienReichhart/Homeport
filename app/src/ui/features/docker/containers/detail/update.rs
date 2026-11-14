@@ -285,8 +285,8 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             let task = state.logs.update(message, ctx).map(Message::Logs);
             return Task::batch([task, restarts::follow(state, ctx)]);
         }
-        Message::Started(generation, started) => {
-            return restarts::answered(state, generation, started, ctx);
+        Message::Started(read, started) => {
+            return restarts::answered(state, read, started, ctx);
         }
     }
     Task::none()

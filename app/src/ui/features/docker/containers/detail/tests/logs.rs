@@ -12,7 +12,7 @@ use crate::{
     platform::{dialogs::SaveFile, fake::Asked as AskedOfOs},
     test_support::snapshot::{assert_snapshot, in_language},
     ui::{
-        features::docker::containers::detail::tabs::logs,
+        features::docker::containers::detail::{restarts::StartRead, tabs::logs},
         shell::page::testing::Asked,
         theme::Theme,
         widgets::{feedback::error_message::Event, form::select, log},
@@ -247,8 +247,8 @@ const RESTARTED: &str = "2026-05-01T13:00:00.5Z";
 
 /// The container's start, read for the stream that shows now.
 fn started(rig: &mut Rig, at: &str) {
-    let generation = rig.state.logs.generation();
-    rig.send(Message::Started(generation, Some(at.to_owned())));
+    let asked = rig.state.restarts.last_asked();
+    rig.send(Message::Started(asked, Some(at.to_owned())));
 }
 
 /// The sample, `web` up for `status`.
@@ -305,13 +305,43 @@ fn a_start_that_could_not_be_read_opens_nothing() {
     let generation = rig.state.logs.generation();
     started(&mut rig, STARTED);
     end(&mut rig);
-    rig.send(Message::Started(generation, None));
+    let asked = rig.state.restarts.last_asked();
+    rig.send(Message::Started(asked, None));
     rig.list(up("Up 4 hours (healthy)"));
-    rig.send(Message::Started(generation, None));
+    let asked = rig.state.restarts.last_asked();
+    rig.send(Message::Started(asked, None));
     assert_eq!(rig.state.logs.generation(), generation);
     // An answer for a stream before this one is not this one's.
-    rig.send(Message::Started(generation - 1, Some(RESTARTED.to_owned())));
+    let before = StartRead {
+        generation: generation - 1,
+        ..asked
+    };
+    rig.send(Message::Started(before, Some(RESTARTED.to_owned())));
     assert_eq!(rig.state.logs.generation(), generation);
+}
+
+#[test]
+fn without_the_start_read_as_it_opened_a_start_later_than_the_opening_is_a_restart() {
+    // The read as the stream opened failed (no Engine answers here).
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    end(&mut rig);
+    // Started before the stream opened: the same run, followed.
+    started(&mut rig, STARTED);
+    assert_eq!(rig.state.logs.generation(), generation);
+    // Once that is known, a start after it is a restart, as ever.
+    rig.list(up("Up 1 second (healthy)"));
+    started(&mut rig, RESTARTED);
+    assert_eq!(rig.state.logs.generation(), generation + 1);
+
+    // Again with nothing read before the end: a start later than the
+    // moment the stream opened is a restart between the two.
+    let mut rig = filled();
+    let generation = rig.state.logs.generation();
+    end(&mut rig);
+    let now = jiff::Timestamp::now().to_string();
+    started(&mut rig, &now);
+    assert_eq!(rig.state.logs.generation(), generation + 1);
 }
 
 #[test]

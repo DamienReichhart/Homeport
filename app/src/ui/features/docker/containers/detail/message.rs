@@ -32,7 +32,7 @@ pub enum Message {
     Health(health::Message),
     Files(files::Message),
     Stats(stats::Message),
-    /// When the container had started, as read for the log stream of this
-    /// number (`State.StartedAt`); `None` if it could not be read.
-    Started(u64, Option<String>),
+    /// When the container had started (`State.StartedAt`), as the read
+    /// for the log stream said; `None` if it could not be read.
+    Started(super::restarts::StartRead, Option<String>),
 }
