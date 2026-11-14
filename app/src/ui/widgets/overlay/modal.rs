@@ -274,12 +274,31 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Modal<'_, Messag
                     return;
                 }
                 Key::Named(Named::Tab) => {
-                    let to = if modifiers.shift() {
-                        Move::Previous
-                    } else {
-                        Move::Next
-                    };
-                    focus::move_within(content, inner, dialog, renderer, to, true);
+                    // What is inside is told first (a list of suggestions
+                    // closes); unless it kept the key, focus moves on
+                    // inside the dialog.
+                    let mut sent = vec![];
+                    let mut inside = iced::advanced::Shell::new(&mut sent);
+                    content.update(
+                        inner,
+                        event,
+                        dialog,
+                        cursor,
+                        renderer,
+                        clipboard,
+                        &mut inside,
+                        viewport,
+                    );
+                    let kept = inside.is_event_captured();
+                    shell.merge(inside, std::convert::identity);
+                    if !kept {
+                        let to = if modifiers.shift() {
+                            Move::Previous
+                        } else {
+                            Move::Next
+                        };
+                        focus::move_within(content, inner, dialog, renderer, to, true);
+                    }
                     shell.capture_event();
                     shell.request_redraw();
                     return;

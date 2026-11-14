@@ -4,8 +4,8 @@
 
 use iced::{
     advanced::{
-        layout, mouse, overlay, renderer,
-        widget::{Operation, Tree},
+        input_method, layout, mouse, overlay, renderer,
+        widget::{tree, Operation, Tree},
         Clipboard, Layout, Shell, Widget,
     },
     keyboard::{self, Key, Modifiers},
@@ -23,8 +23,14 @@ pub struct KeyArea<'a, Message> {
     on_captured: Option<OnKey<'a, Message>>,
     on_terminal: Option<OnKey<'a, Message>>,
     before: Option<OnKey<'a, Message>>,
+    alongside: Option<OnKey<'a, Message>>,
     always: bool,
 }
+
+/// Whether an input method is composing text inside: its keys (the arrows
+/// that choose a candidate, the Escape that drops it) are its own.
+#[derive(Debug, Default)]
+struct Composing(bool);
 
 /// Sends what `on_key` returns for a key pressed while something inside
 /// `content` has focus; the key is captured when it returns a message.
@@ -38,6 +44,7 @@ pub fn key_area<'a, Message>(
         on_captured: None,
         on_terminal: None,
         before: None,
+        alongside: None,
         always: false,
     }
 }
@@ -72,6 +79,15 @@ impl<'a, Message> KeyArea<'a, Message> {
         self
     }
 
+    /// A handler told of a key before what is inside, which still gets
+    /// it, while something inside has focus: a field's list of suggestions
+    /// closes on Tab, and Tab still moves on.
+    #[must_use]
+    pub fn alongside(mut self, on_key: impl Fn(&Key, Modifiers) -> Option<Message> + 'a) -> Self {
+        self.alongside = Some(Box::new(on_key));
+        self
+    }
+
     /// Also when nothing inside has focus: the keys of a whole page.
     #[must_use]
     pub fn always(mut self) -> Self {
@@ -81,6 +97,14 @@ impl<'a, Message> KeyArea<'a, Message> {
 }
 
 impl<Message> Widget<Message, Theme, iced::Renderer> for KeyArea<'_, Message> {
+    fn tag(&self) -> tree::Tag {
+        tree::Tag::of::<Composing>()
+    }
+
+    fn state(&self) -> tree::State {
+        tree::State::new(Composing::default())
+    }
+
     fn children(&self) -> Vec<Tree> {
         vec![Tree::new(&self.content)]
     }
@@ -131,8 +155,44 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for KeyArea<'_, Message> {
         shell: &mut Shell<'_, Message>,
         viewport: &Rectangle,
     ) {
-        if let (Some(before), Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. })) =
-            (&self.before, event)
+        if let Event::InputMethod(method) = event {
+            let composing = &mut tree.state.downcast_mut::<Composing>().0;
+            match method {
+                input_method::Event::Preedit(text, _) => *composing = !text.is_empty(),
+                input_method::Event::Commit(_) | input_method::Event::Closed => *composing = false,
+                input_method::Event::Opened => {}
+            }
+        }
+        // While an input method composes, its keys are its own: neither
+        // the handlers before what is inside nor those beside it hear them.
+        let composing = tree.state.downcast_ref::<Composing>().0;
+        if let (
+            false,
+            Some(alongside),
+            Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }),
+        ) = (composing, &self.alongside, event)
+        {
+            let inside = super::find(
+                self.content.as_widget_mut(),
+                &mut tree.children[0],
+                layout,
+                renderer,
+            )
+            .focused
+            .is_some();
+            if let (true, false, Some(message)) = (
+                inside,
+                shell.is_event_captured(),
+                alongside(key, *modifiers),
+            ) {
+                shell.publish(message);
+            }
+        }
+        if let (
+            false,
+            Some(before),
+            Event::Keyboard(keyboard::Event::KeyPressed { key, modifiers, .. }),
+        ) = (composing, &self.before, event)
         {
             let inside = super::find(
                 self.content.as_widget_mut(),

@@ -10,21 +10,24 @@
 //! - The keyboard stays in the field: Down and Up highlight a suggestion
 //!   (round at the ends), Enter takes the highlighted one, Escape closes
 //!   the list (and only the list: a dialog around stays), Tab and Shift +
-//!   Tab close it and leave. Enter with nothing highlighted is the field's
-//!   own (the form's submit).
+//!   Tab close it on their way. Enter with nothing highlighted is the
+//!   field's own (the form's submit); with one highlighted, never.
+//! - The list is what matched as the text changed, the first [`SHOWN`]: a
+//!   suggestion read again meanwhile changes nothing of what Enter takes.
+//! - While an input method composes, the arrows and Escape are its own.
 //! - A press on a suggestion takes it; a press elsewhere closes the list.
 //! - In Arabic the list hangs from the field's right edge.
 //!
 //! ```ignore
-//! suggest(&self.image_list, &labels, &self.image)
+//! suggest(&self.image_list, &self.image)
 //!     .placeholder("nginx:latest")
 //!     .view()
 //!     .map(Message::Image)
 //! // in update:
-//! match self.image_list.update(message, &self.image, &labels) {
-//!     (task, Some(suggest::Event::Input(text))) => self.image = text,
-//!     (task, Some(suggest::Event::Submit)) => .., // the form's Enter
-//!     (task, None) => ..,
+//! match self.image_list.update::<Message>(message, &self.image, &labels).1 {
+//!     Some(suggest::Event::Input(text)) => self.image = text,
+//!     Some(suggest::Event::Submit) => .., // the form's Enter
+//!     None => {}
 //! }
 //! ```
 
@@ -46,7 +49,7 @@ use crate::{
         widgets::{
             basic::fit,
             filling,
-            focus::{self, key_area, pressable},
+            focus::{key_area, pressable},
             overlay::{anchored, Align, Placement, Side},
         },
     },
@@ -57,11 +60,19 @@ const LIST_HEIGHT: f32 = 240.0;
 /// A suggestion's height.
 const ROW: f32 = 28.0;
 
-/// Whether the list is open, and which suggestion the arrows are on.
+/// How many suggestions the list holds at most: it scrolls, and what is
+/// typed narrows it (the browser's list is as short).
+pub const SHOWN: usize = 50;
+
+/// Whether the list is open, what it shows and which the arrows are on.
 #[derive(Debug, Clone, Default, PartialEq, Eq)]
 pub struct State {
     open: bool,
-    /// Among those that match.
+    /// What the list shows, worked out as the text or the list changed:
+    /// the view draws it as it is, and what is highlighted is what Enter
+    /// takes, even if the suggestions were read again meanwhile.
+    shown: Vec<String>,
+    /// Among those shown.
     active: Option<usize>,
 }
 
@@ -74,12 +85,10 @@ pub enum Message {
     Step(isize),
     /// This suggestion was pressed.
     Pick(String),
-    /// Escape, or a press outside.
+    /// Escape, Tab, or a press outside.
     Close,
     /// Enter in the field.
     Submit,
-    /// Tab (`true` with Shift): the list closes and focus leaves.
-    Leave(bool),
 }
 
 /// What the field asks of the page.
@@ -108,38 +117,52 @@ impl State {
         self.open
     }
 
+    /// What the list shows.
+    pub fn shown(&self) -> &[String] {
+        &self.shown
+    }
+
     fn close(&mut self) {
         self.open = false;
         self.active = None;
     }
 
+    /// Opens the list on what matches `value` now, the first [`SHOWN`].
+    fn show(&mut self, suggestions: &[String], value: &str) {
+        self.shown = matching(suggestions, value)
+            .into_iter()
+            .take(SHOWN)
+            .map(|index| suggestions[index].clone())
+            .collect();
+        self.open = !self.shown.is_empty();
+        self.active = None;
+    }
+
     /// Applies `message` to a field that holds `value` and offers
-    /// `suggestions`; returns what to run (focus that leaves) and what the
-    /// page is asked.
+    /// `suggestions`; returns what the page is asked. (The task is none:
+    /// Tab moves on by itself, the list closing as it goes.)
     pub fn update<T: Send + 'static>(
         &mut self,
         message: Message,
         value: &str,
         suggestions: &[String],
     ) -> (Task<T>, Option<Event>) {
-        let shown = matching(suggestions, value);
         let event = match message {
             Message::Typed(typed) => {
-                self.open = !matching(suggestions, &typed).is_empty();
-                self.active = None;
+                self.show(suggestions, &typed);
                 Some(Event::Input(typed))
             }
             Message::Open => {
-                self.open = !shown.is_empty();
+                self.show(suggestions, value);
                 None
             }
             Message::Step(by) => {
                 if !self.open {
-                    self.open = !shown.is_empty();
+                    self.show(suggestions, value);
                     return (Task::none(), None);
                 }
-                if !shown.is_empty() {
-                    let count = isize::try_from(shown.len()).unwrap_or(isize::MAX);
+                let count = isize::try_from(self.shown.len()).unwrap_or(isize::MAX);
+                if count > 0 {
                     let next = match self.active {
                         None if by > 0 => 0,
                         None => count - 1,
@@ -161,14 +184,9 @@ impl State {
                 let chosen = self
                     .active
                     .filter(|_| self.open)
-                    .and_then(|at| shown.get(at))
-                    .map(|&index| suggestions[index].clone());
+                    .and_then(|at| self.shown.get(at).cloned());
                 self.close();
                 Some(chosen.map_or(Event::Submit, Event::Input))
-            }
-            Message::Leave(back) => {
-                self.close();
-                return (focus::traverse(back), None);
             }
         };
         (Task::none(), event)
@@ -178,35 +196,21 @@ impl State {
 /// A field with suggestions, being described.
 pub struct Suggest<'a> {
     state: &'a State,
-    suggestions: std::borrow::Cow<'a, [String]>,
     value: &'a str,
     placeholder: String,
     font: Option<Font>,
     invalid: bool,
 }
 
-/// The field holding `value`, offering `suggestions` (in their order).
-pub fn suggest<'a>(state: &'a State, suggestions: &'a [String], value: &'a str) -> Suggest<'a> {
+/// The field holding `value`; its list is what `state` worked out of the
+/// suggestions as the text changed.
+pub fn suggest<'a>(state: &'a State, value: &'a str) -> Suggest<'a> {
     Suggest {
         state,
-        suggestions: std::borrow::Cow::Borrowed(suggestions),
         value,
         placeholder: String::new(),
         font: None,
         invalid: false,
-    }
-}
-
-/// The same over suggestions the view builds from what it reads (the
-/// Host's images).
-pub fn suggest_owned<'a>(
-    state: &'a State,
-    suggestions: Vec<String>,
-    value: &'a str,
-) -> Suggest<'a> {
-    Suggest {
-        suggestions: std::borrow::Cow::Owned(suggestions),
-        ..suggest(state, &[], value)
     }
 }
 
@@ -242,16 +246,21 @@ impl<'a> Suggest<'a> {
             field = field.style(theme::text_input::invalid);
         }
         let open = self.state.open;
-        // The arrows, Escape and Tab are the list's before the field's.
-        let field = key_area(field, |_, _| None).before(move |key, modifiers| match key {
-            Key::Named(Named::ArrowDown) => Some(Message::Step(1)),
-            Key::Named(Named::ArrowUp) if open => Some(Message::Step(-1)),
-            Key::Named(Named::Escape) if open => Some(Message::Close),
-            Key::Named(Named::Tab) if open => Some(Message::Leave(modifiers.shift())),
-            _ => None,
-        });
-        let shown = matching(&self.suggestions, self.value);
-        let list = (open && !shown.is_empty()).then(|| self.list(&shown));
+        // The arrows and Escape are the list's before the field's; Tab
+        // closes it on its way (the window or the dialog moves focus on).
+        // An input method that composes keeps its keys (`key_area`).
+        let field = key_area(field, |_, _| None)
+            .before(move |key, _| match key {
+                Key::Named(Named::ArrowDown) => Some(Message::Step(1)),
+                Key::Named(Named::ArrowUp) if open => Some(Message::Step(-1)),
+                Key::Named(Named::Escape) if open => Some(Message::Close),
+                _ => None,
+            })
+            .alongside(move |key, _| {
+                (open && *key == Key::Named(Named::Tab)).then_some(Message::Close)
+            });
+        let shown = &self.state.shown;
+        let list = (open && !shown.is_empty()).then(|| self.list(shown));
         anchored(
             field,
             list,
@@ -259,17 +268,17 @@ impl<'a> Suggest<'a> {
         )
         .match_width()
         // The keyboard stays in the field.
-        .focus_on_open(None)
+        .keys_to_anchor()
         .on_dismiss(Message::Close)
         .into()
     }
 
-    fn list(&self, shown: &[usize]) -> Element<'a, Message> {
+    fn list(&self, shown: &[String]) -> Element<'a, Message> {
         let rows: Vec<Element<'a, Message>> = shown
             .iter()
             .enumerate()
-            .map(|(at, &index)| {
-                let label = self.suggestions[index].clone();
+            .map(|(at, label)| {
+                let label = label.clone();
                 let mut words = text(label.clone()).size(size::SM);
                 if let Some(font) = self.font {
                     words = words.font(font);
@@ -279,6 +288,9 @@ impl<'a> Suggest<'a> {
                     .width(Length::Fill)
                     .height(ROW)
                     .padding([0.0, space::S1_5])
+                    // The keyboard stays in the field, as in a datalist.
+                    .focus_on_press(false)
+                    .tab_stop(false)
                     .on_press(Message::Pick(label))
                     .style(theme::button::part::item(active))
                     .into()
@@ -364,8 +376,6 @@ mod tests {
         assert_eq!(picked, Some(Event::Input("postgres:16".to_owned())));
         assert!(!state.is_open());
         step(&mut state, Message::Open, "");
-        let (task, event) = state.update::<()>(Message::Leave(false), "", &tags());
-        assert!(event.is_none() && !state.is_open());
-        assert!(!crate::test_support::tasks::is_none(task), "focus leaves");
+        assert_eq!(state.shown().len(), 4);
     }
 }

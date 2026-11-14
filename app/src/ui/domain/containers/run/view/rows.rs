@@ -28,7 +28,7 @@ use crate::{
                 flow, technical, BadgeVariant,
             },
             focus::key_area,
-            form::{field, suggest::suggest_owned},
+            form::{field, suggest::suggest},
             line,
             overlay::{tooltip, Side},
             paragraph, stack,
@@ -250,7 +250,6 @@ pub(super) fn devices(form: &Form) -> Element<'_, Message> {
 /// Backspace in an empty field takes the last away.
 pub(super) fn capabilities<'a>(
     form: &'a Form,
-    lists: &Lists,
     caps: Caps,
     sample: &'a str,
 ) -> Element<'a, Message> {
@@ -286,15 +285,11 @@ pub(super) fn capabilities<'a>(
         parts.push(flow(badges).spacing(space::S1).into());
     }
     let draft = &form.drafts[caps as usize];
-    let field = suggest_owned(
-        form.hint(Hint::Capability(caps)),
-        form.suggestions(Hint::Capability(caps), lists),
-        draft,
-    )
-    .placeholder(sample)
-    .font(super::machine_face(draft))
-    .view()
-    .map(move |message| Message::Suggest(Hint::Capability(caps), message));
+    let field = suggest(form.hint(Hint::Capability(caps)), draft)
+        .placeholder(sample)
+        .font(super::machine_face(draft))
+        .view()
+        .map(move |message| Message::Suggest(Hint::Capability(caps), message));
     let empty = draft.is_empty();
     // Backspace in an empty field: the field has nothing to take away.
     let field = key_area(field, |_, _| None).before(move |key, _| {

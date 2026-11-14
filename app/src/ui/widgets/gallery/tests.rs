@@ -507,3 +507,186 @@ fn a_field_with_suggestions_in_both_themes_and_mirrored() {
         });
     }
 }
+
+/// The field with suggestions in a dialog, before another field.
+fn in_a_dialog(gallery: &Gallery) -> Element<'_, Message> {
+    use crate::ui::widgets::{form::input, overlay::dialog};
+    let other = input("", &gallery.name).on_input(Message::Name);
+    let content = dialog("Run").push(gallery.suggestion()).push(other);
+    overlay::over(
+        blank(),
+        Some(overlay::modal(content).on_close(Message::Ask(false))),
+    )
+}
+
+/// Draws the dialog on `stage`, lets `act` use it, and hands what it said
+/// to the gallery.
+fn on_stage(
+    gallery: &mut Gallery,
+    stage: &mut crate::test_support::stage::Stage,
+    act: impl FnOnce(&mut crate::test_support::stage::Frame<'_, '_, Message>),
+) -> Vec<Message> {
+    let messages = stage.frame(in_a_dialog(gallery), act);
+    for message in messages.clone() {
+        let _ = gallery.update(message);
+    }
+    messages
+}
+
+#[test]
+fn in_a_dialog_tab_closes_the_suggestions_and_moves_on() {
+    use crate::test_support::stage::Stage;
+    let _english = in_language("en");
+    for back in [false, true] {
+        let mut gallery = controls();
+        let mut stage = Stage::new((640.0, 480.0));
+        // The dialog gives the field the keyboard as it opens.
+        on_stage(&mut gallery, &mut stage, |frame| frame.typewrite("ngi"));
+        assert!(gallery.images.is_open());
+        on_stage(&mut gallery, &mut stage, |frame| {
+            if back {
+                frame.tab_back();
+            } else {
+                frame.tab();
+            }
+        });
+        assert!(
+            !gallery.images.is_open(),
+            "Tab (back: {back}) closes the list"
+        );
+        on_stage(&mut gallery, &mut stage, |frame| {
+            assert!(frame.is_focused("TOKEN=abc"), "focus left the field");
+        });
+    }
+}
+
+#[test]
+fn in_a_dialog_the_arrows_enter_and_escape_go_to_the_suggestions_first() {
+    use crate::test_support::stage::Stage;
+    let _english = in_language("en");
+    let mut gallery = controls();
+    let mut stage = Stage::new((640.0, 480.0));
+    on_stage(&mut gallery, &mut stage, |frame| frame.typewrite("ngi"));
+    on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::ArrowDown)
+    });
+    on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::ArrowDown)
+    });
+    on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::ArrowUp)
+    });
+    on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::Enter)
+    });
+    assert_eq!(gallery.image, "nginx:1.27");
+    // Escape: the list first, then the dialog (a value typed whole offers
+    // nothing more: back to what holds others).
+    gallery.image = "ngi".to_owned();
+    on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::ArrowDown)
+    });
+    assert!(gallery.images.is_open());
+    let first = on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::Escape)
+    });
+    assert!(!gallery.images.is_open());
+    assert!(
+        !first.iter().any(|m| matches!(m, Message::Ask(false))),
+        "the dialog stays"
+    );
+    let second = on_stage(&mut gallery, &mut stage, |frame| {
+        frame.tap_key(Named::Escape)
+    });
+    assert!(
+        second.iter().any(|m| matches!(m, Message::Ask(false))),
+        "then it closes"
+    );
+}
+
+#[test]
+fn a_suggestion_taken_with_the_pointer_leaves_the_keyboard_in_the_field() {
+    use crate::test_support::stage::Stage;
+    let _english = in_language("en");
+    let mut gallery = controls();
+    let mut stage = Stage::new((640.0, 480.0));
+    on_stage(&mut gallery, &mut stage, |frame| frame.typewrite("post"));
+    on_stage(&mut gallery, &mut stage, |frame| frame.click("postgres:16"));
+    assert_eq!(gallery.image, "postgres:16");
+    on_stage(&mut gallery, &mut stage, |frame| {
+        assert!(
+            frame.is_focused("postgres:16"),
+            "the field keeps the keyboard"
+        );
+    });
+}
+
+#[test]
+fn keys_that_compose_text_are_the_input_method_s() {
+    use crate::test_support::stage::Stage;
+    use iced::advanced::input_method;
+    let _english = in_language("en");
+    let mut gallery = controls();
+    let mut stage = Stage::new((640.0, 480.0));
+    on_stage(&mut gallery, &mut stage, |frame| frame.typewrite("n"));
+    assert!(gallery.images.is_open());
+    // Composing (a Japanese word): the arrows and Escape choose among the
+    // input method's candidates, not the suggestions.
+    let said = on_stage(&mut gallery, &mut stage, |frame| {
+        frame.send([iced::Event::InputMethod(input_method::Event::Preedit(
+            "に".to_owned(),
+            None,
+        ))]);
+        frame.tap_key(Named::ArrowDown);
+        frame.tap_key(Named::Escape);
+    });
+    assert!(gallery.images.is_open(), "{said:?}");
+    let stepped = said.iter().any(|m| {
+        matches!(
+            m,
+            Message::Image(super::suggest::Message::Step(_) | super::suggest::Message::Close)
+        )
+    });
+    assert!(!stepped, "{said:?}");
+}
+
+#[test]
+fn a_list_of_thousands_draws_a_few_dozen() {
+    use super::suggest;
+    use crate::test_support::stage::Stage;
+    let tags: Vec<String> = (0..5000)
+        .map(|n| format!("registry.home/app-{n}:latest"))
+        .collect();
+    let mut state = suggest::State::default();
+    let _ = state.update::<()>(suggest::Message::Typed("app".to_owned()), "", &tags);
+    let mut stage = Stage::new((640.0, 480.0));
+    stage.frame(
+        on_page(suggest::suggest(&state, "app").view().map(Message::Image)),
+        |frame| {
+            let shown = frame
+                .texts()
+                .iter()
+                .filter(|t| t.starts_with("registry.home/"))
+                .count();
+            assert!(shown > 0 && shown <= suggest::SHOWN, "{shown} rows");
+        },
+    );
+}
+
+#[test]
+fn enter_never_sends_the_form_while_a_suggestion_is_highlighted() {
+    use super::suggest::{self, Event};
+    let two = vec!["app-1".to_owned(), "app-2".to_owned()];
+    let mut state = suggest::State::default();
+    let _ = state.update::<()>(suggest::Message::Typed("app".to_owned()), "", &two);
+    let _ = state.update::<()>(suggest::Message::Step(1), "app", &two);
+    let _ = state.update::<()>(suggest::Message::Step(1), "app", &two);
+    // The images are read again meanwhile: one is gone.
+    let one = vec!["app-1".to_owned()];
+    let (_, event) = state.update::<()>(suggest::Message::Submit, "app", &one);
+    assert_eq!(
+        event,
+        Some(Event::Input("app-2".to_owned())),
+        "what was highlighted"
+    );
+}

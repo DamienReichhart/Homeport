@@ -48,6 +48,8 @@ pub(super) struct Panel<'a, 'b, Message> {
     pub(super) modal: bool,
     pub(super) match_width: bool,
     pub(super) take_focus: Option<usize>,
+    /// The keyboard stays with the anchor: the panel hears no key.
+    pub(super) keys_to_anchor: bool,
     pub(super) interactive: bool,
     pub(super) viewport: Rectangle,
 }
@@ -121,6 +123,9 @@ impl<Message: Clone> overlay::Overlay<Message, Theme, iced::Renderer> for Panel<
             }
             _ => None,
         };
+        if pressed.is_some() && self.keys_to_anchor {
+            return;
+        }
         match pressed {
             Some((Key::Named(Named::Escape), _)) => {
                 // What is inside has the first word, as in a dialog: a

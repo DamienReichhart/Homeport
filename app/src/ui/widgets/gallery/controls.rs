@@ -179,7 +179,7 @@ impl Gallery {
 
     /// A field of free text with suggestions (`<datalist>`).
     pub(super) fn suggestion(&self) -> Element<'_, Message> {
-        suggest(&self.images, Self::image_tags(), &self.image)
+        suggest(&self.images, &self.image)
             .placeholder("nginx:latest")
             .view()
             .map(Message::Image)

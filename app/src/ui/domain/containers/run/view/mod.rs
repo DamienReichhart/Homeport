@@ -24,7 +24,7 @@ use crate::{
         },
         widgets::{
             basic::collapsible,
-            form::{field, input, select::select_owned, suggest::suggest_owned, textarea},
+            form::{field, input, select::select_owned, suggest::suggest, textarea},
             line, stack,
         },
     },
@@ -155,14 +155,10 @@ pub fn fields<'a>(
 ) -> Element<'a, Message> {
     let run = &form.form;
     let errors = form.errors();
-    let images = suggest_owned(
-        form.hint(Hint::Image),
-        form.suggestions(Hint::Image, lists),
-        &run.image,
-    )
-    .placeholder(IMAGE_SAMPLE)
-    .view()
-    .map(|message| Message::Suggest(Hint::Image, message));
+    let images = suggest(form.hint(Hint::Image), &run.image)
+        .placeholder(IMAGE_SAMPLE)
+        .view()
+        .map(|message| Message::Suggest(Hint::Image, message));
     let mut image = field(t!("containers.run.image"), images).view();
     if let Some(shown) = registry.and_then(login) {
         image = stack(vec![image, shown]).spacing(space::S1_5).into();

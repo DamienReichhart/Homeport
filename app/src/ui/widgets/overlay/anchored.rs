@@ -57,6 +57,7 @@ pub struct Anchored<'a, Message> {
     modal: bool,
     match_width: bool,
     take_focus: Option<usize>,
+    keys_to_anchor: bool,
     /// Asked of the anchor's own state before a hovered panel shows.
     only_while: Option<fn(&Tree) -> bool>,
 }
@@ -78,6 +79,7 @@ pub fn anchored<'a, Message>(
         modal: false,
         match_width: false,
         take_focus: Some(0),
+        keys_to_anchor: false,
         only_while: None,
     }
 }
@@ -141,6 +143,16 @@ impl<Message> Anchored<'_, Message> {
     #[must_use]
     pub fn focus_on_open(mut self, index: Option<usize>) -> Self {
         self.take_focus = index;
+        self
+    }
+
+    /// The keyboard stays with the anchor while the panel shows: the
+    /// panel hears no key, takes no focus, and its Escape and Tab are the
+    /// anchor's (a field's list of suggestions, which the field steers).
+    #[must_use]
+    pub fn keys_to_anchor(mut self) -> Self {
+        self.keys_to_anchor = true;
+        self.take_focus = None;
         self
     }
 }
@@ -385,6 +397,7 @@ impl<Message: Clone> Widget<Message, Theme, iced::Renderer> for Anchored<'_, Mes
                 modal: self.modal,
                 match_width: self.match_width,
                 take_focus: self.take_focus,
+                keys_to_anchor: self.keys_to_anchor,
                 interactive,
                 viewport: *viewport,
             }))),
