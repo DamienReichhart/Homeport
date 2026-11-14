@@ -88,6 +88,10 @@ struct Shared {
     /// What each exec was created with, and what its terminals were sent.
     execs: Mutex<Vec<String>>,
     typed: Mutex<Vec<u8>>,
+    /// What reached the terminals, in order: `input …` and `resize h=…&w=…`.
+    terminal: Mutex<Vec<String>>,
+    /// What an exec's inspect says it exited with.
+    exit_code: Mutex<i64>,
 }
 
 /// Counts a stream as open until dropped.
@@ -221,6 +225,17 @@ impl Engine {
     /// Ends every open terminal, as a shell that exits.
     pub fn exit(&self) {
         let _ = self.pushes.send(Push::Exit);
+    }
+
+    /// The next terminals exit with `code`, as their inspect says.
+    pub fn exit_with(&self, code: i64) {
+        *self.shared.exit_code.lock().unwrap() = code;
+    }
+
+    /// What reached the terminals, in the order it came: `input <text>`
+    /// for what was typed, `resize h=<rows>&w=<cols>` for a new size.
+    pub fn terminal(&self) -> Vec<String> {
+        self.shared.terminal.lock().unwrap().clone()
     }
 
     /// What the terminals were sent, all together.
@@ -518,7 +533,7 @@ impl Connection {
                     self.start_exec().await;
                     false
                 }
-                ("POST", ["exec", _, "resize"]) => self.answer("201 Created", &[], b"").await,
+                ("POST", ["exec", _, "resize"]) => self.resize_exec(&request).await,
                 ("GET", ["exec", _, "json"]) => self.inspect_exec().await,
                 ("GET", ["containers", _, "export"]) => self.export().await,
                 _ => {

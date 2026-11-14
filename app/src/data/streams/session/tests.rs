@@ -29,16 +29,26 @@ fn state() -> (Arc<AppState>, impl Sized) {
     (Arc::new(state), (events, dir))
 }
 
+/// A shell in the container, at the size of a terminal of 100 by 30.
 fn shell(host_id: &str) -> Backend {
     Backend::Engine {
         host_id: host_id.to_owned(),
         container_id: "c1".to_owned(),
-        options: ExecOptions {
-            cols: 100,
-            rows: 30,
-            ..ExecOptions::default()
-        },
+        options: ExecOptions::default(),
     }
+    .sized(100, 30)
+}
+
+/// What reached the fake's terminal, inputs that came in pieces joined.
+fn reached(engine: &Engine) -> Vec<String> {
+    let mut all: Vec<String> = vec![];
+    for told in engine.terminal() {
+        match (all.last_mut(), told.strip_prefix("input ")) {
+            (Some(last), Some(more)) if last.starts_with("input ") => last.push_str(more),
+            _ => all.push(told),
+        }
+    }
+    all
 }
 
 /// Reads the stream until `done` says what came is enough, for two
@@ -73,9 +83,9 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
     let backend = shell(&host_id);
     let mut session = TerminalSession::new(&backend);
     // Typed and resized before the session started: kept, the last size only.
-    session.input("ec".to_owned());
-    session.resize(90, 20);
-    session.resize(120, 40);
+    session.input("ec".to_owned()).unwrap();
+    session.resize(90, 20).unwrap();
+    session.resize(120, 40).unwrap();
     let mut stream = Box::pin(open(state.clone(), backend));
     let Some(Update::Started(id)) = stream.next().await else {
         panic!("the terminal started");
@@ -93,15 +103,22 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
         created[0]
     );
     for key in ["ho", " hi", "\r"] {
-        session.input(key.to_owned());
+        session.input(key.to_owned()).unwrap();
     }
     // The fake's line discipline echoes what came, in the order it came.
     let echoed = read_until(&mut stream, |out| out.text.contains("echo hi\r")).await;
     assert!(echoed.text.contains("echo hi\r"), "{echoed:?}");
     assert_eq!(engine.typed(), "echo hi\r");
-    let resized = engine.asked("/resize");
-    assert_eq!(resized.len(), 1, "{resized:?}");
-    assert!(resized[0].contains("h=40") && resized[0].contains("w=120"));
+    // In the order it was asked: the keys before the new size, then the
+    // size, then the keys after.
+    let reached = reached(&engine);
+    assert_eq!(reached.len(), 3, "{reached:?}");
+    assert_eq!(reached[0], "input ec");
+    assert!(
+        reached[1].contains("h=40") && reached[1].contains("w=120"),
+        "{reached:?}"
+    );
+    assert_eq!(reached[2], "input ho hi\r");
     engine.print("hi\r\n$ ");
     let printed = read_until(&mut stream, |out| out.text.contains("hi\r\n$ ")).await;
     assert!(printed.text.contains("hi\r\n$ "));
@@ -124,7 +141,7 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn letting_go_of_the_stream_closes_the_session() {
+async fn letting_go_of_the_stream_closes_the_session_and_what_is_sent_after_says_so() {
     let (state, _app) = state();
     let engine = Engine::start();
     let host_id = engine.host(&state).await;
@@ -138,11 +155,82 @@ async fn letting_go_of_the_stream_closes_the_session() {
         engine.settles_at(Open::Exec, 0).await,
         "the Engine's side is let go of"
     );
-    // What is typed after goes nowhere, and says so.
+    // What is typed after goes nowhere, and says so: the writer's end...
     let mut session = TerminalSession::new(&shell(&host_id));
-    session.input("ls\r".to_owned());
+    session.input("ls\r".to_owned()).unwrap();
     let refused = session.started(state.clone(), id).await;
-    assert_eq!(refused.map_err(|e| e.code), Err(ErrorCode::NotFound));
+    assert_eq!(
+        refused.clone().map_err(|e| e.code),
+        Err(ErrorCode::NotFound)
+    );
+    // ...and anything sent after, even before the page heard of it.
+    let after = session.input("pwd\r".to_owned());
+    assert_eq!(after.map_err(|e| e.code), Err(ErrorCode::NotFound));
+    session.written(refused);
+    assert_eq!(session.failure().map(|e| e.code), Some(ErrorCode::NotFound));
+    let resized = session.resize(80, 24);
+    assert_eq!(resized.map_err(|e| e.code), Err(ErrorCode::NotFound));
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_session_is_told_its_size_when_it_starts_and_says_how_its_program_ended() {
+    let (state, _app) = state();
+    let engine = Engine::start();
+    let host_id = engine.host(&state).await;
+    engine.exit_with(127);
+    // A terminal that kept its size from a session before: nothing new is
+    // resized, yet the program is told it.
+    let backend = shell(&host_id);
+    let mut session = TerminalSession::new(&backend);
+    let mut stream = Box::pin(open(state.clone(), backend));
+    let Some(Update::Started(id)) = stream.next().await else {
+        panic!("the terminal started");
+    };
+    let writer = tokio::spawn(session.started(state.clone(), id));
+    let created = engine.execs();
+    assert!(
+        created[0].contains(r#""ConsoleSize":[30,100]"#),
+        "{}",
+        created[0]
+    );
+    for _ in 0..100 {
+        if !engine.terminal().is_empty() {
+            break;
+        }
+        tokio::time::sleep(Duration::from_millis(20)).await;
+    }
+    let told = engine.terminal();
+    assert!(
+        told[0].contains("h=30") && told[0].contains("w=100"),
+        "{told:?}"
+    );
+    // A command not found: 127, and why.
+    engine.exit();
+    let ended = read_until(&mut stream, |out| out.exit.is_some()).await;
+    let exit = ended.exit.expect("an end");
+    assert_eq!(exit.code, Some(127));
+    assert!(exit.error.is_some(), "127 says the command could not run");
+    session.ended();
+    let _ = tokio::time::timeout(Duration::from_secs(2), writer).await;
+}
+
+#[test]
+fn a_backend_takes_the_terminal_s_size_and_never_none() {
+    let backend = Backend::Engine {
+        host_id: "h".to_owned(),
+        container_id: "c".to_owned(),
+        options: ExecOptions::default(),
+    };
+    assert_eq!(backend.size(), (1, 1), "0 by 0 is asked as 1 by 1 at least");
+    assert_eq!(backend.sized(132, 43).size(), (132, 43));
+    let console = Backend::IncusConsole {
+        host_id: "h".to_owned(),
+        project: "p".to_owned(),
+        name: "n".to_owned(),
+        cols: 80,
+        rows: 24,
+    };
+    assert_eq!(console.sized(0, 50).size(), (1, 50));
 }
 
 #[tokio::test]
@@ -213,7 +301,7 @@ async fn every_backend_without_its_host_or_cluster_fails_to_start() {
         );
         // A session of that kind that ended takes no input.
         let mut session = TerminalSession::new(&backend);
-        session.input("x".to_owned());
+        session.input("x".to_owned()).unwrap();
         let refused = session.started(state.clone(), 7).await;
         assert!(refused.is_err(), "{backend:?}");
     }

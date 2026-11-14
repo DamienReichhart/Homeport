@@ -10,9 +10,8 @@ use tokio::{
 
 use super::{Connection, Open, Push, Request, Stream};
 
-/// The exec's id, and what its inspect says once it ended.
+/// The exec's id.
 const EXEC: &str = r#"{"Id":"exec-1"}"#;
-const INSPECTED: &str = r#"{"ID":"exec-1","Running":false,"ExitCode":0}"#;
 
 impl Connection {
     /// `POST /containers/{id}/exec`: what it was asked to run is kept.
@@ -22,8 +21,18 @@ impl Connection {
         self.json("201 Created", EXEC).await
     }
 
+    /// What its inspect says once it ended: the code a test asked for.
     pub(super) async fn inspect_exec(&mut self) -> bool {
-        self.json("200 OK", INSPECTED).await
+        let code = *self.shared.exit_code.lock().unwrap();
+        let inspected = format!(r#"{{"ID":"exec-1","Running":false,"ExitCode":{code}}}"#);
+        self.json("200 OK", &inspected).await
+    }
+
+    /// `POST /exec/{id}/resize?h=…&w=…`: noted among what was typed.
+    pub(super) async fn resize_exec(&mut self, request: &Request) -> bool {
+        let size = format!("resize {}", request.query);
+        self.shared.terminal.lock().unwrap().push(size);
+        self.answer("201 Created", &[], b"").await
     }
 
     /// `POST /exec/{id}/start`, attached: the connection becomes the
@@ -43,6 +52,8 @@ impl Connection {
                     Ok(read) if read > 0 => {
                         let bytes = typed[..read].to_vec();
                         self.shared.typed.lock().unwrap().extend_from_slice(&bytes);
+                        let input = format!("input {}", String::from_utf8_lossy(&bytes));
+                        self.shared.terminal.lock().unwrap().push(input);
                         bytes
                     }
                     _ => return,

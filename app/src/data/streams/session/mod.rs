@@ -26,6 +26,7 @@
 //!     let writes = self.session.started(ctx.state.clone(), id);
 //!     return Task::perform(writes, Message::Written);
 //! }
+//! Message::Written(result) => self.session.written(result), // then show `session.failure()`
 //! Message::Session(Update::Batch { items, .. }) => {
 //!     let output = session::output(items);
 //!     for event in self.terminal.feed(&output.text) { /* as below */ }
@@ -42,6 +43,12 @@
 //! reordered and `update` never waits on the backend: [`input`] and
 //! [`resize`] only queue. Keys typed before the session started are sent
 //! once it does; a size asked for meanwhile replaces the one before it.
+//! A backend is opened at the terminal's size ([`Backend::sized`]), and
+//! that size is told again when the session starts, so a terminal opened
+//! again on a new session is the program's size even though its own did
+//! not change. A write that failed ends the writer: the page is told by
+//! its task, [`TerminalSession::written`] keeps the failure, and [`input`]
+//! and [`resize`] say it again rather than dropping what they were given.
 //!
 //! [`input`]: TerminalSession::input
 //! [`resize`]: TerminalSession::resize
@@ -56,7 +63,7 @@ use iced::{futures::Stream, Subscription};
 use tokio::sync::mpsc;
 
 use homeport_containerd::containers::exec::ContainerdExecOptions;
-use homeport_core::error::{AppError, AppResult};
+use homeport_core::error::{AppError, AppResult, ErrorCode};
 use homeport_engine::containers::exec::{ExecEvent, ExecOptions};
 use homeport_incus::instances::terminal::IncusExecOptions;
 use homeport_kubernetes::streams::terminal::PodExecOptions;
@@ -145,6 +152,38 @@ pub enum Kind {
 }
 
 impl Backend {
+    /// The backend with the terminal's size, as the session starts with it
+    /// (`terminal::State::size`): options left at their default would ask
+    /// for a terminal of no cells.
+    #[must_use]
+    pub fn sized(mut self, cols: u16, rows: u16) -> Self {
+        let (cols, rows) = (cols.max(1), rows.max(1));
+        match &mut self {
+            Self::Engine { options, .. } => (options.cols, options.rows) = (cols, rows),
+            Self::Containerd { options, .. } => (options.cols, options.rows) = (cols, rows),
+            Self::IncusExec { options, .. } => (options.cols, options.rows) = (cols, rows),
+            Self::IncusConsole {
+                cols: c, rows: r, ..
+            } => (*c, *r) = (cols, rows),
+            Self::Pod { options, .. } => (options.cols, options.rows) = (cols, rows),
+            Self::Nomad { options, .. } => (options.cols, options.rows) = (cols, rows),
+        }
+        self
+    }
+
+    /// The size the terminal is asked for.
+    pub fn size(&self) -> (u16, u16) {
+        let size = match self {
+            Self::Engine { options, .. } => (options.cols, options.rows),
+            Self::Containerd { options, .. } => (options.cols, options.rows),
+            Self::IncusExec { options, .. } => (options.cols, options.rows),
+            Self::IncusConsole { cols, rows, .. } => (*cols, *rows),
+            Self::Pod { options, .. } => (options.cols, options.rows),
+            Self::Nomad { options, .. } => (options.cols, options.rows),
+        };
+        (size.0.max(1), size.1.max(1))
+    }
+
     pub fn kind(&self) -> Kind {
         match self {
             Self::Engine { .. } => Kind::Engine,
@@ -417,9 +456,22 @@ enum Op {
 pub struct TerminalSession {
     kind: Kind,
     id: Option<u32>,
+    /// The size the program's terminal is to be: told first when the
+    /// session starts, whatever it was asked with.
+    size: (u16, u16),
     /// What was asked for before the session started.
     pending: Vec<Op>,
     sender: Option<mpsc::UnboundedSender<Op>>,
+    /// Why nothing more can be sent: a write that failed, or the end.
+    failure: Option<AppError>,
+}
+
+/// What is said of a session that ended when something is sent to it.
+fn ended() -> AppError {
+    AppError::new(
+        ErrorCode::NotFound,
+        homeport_engine::messages::TERMINAL_ENDED,
+    )
 }
 
 impl TerminalSession {
@@ -427,8 +479,10 @@ impl TerminalSession {
         Self {
             kind: backend.kind(),
             id: None,
+            size: backend.size(),
             pending: vec![],
             sender: None,
+            failure: None,
         }
     }
 
@@ -437,28 +491,57 @@ impl TerminalSession {
         self.id
     }
 
-    /// The session `id` started: what was asked for meanwhile is sent, and
-    /// so is everything after, in order, by the future this returns (for
-    /// `Task::perform`). It ends with the first write that fails, or once
-    /// the session ended or this was dropped.
+    /// The session `id` started: its size is told first (a session opened
+    /// again on a terminal that kept its size is told it too), then what
+    /// was asked for meanwhile, and everything after, in order, by the
+    /// future this returns (for `Task::perform`). It ends with the first
+    /// write that fails, or once the session ended or this was dropped;
+    /// give what it ended with to [`TerminalSession::written`].
     pub fn started(
         &mut self,
         state: Arc<AppState>,
         id: u32,
     ) -> impl Future<Output = AppResult<()>> + Send + 'static {
         let (sender, receiver) = mpsc::unbounded_channel();
+        if !self.pending.iter().any(|op| matches!(op, Op::Resize(..))) {
+            let (cols, rows) = self.size;
+            let _ = sender.send(Op::Resize(cols, rows));
+        }
         for op in self.pending.drain(..) {
             let _ = sender.send(op);
         }
         self.id = Some(id);
         self.sender = Some(sender);
+        self.failure = None;
         write(state, self.kind, id, receiver)
     }
 
-    fn send(&mut self, op: Op) {
+    /// What the writer of [`TerminalSession::started`] ended with: a
+    /// failure is kept, and said again for anything sent after.
+    pub fn written(&mut self, result: AppResult<()>) {
+        self.sender = None;
+        self.failure = Some(result.err().unwrap_or_else(ended));
+    }
+
+    /// Why nothing can be sent any more, once that is so.
+    pub fn failure(&self) -> Option<&AppError> {
+        self.failure.as_ref()
+    }
+
+    fn send(&mut self, op: Op) -> AppResult<()> {
+        if let Some(failure) = &self.failure {
+            return Err(failure.clone());
+        }
         match &self.sender {
             Some(sender) => {
-                let _ = sender.send(op);
+                if sender.send(op).is_err() {
+                    // The writer stopped: its session ended or a write
+                    // failed, which the page is told by its task too.
+                    self.sender = None;
+                    let failure = ended();
+                    self.failure = Some(failure.clone());
+                    return Err(failure);
+                }
             }
             None => {
                 // A new size before the start replaces the one before.
@@ -468,24 +551,29 @@ impl TerminalSession {
                 self.pending.push(op);
             }
         }
+        Ok(())
     }
 
-    /// Bytes for the program: a key, a paste, an answer.
-    pub fn input(&mut self, data: String) {
-        if !data.is_empty() {
-            self.send(Op::Input(data));
+    /// Bytes for the program: a key, a paste, an answer. A session that
+    /// can take no more says why.
+    pub fn input(&mut self, data: String) -> AppResult<()> {
+        if data.is_empty() {
+            return Ok(());
         }
+        self.send(Op::Input(data))
     }
 
     /// The terminal has this many cells now.
-    pub fn resize(&mut self, cols: u16, rows: u16) {
-        self.send(Op::Resize(cols, rows));
+    pub fn resize(&mut self, cols: u16, rows: u16) -> AppResult<()> {
+        self.size = (cols, rows);
+        self.send(Op::Resize(cols, rows))
     }
 
     /// The session ended: nothing more is sent, and the writer stops.
     pub fn ended(&mut self) {
         self.sender = None;
         self.pending.clear();
+        self.failure.get_or_insert_with(ended);
     }
 }
 
