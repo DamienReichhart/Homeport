@@ -101,7 +101,9 @@ impl HostRegistry {
 
     /// (Re)starts a Host's supervisor, e.g. after it was edited or trusted.
     pub fn restart(&self, id: &str) {
-        let task = tokio::spawn(supervise(self.me.clone(), id.to_owned()));
+        // The entry is there before the task that fills it starts: spawned
+        // first, a task that connected before the entry was made had its
+        // status dropped, and the Host stayed "connecting" while connected.
         let mut entries = self.lock();
         let entry = entries.entry(id.to_owned()).or_insert_with(|| Entry {
             status: HostStatus::Connecting,
@@ -110,10 +112,12 @@ impl HostRegistry {
             helpers: HashSet::new(),
             swarm: None,
         });
-        if let Some(old) = entry.task.replace(task) {
+        if let Some(old) = entry.task.take() {
             old.abort();
         }
         entry.client = None;
+        // The task waits for the lock before it tells its first status.
+        entry.task = Some(tokio::spawn(supervise(self.me.clone(), id.to_owned())));
     }
 
     pub fn remove(&self, id: &str) {

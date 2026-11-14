@@ -172,7 +172,8 @@ impl Engine {
             }
             tokio::time::sleep(Duration::from_millis(25)).await;
         }
-        panic!("the Host never connected to the fake Engine");
+        let status = state.hosts.registry.status(&id);
+        panic!("the Host never connected to the fake Engine: {status:?}");
     }
 
     /// How many streams of this kind are open now.

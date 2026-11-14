@@ -95,19 +95,23 @@ impl ClusterRegistry {
     /// refreshed; its exec plugin runs again.
     pub fn restart(&self, id: &str) {
         self.forget_issued(id);
-        let task = tokio::spawn(supervise(self.me.clone(), id.to_owned()));
+        // The entry is reset before the task that fills it starts: spawned
+        // first, a task that connected at once had its status dropped or
+        // overwritten with "connecting" (as the Hosts' registry did).
         let mut entries = self.lock();
         let entry = entries.entry(id.to_owned()).or_insert_with(|| Entry {
             status: ClusterStatus::Connecting,
             client: None,
             task: None,
         });
-        if let Some(old) = entry.task.replace(task) {
+        if let Some(old) = entry.task.take() {
             old.abort();
         }
         // Not the old status, which the edit that restarted it may have fixed.
         entry.status = ClusterStatus::Connecting;
         entry.client = None;
+        // The task waits for the lock before it tells its first status.
+        entry.task = Some(tokio::spawn(supervise(self.me.clone(), id.to_owned())));
     }
 
     pub fn remove(&self, id: &str) {
