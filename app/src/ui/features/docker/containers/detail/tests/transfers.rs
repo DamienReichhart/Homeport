@@ -116,6 +116,28 @@ fn a_link_saves_the_file_it_leads_to_and_never_an_empty_one() {
     );
 }
 
+#[test]
+fn links_that_lead_round_in_a_circle_are_refused_by_the_name_asked_for() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("a", false)]);
+    live.engine.link("/a", "/b");
+    live.engine.link("/b", "/a");
+    let refused = live.rig.bench.os.dir().join("a");
+    live.rig.bench.os.answer(&refused);
+    live.send(browse(file_browser::Message::Download("/a".to_owned())));
+    assert!(!refused.exists());
+    let told = live.rig.bench.took();
+    let failed = told.iter().find_map(|asked| match asked {
+        Asked::Failed(_, error) => Some(error.message.clone()),
+        _ => None,
+    });
+    assert_eq!(
+        failed.as_deref(),
+        Some("/a is a link or not a regular file, so it can't be downloaded."),
+        "{told:?}"
+    );
+}
+
 /// Three files of this computer to put in the container.
 fn sources(live: &Live) -> Vec<std::path::PathBuf> {
     ["a.txt", "b.txt", "c.txt"]

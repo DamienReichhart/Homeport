@@ -285,7 +285,7 @@ pub async fn download_counted(
         let unfinished = dropped.hold(saved);
         let (chunks, queued) = tokio::sync::mpsc::channel(QUEUED);
         let saving = Saving {
-            path,
+            path: asked.to_owned(),
             total,
             destination,
             stopped,
@@ -359,14 +359,14 @@ pub async fn download_counted(
     Ok(true)
 }
 
-/// `path` and what the Engine says of it; for a symbolic link, the path
+/// `asked` and what the Engine says of it; for a symbolic link, the path
 /// and stat of what it leads to, the Engine giving where.
 async fn resolved(
     docker: &Docker,
     container_id: &str,
-    path: &str,
+    asked: &str,
 ) -> AppResult<(String, bollard::container::PathStatResponse)> {
-    let mut path = path.to_owned();
+    let mut path = asked.to_owned();
     for _ in 0..=LINKS_MAX {
         let stat = docker
             .get_container_archive_info(
@@ -383,9 +383,10 @@ async fn resolved(
         }
         path = followed(&path, &stat.link_target);
     }
-    // Links that lead on and on, or round in a circle.
+    // Links that lead on and on, or round in a circle: the path asked
+    // for is the one the user knows.
     Err(AppError::validation(
-        msg::FILES_NOT_REGULAR.with("path", path),
+        msg::FILES_NOT_REGULAR.with("path", asked),
     ))
 }
 
@@ -401,7 +402,8 @@ fn followed(path: &str, target: &str) -> String {
 
 /// What a file's download reads, and where it puts it.
 struct Saving {
-    /// The file in the container.
+    /// The file in the container, as the user asked for it (a link's
+    /// path, not where it leads): what failures name.
     path: String,
     /// Its size, as the Engine said.
     total: Option<u64>,
