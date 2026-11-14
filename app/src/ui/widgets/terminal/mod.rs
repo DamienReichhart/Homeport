@@ -30,17 +30,22 @@
 //!     return Task::batch([task.map(Message::Terminal), self.told(events, ctx)]);
 //! }
 //!
+//! // what the session's writer ended with: a failure is shown, once.
+//! Message::Written(result) => {
+//!     self.session.written(result);
+//!     self.failure = self.session.failure().map(|e| Surfaced::new(e.clone(), "exec_input"));
+//! }
+//!
 //! fn told(&mut self, events: Vec<terminal::Event>, ctx: &Context<'_>) -> Task<Message> {
 //!     for event in events {
-//!         let sent = match event {
+//!         match event {
+//!             // Let go of quietly once the session ended.
 //!             terminal::Event::Input(bytes) => self.session.input(bytes),
 //!             terminal::Event::Resize { cols, rows } => self.session.resize(cols, rows),
-//!             terminal::Event::Copy(text) => { ctx.copy(text); Ok(()) }
-//!             terminal::Event::Open(url) => { ctx.open_url(url); Ok(()) }
-//!             terminal::Event::Title(_) | terminal::Event::Bell => Ok(()),
-//!         };
-//!         // A session that can take no more says why: show it.
-//!         if let Err(error) = sent { self.failure = Some(Surfaced::new(error, "exec_input")) }
+//!             terminal::Event::Copy(text) => ctx.copy(text),
+//!             terminal::Event::Open(url) => ctx.open_url(url),
+//!             terminal::Event::Title(_) | terminal::Event::Bell => {}
+//!         }
 //!     }
 //!     Task::none()
 //! }

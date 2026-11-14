@@ -84,9 +84,9 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
     let mut session = session(shell(&host_id));
     let mut stream = Box::pin(session.opened(state.clone()));
     // Typed and resized before the session started: kept, the last size only.
-    session.input("ec".to_owned()).unwrap();
-    session.resize(90, 20).unwrap();
-    session.resize(120, 40).unwrap();
+    session.input("ec".to_owned());
+    session.resize(90, 20);
+    session.resize(120, 40);
     let Some(Update::Started(id)) = stream.next().await else {
         panic!("the terminal started");
     };
@@ -103,7 +103,7 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
         created[0]
     );
     for key in ["ho", " hi", "\r"] {
-        session.input(key.to_owned()).unwrap();
+        session.input(key.to_owned());
     }
     // The fake's line discipline echoes what came, in the order it came.
     let echoed = read_until(&mut stream, |out| out.text.contains("echo hi\r")).await;
@@ -141,7 +141,7 @@ async fn a_shell_in_a_container_takes_keys_in_order_is_resized_and_says_its_end(
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
-async fn letting_go_of_the_stream_closes_the_session_and_what_is_sent_after_says_so() {
+async fn letting_go_of_the_stream_closes_the_session_and_its_writer_says_why() {
     let (state, _app) = state();
     let engine = Engine::start();
     let host_id = engine.host(&state).await;
@@ -155,21 +155,20 @@ async fn letting_go_of_the_stream_closes_the_session_and_what_is_sent_after_says
         engine.settles_at(Open::Exec, 0).await,
         "the Engine's side is let go of"
     );
-    // What is typed after goes nowhere, and says so: the writer's end...
+    // What is typed after goes nowhere: the writer says why, once...
     let mut session = session(shell(&host_id));
-    session.input("ls\r".to_owned()).unwrap();
+    session.input("ls\r".to_owned());
     let refused = session.started(state.clone(), id).await;
     assert_eq!(
         refused.clone().map_err(|e| e.code),
         Err(ErrorCode::NotFound)
     );
-    // ...and anything sent after, even before the page heard of it.
-    let after = session.input("pwd\r".to_owned());
-    assert_eq!(after.map_err(|e| e.code), Err(ErrorCode::NotFound));
     session.written(refused);
     assert_eq!(session.failure().map(|e| e.code), Some(ErrorCode::NotFound));
-    let resized = session.resize(80, 24);
-    assert_eq!(resized.map_err(|e| e.code), Err(ErrorCode::NotFound));
+    // ...and what is sent after is let go of.
+    session.input("pwd\r".to_owned());
+    session.resize(80, 24);
+    assert_eq!(engine.typed(), "");
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
@@ -329,10 +328,19 @@ async fn every_backend_without_its_host_or_cluster_fails_to_start() {
             "{backend:?}: {updates:?}"
         );
         // A session of that kind that ended takes no input.
-        session.input("x".to_owned()).unwrap();
+        session.input("x".to_owned());
         let refused = session.started(state.clone(), 7).await;
         assert!(refused.is_err(), "{backend:?}");
     }
+}
+
+#[test]
+fn what_is_sent_to_a_session_that_ended_is_let_go_of_quietly() {
+    let mut session = session(shell("h"));
+    session.ended();
+    session.input("x".to_owned());
+    session.resize(80, 24);
+    assert_eq!(session.failure(), None, "an end is not a failure");
 }
 
 #[test]

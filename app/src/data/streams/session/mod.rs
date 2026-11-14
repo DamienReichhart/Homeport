@@ -32,7 +32,7 @@
 //!     let writes = self.session.started(ctx.state.clone(), id);
 //!     return Task::perform(writes, Message::Written);
 //! }
-//! Message::Written(result) => self.session.written(result), // then show `session.failure()`
+//! Message::Written(result) => self.session.written(result), // then show `session.failure()`, if any
 //! Message::Session(Update::Batch { items, .. }) => {
 //!     let output = session::output(items);
 //!     for event in self.terminal.feed(&output.text) { /* as below */ }
@@ -52,9 +52,12 @@
 //! A session has a size from the start ([`TerminalSession::new`] takes
 //! it): its backend is opened at the size it has then, and that size is
 //! told again when the session starts, so a terminal opened again on a
-//! new session is the program's size even though its own did not change. A write that failed ends the writer: the page is told by
-//! its task, [`TerminalSession::written`] keeps the failure, and [`input`]
-//! and [`resize`] say it again rather than dropping what they were given.
+//! new session is the program's size even though its own did not
+//! change. A write that failed ends the writer: the page is told by its
+//! task, and [`TerminalSession::written`] keeps the failure for it to
+//! show. Once the session ended or failed, [`input`] and [`resize`] let
+//! go of what they are given, quietly: the end was said once, by the
+//! program's exit or the failure, and a key typed after is not an error.
 //!
 //! [`input`]: TerminalSession::input
 //! [`resize`]: TerminalSession::resize
@@ -68,7 +71,7 @@ use std::{
 use iced::{futures::Stream, Subscription};
 use tokio::sync::mpsc;
 
-use homeport_core::error::{AppError, AppResult, ErrorCode};
+use homeport_core::error::{AppError, AppResult};
 use homeport_engine::containers::exec::ExecEvent;
 
 pub use self::backend::{Backend, Kind};
@@ -279,16 +282,10 @@ pub struct TerminalSession {
     /// What was asked for before the session started.
     pending: Vec<Op>,
     sender: Option<mpsc::UnboundedSender<Op>>,
-    /// Why nothing more can be sent: a write that failed, or the end.
+    /// Nothing more can be sent: the session ended, or a write failed.
+    done: bool,
+    /// The write that failed.
     failure: Option<AppError>,
-}
-
-/// What is said of a session that ended when something is sent to it.
-fn ended() -> AppError {
-    AppError::new(
-        ErrorCode::NotFound,
-        homeport_engine::messages::TERMINAL_ENDED,
-    )
 }
 
 impl TerminalSession {
@@ -302,6 +299,7 @@ impl TerminalSession {
             size: (cols.max(1), rows.max(1)),
             pending: vec![],
             sender: None,
+            done: false,
             failure: None,
         }
     }
@@ -362,35 +360,37 @@ impl TerminalSession {
         }
         self.id = Some(id);
         self.sender = Some(sender);
+        self.done = false;
         self.failure = None;
         write(state, self.backend.kind(), id, receiver)
     }
 
-    /// What the writer of [`TerminalSession::started`] ended with: a
-    /// failure is kept, and said again for anything sent after.
+    /// What the writer of [`TerminalSession::started`] ended with: nothing
+    /// more is sent, and a failure is kept for the page to show.
     pub fn written(&mut self, result: AppResult<()>) {
         self.sender = None;
-        self.failure = Some(result.err().unwrap_or_else(ended));
+        self.done = true;
+        if let Err(failure) = result {
+            self.failure = Some(failure);
+        }
     }
 
-    /// Why nothing can be sent any more, once that is so.
+    /// The write that failed, once one did: what the page shows.
     pub fn failure(&self) -> Option<&AppError> {
         self.failure.as_ref()
     }
 
-    fn send(&mut self, op: Op) -> AppResult<()> {
-        if let Some(failure) = &self.failure {
-            return Err(failure.clone());
+    fn send(&mut self, op: Op) {
+        if self.done {
+            return;
         }
         match &self.sender {
             Some(sender) => {
                 if sender.send(op).is_err() {
                     // The writer stopped: its session ended or a write
-                    // failed, which the page is told by its task too.
+                    // failed, which the page is told by its task.
                     self.sender = None;
-                    let failure = ended();
-                    self.failure = Some(failure.clone());
-                    return Err(failure);
+                    self.done = true;
                 }
             }
             None => {
@@ -401,29 +401,27 @@ impl TerminalSession {
                 self.pending.push(op);
             }
         }
-        Ok(())
     }
 
-    /// Bytes for the program: a key, a paste, an answer. A session that
-    /// can take no more says why.
-    pub fn input(&mut self, data: String) -> AppResult<()> {
-        if data.is_empty() {
-            return Ok(());
+    /// Bytes for the program: a key, a paste, an answer. Let go of once
+    /// the session can take no more.
+    pub fn input(&mut self, data: String) {
+        if !data.is_empty() {
+            self.send(Op::Input(data));
         }
-        self.send(Op::Input(data))
     }
 
     /// The terminal has this many cells now.
-    pub fn resize(&mut self, cols: u16, rows: u16) -> AppResult<()> {
-        self.size = (cols, rows);
-        self.send(Op::Resize(cols, rows))
+    pub fn resize(&mut self, cols: u16, rows: u16) {
+        self.size = (cols.max(1), rows.max(1));
+        self.send(Op::Resize(self.size.0, self.size.1));
     }
 
     /// The session ended: nothing more is sent, and the writer stops.
     pub fn ended(&mut self) {
         self.sender = None;
         self.pending.clear();
-        self.failure.get_or_insert_with(ended);
+        self.done = true;
     }
 }
 
