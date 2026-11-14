@@ -29,7 +29,9 @@ pub async fn files_list(
 /// `destination` and put in its place only once whole (see
 /// `homeport_engine::containers::files::download_counted`): the folder
 /// must be writable, a link at `destination` is replaced rather than
-/// written through, and an empty archive is an error.
+/// written through, and an empty archive is an error. A link in the
+/// container saves the file it leads to; anything else that is no
+/// regular file is an error, never an empty file.
 #[tauri::command]
 #[specta::specta]
 pub async fn files_download(

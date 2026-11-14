@@ -43,20 +43,57 @@ pub(super) fn entry_names(archive: &[u8]) -> Vec<String> {
         .collect()
 }
 
-/// What the Engine sends for a path: a tar of the file, or of a folder
-/// that holds one file.
-pub(super) fn archive_of(name: &str, file: Option<&[u8]>) -> Vec<u8> {
-    let mut builder = tar::Builder::new(Vec::new());
-    let mut put = |path: String, bytes: &[u8]| {
-        let mut header = tar::Header::new_gnu();
-        header.set_size(bytes.len() as u64);
-        header.set_mode(0o644);
-        header.set_cksum();
-        let _ = builder.append_data(&mut header, path, bytes);
+/// What a path of the container holds.
+#[derive(Debug, Clone)]
+pub(super) enum Held {
+    File(Vec<u8>),
+    Folder,
+    /// A symbolic link, to this path.
+    Link(String),
+}
+
+/// What the Engine says of a path (`X-Docker-Container-Path-Stat`), with
+/// Go's mode bits for a folder and a link.
+pub(super) fn stat_of(name: &str, held: &Held) -> String {
+    let (size, mode, target) = match held {
+        Held::File(bytes) => (bytes.len(), 0o644_u32, ""),
+        Held::Folder => (4096, (1 << 31) | 0o755, ""),
+        Held::Link(target) => (target.len(), (1 << 27) | 0o777, target.as_str()),
     };
-    match file {
-        Some(bytes) => put(name.to_owned(), bytes),
-        None => put(format!("{name}/inside.txt"), b"inside\n"),
-    }
+    format!(
+        r#"{{"name":"{name}","size":{size},"mode":{mode},"mtime":"2026-05-01T10:00:00Z","linkTarget":"{target}"}}"#
+    )
+}
+
+/// What the Engine sends for a path: a tar of the file, of a folder that
+/// holds one file, or of the link itself.
+pub(super) fn archive_of(name: &str, held: &Held) -> Vec<u8> {
+    let mut builder = tar::Builder::new(Vec::new());
+    let mut header = tar::Header::new_gnu();
+    header.set_mode(0o644);
+    let _ = match held {
+        Held::File(bytes) => {
+            header.set_size(bytes.len() as u64);
+            builder.append_data(&mut header, name, &bytes[..])
+        }
+        Held::Folder => {
+            header.set_size(7);
+            builder.append_data(&mut header, format!("{name}/inside.txt"), &b"inside\n"[..])
+        }
+        Held::Link(target) => {
+            header.set_entry_type(tar::EntryType::Symlink);
+            header.set_size(0);
+            builder.append_link(&mut header, name, target)
+        }
+    };
     builder.into_inner().unwrap_or_default()
+}
+
+/// Where a download's answer waits, once `Engine::hold_transfers`.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Stall {
+    /// Every byte of the file but its last has gone.
+    BeforeLastByte,
+    /// The file's bytes have gone, not the archive's end.
+    AfterData,
 }

@@ -144,7 +144,9 @@ export const commands = {
 	 *  `destination` and put in its place only once whole (see
 	 *  `homeport_engine::containers::files::download_counted`): the folder
 	 *  must be writable, a link at `destination` is replaced rather than
-	 *  written through, and an empty archive is an error.
+	 *  written through, and an empty archive is an error. A link in the
+	 *  container saves the file it leads to; anything else that is no
+	 *  regular file is an error, never an empty file.
 	 */
 	filesDownload: (hostId: string, containerId: string, path: string, destination: string) => __TAURI_INVOKE<boolean>("files_download", { hostId, containerId, path, destination }),
 	filesUpload: (hostId: string, containerId: string, directory: string, sources: string[]) => __TAURI_INVOKE<null>("files_upload", { hostId, containerId, directory, sources }),

@@ -30,13 +30,19 @@ use homeport_core::{
     local_files::{self, Replacement},
 };
 
-use self::untar::Untar;
 use crate::messages as msg;
 
-mod untar;
+mod first_file;
 
 /// Go's `os.ModeDir`, as reported by the archive stat endpoint.
 const GO_MODE_DIR: u32 = 1 << 31;
+/// Go's `os.ModeSymlink`.
+const GO_MODE_SYMLINK: u32 = 1 << 27;
+/// How many links are followed to the file they lead to.
+const LINKS_MAX: usize = 8;
+/// How many chunks of a file's archive may wait for the thread reading
+/// them: what is in memory at once.
+const QUEUED: usize = 8;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, specta::Type)]
 #[serde(rename_all = "lowercase")]
@@ -219,7 +225,11 @@ pub async fn download(
 ///   symbolic link at `destination` is replaced, not written through, and
 ///   a file with other hard links gets a new one. The file takes the
 ///   permissions of the one it replaces, or what any new file gets.
-/// - An archive with nothing in it is an error, not an empty file.
+/// - A symbolic link in the container saves the file it leads to (the
+///   Engine says where); a link to a folder, a device, a pipe… is an
+///   error, never an empty file. So is an archive with nothing in it, one
+///   that ends before the file does, or a file whose size is not the one
+///   the Engine gave a moment before: it changed meanwhile.
 /// - A `.part` file left by a write the app was killed in (or a panic,
 ///   which aborts) stays until a download into that folder takes it
 ///   away, once it is a day old.
@@ -230,18 +240,15 @@ pub async fn download_counted(
     destination: &Path,
     progress: impl Fn(u64, Option<u64>),
 ) -> AppResult<bool> {
-    let path = absolute(path)?;
-    let stat = docker
-        .get_container_archive_info(
-            container_id,
-            Some(
-                ContainerArchiveInfoOptionsBuilder::default()
-                    .path(path)
-                    .build(),
-            ),
-        )
-        .await?;
+    let asked = absolute(path)?;
+    let (path, stat) = resolved(docker, container_id, asked).await?;
     let is_dir = stat.file_mode & GO_MODE_DIR != 0;
+    // A link to a folder was asked for as a file: its archive is no file.
+    if is_dir && path != asked {
+        return Err(AppError::validation(
+            msg::FILES_NOT_REGULAR.with("path", asked),
+        ));
+    }
     let total = (!is_dir).then(|| u64::try_from(stat.size).unwrap_or(0));
     progress(0, total);
 
@@ -250,61 +257,130 @@ pub async fn download_counted(
         .await
         .map_err(|e| AppError::from(std::io::Error::other(e)))?;
     // Set when this future is dropped (a Cancel): nothing is put in place
-    // after that, by the step that runs on a thread of its own either.
+    // after that, by the steps that run on a thread of their own either.
     let dropped = Dropped::default();
     let saved = Replacement::new(destination)?;
-    let file = saved
-        .file()
-        .try_clone()
-        .map_err(|e| local_file(destination, e))?;
-    let mut out = tokio::io::BufWriter::new(tokio::fs::File::from_std(file));
     let mut stream = docker.download_from_container(
         container_id,
         Some(
             DownloadFromContainerOptionsBuilder::default()
-                .path(path)
+                .path(&path)
                 .build(),
         ),
     );
-    // A folder is saved as its archive; a file is read out of it.
-    let mut untar = (!is_dir).then(Untar::default);
+    let destination = destination.to_owned();
+    let stopped = dropped.0.clone();
+    if !is_dir {
+        // A file is read out of its archive on a thread of its own, which
+        // takes the chunks as they come and puts the file in place.
+        let (chunks, queued) = tokio::sync::mpsc::channel(QUEUED);
+        let reading = tokio::task::spawn_blocking(move || {
+            save_file(saved, queued, &path, total, &destination, &stopped)
+        });
+        let mut received = 0_u64;
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            received += chunk.len() as u64;
+            // A file's archive is a little more than the file: its headers.
+            progress(total.map_or(received, |total| received.min(total)), total);
+            // Gone once the file is whole, or can't be.
+            if chunks.send(chunk).await.is_err() {
+                break;
+            }
+        }
+        drop(chunks);
+        reading
+            .await
+            .map_err(|e| AppError::from(std::io::Error::other(e)))??;
+        return Ok(false);
+    }
+    // A folder is saved as its archive.
+    let file = saved
+        .file()
+        .try_clone()
+        .map_err(|e| local_file(&destination, e))?;
+    let mut out = tokio::io::BufWriter::new(tokio::fs::File::from_std(file));
     let mut received = 0_u64;
     while let Some(chunk) = stream.next().await {
         let chunk = chunk?;
         received += chunk.len() as u64;
-        let data = match &mut untar {
-            None => std::borrow::Cow::Borrowed(&chunk[..]),
-            Some(untar) => untar.feed(&chunk)?,
-        };
-        out.write_all(&data)
+        out.write_all(&chunk)
             .await
-            .map_err(|e| local_file(destination, e))?;
-        // A file's archive is a little more than the file: its header.
-        progress(total.map_or(received, |total| received.min(total)), total);
-        if untar.as_ref().is_some_and(Untar::is_done) {
-            break;
-        }
+            .map_err(|e| local_file(&destination, e))?;
+        progress(received, None);
     }
-    out.flush().await.map_err(|e| local_file(destination, e))?;
+    out.flush().await.map_err(|e| local_file(&destination, e))?;
     drop(out);
-    if received == 0 || untar.as_ref().is_some_and(Untar::is_empty) {
+    if received == 0 {
         return Err(AppError::new(
             ErrorCode::EngineError,
             msg::FILES_EMPTY_ARCHIVE,
         ));
     }
-    if untar.as_ref().is_some_and(|untar| !untar.is_done()) {
-        return Err(AppError::new(
-            ErrorCode::EngineError,
-            msg::FILES_CUT_ARCHIVE,
-        ));
-    }
-    let destination = destination.to_owned();
-    let stopped = dropped.0.clone();
     tokio::task::spawn_blocking(move || put_in_place(saved, &destination, &stopped))
         .await
         .map_err(|e| AppError::from(std::io::Error::other(e)))??;
-    Ok(is_dir)
+    Ok(true)
+}
+
+/// `path` and what the Engine says of it; for a symbolic link, the path
+/// and stat of what it leads to, the Engine giving where.
+async fn resolved(
+    docker: &Docker,
+    container_id: &str,
+    path: &str,
+) -> AppResult<(String, bollard::container::PathStatResponse)> {
+    let mut path = path.to_owned();
+    for _ in 0..=LINKS_MAX {
+        let stat = docker
+            .get_container_archive_info(
+                container_id,
+                Some(
+                    ContainerArchiveInfoOptionsBuilder::default()
+                        .path(&path)
+                        .build(),
+                ),
+            )
+            .await?;
+        if stat.file_mode & GO_MODE_SYMLINK == 0 || stat.link_target.is_empty() {
+            return Ok((path, stat));
+        }
+        path = followed(&path, &stat.link_target);
+    }
+    // Links that lead on and on, or round in a circle.
+    Err(AppError::validation(
+        msg::FILES_NOT_REGULAR.with("path", path),
+    ))
+}
+
+/// Where a link at `path` to `target` leads: `target` itself, or beside
+/// `path` when relative (the Engine gives it absolute; Podman may not).
+fn followed(path: &str, target: &str) -> String {
+    if target.starts_with('/') {
+        return target.to_owned();
+    }
+    let folder = path.rsplit_once('/').map_or("", |(folder, _)| folder);
+    format!("{folder}/{target}")
+}
+
+/// Reads the file of the archive that comes over `queued` into `saved`,
+/// then puts it at `destination`, unless `stopped` meanwhile. Blocks.
+fn save_file(
+    saved: Replacement,
+    mut queued: tokio::sync::mpsc::Receiver<bytes::Bytes>,
+    path: &str,
+    total: Option<u64>,
+    destination: &Path,
+    stopped: &AtomicBool,
+) -> AppResult<()> {
+    let chunks = std::iter::from_fn(|| queued.blocking_recv());
+    // Each piece goes to disk as it comes: a chunk of the Engine's is
+    // already large.
+    if !first_file::copy_out(chunks, path, total, &mut saved.file(), destination, stopped)? {
+        return Ok(());
+    }
+    drop(queued);
+    put_in_place(saved, destination, stopped)
 }
 
 /// Puts `saved` at `destination` with the permissions it should have,
@@ -429,6 +505,13 @@ mod tests {
         assert_eq!(std::fs::read_dir(dir.path()).unwrap().count(), 0);
         put(false);
         assert_eq!(std::fs::read(&destination).unwrap(), b"hello");
+    }
+
+    #[test]
+    fn a_link_leads_to_its_target_or_beside_itself() {
+        assert_eq!(followed("/etc/mtab", "/proc/mounts"), "/proc/mounts");
+        assert_eq!(followed("/etc/alt/vi", "../vim"), "/etc/alt/../vim");
+        assert_eq!(followed("/top", "other"), "/other");
     }
 
     #[test]

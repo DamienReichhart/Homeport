@@ -37,7 +37,8 @@ use tokio::{
 
 use homeport_hosts::{service::HostInput, EngineKind, HostConnection};
 
-use self::wire::{archive_of, entry_names, query_value};
+pub use self::wire::Stall;
+use self::wire::{archive_of, entry_names, query_value, stat_of, Held};
 use crate::{api::hosts::hosts_create, app::AppState};
 
 /// A stream the fake keeps open.
@@ -62,8 +63,8 @@ struct Shared {
     open: Mutex<HashMap<Stream, usize>>,
     /// Every request, as `GET /containers/c1/logs?follow=true`.
     asked: Mutex<Vec<String>>,
-    /// What a path of the container holds: a file's bytes, or a folder.
-    files: Mutex<HashMap<String, Option<Vec<u8>>>>,
+    /// What a path of the container holds.
+    files: Mutex<HashMap<String, Held>>,
     /// The folders uploaded to, each with the names its archive held.
     uploaded: Mutex<Vec<(String, Vec<String>)>>,
     /// An upload whose archive holds this name is refused.
@@ -74,15 +75,6 @@ struct Shared {
     cut: std::sync::atomic::AtomicBool,
     /// Where a download's answer waits for [`Engine::release`].
     stall: Mutex<Option<Stall>>,
-}
-
-/// Where a download's answer waits, once [`Engine::hold_transfers`].
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum Stall {
-    /// Every byte of the file but its last has gone.
-    BeforeLastByte,
-    /// The file's bytes have gone, not the archive's end.
-    AfterData,
 }
 
 /// Counts a stream as open until dropped.
@@ -217,17 +209,22 @@ impl Engine {
 
     /// The container holds a file of `bytes` at `path`.
     pub fn file(&self, path: &str, bytes: &[u8]) {
-        let mut files = self.shared.files.lock().unwrap();
-        files.insert(path.to_owned(), Some(bytes.to_vec()));
+        self.hold(path, Held::File(bytes.to_vec()));
     }
 
     /// The container holds a folder at `path`.
     pub fn folder(&self, path: &str) {
-        self.shared
-            .files
-            .lock()
-            .unwrap()
-            .insert(path.to_owned(), None);
+        self.hold(path, Held::Folder);
+    }
+
+    /// The container holds a symbolic link at `path` to `target`.
+    pub fn link(&self, path: &str, target: &str) {
+        self.hold(path, Held::Link(target.to_owned()));
+    }
+
+    fn hold(&self, path: &str, held: Held) {
+        let mut files = self.shared.files.lock().unwrap();
+        files.insert(path.to_owned(), held);
     }
 
     /// The folders uploaded to, each with the names its archive held.
@@ -486,14 +483,7 @@ impl Connection {
             return self.json("404 Not Found", missing).await;
         };
         let name = path.rsplit('/').next().unwrap_or_default().to_owned();
-        let (size, mode) = match &held {
-            Some(bytes) => (bytes.len(), 0o644_u32),
-            None => (4096, (1 << 31) | 0o755),
-        };
-        let stat = format!(
-            r#"{{"name":"{name}","size":{size},"mode":{mode},"mtime":"2026-05-01T10:00:00Z","linkTarget":""}}"#
-        );
-        let stat = base64::engine::general_purpose::STANDARD.encode(stat);
+        let stat = base64::engine::general_purpose::STANDARD.encode(stat_of(&name, &held));
         let headers = [
             ("X-Docker-Container-Path-Stat", stat),
             ("Content-Type", "application/x-tar".to_owned()),
@@ -505,9 +495,14 @@ impl Connection {
         if stall.is_none() && !self.held().await {
             return false;
         }
-        let archive = archive_of(&name, held.as_deref());
+        let archive = archive_of(&name, &held);
         let cut = self.shared.cut.load(Ordering::SeqCst);
-        let data_end = BLOCK + held.as_ref().map_or(0, Vec::len);
+        let data_end = BLOCK
+            + if let Held::File(bytes) = &held {
+                bytes.len()
+            } else {
+                0
+            };
         let pause = match stall {
             Some(Stall::BeforeLastByte) => Some(data_end - 1),
             Some(Stall::AfterData) => Some(data_end),

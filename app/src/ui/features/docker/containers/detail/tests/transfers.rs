@@ -82,6 +82,40 @@ fn a_file_is_saved_as_itself_and_a_folder_as_an_archive() {
     assert!(live.rig.state.files.transfer.is_none());
 }
 
+#[test]
+fn a_link_saves_the_file_it_leads_to_and_never_an_empty_one() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("mtab", false), entry("conf", false)]);
+    live.engine
+        .file("/proc/mounts", b"overlay / overlay rw 0 0\n");
+    live.engine.link("/mtab", "/proc/mounts");
+    live.engine.folder("/etc");
+    live.engine.link("/conf", "/etc");
+    let saved = live.rig.bench.os.dir().join("mtab");
+    live.rig.bench.os.answer(&saved);
+    live.send(browse(file_browser::Message::Download("/mtab".to_owned())));
+    assert_eq!(
+        std::fs::read(&saved).unwrap(),
+        b"overlay / overlay rw 0 0\n"
+    );
+    let _ = live.rig.bench.took();
+    // A link to a folder was asked for as a file: it is refused.
+    let refused = live.rig.bench.os.dir().join("conf");
+    live.rig.bench.os.answer(&refused);
+    live.send(browse(file_browser::Message::Download("/conf".to_owned())));
+    assert!(!refused.exists());
+    let told = live.rig.bench.took();
+    let failed = told.iter().find_map(|asked| match asked {
+        Asked::Failed(_, error) => Some(error.message.clone()),
+        _ => None,
+    });
+    assert_eq!(
+        failed.as_deref(),
+        Some("/conf is a link or not a regular file, so it can't be downloaded."),
+        "{told:?}"
+    );
+}
+
 /// Three files of this computer to put in the container.
 fn sources(live: &Live) -> Vec<std::path::PathBuf> {
     ["a.txt", "b.txt", "c.txt"]

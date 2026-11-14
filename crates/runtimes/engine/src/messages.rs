@@ -33,6 +33,15 @@ homeport_core::messages! {
     FILES_EMPTY_ARCHIVE = "errors.files.emptyArchive" => "The Docker Engine sent an empty archive for this file.";
     /// Downloading a file whose archive ended before the file did.
     FILES_CUT_ARCHIVE = "errors.files.cutArchive" => "The Docker Engine's archive of this file ended before the file did.";
+    /// A downloaded file's archive that isn't a tar archive, or whose
+    /// headers before the file run longer than a file's ever do.
+    FILES_BAD_ARCHIVE = "errors.files.badArchive" => "The Docker Engine's archive of this file can't be read.";
+    /// A downloaded path that is a link (to no regular file) or a device, a
+    /// pipe…: it has no bytes to save.
+    FILES_NOT_REGULAR = "errors.files.notRegular" => "{path} is a link or not a regular file, so it can't be downloaded.";
+    /// A downloaded file whose archive gives it another size than the
+    /// Engine said a moment before: it changed meanwhile.
+    FILES_SIZE_CHANGED = "errors.files.sizeChanged" => "{path} changed while it was being downloaded. Download it again.";
     /// Uploading a path without a file name, such as `/`.
     FILES_NOT_A_FILE = "errors.files.notAFile" => "{path} is not a file.";
 

@@ -70,7 +70,12 @@
 //!   must be writable, and a link at the destination is replaced, not
 //!   written through (the Tauri app's download now does the same). A
 //!   `.homeport-….part` left by an app killed mid-transfer is taken away
-//!   by the next download into that folder once it is a day old. React sent the files in one
+//!   by the next download into that folder once it is a day old. A link
+//!   in the container downloads the file it leads to (the Engine says
+//!   where), as `docker cp -L` would; a link to a folder, or anything else
+//!   that is no regular file, is refused with why, where React saved an
+//!   empty file. A file whose size changed between the Engine's stat and
+//!   its archive is refused too. React sent the files in one
 //!   archive and had neither progress nor Cancel.
 //! - A transfer or an export goes on to its end when the page is left,
 //!   and the shell says how it ended; React's export stopped when its
