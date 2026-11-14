@@ -62,6 +62,7 @@ export default {
   'containers.remove.namedKept': '이름 있는 볼륨은 유지됩니다.',
 
   'containers.detail.gone': '이 컨테이너는 더 이상 존재하지 않습니다.',
+  'containers.detail.ambiguous': 'ID가 {id}(으)로 시작하는 컨테이너가 둘 이상 있습니다.',
   'containers.detail.backToList': '컨테이너로 돌아가기',
   'containers.tab.logs': '로그',
   'containers.tab.inspect': '검사',

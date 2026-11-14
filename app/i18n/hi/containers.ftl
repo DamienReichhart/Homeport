@@ -82,6 +82,7 @@ containers-remove-deleted = { $count ->
 containers-remove-running = चल रहे { $count } कंटेनर पहले रोके जाएँगे।
 containers-remove-namedKept = नाम वाले वॉल्यूम रखे जाते हैं।
 containers-detail-gone = यह कंटेनर अब मौजूद नहीं है।
+containers-detail-ambiguous = एक से अधिक कंटेनर की ID { $id } से शुरू होती है।
 containers-detail-backToList = कंटेनर पर वापस जाएँ
 containers-tab-logs = लॉग
 containers-tab-inspect = निरीक्षण

@@ -67,6 +67,7 @@ export default {
 
   // The container page
   'containers.detail.gone': 'Questo container non esiste più.',
+  'containers.detail.ambiguous': 'L’ID di più container inizia con {id}.',
   'containers.detail.backToList': 'Torna ai container',
   'containers.tab.logs': 'Log',
   'containers.tab.inspect': 'Ispeziona',

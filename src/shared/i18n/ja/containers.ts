@@ -71,6 +71,7 @@ export default {
 
   // The container page
   'containers.detail.gone': 'このコンテナはもう存在しません。',
+  'containers.detail.ambiguous': 'ID が {id} で始まるコンテナーが複数あります。',
   'containers.detail.backToList': 'コンテナに戻る',
   'containers.tab.logs': 'ログ',
   'containers.tab.inspect': '検査',

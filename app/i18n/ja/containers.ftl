@@ -80,6 +80,7 @@ containers-remove-deleted = { $count ->
 containers-remove-running = 実行中の { $count } 個は先に停止されます。
 containers-remove-namedKept = 名前付きボリュームは残ります。
 containers-detail-gone = このコンテナはもう存在しません。
+containers-detail-ambiguous = ID が { $id } で始まるコンテナーが複数あります。
 containers-detail-backToList = コンテナに戻る
 containers-tab-logs = ログ
 containers-tab-inspect = 検査

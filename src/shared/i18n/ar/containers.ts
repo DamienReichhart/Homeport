@@ -68,6 +68,7 @@ export default {
   'containers.remove.namedKept': 'يُحتفظ بوحدات التخزين المسماة.',
 
   'containers.detail.gone': 'لم تعد هذه الحاوية موجودة.',
+  'containers.detail.ambiguous': 'يبدأ معرّف أكثر من حاوية بـ {id}.',
   'containers.detail.backToList': 'العودة إلى الحاويات',
   'containers.tab.logs': 'السجلات',
   'containers.tab.inspect': 'فحص',

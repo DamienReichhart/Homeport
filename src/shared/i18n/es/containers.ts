@@ -65,6 +65,7 @@ export default {
   'containers.remove.running': 'Los {count} en ejecución se detendrán antes.',
   'containers.remove.namedKept': 'Los volúmenes con nombre se conservan.',
   'containers.detail.gone': 'Este contenedor ya no existe.',
+  'containers.detail.ambiguous': 'El ID de más de un contenedor empieza por {id}.',
   'containers.detail.backToList': 'Volver a los contenedores',
   'containers.tab.logs': 'Logs',
   'containers.tab.inspect': 'Inspeccionar',

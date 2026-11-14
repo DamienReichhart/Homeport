@@ -70,6 +70,7 @@ export default {
 
   // The container page
   'containers.detail.gone': 'Este contêiner não existe mais.',
+  'containers.detail.ambiguous': 'O ID de mais de um contêiner começa com {id}.',
   'containers.detail.backToList': 'Voltar aos contêineres',
   'containers.tab.logs': 'Logs',
   'containers.tab.inspect': 'Inspecionar',

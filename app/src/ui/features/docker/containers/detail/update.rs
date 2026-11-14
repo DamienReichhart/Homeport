@@ -6,7 +6,7 @@ use iced::Task;
 
 use super::{
     queries,
-    state::{gone, LogsEnded, Tab},
+    state::{LogsEnded, Tab},
     tabs::{files, health, inspect, processes},
     view, Message, State,
 };
@@ -307,7 +307,11 @@ pub fn update(state: &mut State, message: Message, ctx: &Context<'_>) -> Task<Me
             match state.containers(ctx).error() {
                 Some(error) => ctx.details(Surfaced::new(error.clone(), "containers_list")),
                 // The container is gone: that is what the page says.
-                None => ctx.details(Surfaced::in_window(gone())),
+                None => {
+                    let containers = state.containers(ctx);
+                    let list = containers.data().map_or(&[][..], |list| list.as_slice());
+                    ctx.details(Surfaced::in_window(state.missing(list)));
+                }
             }
         }
         Message::Failure(Event::Copy(command)) => ctx.copy(command),

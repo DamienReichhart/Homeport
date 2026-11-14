@@ -12,10 +12,7 @@ use iced::{widget::text, Length};
 
 use homeport_engine::containers::Container;
 
-use super::{
-    state::{gone, Tab},
-    Message, State,
-};
+use super::{state::Tab, Message, State};
 use crate::{
     i18n::Direction,
     t,
@@ -199,7 +196,7 @@ pub fn view<'a>(state: &'a State, ctx: &Context<'a>) -> Element<'a, Message> {
             .variant(Variant::Outline)
             .on_press(Message::BackToList);
         return stack(vec![
-            error_message(&gone(), false, Message::Failure),
+            error_message(&state.missing(list), false, Message::Failure),
             back.into(),
         ])
         .spacing(space::S3)

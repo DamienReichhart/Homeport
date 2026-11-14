@@ -17,7 +17,7 @@ use crate::{
     ui::{
         domain::containers::{Actions, Target, CAME_FROM},
         shell::{router::Route, Context},
-        widgets::overlay::menu,
+        widgets::{basic::technical, overlay::menu},
     },
 };
 
@@ -41,6 +41,18 @@ pub(super) fn gone() -> AppError {
         key: "containers.detail.gone",
         en: "This container no longer exists.",
     })
+}
+
+/// The catalogue's words for an id several containers' start with.
+const AMBIGUOUS: &str = "containers.detail.ambiguous";
+
+/// What stands in place of a container whose id several start with.
+pub(super) fn ambiguous(id: &str) -> AppError {
+    let text = Text {
+        key: AMBIGUOUS,
+        en: "More than one container's id starts with {id}.",
+    };
+    AppError::not_found(text.with("id", technical(id)))
 }
 
 /// A tab of the page, in the order they show (`TABS`).
@@ -194,6 +206,17 @@ impl State {
                 _ => None,
             }
         })
+    }
+
+    /// Why no container of `list` is the page's: none is, or several ids
+    /// start with what the route names.
+    pub(super) fn missing(&self, list: &[Container]) -> AppError {
+        let starting = list.iter().filter(|c| c.id.starts_with(&self.id)).count();
+        if !self.id.is_empty() && starting > 1 {
+            ambiguous(&self.id)
+        } else {
+            gone()
+        }
     }
 
     /// The container the page is about, as the data layer has it now.

@@ -108,6 +108,7 @@ containers-remove-deleted = { $count ->
 containers-remove-running = Работающие ({ $count }) будут сначала остановлены.
 containers-remove-namedKept = Именованные тома сохраняются.
 containers-detail-gone = Этого контейнера больше не существует.
+containers-detail-ambiguous = ID нескольких контейнеров начинается с { $id }.
 containers-detail-backToList = Назад к контейнерам
 containers-tab-logs = Журналы
 containers-tab-inspect = Просмотр

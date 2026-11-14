@@ -68,6 +68,7 @@ export default {
 
   // The container page
   'containers.detail.gone': 'Ce conteneur n’existe plus.',
+  'containers.detail.ambiguous': 'L’identifiant de plusieurs conteneurs commence par {id}.',
   'containers.detail.backToList': 'Retour aux conteneurs',
   'containers.tab.logs': 'Journaux',
   'containers.tab.inspect': 'Inspecter',

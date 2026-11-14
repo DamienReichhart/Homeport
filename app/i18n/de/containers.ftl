@@ -82,6 +82,7 @@ containers-remove-deleted = { $count ->
 containers-remove-running = { $count } laufende werden zuerst gestoppt.
 containers-remove-namedKept = Benannte Volumes bleiben erhalten.
 containers-detail-gone = Dieser Container existiert nicht mehr.
+containers-detail-ambiguous = Die ID mehrerer Container beginnt mit { $id }.
 containers-detail-backToList = Zurück zu den Containern
 containers-tab-logs = Logs
 containers-tab-inspect = Untersuchen

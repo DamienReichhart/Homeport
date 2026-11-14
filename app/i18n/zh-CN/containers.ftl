@@ -81,6 +81,7 @@ containers-remove-deleted = { $count ->
 containers-remove-running = { $count } 个正在运行的容器会先被停止。
 containers-remove-namedKept = 命名卷会保留。
 containers-detail-gone = 此容器已不存在。
+containers-detail-ambiguous = 有多个容器的 ID 以 { $id } 开头。
 containers-detail-backToList = 返回容器
 containers-tab-logs = 日志
 containers-tab-inspect = 检查

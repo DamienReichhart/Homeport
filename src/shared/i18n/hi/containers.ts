@@ -67,6 +67,7 @@ export default {
 
   // The container page
   'containers.detail.gone': 'यह कंटेनर अब मौजूद नहीं है।',
+  'containers.detail.ambiguous': 'एक से अधिक कंटेनर की ID {id} से शुरू होती है।',
   'containers.detail.backToList': 'कंटेनर पर वापस जाएँ',
   'containers.tab.logs': 'लॉग',
   'containers.tab.inspect': 'निरीक्षण',

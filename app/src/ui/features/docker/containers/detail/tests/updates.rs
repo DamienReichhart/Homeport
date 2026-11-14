@@ -143,8 +143,21 @@ fn an_id_a_name_or_a_start_no_other_id_shares_finds_the_container() {
         found("shop-db").as_deref(),
         Some("shop-db-1-0123456789abcdef")
     );
-    // Two ids start so: neither is the page's.
+    // Two ids start so: neither is the page's, and the page says why.
     assert_eq!(found("shop-web-1-0123"), None);
+    {
+        let _english = in_language("en");
+        let rig = Rig::on(
+            connected_host(),
+            route("shop-web-1-0123", None).into(),
+            Some(list.clone()),
+        );
+        let said = format!(
+            "More than one container's id starts with {}.",
+            technical("shop-web-1-0123")
+        );
+        assert!(rig.shows(&said));
+    }
     // Once found, a tab's route names it whole.
     let mut rig = Rig::at("shop-db", "logs");
     rig.send(Message::Tab(Tab::Stats));
