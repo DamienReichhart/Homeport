@@ -2,7 +2,7 @@
 
 use super::{
     state::Tab,
-    tabs::{files, health, inspect, logs, processes, stats},
+    tabs::{exec, files, health, inspect, logs, processes, stats},
 };
 use crate::ui::{
     domain::containers::actions,
@@ -32,6 +32,7 @@ pub enum Message {
     Health(health::Message),
     Files(files::Message),
     Stats(stats::Message),
+    Exec(exec::Message),
     /// When the container had started (`State.StartedAt`), as the read
     /// for the log stream said; `None` if it could not be read.
     Started(super::restarts::StartRead, Option<String>),

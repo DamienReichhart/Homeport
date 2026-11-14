@@ -10,7 +10,9 @@ use super::{
     model::inspect::Inspected,
     queries,
     restarts::Restarts,
-    tabs::{files::Files, health, inspect::Inspect, logs::Logs, processes, stats::Stats},
+    tabs::{
+        exec::Exec, files::Files, health, inspect::Inspect, logs::Logs, processes, stats::Stats,
+    },
 };
 use crate::{
     data::{keys, Key, Query, Resource},
@@ -144,6 +146,8 @@ pub struct State {
     pub(super) health: health::Tab,
     pub(super) files: Files,
     pub(super) stats: Stats,
+    /// The terminals, made when the tab first shows a running container.
+    pub(super) exec: Exec,
 }
 
 impl State {
@@ -170,6 +174,7 @@ impl State {
             health: health::Tab::default(),
             files: Files::new(),
             stats: Stats::new(),
+            exec: Exec::left(),
         }
     }
 

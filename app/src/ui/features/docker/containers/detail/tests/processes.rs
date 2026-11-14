@@ -88,7 +88,7 @@ fn a_running_container_s_processes_are_read_when_the_tab_shows_and_every_five_se
     };
     // The window's size, and the timer.
     assert_eq!(count(&rig), 2);
-    rig.send(Message::Tab(Tab::Exec));
+    rig.send(Message::Tab(Tab::Inspect));
     assert_eq!(count(&rig), 1);
 }
 

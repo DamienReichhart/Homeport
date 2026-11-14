@@ -2,6 +2,8 @@
 //! looks in each state.
 
 mod drawn;
+#[cfg(unix)]
+mod exec;
 mod files;
 mod health;
 mod inspect;

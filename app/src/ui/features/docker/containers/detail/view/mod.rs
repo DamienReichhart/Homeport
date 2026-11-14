@@ -1,6 +1,7 @@
 //! What a container's page draws: its header, its tabs, and the tab that
 //! shows.
 
+mod exec;
 mod files;
 mod health;
 pub(super) mod inspect;
@@ -33,7 +34,7 @@ use crate::{
                 button::{self, Variant},
                 flow, in_reading_order, technical, truncated, BadgeVariant,
             },
-            feedback::{empty_state, error_message, spinner, status_dot},
+            feedback::{error_message, spinner, status_dot},
             form::{tabs, TabsVariant},
             line,
             overlay::{menu, tooltip, Modal, Side},
@@ -170,13 +171,10 @@ fn body<'a>(state: &'a State, container: &Container, ctx: &Context<'a>) -> Eleme
         Tab::Exec if !running => paragraph(t!("containers.exec.startFirst"))
             .style(theme::text::muted)
             .into(),
-        // The terminal is the exec ticket's (#259): its tab stands in as
-        // the stub of a page does, its title over "Nothing here.", so the
-        // tab and "Open terminal" lead somewhere that says so.
-        Tab::Exec => empty_state(state.tab.label())
-            .icon(Icon::SquareTerminal)
-            .description(t!("ui.table.empty"))
-            .view(),
+        Tab::Exec => {
+            let height = logs::height(window.map(|size| size.height));
+            exec::view(&state.exec, height).map(Message::Exec)
+        }
     }
 }
 

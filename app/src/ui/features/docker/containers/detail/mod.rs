@@ -31,7 +31,13 @@
 //! | Health: status, command, timing, failing streak; last results with exit, time, duration, folded output | `view::health` | done |
 //! | Health: read again when the list's status changes, and once per check interval | status in the key; a timer while the tab shows | done |
 //! | Health: "no healthcheck", "no check has run", failure with Retry | the same | done |
-//! | Exec: a terminal with several shells | stand-in: "Nothing here." (running), "Start the container…" (stopped) | not done (#259) |
+//! | Exec: a shell when the tab shows a running container (`startExec`, command and user empty) | `tabs::exec`, kit terminal on a `TerminalSession` | done |
+//! | Exec: tabs "Shell", "Shell n" or the command, each with "Close …"; the last opened shows; closing the shown one shows the last | the same | done |
+//! | Exec: "New terminal" popover: command (`bash, or sh when missing`), user, directory (`default`), Open; the draft is kept | the same | done |
+//! | Exec: output, keys, sizes; the terminal takes focus once open; "[process exited with code n]" dimmed at the end | `session::output`, `notice`, `operation::focus` | done |
+//! | Exec: a command the container lacks (126, 127) or a broken session: the error in red in the terminal | the failure over the grid (`error_message`, Details) | differs (kit) |
+//! | Exec: every terminal stays open while another shows; none left: "No terminal open." | sessions of every tab followed; the one that shows is drawn | done |
+//! | Exec: stopped: "Start the container to open a terminal."; leaving the tab closes every session | the same; the tab starts over when it shows a running container again | done |
 //! | Files: browse, refresh, download (save dialog, name or name.tar), "Upload here" (open dialog), toasts | kit file browser, `ctx.platform`, `ctx.act` | done |
 //! | Files: a stopped container | "Start the container to browse its files." | done |
 //! | — | Files: transfer's progress (files put, bytes come) and Cancel; a failure per file; a download written whole or not at all | added |
@@ -97,6 +103,13 @@
 //!   is laid out left to right in both directions (`basic::technical`).
 //! - Environment values are shown as React showed them, unmasked: the
 //!   React page had no masking, and the raw view showed them too.
+//! - The Exec tab's terminals are the kit's (`docs/agents/widgets.md`,
+//!   The terminal): a failure (no shell, a session that broke, a write
+//!   that failed) is said over the grid with its Details, where React
+//!   wrote it in red among the output; a terminal is told the theme as it
+//!   is made (the OS's, asked, when the Settings follow it), so a program
+//!   that asks the colours first is answered in them. A terminal's tab is
+//!   two buttons, its title and its ×; React's was a tab with an underline.
 
 mod message;
 mod model;
@@ -134,6 +147,10 @@ pub fn subscription(state: &State, ctx: &Context<'_>) -> Subscription<Message> {
             .subscription(ctx.state, &state.host_id, &container.id)
             .map(Message::Logs),
         // Only a running container has stats (`useStats`'s `running`).
+        // Every terminal's session, while it runs.
+        Tab::Exec if container.state == "running" => {
+            state.exec.subscription(ctx.state).map(Message::Exec)
+        }
         Tab::Stats if container.state == "running" => state
             .stats
             .subscription(ctx.state, &state.host_id, &container.id)

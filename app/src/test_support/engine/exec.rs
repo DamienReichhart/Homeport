@@ -8,7 +8,15 @@ use tokio::{
     sync::broadcast,
 };
 
-use super::{Connection, Open, Push, Request, Stream};
+use super::{Connection, Engine, Open, Push, Request, Stream};
+
+impl Engine {
+    /// Prints `bytes` on every open terminal, as a program writes them: a
+    /// recorded transcript.
+    pub fn print_bytes(&self, bytes: &[u8]) {
+        let _ = self.pushes.send(Push::Print(bytes.to_vec()));
+    }
+}
 
 /// The exec's id.
 const EXEC: &str = r#"{"Id":"exec-1"}"#;
