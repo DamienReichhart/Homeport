@@ -4,10 +4,10 @@
 //! return whole directory trees); transfers use the archive API.
 
 use std::{
-    path::Path,
+    path::{Path, PathBuf},
     sync::{
         atomic::{AtomicBool, Ordering},
-        Arc,
+        Arc, Mutex, PoisonError,
     },
 };
 
@@ -269,13 +269,26 @@ pub async fn download_counted(
         ),
     );
     let destination = destination.to_owned();
-    let stopped = dropped.0.clone();
+    let stopped = dropped.stopped.clone();
     if !is_dir {
         // A file is read out of its archive on a thread of its own, which
-        // takes the chunks as they come and puts the file in place.
+        // takes the chunks as they come and puts the file in place. The
+        // file it writes stays this future's until then: dropped, it goes
+        // at once, not once that thread sees it.
+        let file = saved
+            .file()
+            .try_clone()
+            .map_err(|e| local_file(&destination, e))?;
+        let unfinished = dropped.hold(saved);
         let (chunks, queued) = tokio::sync::mpsc::channel(QUEUED);
         let reading = tokio::task::spawn_blocking(move || {
-            save_file(saved, queued, &path, total, &destination, &stopped)
+            let saving = Saving {
+                path,
+                total,
+                destination,
+                stopped,
+            };
+            save_file(file, &unfinished, queued, &saving)
         });
         let mut received = 0_u64;
         while let Some(chunk) = stream.next().await {
@@ -363,24 +376,47 @@ fn followed(path: &str, target: &str) -> String {
     format!("{folder}/{target}")
 }
 
-/// Reads the file of the archive that comes over `queued` into `saved`,
-/// then puts it at `destination`, unless `stopped` meanwhile. Blocks.
-fn save_file(
-    saved: Replacement,
-    mut queued: tokio::sync::mpsc::Receiver<bytes::Bytes>,
-    path: &str,
+/// What a file's download reads, and where it puts it.
+struct Saving {
+    /// The file in the container.
+    path: String,
+    /// Its size, as the Engine said.
     total: Option<u64>,
-    destination: &Path,
-    stopped: &AtomicBool,
+    destination: PathBuf,
+    /// The download was dropped.
+    stopped: Arc<AtomicBool>,
+}
+
+/// Reads the file of the archive that comes over `queued` into `file`,
+/// then puts the `unfinished` file it is at its destination, unless the
+/// download was dropped meanwhile, which took that file away. Blocks.
+fn save_file(
+    mut file: std::fs::File,
+    unfinished: &Mutex<Option<Replacement>>,
+    mut queued: tokio::sync::mpsc::Receiver<bytes::Bytes>,
+    saving: &Saving,
 ) -> AppResult<()> {
+    let Saving {
+        path,
+        total,
+        destination,
+        stopped,
+    } = saving;
     let chunks = std::iter::from_fn(|| queued.blocking_recv());
     // Each piece goes to disk as it comes: a chunk of the Engine's is
     // already large.
-    if !first_file::copy_out(chunks, path, total, &mut saved.file(), destination, stopped)? {
+    if !first_file::copy_out(chunks, path, *total, &mut file, destination, stopped)? {
         return Ok(());
     }
     drop(queued);
-    put_in_place(saved, destination, stopped)
+    let taken = unfinished
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner)
+        .take();
+    match taken {
+        Some(saved) => put_in_place(saved, destination, stopped),
+        None => Ok(()),
+    }
 }
 
 /// Puts `saved` at `destination` with the permissions it should have,
@@ -404,13 +440,31 @@ fn put_in_place(saved: Replacement, destination: &Path, stopped: &AtomicBool) ->
     saved.commit_synced()
 }
 
-/// Says, once dropped, that the future holding it was.
+/// Says, once dropped, that the future holding it was, and takes away
+/// the file it holds for it.
 #[derive(Default)]
-struct Dropped(Arc<AtomicBool>);
+struct Dropped {
+    stopped: Arc<AtomicBool>,
+    unfinished: Arc<Mutex<Option<Replacement>>>,
+}
+
+impl Dropped {
+    /// Holds `saved` until another takes it: the thread that puts it in
+    /// place, given what this returns.
+    fn hold(&self, saved: Replacement) -> Arc<Mutex<Option<Replacement>>> {
+        *self
+            .unfinished
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = Some(saved);
+        self.unfinished.clone()
+    }
+}
 
 impl Drop for Dropped {
     fn drop(&mut self) {
-        self.0.store(true, Ordering::SeqCst);
+        self.stopped.store(true, Ordering::SeqCst);
+        let held = self.unfinished.lock().map(|mut held| held.take());
+        drop(held);
     }
 }
 
