@@ -225,6 +225,9 @@ pub async fn download(
 ///   symbolic link at `destination` is replaced, not written through, and
 ///   a file with other hard links gets a new one. The file takes the
 ///   permissions of the one it replaces, or what any new file gets.
+/// - What it returns is what is on disk: a file put in place before the
+///   connection failed in what followed it (the archive's end) is saved,
+///   and once it is, the rest of the archive is not waited for.
 /// - A symbolic link in the container saves the file it leads to (the
 ///   Engine says where); a link to a folder, a device, a pipe… is an
 ///   error, never an empty file. So is an archive with nothing in it, one
@@ -281,31 +284,51 @@ pub async fn download_counted(
             .map_err(|e| local_file(&destination, e))?;
         let unfinished = dropped.hold(saved);
         let (chunks, queued) = tokio::sync::mpsc::channel(QUEUED);
-        let reading = tokio::task::spawn_blocking(move || {
-            let saving = Saving {
-                path,
-                total,
-                destination,
-                stopped,
-            };
-            save_file(file, &unfinished, queued, &saving)
-        });
+        let saving = Saving {
+            path,
+            total,
+            destination,
+            stopped,
+        };
+        let mut reading =
+            tokio::task::spawn_blocking(move || save_file(file, &unfinished, queued, &saving));
         let mut received = 0_u64;
-        while let Some(chunk) = stream.next().await {
-            let chunk = chunk?;
-            received += chunk.len() as u64;
-            // A file's archive is a little more than the file: its headers.
-            progress(total.map_or(received, |total| received.min(total)), total);
-            // Gone once the file is whole, or can't be.
-            if chunks.send(chunk).await.is_err() {
-                break;
+        // The thread ends once the file is in place, or can't be: then
+        // the rest of the archive is not waited for, however the Engine
+        // sends it, or doesn't.
+        let mut cut = None;
+        let ended = loop {
+            tokio::select! {
+                biased;
+                ended = &mut reading => break Some(ended),
+                chunk = stream.next() => match chunk {
+                    Some(Ok(chunk)) => {
+                        received += chunk.len() as u64;
+                        // A file's archive is a little more than the file:
+                        // its headers.
+                        progress(total.map_or(received, |total| received.min(total)), total);
+                        // Gone once the thread ended: it is awaited above.
+                        let _ = chunks.send(chunk).await;
+                    }
+                    Some(Err(e)) => {
+                        cut = Some(AppError::from(e));
+                        break None;
+                    }
+                    None => break None,
+                },
             }
-        }
+        };
         drop(chunks);
-        reading
-            .await
-            .map_err(|e| AppError::from(std::io::Error::other(e)))??;
-        return Ok(false);
+        let ended = match ended {
+            Some(ended) => ended,
+            None => reading.await,
+        };
+        // What is said is what is on disk: a file in place despite the
+        // connection's failure after its last byte was saved.
+        return match ended.map_err(|e| AppError::from(std::io::Error::other(e)))? {
+            Ok(()) => Ok(false),
+            Err(failed) => Err(cut.unwrap_or(failed)),
+        };
     }
     // A folder is saved as its archive.
     let file = saved

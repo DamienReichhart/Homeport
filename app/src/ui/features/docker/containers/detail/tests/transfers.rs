@@ -356,8 +356,34 @@ fn a_file_is_in_place_once_its_bytes_came_without_waiting_for_the_archive_s_end(
         done
     });
     assert!(whole, "in place before the archive ended");
-    live.engine.release();
+    // And said saved, while the Engine still holds the archive's end
+    // back, the connection open.
     finish(&mut live, transfer);
+    assert_eq!(
+        live.rig.bench.took(),
+        [Asked::Said("Saved note.txt".to_owned())]
+    );
+    assert!(live.rig.state.files.transfer.is_none());
+    live.engine.release();
+    assert!(no_part_left(&live));
+}
+
+#[test]
+fn a_connection_that_breaks_after_the_file_s_last_byte_still_says_what_is_on_disk() {
+    let _english = crate::test_support::snapshot::in_language("en");
+    let mut live = live(vec![entry("note.txt", false)]);
+    let saved = large_over_last_week(&mut live);
+    // Every byte of the file, then the connection breaks in the trailer.
+    live.engine.stall(Stall::AfterData);
+    live.engine.cut_downloads();
+    live.send(browse(file_browser::Message::Download(
+        "/note.txt".to_owned(),
+    )));
+    let told = live.rig.bench.took();
+    let on_disk = std::fs::read(&saved).unwrap();
+    // The file is whole and in place, and so says the page.
+    assert_eq!(on_disk.len(), 256 * 1024, "{told:?}");
+    assert_eq!(told, [Asked::Said("Saved note.txt".to_owned())]);
     assert!(no_part_left(&live));
 }
 
