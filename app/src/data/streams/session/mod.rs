@@ -56,9 +56,9 @@
 //!     Task::none()
 //! }
 //! Message::Written(written) => {
-//!     // A write that failed is shown, once; an old writer's word is let go of.
-//!     self.session.written(written);
-//!     if let Some(error) = self.session.failure() {
+//!     // A write that failed is shown, once: what an old writer ended with
+//!     // says nothing, so a failure the user closed since stays closed.
+//!     if let Some(error) = self.session.written(written) {
 //!         self.failure = Some(Surfaced::new(error.clone(), "exec_input"));
 //!     }
 //!     Task::none()
@@ -460,16 +460,20 @@ impl TerminalSession {
     /// more is sent, and a failure is kept for the page to show. What an
     /// older writer ended with (the session was started again, or this is
     /// a new session) is let go of.
-    pub fn written(&mut self, written: Written) {
+    ///
+    /// Returns the failure this writer ended with, and nothing for a writer
+    /// that ended well or an old writer's word: what the page shows now.
+    /// A page that shows [`TerminalSession::failure`] instead would show
+    /// again a failure the user closed, each time an old writer ends.
+    pub fn written(&mut self, written: Written) -> Option<&AppError> {
         let Written { writer, result } = written;
         if writer != self.writer {
-            return;
+            return None;
         }
         self.sender = None;
         self.done = true;
-        if let Err(failure) = result {
-            self.failure = Some(failure);
-        }
+        let failure = result.err()?;
+        Some(self.failure.insert(failure))
     }
 
     /// The write that failed, once one did: what the page shows.

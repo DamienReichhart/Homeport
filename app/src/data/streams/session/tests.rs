@@ -171,7 +171,8 @@ async fn letting_go_of_the_stream_closes_the_session_and_its_writer_says_why() {
         refused.result.clone().map_err(|e| e.code),
         Err(ErrorCode::NotFound)
     );
-    session.written(refused);
+    let shown = session.written(refused).map(|e| e.code);
+    assert_eq!(shown, Some(ErrorCode::NotFound));
     assert_eq!(session.failure().map(|e| e.code), Some(ErrorCode::NotFound));
     // ...and what is sent after is let go of.
     session.input("pwd\r".to_owned());
@@ -313,7 +314,11 @@ async fn a_late_word_from_the_session_before_does_not_silence_the_next() {
     drop(first);
     drop(stream);
     let late = first_writes.await;
-    next.written(late);
+    assert_eq!(
+        next.written(late),
+        None,
+        "an old writer's word says nothing"
+    );
     next.input("ls\r".to_owned());
     assert!(typed_reaches(&engine, "ls\r").await, "the keys still go");
     engine.exit();
@@ -335,7 +340,11 @@ async fn a_session_started_again_hears_its_own_writer_only() {
     // Started again (its subscription ran again): the old writer ends.
     let writer = tokio::spawn(session.started(state.clone(), id));
     let late = old_writes.await;
-    session.written(late);
+    assert_eq!(
+        session.written(late),
+        None,
+        "an old writer's word says nothing"
+    );
     session.input("pwd\r".to_owned());
     assert!(typed_reaches(&engine, "pwd\r").await, "the keys still go");
     engine.exit();
@@ -568,8 +577,7 @@ mod page {
                     Task::none()
                 }
                 Message::Written(written) => {
-                    self.session.written(written);
-                    if let Some(error) = self.session.failure() {
+                    if let Some(error) = self.session.written(written) {
                         self.failure = Some(error.clone());
                     }
                     Task::none()
@@ -648,4 +656,35 @@ async fn the_documented_page_runs_a_shell_and_opens_it_again() {
         let _ = page.update(page::Message::Session(said));
     }
     let _ = tokio::time::timeout(Duration::from_secs(2), writer).await;
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+async fn a_failure_the_user_closed_stays_closed_when_an_old_writer_ends() {
+    use homeport_core::error::AppError;
+    let (state, _app) = state();
+    let mut page = page::Page::new(state.clone(), shell("h"));
+    // Started, then started again (its subscription ran again): the first
+    // writer is an old one, whose word comes late.
+    drop(page.session.started(state.clone(), 1));
+    let old = page.session.writer;
+    drop(page.session.started(state.clone(), 1));
+    let current = page.session.writer;
+    let refused = AppError::new(ErrorCode::NotFound, homeport_core::messages::IO_FAILED);
+    let failed = Written {
+        writer: current,
+        result: Err(refused),
+    };
+    let _ = page.update(page::Message::Written(failed));
+    assert_eq!(
+        page.failure.as_ref().map(|e| e.code),
+        Some(ErrorCode::NotFound)
+    );
+    // The user closes it; the old writer's end says nothing of it.
+    page.failure = None;
+    let late = Written {
+        writer: old,
+        result: Ok(()),
+    };
+    let _ = page.update(page::Message::Written(late));
+    assert!(page.failure.is_none(), "{:?}", page.failure);
 }
