@@ -17,6 +17,7 @@ mod platform_tests;
 #[cfg(test)]
 mod stage_tests;
 pub mod table;
+pub mod terminal;
 #[cfg(test)]
 mod tests;
 
@@ -75,6 +76,7 @@ pub enum Page {
     Log,
     Chart,
     Data,
+    Terminal,
 }
 
 pub struct Gallery {
@@ -114,6 +116,7 @@ pub struct Gallery {
     /// shell (`ctx.platform`): the OS's, or a test's.
     pub platform: Platform,
     pub log_saving: log::Saving,
+    pub terminals: terminal::Terminals,
 }
 
 #[derive(Debug, Clone)]
@@ -155,6 +158,7 @@ pub enum Message {
     LogSave(log::Save),
     Chart(chart::Event),
     Data(data::Event),
+    Terminal(terminal::Event),
     Nothing,
 }
 
@@ -214,6 +218,7 @@ impl Gallery {
             data: data::Data::default(),
             platform,
             log_saving: log::Saving::default(),
+            terminals: terminal::Terminals::default(),
         }
     }
 }
@@ -382,6 +387,7 @@ impl Gallery {
             Message::LogSave(save) => return self.log_save(save),
             Message::Chart(event) => self.charts.update(event),
             Message::Data(event) => return self.data_event(event),
+            Message::Terminal(event) => return self.terminal_event(event),
             Message::Nothing => {}
         }
         Task::none()
@@ -396,6 +402,7 @@ impl Gallery {
             Page::Log => self.logs(),
             Page::Chart => self.charts(),
             Page::Data => self.data(),
+            Page::Terminal => self.terminals(),
         };
         let page =
             stack(vec![self.switches(), rule::horizontal(1).into(), body]).spacing(space::S6);
@@ -424,6 +431,7 @@ impl Gallery {
             self.toasts.subscription().map(Message::Toast),
             self.log_subscription(),
             self.chart_subscription(),
+            self.terminal_subscription(),
         ])
     }
 
@@ -466,6 +474,11 @@ impl Gallery {
                 self.page == Page::Chart,
             ),
             choice("Data", Message::Page(Page::Data), self.page == Page::Data),
+            choice(
+                "Terminal",
+                Message::Page(Page::Terminal),
+                self.page == Page::Terminal,
+            ),
             choice("Light", Message::Theme(Theme::Light), !self.theme.is_dark()),
             choice("Dark", Message::Theme(Theme::Dark), self.theme.is_dark()),
             choice("English", Message::Language("en"), !rtl),
