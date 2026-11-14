@@ -66,6 +66,9 @@ fn the_menu_offers_what_the_container_s_state_allows() {
             "Pause",
             "Kill",
             "Rename",
+            "Edit",
+            "Duplicate",
+            "Commit to image…",
             "Export filesystem…",
             "Remove"
         ]
@@ -78,6 +81,9 @@ fn the_menu_offers_what_the_container_s_state_allows() {
             "Restart",
             "Resume",
             "Rename",
+            "Edit",
+            "Duplicate",
+            "Commit to image…",
             "Export filesystem…",
             "Remove"
         ]
@@ -85,9 +91,17 @@ fn the_menu_offers_what_the_container_s_state_allows() {
     let exited = Actions::menu(&target("web", "exited"));
     assert_eq!(
         offered(&exited),
-        ["Logs", "Rename", "Export filesystem…", "Remove"]
+        [
+            "Logs",
+            "Rename",
+            "Edit",
+            "Duplicate",
+            "Commit to image…",
+            "Export filesystem…",
+            "Remove"
+        ]
     );
-    // Every item of the React menu is there, those of other tickets too.
+    // Every item of the React menu is there.
     assert_eq!(running.len(), 13);
 }
 

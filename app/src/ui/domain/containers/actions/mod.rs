@@ -14,11 +14,11 @@
 //! read again are the shell's to report, so they are whether or not the
 //! page is still there when the Engine answers.
 //!
-//! Export saves a container's filesystem to a tar ([`export`]). Edit,
-//! Duplicate and Commit are in the menu and can't be chosen: their
-//! dialogs are the run ticket's (#259).
+//! Export saves a container's filesystem to a tar ([`export`]); Edit,
+//! Duplicate and Commit open their forms ([`forms`]).
 
 pub mod export;
+pub mod forms;
 pub mod view;
 
 #[cfg(test)]
@@ -129,6 +129,12 @@ pub enum Message {
     Export(export::Message),
     /// Go to a tab of the container's page: its logs, its terminal.
     Open(Target, &'static str),
+    /// Edit, Duplicate or Commit this container: its form.
+    AskEdit(Target),
+    AskDuplicate(Target),
+    AskCommit(Target),
+    /// What happens in one of those forms.
+    Forms(forms::Message),
 }
 
 /// What a confirmation is about.
@@ -165,6 +171,8 @@ pub struct Actions {
     dialog: Option<Dialog>,
     /// The export the dialog shows, and its save dialog.
     exports: export::Exports,
+    /// Edit, Duplicate or Commit, while one is open.
+    forms: forms::Forms,
 }
 
 /// The failure of an action asked for several containers, as one: the
@@ -257,7 +265,7 @@ impl Actions {
 
     /// Whether a confirmation, the Rename dialog or an export is open.
     pub fn has_dialog(&self) -> bool {
-        self.dialog.is_some() || self.exports.shown.is_some()
+        self.dialog.is_some() || self.exports.shown.is_some() || self.forms.is_open()
     }
 
     /// What the confirmation asks, in the language of the moment.
@@ -384,6 +392,21 @@ impl Actions {
             }
             Message::Export(message) => {
                 return self.exports.update(message, ctx).map(Message::Export);
+            }
+            Message::AskEdit(target) => {
+                return self
+                    .forms
+                    .ask(forms::For::Edit, target, ctx)
+                    .map(Message::Forms);
+            }
+            Message::AskDuplicate(target) => {
+                let asked = self.forms.ask(forms::For::Duplicate, target, ctx);
+                return asked.map(Message::Forms);
+            }
+            Message::AskCommit(target) => self.forms.ask_commit(target, ctx),
+            Message::Forms(message) => {
+                let across = self.across_hosts;
+                return self.forms.update(message, across, ctx).map(Message::Forms);
             }
             Message::Open(target, tab) => {
                 if self.across_hosts {

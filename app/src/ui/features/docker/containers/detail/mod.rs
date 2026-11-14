@@ -17,7 +17,7 @@
 //! | Header: Back, status dot, name, Stack badge; image, "newer image" mark, status | `view::header` | done |
 //! | Stop or Start, Restart, Pause or Resume, Remove (confirmed, then the list) | `Actions::header` (shared actions, `ctx.act`) | done |
 //! | More: Rename | the shared Rename dialog | done |
-//! | More: Edit, Duplicate, Commit | in the menu, disabled: the Run dialog's ticket (#259) | not done (#259) |
+//! | More: Edit (recreate, its losses confirmed), Duplicate, Commit | the shared forms (`actions::forms`); after Edit or Duplicate the new container's page | done |
 //! | More: Export (save dialog, then progress, Cancel, Close, toast) | `actions::export` | done |
 //! | — | More: Kill (confirmed), as in the list's menu | added |
 //! | Tabs Logs, Inspect, Health (only with a healthcheck), Exec, Files, Stats, Processes | `Tab::shown` | done |

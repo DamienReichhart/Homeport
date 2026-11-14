@@ -156,10 +156,25 @@ fn item(label: String, glyph: Icon, message: Message) -> Item<Message> {
     Item::action(label, message).glyph(glyph)
 }
 
-/// An item whose dialog comes with another ticket (#259): it is there and
-/// can't be chosen.
-fn later(label: String, glyph: Icon) -> Item<Message> {
-    item(label, glyph, Message::CloseDialog).disabled(true)
+/// Edit, Duplicate and Commit, which open their forms.
+fn forms(target: &Target) -> [Item<Message>; 3] {
+    [
+        item(
+            t!("containers.action.edit"),
+            Icon::SlidersHorizontal,
+            Message::AskEdit(target.clone()),
+        ),
+        item(
+            t!("containers.action.duplicate"),
+            Icon::Copy,
+            Message::AskDuplicate(target.clone()),
+        ),
+        item(
+            t!("containers.action.commit"),
+            Icon::ImageDown,
+            Message::AskCommit(target.clone()),
+        ),
+    ]
 }
 
 impl Actions {
@@ -245,11 +260,10 @@ impl Actions {
     }
 
     /// The items of the menu beside those buttons: Rename, Kill (which the
-    /// React page left to the list's menu) and Export. Edit, Duplicate and
-    /// Commit are there and can't be chosen, as in [`Actions::menu`]: they
-    /// are the Run dialog's ticket (#259).
+    /// React page left to the list's menu), Edit, Duplicate, Commit and
+    /// Export.
     pub fn more(target: &Target) -> Vec<Item<Message>> {
-        vec![
+        let mut items = vec![
             item(
                 t!("containers.action.rename"),
                 Icon::Pencil,
@@ -261,15 +275,14 @@ impl Actions {
                 Message::AskKill(target.clone()),
             )
             .disabled(!target.is_running()),
-            later(t!("containers.action.edit"), Icon::SlidersHorizontal),
-            later(t!("containers.action.duplicate"), Icon::Copy),
-            later(t!("containers.action.commit"), Icon::ImageDown),
-            item(
-                t!("containers.action.export"),
-                Icon::FileArchive,
-                Message::AskExport(target.clone()),
-            ),
-        ]
+        ];
+        items.extend(forms(target));
+        items.push(item(
+            t!("containers.action.export"),
+            Icon::FileArchive,
+            Message::AskExport(target.clone()),
+        ));
+        items
     }
 
     /// The items of a container's menu (`ContainerMenu`).
@@ -290,7 +303,7 @@ impl Actions {
             )
             .disabled(!running)
         };
-        vec![
+        let mut items = vec![
             item(
                 t!("containers.action.logs"),
                 Icon::ScrollText,
@@ -321,9 +334,9 @@ impl Actions {
                 Icon::Pencil,
                 Message::AskRename(target.clone()),
             ),
-            later(t!("containers.action.edit"), Icon::SlidersHorizontal),
-            later(t!("containers.action.duplicate"), Icon::Copy),
-            later(t!("containers.action.commit"), Icon::ImageDown),
+        ];
+        items.extend(forms(target));
+        items.extend([
             item(
                 t!("containers.action.export"),
                 Icon::FileArchive,
@@ -339,14 +352,18 @@ impl Actions {
                 },
             )
             .destructive(),
-        ]
+        ]);
+        items
     }
 
     /// The confirmation or the dialog that is open, for the page's
     /// `dialog`.
-    pub fn dialog<'a>(&'a self, _ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
+    pub fn dialog<'a>(&'a self, ctx: &Context<'a>) -> Option<Modal<'a, Message>> {
         if let Some(export) = self.exports.dialog() {
             return Some(export.map(Message::Export));
+        }
+        if let Some(form) = self.forms.dialog(ctx) {
+            return Some(form.map(Message::Forms));
         }
         match self.dialog.as_ref()? {
             Dialog::Confirm { what, state } => {
