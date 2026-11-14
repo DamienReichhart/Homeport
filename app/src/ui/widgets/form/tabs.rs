@@ -23,6 +23,7 @@ use crate::{
             Element, Icon, Theme,
         },
         widgets::{
+            basic::flow,
             focus::{pressable, roving, Axis},
             line,
         },
@@ -46,6 +47,28 @@ pub fn tabs<'a, Message: Clone + 'a>(
     selected: usize,
     variant: TabsVariant,
     on_select: impl Fn(usize) -> Message + 'a,
+) -> Element<'a, Message> {
+    tab_list(labels, selected, variant, on_select, false)
+}
+
+/// [`tabs`] that go on the next line when the row is full (`h-auto
+/// flex-wrap`), starting where the language reads: many sections in a
+/// narrow dialog.
+pub fn wrapping_tabs<'a, Message: Clone + 'a>(
+    labels: Vec<String>,
+    selected: usize,
+    variant: TabsVariant,
+    on_select: impl Fn(usize) -> Message + 'a,
+) -> Element<'a, Message> {
+    tab_list(labels, selected, variant, on_select, true)
+}
+
+fn tab_list<'a, Message: Clone + 'a>(
+    labels: Vec<String>,
+    selected: usize,
+    variant: TabsVariant,
+    on_select: impl Fn(usize) -> Message + 'a,
+    wrap: bool,
 ) -> Element<'a, Message> {
     let tab = |(index, label): (usize, String)| -> Element<'a, Message> {
         let chosen = index == selected;
@@ -82,10 +105,15 @@ pub fn tabs<'a, Message: Clone + 'a>(
             }
         }
     };
-    let row = line(labels.into_iter().enumerate().map(tab).collect());
-    let row = match variant {
-        TabsVariant::Default => row,
-        TabsVariant::Line => row.spacing(space::S1),
+    let items = labels.into_iter().enumerate().map(tab).collect();
+    let spacing = match variant {
+        TabsVariant::Default => 0.0,
+        TabsVariant::Line => space::S1,
+    };
+    let row: Element<'a, Message> = if wrap {
+        flow(items).spacing(spacing).hugging().into()
+    } else {
+        line(items).spacing(spacing).into()
     };
     let list = roving(Axis::Horizontal, row).on_move(on_select);
     match variant {

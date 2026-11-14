@@ -196,3 +196,33 @@ fn a_row_s_protocol_and_read_only_stand_by_its_fields_both_ways() {
     assert!((en_tcp - ar_tcp).abs() < 1.0, "{gaps:?}");
     assert!((en_ro - ar_ro).abs() < 1.0, "{gaps:?}");
 }
+
+#[test]
+fn the_advanced_area_s_tabs_wrap_in_a_narrow_window() {
+    use crate::ui::domain::containers::run::form::Section;
+    let (mut bench, _engine, host) = bench();
+    networks(&mut bench, &host);
+    let mut dialog = filled(&bench, &host);
+    let open = Message::Form(Field::Switch(Switch::Advanced, true));
+    send(&mut dialog, &bench, open);
+    // Dialogs about 560 and 440 wide: their content is the window's but
+    // the margins and the padding.
+    for (language, width) in [("de", 600.0), ("ar", 480.0)] {
+        let _language = crate::test_support::snapshot::in_language(language);
+        let ctx = bench.ctx();
+        let mut drawn = crate::test_support::window::window((width, 1600.0), shown(&dialog, &ctx));
+        let mut lines = vec![];
+        for section in Section::ALL {
+            let label = section.label();
+            let found = drawn.find(label.as_str()).map(|t| t.bounds());
+            let bounds = found.unwrap_or_else(|_| panic!("{language}: {label} is drawn"));
+            assert!(
+                bounds.x >= 16.0 && bounds.x + bounds.width <= width - 16.0,
+                "{language}: {label} at {bounds:?} is outside the dialog"
+            );
+            lines.push(bounds.y.round());
+        }
+        lines.dedup();
+        assert!(lines.len() > 1, "{language}: the tabs are on one line");
+    }
+}

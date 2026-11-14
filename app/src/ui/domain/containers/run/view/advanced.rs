@@ -16,7 +16,7 @@ use crate::{
         theme::{metrics::space, Element},
         widgets::{
             feedback::alert,
-            form::{field, suggest::suggest, tabs, TabsVariant},
+            form::{field, suggest::suggest, wrapping_tabs, TabsVariant},
             stack,
         },
     },
@@ -343,7 +343,7 @@ pub(super) fn view<'a>(form: &'a Form, lists: &Lists, errors: &Errors) -> Elemen
         Section::Network => identity(form),
         Section::Logging => logging(form),
     };
-    let tabs = tabs(labels, chosen, TabsVariant::Default, |index| {
+    let tabs = wrapping_tabs(labels, chosen, TabsVariant::Default, |index| {
         Message::Section(Section::ALL[index])
     });
     stack(vec![tabs, shown]).spacing(space::S3).into()

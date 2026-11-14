@@ -27,5 +27,5 @@ pub use self::{
     search::{focus_search, search, Debounce},
     select::select,
     suggest::suggest,
-    tabs::{segmented, tabs, toggle_group, TabsVariant, Toggle},
+    tabs::{segmented, tabs, toggle_group, wrapping_tabs, TabsVariant, Toggle},
 };

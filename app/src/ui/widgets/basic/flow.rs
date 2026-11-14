@@ -24,6 +24,7 @@ pub struct Flow<'a, Message> {
     line_spacing: f32,
     pushed: Option<usize>,
     rtl: bool,
+    hug: bool,
 }
 
 /// `items` start to end, wrapped onto more lines when they don't fit,
@@ -35,6 +36,7 @@ pub fn flow<'a, Message>(items: Vec<Element<'a, Message>>) -> Flow<'a, Message> 
         line_spacing: 0.0,
         pushed: None,
         rtl: i18n::direction().is_rtl(),
+        hug: false,
     }
 }
 
@@ -44,6 +46,14 @@ impl<Message> Flow<'_, Message> {
     pub fn spacing(mut self, spacing: f32) -> Self {
         self.spacing = spacing;
         self.line_spacing = spacing;
+        self
+    }
+
+    /// As wide as its items on one line, or as the room when they wrap
+    /// (`inline-flex flex-wrap`): a band of tabs.
+    #[must_use]
+    pub fn hugging(mut self) -> Self {
+        self.hug = true;
         self
     }
 
@@ -109,7 +119,12 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Flow<'_, Message> {
     }
 
     fn size(&self) -> Size<Length> {
-        Size::new(Length::Fill, Length::Shrink)
+        let width = if self.hug {
+            Length::Shrink
+        } else {
+            Length::Fill
+        };
+        Size::new(width, Length::Shrink)
     }
 
     fn layout(
@@ -129,14 +144,14 @@ impl<Message> Widget<Message, Theme, iced::Renderer> for Flow<'_, Message> {
         let sizes: Vec<Size> = nodes.iter().map(layout::Node::size).collect();
         // With no width to fill (a row that scrolls sideways), the items
         // are one line as wide as they are, and nothing is pushed.
-        let (width, pushed) = if width.is_finite() {
-            (width, self.pushed)
+        let gaps = self.spacing * sizes.len().saturating_sub(1) as f32;
+        let one_line = sizes.iter().map(|size| size.width).sum::<f32>() + gaps;
+        let (width, pushed) = if !width.is_finite() {
+            (one_line, None)
+        } else if self.hug {
+            (width.min(one_line), self.pushed)
         } else {
-            let gaps = self.spacing * sizes.len().saturating_sub(1) as f32;
-            (
-                sizes.iter().map(|size| size.width).sum::<f32>() + gaps,
-                None,
-            )
+            (width, self.pushed)
         };
         let (points, height) = place(&sizes, width, self.spacing, self.line_spacing, pushed);
         let nodes = nodes
