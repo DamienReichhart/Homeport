@@ -125,10 +125,11 @@ pub enum Message<M> {
     Back,
     Forward,
     Select(Selection),
-    /// A key was pressed; `captured` when a field or a dialog used it.
+    /// A key was pressed, where: the page, a field or a dialog that used
+    /// it, or a terminal (where no shortcut fires).
     Key {
         press: Press,
-        captured: bool,
+        target: Target,
     },
     Palette(palette::Message),
     CloseHelp,
@@ -354,22 +355,24 @@ impl<P: Pages> Shell<P> {
         // window. Plain keys reach the keymap when nothing used them; those
         // with Mod are heard from a field or a dialog too.
         let (mac, map) = (self.mac, std::rc::Rc::new(self.keymap()));
-        let pressed = |captured: bool| {
+        let pressed = |target: Target| {
             let map = map.clone();
             move |key: &iced::keyboard::Key, modifiers| {
                 let press = Press::from_iced(key, modifiers)?;
-                let target = if captured { Target::Text } else { Target::Page };
                 keymap::resolve(&map, &press, mac, target)?;
-                Some(Message::Key { press, captured })
+                Some(Message::Key { press, target })
             }
         };
         // The page's dialog over the sidebar and the page, and the palette
         // or the shortcuts' sheet over that: the same layers whether there
         // is one or not, so what is under keeps its state and its focus.
         let layers = overlay::over(overlay::over(body, page_dialog), dialog);
-        key_area(layers, pressed(false))
+        // A terminal that has focus keeps every key it used: no shortcut
+        // fires from it (on macOS, Cmd is left to the app's).
+        key_area(layers, pressed(Target::Page))
             .always()
-            .on_captured(pressed(true))
+            .on_captured(pressed(Target::Text))
+            .on_terminal(pressed(Target::Terminal))
             .into()
     }
 

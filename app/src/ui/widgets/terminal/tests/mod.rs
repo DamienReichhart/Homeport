@@ -2,6 +2,7 @@
 //! the keys, the pointer, the selection, the search, the size, and what
 //! it draws.
 
+mod driven;
 mod emulation;
 mod keys;
 mod search;

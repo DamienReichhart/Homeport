@@ -20,10 +20,7 @@ use super::{
         remember::{Remember, Saved},
         Selection,
     },
-    shortcuts::{
-        keymap::{self, Command},
-        keys::Target,
-    },
+    shortcuts::keymap::{self, Command},
     sidebar, status, Event, Message, Open, Shell,
 };
 use crate::{
@@ -136,10 +133,9 @@ impl<P: Pages> Shell<P> {
                 Task::none()
             }
             Message::Select(selection) => self.select(selection),
-            Message::Key { press, captured } => {
+            Message::Key { press, target } => {
                 // What used the key is a field or a dialog: only the
-                // shortcuts with Mod work from there.
-                let target = if captured { Target::Text } else { Target::Page };
+                // shortcuts with Mod work from there; none from a terminal.
                 let map = self.keymap();
                 match keymap::resolve(&map, &press, self.mac, target) {
                     Some(binding) => self.command(binding.command.clone(), data),

@@ -24,7 +24,7 @@ use super::{
     registry::FeatureId,
     router::{Request, Route},
     selection::{self, Selection},
-    shortcuts::keys::Press,
+    shortcuts::keys::{Press, Target},
     sidebar, Event, Message, Shell,
 };
 use crate::{
@@ -289,7 +289,7 @@ fn ctrl(key: &str) -> [iced::Event; 2] {
 fn key(press: Press) -> Msg {
     Message::Key {
         press,
-        captured: false,
+        target: Target::Page,
     }
 }
 
@@ -601,8 +601,15 @@ fn the_palette_opens_runs_a_row_and_closes() {
     ));
     rig.send(key(ctrl_k.clone()));
     rig.send(Message::Key {
+        press: ctrl_k.clone(),
+        target: Target::Text,
+    });
+    assert!(!rig.shell.palette.is_open());
+    // A terminal keeps its Ctrl + K (the shell's kill to the end of the
+    // line): no shortcut fires from it.
+    rig.send(Message::Key {
         press: ctrl_k,
-        captured: true,
+        target: Target::Terminal,
     });
     assert!(!rig.shell.palette.is_open());
 }
@@ -618,7 +625,7 @@ fn the_shortcuts_sheet_opens_with_a_question_mark_and_from_the_palette() {
     // A key a field used types; it opens nothing.
     rig.send(Message::Key {
         press: Press::of("?"),
-        captured: true,
+        target: Target::Text,
     });
     assert!(!rig.shell.help);
     rig.send(Message::Palette(palette::Message::Toggle));
