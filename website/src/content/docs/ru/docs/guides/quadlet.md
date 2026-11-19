@@ -5,7 +5,7 @@ description: Просматривайте юниты Quadlet хоста Podman �
 
 **Quadlet** — это способ, которым Podman запускает долгоживущие сервисы под управлением systemd. Юнит Quadlet — это файл (`web.container`, `shop.pod`, `cache.volume`, `lan.network`, `app.kube`, `base.image`, `api.build`), который генератор systemd превращает в сервис `web.service`, запускающий контейнер при загрузке и перезапускающий его, когда тот останавливается. Podman с правами root хранит свои юниты в `/etc/containers/systemd/`; Podman без root хранит юниты каждого пользователя в `~/.config/containers/systemd/`.
 
-Страница **Quadlet** появляется в боковой панели, пока выбран хост Podman. Она работает через собственный API Podman на том же сокете, который хост уже использует, а для запуска и остановки — через `systemctl`, как решено в [ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md).
+Страница **Quadlet** появляется в боковой панели, пока выбран хост Podman. Она работает через собственный API Podman на том же сокете, который хост уже использует, а для запуска и остановки — через `systemctl`, как решено в [ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md).
 
 ## Что позволяют разные версии Podman и подключения
 

@@ -16,8 +16,8 @@ import { LOCALES, PREFIXED_LOCALES } from './src/core/site/locales.ts';
  * requests — it builds for the project site.
  */
 const site = process.env.SITE_URL || 'https://damienreichhart.github.io';
-const base = process.env.SITE_URL ? process.env.BASE_PATH || '/' : '/Homeport';
-/** The base without a trailing slash, for building paths: `/Homeport` or ``. */
+const base = process.env.SITE_URL ? process.env.BASE_PATH || '/' : '/homeport';
+/** The base without a trailing slash, for building paths: `/homeport` or ``. */
 const root = base.replace(/\/$/, '');
 const codes = PREFIXED_LOCALES.map((l) => l.code);
 

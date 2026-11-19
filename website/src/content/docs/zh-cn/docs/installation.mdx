@@ -6,7 +6,7 @@ description: 在 Windows、macOS 或 Linux 上安装 Homeport。
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport 提供适用于 Windows、macOS 和 Linux 的安装程序，每个系统都有 x64 和 ARM 版本。可以从[下载页面](/download/)获取（它会为你的系统指出合适的文件），也可以从[最新的 GitHub 发布](https://github.com/DamienReichhart/Homeport/releases/latest)获取。在 Linux 上，Homeport 软件包仓库只需一条命令即可安装。
+Homeport 提供适用于 Windows、macOS 和 Linux 的安装程序，每个系统都有 x64 和 ARM 版本。可以从[下载页面](/download/)获取（它会为你的系统指出合适的文件），也可以从[最新的 GitHub 发布](https://github.com/DamienReichhart/homeport/releases/latest)获取。在 Linux 上，Homeport 软件包仓库只需一条命令即可安装。
 
 每种安装方式都会保持最新：在 Windows、macOS 上以及使用 AppImage 时，Homeport 会自行更新；Linux 软件包则随系统其余部分一起更新。参见[更新](/docs/reference/updating/)。
 
@@ -84,7 +84,7 @@ Linux 版 Homeport 需要 glibc 2.35 或更高版本（Ubuntu 22.04、Debian 12�
 2. 添加 Homeport 仓库，
 3. 安装 `homeport` 软件包；如果已安装，则更新它。
 
-重复运行不会造成任何问题。你可以先[阅读脚本](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh)，或按照下面的手动设置操作：效果完全相同。
+重复运行不会造成任何问题。你可以先[阅读脚本](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh)，或按照下面的手动设置操作：效果完全相同。
 
 ### 手动设置
 
@@ -162,7 +162,7 @@ sudo usermod -aG docker $USER
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

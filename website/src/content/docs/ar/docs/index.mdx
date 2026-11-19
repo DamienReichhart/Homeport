@@ -6,7 +6,7 @@ description: ما هو Homeport، وما الذي يفعله، وكيف تُنظ
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** تطبيق سطح مكتب لإدارة محركات Docker وcontainerd وIncus أينما كانت — محرك هذا الجهاز، أو محركات بعيدة عبر SSH أو TLS أو TCP — والـ Swarms التي تشكّلها، وعناقيد Kubernetes التي يصل إليها ملف kubeconfig الخاص بك وعناقيد Nomad التي تحددها، على غرار Docker Desktop. يعمل على Windows وmacOS وLinux، وهو مجاني ومفتوح المصدر بموجب [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE).
+**Homeport** تطبيق سطح مكتب لإدارة محركات Docker وcontainerd وIncus أينما كانت — محرك هذا الجهاز، أو محركات بعيدة عبر SSH أو TLS أو TCP — والـ Swarms التي تشكّلها، وعناقيد Kubernetes التي يصل إليها ملف kubeconfig الخاص بك وعناقيد Nomad التي تحددها، على غرار Docker Desktop. يعمل على Windows وmacOS وLinux، وهو مجاني ومفتوح المصدر بموجب [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE).
 
 لا يشغّل Homeport الحاويات بنفسه. بل يتصل بالمحركات الموجودة لديك، وتُسمّى **المضيفات**، ويمنحك نافذة واحدة لكل ما عليها: الحاويات والصور ووحدات التخزين والشبكات و**مكدسات** Compose. ويتصل أيضًا بـ**عناقيد** Kubernetes وNomad، لترى ما يعمل عليها وتديره. لا يُثبَّت أي شيء على مضيف أو عنقود.
 

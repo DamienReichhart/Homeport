@@ -3,7 +3,7 @@
  * the download page and the docs. The repositories live on this site at a
  * permanent URL (ADR 0003), independent of where a preview build is served.
  */
-export const REPOSITORY_URL = 'https://damienreichhart.github.io/Homeport';
+export const REPOSITORY_URL = 'https://damienreichhart.github.io/homeport';
 export const KEY_URL = `${REPOSITORY_URL}/homeport.asc`;
 export const INSTALL_SCRIPT_URL = `${REPOSITORY_URL}/install.sh`;
 export const INSTALL_COMMAND = `curl -fsSL ${INSTALL_SCRIPT_URL} | sh`;

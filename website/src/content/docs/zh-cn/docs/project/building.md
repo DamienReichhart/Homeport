@@ -25,7 +25,7 @@ Homeport 是一个 [Tauri 2](https://tauri.app) 应用：在 Rust 核心之上�
 ## 运行
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 适用于你的平台的安装程序会写入 `target/release/bundle/`。构建会先生成许可证声明，如果某个依赖的许可证尚未在 `about.toml` 中审查，构建就会停止。
 
-本地构建没有为应用内更新程序签名，`.rpm` 也不会被签名；只有[发布工作流](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md)拥有签名密钥。你自己构建的副本仍会检查更新，但其**安装并重启**只会安装由发布工作流签名的版本。
+本地构建没有为应用内更新程序签名，`.rpm` 也不会被签名；只有[发布工作流](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md)拥有签名密钥。你自己构建的副本仍会检查更新，但其**安装并重启**只会安装由发布工作流签名的版本。
 
 ## 常用命令
 
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

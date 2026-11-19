@@ -5,7 +5,7 @@ description: Podman のホストの Quadlet ユニットを systemd の状態と
 
 **Quadlet** は、Podman が長時間動作するサービスを systemd のもとで実行する仕組みです。Quadlet ユニットはファイル（`web.container`、`shop.pod`、`cache.volume`、`lan.network`、`app.kube`、`base.image`、`api.build`）で、systemd のジェネレーターがこれをサービス `web.service` に変換します。このサービスは起動時にコンテナを起動し、コンテナが停止すると再起動します。rootful の Podman はユニットを `/etc/containers/systemd/` に置き、rootless の Podman は各ユーザーのユニットを `~/.config/containers/systemd/` に置きます。
 
-**Quadlet** ページは、Podman のホストを選択している間、サイドバーに表示されます。[ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md) で決めたとおり、ホストがすでに使っているソケット上の Podman 独自の API を通じて動作し、起動と停止には `systemctl` を使います。
+**Quadlet** ページは、Podman のホストを選択している間、サイドバーに表示されます。[ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md) で決めたとおり、ホストがすでに使っているソケット上の Podman 独自の API を通じて動作し、起動と停止には `systemctl` を使います。
 
 ## Podman と接続ごとにできること
 

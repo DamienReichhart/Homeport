@@ -25,7 +25,7 @@ Homeport एक [Tauri 2](https://tauri.app) ऐप है: Rust कोर क�
 ## इसे चलाएँ
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 आपके प्लैटफ़ॉर्म के इंस्टॉलर `target/release/bundle/` में लिखे जाते हैं। बिल्ड पहले लाइसेंस सूचनाएँ बनाता है, और अगर किसी डिपेंडेंसी के लाइसेंस की `about.toml` में समीक्षा नहीं हुई है तो रुक जाता है।
 
-लोकल बिल्ड ऐप के अंदर के अपडेटर के लिए साइन नहीं किए जाते और `.rpm` को बिना साइन किए छोड़ते हैं; सिर्फ़ [रिलीज़ वर्कफ़्लो](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) के पास साइनिंग कुंजियाँ हैं। आपकी ख़ुद बनाई कॉपी फिर भी अपडेट जाँचती है, लेकिन उसका **इंस्टॉल करें और रीस्टार्ट करें** सिर्फ़ रिलीज़ वर्कफ़्लो से साइन किए गए संस्करण इंस्टॉल करता है।
+लोकल बिल्ड ऐप के अंदर के अपडेटर के लिए साइन नहीं किए जाते और `.rpm` को बिना साइन किए छोड़ते हैं; सिर्फ़ [रिलीज़ वर्कफ़्लो](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) के पास साइनिंग कुंजियाँ हैं। आपकी ख़ुद बनाई कॉपी फिर भी अपडेट जाँचती है, लेकिन उसका **इंस्टॉल करें और रीस्टार्ट करें** सिर्फ़ रिलीज़ वर्कफ़्लो से साइन किए गए संस्करण इंस्टॉल करता है।
 
 ## काम के कमांड
 
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

@@ -3,7 +3,7 @@ title: トラブルシューティング
 description: よく起こる問題の解決方法を、Homeport が表示するメッセージ別に紹介します。
 ---
 
-ここに問題が載っていない場合は、**設定 → Homeport について** の[診断情報のバンドル](#バグ報告用の診断情報のエクスポート)を添えて [issue を作成](https://github.com/DamienReichhart/Homeport/issues/new/choose)してください。
+ここに問題が載っていない場合は、**設定 → Homeport について** の[診断情報のバンドル](#バグ報告用の診断情報のエクスポート)を添えて [issue を作成](https://github.com/DamienReichhart/homeport/issues/new/choose)してください。
 
 ## インストールと起動
 
@@ -335,7 +335,7 @@ Incus で仮想マシンを使うには、KVM（`/dev/kvm`）と QEMU が必要�
 
 ### 「問題が発生しました」
 
-Homeport のページで予期しない問題が発生し、内容の代わりにこれが表示されています。サイドバーは引き続き使えます。通常は **再読み込み** でページが戻り、**概要に戻る** でそのページを離れられます。繰り返し発生する場合は、**詳細** のレポートをコピーし、[診断情報のバンドル](#バグ報告用の診断情報のエクスポート)とともに [issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) に貼り付けてください。
+Homeport のページで予期しない問題が発生し、内容の代わりにこれが表示されています。サイドバーは引き続き使えます。通常は **再読み込み** でページが戻り、**概要に戻る** でそのページを離れられます。繰り返し発生する場合は、**詳細** のレポートをコピーし、[診断情報のバンドル](#バグ報告用の診断情報のエクスポート)とともに [issue](https://github.com/DamienReichhart/homeport/issues/new/choose) に貼り付けてください。
 
 ### 「… は接続されていません。」
 

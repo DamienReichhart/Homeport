@@ -3,7 +3,7 @@ title: containerd
 description: اتصل بـ containerd على هذا الجهاز أو عبر SSH، واختر مساحة أسماء، وشغّل مهام حاوياتها، واقرأ سجلاتها، وافتح صدفة، وأدر الصور واللقطات.
 ---
 
-يعمل **containerd** تحت k3s وnerdctl وBuildKit وكثير من الخوادم التي لا تحتوي على Docker. يتصل به Homeport مباشرةً، عبر واجهة gRPC API الخاصة به، كما يقرر [ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). يحصل مضيف containerd على صفحات خاصة به في الشريط الجانبي: **الحاويات** و**الصور** و**اللقطات** و**مساحات الأسماء**. ولا تُتاح عليه صفحات Docker ولا المكدسات ولا اللوحة.
+يعمل **containerd** تحت k3s وnerdctl وBuildKit وكثير من الخوادم التي لا تحتوي على Docker. يتصل به Homeport مباشرةً، عبر واجهة gRPC API الخاصة به، كما يقرر [ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). يحصل مضيف containerd على صفحات خاصة به في الشريط الجانبي: **الحاويات** و**الصور** و**اللقطات** و**مساحات الأسماء**. ولا تُتاح عليه صفحات Docker ولا المكدسات ولا اللوحة.
 
 ## إضافة مضيف containerd
 

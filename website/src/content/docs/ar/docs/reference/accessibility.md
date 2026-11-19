@@ -31,7 +31,7 @@ description: استخدام Homeport بلوحة المفاتيح، ومع تقل
 
 تُفحص كل صفحة ومربعات الحوار الرئيسية باستخدام [axe](https://github.com/dequelabs/axe-core) عند كل تغيير: للأزرار والحقول والمناطق أسماء، والعناوين والمعالم مرتبة، ولا يُساء استخدام ARIA. يعيّن Homeport لغة الصفحة، فيقرأ قارئ الشاشة كل لغة بصوتها الخاص، وتُعرض العربية من اليمين إلى اليسار.
 
-نافذة Homeport عارض ويب: WebKitGTK على Linux، وWKWebView على macOS، وWebView2 على Windows. يجري حاليًا تدقيق عملي باستخدام Orca وVoiceOver وNVDA على كل منها ([#184](https://github.com/DamienReichhart/Homeport/issues/184))؛ وإلى أن ينتهي، اعتبر تجربة قارئ الشاشة مختبرة بالأدوات فقط.
+نافذة Homeport عارض ويب: WebKitGTK على Linux، وWKWebView على macOS، وWebView2 على Windows. يجري حاليًا تدقيق عملي باستخدام Orca وVoiceOver وNVDA على كل منها ([#184](https://github.com/DamienReichhart/homeport/issues/184))؛ وإلى أن ينتهي، اعتبر تجربة قارئ الشاشة مختبرة بالأدوات فقط.
 
 ### القيود المعروفة
 
@@ -45,7 +45,7 @@ description: استخدام Homeport بلوحة المفاتيح، ومع تقل
 
 ## الإبلاغ عن عائق
 
-إذا منعك شيء من استخدام Homeport بلوحة المفاتيح أو قارئ الشاشة أو المكبّر أو أي تقنية مساعدة أخرى، [فافتح مشكلة](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility) بالتسمية `accessibility`. اذكر:
+إذا منعك شيء من استخدام Homeport بلوحة المفاتيح أو قارئ الشاشة أو المكبّر أو أي تقنية مساعدة أخرى، [فافتح مشكلة](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility) بالتسمية `accessibility`. اذكر:
 
 - ما كنت تحاول فعله، وأين (الصفحة، مربع الحوار، نوع المضيف)؛
 - نظام التشغيل وإصداره، والتقنية المساعدة وإصدارها؛

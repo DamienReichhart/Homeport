@@ -31,7 +31,7 @@ compose、YAML、ジョブ、ユニットのエディターは、スクリーン
 
 すべてのページと主なダイアログは、変更のたびに [axe](https://github.com/dequelabs/axe-core) で確認されています。ボタン、フィールド、領域には名前があり、見出しとランドマークは正しい順序で、ARIA の誤用はありません。Homeport はページの言語を設定しているため、スクリーンリーダーは各言語をその言語の音声で読み上げ、アラビア語は右から左に表示されます。
 
-Homeport のウィンドウは Web ビューです。Linux では WebKitGTK、macOS では WKWebView、Windows では WebView2 です。それぞれでの Orca、VoiceOver、NVDA を使った実地の監査を進めています（[#184](https://github.com/DamienReichhart/Homeport/issues/184)）。完了するまでは、スクリーンリーダーでの使い勝手はツールによるテストのみと考えてください。
+Homeport のウィンドウは Web ビューです。Linux では WebKitGTK、macOS では WKWebView、Windows では WebView2 です。それぞれでの Orca、VoiceOver、NVDA を使った実地の監査を進めています（[#184](https://github.com/DamienReichhart/homeport/issues/184)）。完了するまでは、スクリーンリーダーでの使い勝手はツールによるテストのみと考えてください。
 
 ### 現在わかっている制限
 
@@ -45,7 +45,7 @@ Homeport のウィンドウは Web ビューです。Linux では WebKitGTK、ma
 
 ## バリアの報告
 
-キーボード、スクリーンリーダー、拡大鏡などの支援技術で Homeport を使う上で妨げになるものがあれば、`accessibility` ラベルを付けて [issue を作成](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility)してください。次のことを書いてください:
+キーボード、スクリーンリーダー、拡大鏡などの支援技術で Homeport を使う上で妨げになるものがあれば、`accessibility` ラベルを付けて [issue を作成](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility)してください。次のことを書いてください:
 
 - 何をしようとしていたか、そしてどこで（ページ、ダイアログ、ホストの種類）
 - オペレーティングシステムとそのバージョン、支援技術とそのバージョン

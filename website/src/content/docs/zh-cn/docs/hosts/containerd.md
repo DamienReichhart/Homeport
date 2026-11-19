@@ -3,7 +3,7 @@ title: containerd
 description: 连接本机上或通过 SSH 访问的 containerd，选择命名空间，运行其容器的任务，阅读日志，打开 shell，并管理镜像和快照。
 ---
 
-**containerd** 运行在 k3s、nerdctl、BuildKit 以及许多没有 Docker 的服务器之下。Homeport 通过它自己的 gRPC API 直接连接它，这是 [ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) 的决定。containerd 主机在侧边栏中有自己的页面：**容器**、**镜像**、**快照**和**命名空间**。Docker 的页面、堆栈和看板在其上不可用。
+**containerd** 运行在 k3s、nerdctl、BuildKit 以及许多没有 Docker 的服务器之下。Homeport 通过它自己的 gRPC API 直接连接它，这是 [ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) 的决定。containerd 主机在侧边栏中有自己的页面：**容器**、**镜像**、**快照**和**命名空间**。Docker 的页面、堆栈和看板在其上不可用。
 
 ## 添加 containerd 主机
 

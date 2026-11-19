@@ -93,7 +93,7 @@ Homeport legt nie einen neuen Schlüssel über Geheimnisse an, die es bereits ha
 - **Importieren** auf dem anderen Computer fragt nach der Passphrase und speichert dann die Geheimnisse jedes Hosts verschlüsselt unter dem eigenen Schlüsselbund-Schlüssel dieses Computers, wie alle anderen.
 - Ein Host, dessen Anmeldedaten auf diesem Computer bereits verloren sind, wird ohne sie exportiert, und der Export sagt, welcher.
 
-Behandeln Sie die Datei wie die Schlüssel, die sie enthält: Löschen Sie sie nach dem Import. Das Format ist in [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) beschrieben.
+Behandeln Sie die Datei wie die Schlüssel, die sie enthält: Löschen Sie sie nach dem Import. Das Format ist in [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) beschrieben.
 
 ### Sicherungen
 
@@ -179,4 +179,4 @@ Releases werden von GitHub Actions aus dem öffentlichen Quellcode gebaut. Jede 
 
 ## Eine Sicherheitslücke melden
 
-Bitte melden Sie Sicherheitsprobleme vertraulich über die [private Meldung von Sicherheitslücken auf GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new) statt über ein öffentliches Issue.
+Bitte melden Sie Sicherheitsprobleme vertraulich über die [private Meldung von Sicherheitslücken auf GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new) statt über ein öffentliches Issue.

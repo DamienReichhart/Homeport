@@ -93,7 +93,7 @@ Homeport nunca crea una clave nueva encima de secretos que ya tiene. Cuando el l
 - **Importar**, en el otro equipo, pide la frase de contraseña y luego guarda los secretos de cada host cifrados con la clave del llavero de ese equipo, como cualquier otro.
 - Un host cuyas credenciales ya se han perdido en este equipo se exporta sin ellas, y la exportación indica cuáles.
 
-Trata el archivo como las claves que contiene: bórralo una vez importado. El formato se describe en el [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
+Trata el archivo como las claves que contiene: bórralo una vez importado. El formato se describe en el [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
 
 ### Copias de seguridad
 
@@ -179,4 +179,4 @@ Las releases las compila GitHub Actions a partir del código fuente público. Ca
 
 ## Notificar una vulnerabilidad
 
-Notifica los problemas de seguridad de forma privada a través de la [notificación privada de vulnerabilidades de GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new), en lugar de en una issue pública.
+Notifica los problemas de seguridad de forma privada a través de la [notificación privada de vulnerabilidades de GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new), en lugar de en una issue pública.

@@ -93,7 +93,7 @@ description: ما يخزّنه Homeport، وأين، وكيف تُشفَّر ا�
 - يطلب **استيراد** على الكمبيوتر الآخر عبارة المرور، ثم يخزّن أسرار كل مضيف مشفّرة بمفتاح سلسلة المفاتيح الخاص بذلك الكمبيوتر، مثل أي أسرار أخرى.
 - المضيف الذي فُقدت بيانات اعتماده مسبقًا على هذا الكمبيوتر يُصدَّر بدونها، ويوضح التصدير أيها.
 
-تعامل مع الملف كما تتعامل مع المفاتيح التي يحتويها: احذفه بعد الاستيراد. التنسيق موصوف في [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
+تعامل مع الملف كما تتعامل مع المفاتيح التي يحتويها: احذفه بعد الاستيراد. التنسيق موصوف في [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
 
 ### النسخ الاحتياطية
 
@@ -179,4 +179,4 @@ description: ما يخزّنه Homeport، وأين، وكيف تُشفَّر ا�
 
 ## الإبلاغ عن ثغرة
 
-يُرجى الإبلاغ عن المشكلات الأمنية بشكل خاص عبر [الإبلاغ الخاص عن الثغرات في GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new) بدلًا من مشكلة عامة.
+يُرجى الإبلاغ عن المشكلات الأمنية بشكل خاص عبر [الإبلاغ الخاص عن الثغرات في GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new) بدلًا من مشكلة عامة.

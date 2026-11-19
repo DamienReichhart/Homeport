@@ -191,7 +191,7 @@ describe('releaseNotes', () => {
   it('points at the download page first, and sets the updater files aside', () => {
     const download = notes.slice(notes.indexOf('## Download'));
     const which = download.indexOf(
-      '**Which file do I need?** The [download page](https://damienreichhart.github.io/Homeport/download/)',
+      '**Which file do I need?** The [download page](https://damienreichhart.github.io/homeport/download/)',
     );
     expect(which).toBeGreaterThan(0);
     expect(which).toBeLessThan(download.indexOf('| Your computer |'));

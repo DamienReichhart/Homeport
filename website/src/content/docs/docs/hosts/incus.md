@@ -3,7 +3,7 @@ title: Incus
 description: Connect to Incus on this machine, over SSH or over HTTPS with a trust token, and pick the project its pages show.
 ---
 
-**Incus** runs system containers and virtual machines, the **Instances** of [the guide](/docs/guides/instances/). Homeport connects to it through its own REST API, as [ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) decides. An Incus Host gets pages of its own in the sidebar: **Instances**, **Images**, **Profiles**, **Storage** and **Networks**. Docker's pages, Stacks and the Board aren't offered on it.
+**Incus** runs system containers and virtual machines, the **Instances** of [the guide](/docs/guides/instances/). Homeport connects to it through its own REST API, as [ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) decides. An Incus Host gets pages of its own in the sidebar: **Instances**, **Images**, **Profiles**, **Storage** and **Networks**. Docker's pages, Stacks and the Board aren't offered on it.
 
 ## Adding an Incus Host
 

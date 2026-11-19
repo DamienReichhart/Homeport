@@ -31,7 +31,7 @@ Wenn Ihr Betriebssystem reduzierte Bewegung verlangt (**Bewegung reduzieren** un
 
 Jede Seite und die wichtigsten Dialoge werden bei jeder Änderung mit [axe](https://github.com/dequelabs/axe-core) geprüft: Schaltflächen, Felder und Bereiche haben Namen, Überschriften und Landmarks sind in Ordnung, und nichts missbraucht ARIA. Homeport setzt die Sprache der Seite, sodass ein Screenreader jede Sprache mit ihrer eigenen Stimme liest, und Arabisch wird von rechts nach links angezeigt.
 
-Das Fenster von Homeport ist eine Web-Ansicht: WebKitGTK unter Linux, WKWebView unter macOS und WebView2 unter Windows. Eine praktische Prüfung mit Orca, VoiceOver und NVDA auf jedem System ist im Gange ([#184](https://github.com/DamienReichhart/Homeport/issues/184)); bis sie abgeschlossen ist, betrachten Sie die Screenreader-Erfahrung als nur durch Werkzeuge getestet.
+Das Fenster von Homeport ist eine Web-Ansicht: WebKitGTK unter Linux, WKWebView unter macOS und WebView2 unter Windows. Eine praktische Prüfung mit Orca, VoiceOver und NVDA auf jedem System ist im Gange ([#184](https://github.com/DamienReichhart/homeport/issues/184)); bis sie abgeschlossen ist, betrachten Sie die Screenreader-Erfahrung als nur durch Werkzeuge getestet.
 
 ### Bekannte Grenzen
 
@@ -45,7 +45,7 @@ Text erfüllt WCAG 2.2 AA (4,5:1) sowohl im hellen als auch im dunklen Design, e
 
 ## Eine Barriere melden
 
-Wenn Sie etwas daran hindert, Homeport mit Ihrer Tastatur, Ihrem Screenreader, Ihrer Bildschirmlupe oder einer anderen assistiven Technologie zu verwenden, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility) mit dem Label `accessibility`. Nennen Sie:
+Wenn Sie etwas daran hindert, Homeport mit Ihrer Tastatur, Ihrem Screenreader, Ihrer Bildschirmlupe oder einer anderen assistiven Technologie zu verwenden, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility) mit dem Label `accessibility`. Nennen Sie:
 
 - was Sie tun wollten und wo (Seite, Dialog, Host-Art);
 - Ihr Betriebssystem und seine Version sowie die assistive Technologie und ihre Version;

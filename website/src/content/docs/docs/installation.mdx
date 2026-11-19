@@ -6,7 +6,7 @@ description: Install Homeport on Windows, macOS or Linux.
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport has installers for Windows, macOS and Linux, each for x64 and ARM. Get them from the [download page](/download/), which points you at the right file for your system, or from the [latest GitHub release](https://github.com/DamienReichhart/Homeport/releases/latest). On Linux, the Homeport package repository installs it with one command.
+Homeport has installers for Windows, macOS and Linux, each for x64 and ARM. Get them from the [download page](/download/), which points you at the right file for your system, or from the [latest GitHub release](https://github.com/DamienReichhart/homeport/releases/latest). On Linux, the Homeport package repository installs it with one command.
 
 Every install stays up to date: Homeport updates itself on Windows, macOS and with the AppImage, and the Linux packages update with the rest of your system. See [updating](/docs/reference/updating/).
 
@@ -84,7 +84,7 @@ The script works on Debian, Ubuntu and their derivatives (`apt`), Fedora, RHEL a
 2. adds the Homeport repository,
 3. installs the `homeport` package, or updates it if it's already installed.
 
-Running it again is harmless. You can [read the script](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh) first, or follow the manual setup below: it does the same thing.
+Running it again is harmless. You can [read the script](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh) first, or follow the manual setup below: it does the same thing.
 
 ### Manual setup
 
@@ -163,7 +163,7 @@ More ways to install Homeport are planned. Follow an issue to hear when it lands
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

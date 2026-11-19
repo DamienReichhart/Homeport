@@ -5,7 +5,7 @@ description: 列出 Podman 主机的 Quadlet 单元及其 systemd 状态，阅�
 
 **Quadlet** 是 Podman 在 systemd 下运行长期服务的方式。Quadlet 单元是一个文件（`web.container`、`shop.pod`、`cache.volume`、`lan.network`、`app.kube`、`base.image`、`api.build`），systemd 的生成器会将它转换为一个服务 `web.service`，该服务在开机时启动容器，并在容器停止时重启它。rootful Podman 将其单元保存在 `/etc/containers/systemd/` 中；rootless Podman 将每个用户的单元保存在 `~/.config/containers/systemd/` 中。
 
-选择 Podman 主机时，侧边栏中会出现 **Quadlet** 页面。它通过 Podman 自己的 API（在主机已使用的套接字上）工作，并通过 `systemctl` 进行启动和停止，这由 [ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md) 决定。
+选择 Podman 主机时，侧边栏中会出现 **Quadlet** 页面。它通过 Podman 自己的 API（在主机已使用的套接字上）工作，并通过 `systemctl` 进行启动和停止，这由 [ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md) 决定。
 
 ## 各 Podman 版本和连接方式支持的操作
 

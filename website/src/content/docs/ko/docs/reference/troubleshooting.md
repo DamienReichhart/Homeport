@@ -3,7 +3,7 @@ title: 문제 해결
 description: 자주 겪는 문제의 해결 방법을 Homeport가 표시하는 메시지별로 정리했습니다.
 ---
 
-여기에 없는 문제라면 **설정 → 정보**의 [진단 정보 번들](#버그-보고용-진단-정보-내보내기)과 함께 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues/new/choose).
+여기에 없는 문제라면 **설정 → 정보**의 [진단 정보 번들](#버그-보고용-진단-정보-내보내기)과 함께 [이슈를 여세요](https://github.com/DamienReichhart/homeport/issues/new/choose).
 
 ## 설치와 시작
 
@@ -335,7 +335,7 @@ Incus에서 가상 머신을 쓰려면 KVM(`/dev/kvm`)과 QEMU가 필요합니�
 
 ### “문제가 발생했습니다”
 
-Homeport의 한 페이지가 예상하지 못한 문제를 만나 내용 대신 이 메시지를 표시합니다. 사이드바는 계속 작동합니다. 대개 **다시 불러오기**로 페이지가 돌아오고, **개요로 돌아가기**로 그 페이지를 떠날 수 있습니다. 계속 발생하면 **세부 정보**의 보고서를 복사해 [진단 정보 번들](#버그-보고용-진단-정보-내보내기)과 함께 [이슈](https://github.com/DamienReichhart/Homeport/issues/new/choose)에 붙여 넣으세요.
+Homeport의 한 페이지가 예상하지 못한 문제를 만나 내용 대신 이 메시지를 표시합니다. 사이드바는 계속 작동합니다. 대개 **다시 불러오기**로 페이지가 돌아오고, **개요로 돌아가기**로 그 페이지를 떠날 수 있습니다. 계속 발생하면 **세부 정보**의 보고서를 복사해 [진단 정보 번들](#버그-보고용-진단-정보-내보내기)과 함께 [이슈](https://github.com/DamienReichhart/homeport/issues/new/choose)에 붙여 넣으세요.
 
 ### “… 호스트가 연결되어 있지 않습니다”
 

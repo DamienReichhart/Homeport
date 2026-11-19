@@ -6,7 +6,7 @@ description: Установка Homeport в Windows, macOS или Linux.
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-У Homeport есть установщики для Windows, macOS и Linux, каждый для x64 и ARM. Скачайте их со [страницы загрузки](/download/), которая подскажет нужный файл для вашей системы, или из [последнего релиза на GitHub](https://github.com/DamienReichhart/Homeport/releases/latest). В Linux репозиторий пакетов Homeport устанавливает его одной командой.
+У Homeport есть установщики для Windows, macOS и Linux, каждый для x64 и ARM. Скачайте их со [страницы загрузки](/download/), которая подскажет нужный файл для вашей системы, или из [последнего релиза на GitHub](https://github.com/DamienReichhart/homeport/releases/latest). В Linux репозиторий пакетов Homeport устанавливает его одной командой.
 
 Любая установка остаётся актуальной: Homeport обновляется сам в Windows, macOS и в виде AppImage, а пакеты для Linux обновляются вместе с остальной системой. См. [обновление](/docs/reference/updating/).
 
@@ -85,7 +85,7 @@ Homeport для Linux требует glibc 2.35 или новее — Ubuntu 22.
 2. добавляет репозиторий Homeport,
 3. устанавливает пакет `homeport` или обновляет его, если он уже установлен.
 
-Повторный запуск ничему не вредит. Можно сначала [прочитать скрипт](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh) или выполнить ручную настройку ниже: она делает то же самое.
+Повторный запуск ничему не вредит. Можно сначала [прочитать скрипт](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh) или выполнить ручную настройку ниже: она делает то же самое.
 
 ### Ручная настройка
 
@@ -164,7 +164,7 @@ sudo usermod -aG docker $USER
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

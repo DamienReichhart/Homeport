@@ -151,7 +151,7 @@ How Homeport checks SSH servers: you confirm a server's key fingerprint on the f
 
 ## In French
 
-The French app, docs and website use these terms, so a screen and a page always say the same thing. Every other language has its own table in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
+The French app, docs and website use these terms, so a screen and a page always say the same thing. Every other language has its own table in [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n).
 
 | English        | French                   |
 | -------------- | ------------------------ |

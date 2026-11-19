@@ -5,7 +5,7 @@ description: Homeport에 대해 자주 묻는 질문.
 
 ### Homeport는 무료입니까?
 
-예. Homeport는 개인 용도와 상업 용도 모두 무료로 사용할 수 있으며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)(AGPL)에 따른 오픈 소스입니다.
+예. Homeport는 개인 용도와 상업 용도 모두 무료로 사용할 수 있으며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE)(AGPL)에 따른 오픈 소스입니다.
 
 ### AGPL은 저에게 어떤 의미입니까?
 
@@ -138,4 +138,4 @@ Homeport는 영어, 프랑스어, 스페인어, 독일어, 이탈리아어, 브�
 
 ### 어떻게 도울 수 있습니까?
 
-[GitHub 이슈](https://github.com/DamienReichhart/Homeport/issues)에서 버그를 보고하고 기능을 제안하거나, [기여하기](/docs/project/contributing/)를 참고하세요.
+[GitHub 이슈](https://github.com/DamienReichhart/homeport/issues)에서 버그를 보고하고 기능을 제안하거나, [기여하기](/docs/project/contributing/)를 참고하세요.

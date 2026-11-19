@@ -25,7 +25,7 @@ Homeport — приложение на [Tauri 2](https://tauri.app): интер�
 ## Запуск
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 Установщики для вашей платформы записываются в `target/release/bundle/`. Сборка сначала формирует лицензионные уведомления и останавливается, если лицензия какой-либо зависимости не проверена в `about.toml`.
 
-Локальные сборки не подписаны для встроенного средства обновления, а `.rpm` остаётся неподписанным; ключи подписи есть только у [процесса выпуска](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md). Собранная вами копия всё равно проверяет обновления, но её кнопка **Установить и перезапустить** устанавливает только версии, подписанные процессом выпуска.
+Локальные сборки не подписаны для встроенного средства обновления, а `.rpm` остаётся неподписанным; ключи подписи есть только у [процесса выпуска](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md). Собранная вами копия всё равно проверяет обновления, но её кнопка **Установить и перезапустить** устанавливает только версии, подписанные процессом выпуска.
 
 ## Полезные команды
 
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

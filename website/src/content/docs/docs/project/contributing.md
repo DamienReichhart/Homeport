@@ -3,18 +3,18 @@ title: Contributing
 description: How to report problems, suggest features and contribute code to Homeport.
 ---
 
-Homeport is developed in the open at [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport). Contributions of every size are welcome.
+Homeport is developed in the open at [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport). Contributions of every size are welcome.
 
 ## Reporting a bug
 
-[Open an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) with:
+[Open an issue](https://github.com/DamienReichhart/homeport/issues/new/choose) with:
 
 - what you did, what you expected, and what happened — the exact message helps most;
 - the [diagnostics bundle](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report) from **Settings → About → Export diagnostics…**: one zip with Homeport's version and platform, the kinds of Hosts, Engines and Clusters you use, and its logs with secrets removed. You read what's in it before saving it, and nothing is sent anywhere.
 
 If Homeport doesn't start, give its version and your operating system instead, and anything relevant from the [log file](/docs/reference/security/#logs).
 
-Please report security problems privately, through [GitHub's vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new).
+Please report security problems privately, through [GitHub's vulnerability reporting](https://github.com/DamienReichhart/homeport/security/advisories/new).
 
 ## Suggesting a feature
 
@@ -22,9 +22,9 @@ Open an issue describing the problem you want solved, not only the solution. Kno
 
 ## Contributing code
 
-1. Read [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md). Features are self-contained vertical slices, the frontend calls Rust only through the generated IPC bindings, and Rust logic lives in services that are unit-tested without Tauri.
-2. Use the project's vocabulary from [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — in code, UI text and commits. Main decisions are recorded in [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr).
-3. Follow the [brand guide](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md) for colours and voice: plain, specific, calm, in British spelling.
+1. Read [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md). Features are self-contained vertical slices, the frontend calls Rust only through the generated IPC bindings, and Rust logic lives in services that are unit-tested without Tauri.
+2. Use the project's vocabulary from [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — in code, UI text and commits. Main decisions are recorded in [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr).
+3. Follow the [brand guide](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md) for colours and voice: plain, specific, calm, in British spelling.
 4. Make sure these pass:
 
    ```sh
@@ -33,7 +33,7 @@ Open an issue describing the problem you want solved, not only the solution. Kno
    bun run rust:test
    ```
 
-5. Keep the data promise: every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets. A schema change is a new migration, never an edit to a released one, and CI checks it against a sample database of every release. See [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+5. Keep the data promise: every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets. A schema change is a new migration, never an edit to a released one, and CI checks it against a sample database of every release. See [Data compatibility](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility).
 6. Write commit messages as [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Release notes are generated from them.
 7. Open a pull request against the `dev` branch. CI runs the frontend checks and the licence check on Linux, and `cargo clippy` and `cargo test` on Linux, macOS and Windows, so code behind `#[cfg(windows)]` or `#[cfg(target_os = "macos")]` is compiled before it's merged. A test that needs a Docker Engine is marked `#[ignore = "needs a local Docker Engine"]`; a separate Linux job runs those against the runner's Engine.
 
@@ -41,9 +41,9 @@ See [building from source](/docs/project/building/) to get set up.
 
 ### Adding text to the app
 
-The app's text lives in a catalogue, never inline, so it can be translated ([ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). To add a string:
+The app's text lives in a catalogue, never inline, so it can be translated ([ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). To add a string:
 
-1. Add a key to the feature's file in [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) — `images.ts` for the images feature, `ui.ts` for the UI kit, `common.ts` only for words that mean the same everywhere (Cancel, Close, Retry). Keys start with the file's name and say what the text is for: `images.remove.title`, `images.column.size`.
+1. Add a key to the feature's file in [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) — `images.ts` for the images feature, `ui.ts` for the UI kit, `common.ts` only for words that mean the same everywhere (Cancel, Close, Retry). Keys start with the file's name and say what the text is for: `images.remove.title`, `images.column.size`.
 2. Write the value as an [ICU message](https://formatjs.github.io/docs/core-concepts/icu-syntax/): `{name}` for a value, `{count, plural, one {# image} other {# images}}` instead of building plurals by hand, `<strong>…</strong>` for emphasis rendered with `tRich`. One key per sentence; don't glue fragments together, because word order changes between languages.
 3. Use it with `t('images.remove.title', { name })` from `@/shared/i18n` — in components, mutations and toasts alike. Keys are typed, so a typo fails the type check. Use literal keys: when the text depends on a value, map the value to keys (`{ start: 'containers.done.start', stop: 'containers.done.stop' }`) rather than building `` `containers.done.${action}` ``.
 
@@ -53,7 +53,7 @@ Error messages are written in Rust: each crate declares its keys and English tem
 
 ## Translating Homeport
 
-The app and the website speak English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic. Each language uses one word per product term: look them up in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) before translating, and add a row there when you choose a new one.
+The app and the website speak English, French, Spanish, German, Italian, Brazilian Portuguese, Russian, Simplified Chinese, Japanese, Korean, Hindi and Arabic. Each language uses one word per product term: look them up in [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) before translating, and add a row there when you choose a new one.
 
 ### Adding or changing a string
 
@@ -79,8 +79,8 @@ If a test doesn't see a language you just added, delete `node_modules/.vitest-ca
 
 ## Improving these docs
 
-Every docs page has an **Edit page** link at the bottom. The pages are Markdown files in [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs).
+Every docs page has an **Edit page** link at the bottom. The pages are Markdown files in [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs).
 
 ## How releases happen
 
-Every push to `main` with a new version number builds installers for every platform, runs the full test suite, and publishes a GitHub release with checksums and build provenance. The process is described in [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md).
+Every push to `main` with a new version number builds installers for every platform, runs the full test suite, and publishes a GitHub release with checksums and build provenance. The process is described in [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md).

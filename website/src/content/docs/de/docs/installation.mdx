@@ -6,7 +6,7 @@ description: Homeport unter Windows, macOS oder Linux installieren.
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport hat Installationsprogramme für Windows, macOS und Linux, jeweils für x64 und ARM. Sie erhalten sie auf der [Download-Seite](/download/), die Sie zur richtigen Datei für Ihr System führt, oder im [neuesten GitHub-Release](https://github.com/DamienReichhart/Homeport/releases/latest). Unter Linux installiert das Paket-Repository von Homeport es mit einem einzigen Befehl.
+Homeport hat Installationsprogramme für Windows, macOS und Linux, jeweils für x64 und ARM. Sie erhalten sie auf der [Download-Seite](/download/), die Sie zur richtigen Datei für Ihr System führt, oder im [neuesten GitHub-Release](https://github.com/DamienReichhart/homeport/releases/latest). Unter Linux installiert das Paket-Repository von Homeport es mit einem einzigen Befehl.
 
 Jede Installation bleibt auf dem neuesten Stand: Homeport aktualisiert sich unter Windows, macOS und mit dem AppImage selbst, und die Linux-Pakete werden zusammen mit dem Rest Ihres Systems aktualisiert. Siehe [Aktualisieren](/docs/reference/updating/).
 
@@ -85,7 +85,7 @@ Das Skript funktioniert unter Debian, Ubuntu und ihren Derivaten (`apt`), Fedora
 2. fügt es das Homeport-Repository hinzu,
 3. installiert es das Paket `homeport` oder aktualisiert es, falls es bereits installiert ist.
 
-Es erneut auszuführen schadet nicht. Sie können [das Skript zuerst lesen](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh) oder der manuellen Einrichtung unten folgen: Sie bewirkt dasselbe.
+Es erneut auszuführen schadet nicht. Sie können [das Skript zuerst lesen](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh) oder der manuellen Einrichtung unten folgen: Sie bewirkt dasselbe.
 
 ### Manuelle Einrichtung
 
@@ -164,7 +164,7 @@ Weitere Wege, Homeport zu installieren, sind geplant. Folgen Sie einem Issue, um
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

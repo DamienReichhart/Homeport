@@ -3,7 +3,7 @@ title: Fehlerbehebung
 description: Lösungen für die Probleme, auf die Sie am ehesten stoßen, geordnet nach der Meldung, die Homeport anzeigt.
 ---
 
-Steht Ihr Problem nicht hier, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren) aus **Einstellungen → Über**.
+Steht Ihr Problem nicht hier, [eröffnen Sie ein Issue](https://github.com/DamienReichhart/homeport/issues/new/choose) mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren) aus **Einstellungen → Über**.
 
 ## Installieren und Starten
 
@@ -335,7 +335,7 @@ Exec in einer virtuellen Maschine läuft über den `incus-agent` darin, den die 
 
 ### „Etwas ist schiefgelaufen“
 
-Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zur Übersicht** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren).
+Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zur Übersicht** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren).
 
 ### „… ist nicht verbunden“
 

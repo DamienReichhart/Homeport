@@ -2,7 +2,7 @@
 # Installs Homeport on Linux from its package repository, so your package
 # manager keeps it up to date:
 #
-#   curl -fsSL https://damienreichhart.github.io/Homeport/install.sh | sh
+#   curl -fsSL https://damienreichhart.github.io/homeport/install.sh | sh
 #
 # On Debian and Ubuntu (apt), Fedora, RHEL and their relatives (dnf) and
 # openSUSE (zypper), it adds the Homeport signing key and repository, then
@@ -11,12 +11,12 @@
 # after saying what it will do.
 #
 # Manual setup, without this script:
-# https://damienreichhart.github.io/Homeport/docs/installation/#linux
+# https://damienreichhart.github.io/homeport/docs/installation/#linux
 set -eu
 
 # Set HOMEPORT_REPO_URL to install from a copy of the repositories (for testing).
-SITE=${HOMEPORT_REPO_URL:-https://damienreichhart.github.io/Homeport}
-DOWNLOAD_PAGE=https://damienreichhart.github.io/Homeport/download/
+SITE=${HOMEPORT_REPO_URL:-https://damienreichhart.github.io/homeport}
+DOWNLOAD_PAGE=https://damienreichhart.github.io/homeport/download/
 MIN_GLIBC=2.35
 
 say() { printf '%s\n' "$*"; }
@@ -111,8 +111,8 @@ main() {
   fetch "$SITE/homeport.asc" "$tmp/homeport.asc"
   fetch "$repo_url" "$tmp/repository"
   # Point a test copy's repository file at that copy.
-  if [ "$SITE" != https://damienreichhart.github.io/Homeport ]; then
-    sed -i "s|https://damienreichhart.github.io/Homeport|$SITE|g" "$tmp/repository"
+  if [ "$SITE" != https://damienreichhart.github.io/homeport ]; then
+    sed -i "s|https://damienreichhart.github.io/homeport|$SITE|g" "$tmp/repository"
   fi
 
   say "Installing Homeport with $manager. This will:"

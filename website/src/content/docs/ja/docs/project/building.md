@@ -25,7 +25,7 @@ Homeport は [Tauri 2](https://tauri.app) のアプリです。Rust のコアの
 ## 実行する
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 お使いのプラットフォーム向けのインストーラーが `target/release/bundle/` に書き出されます。ビルドはまずライセンス表記を生成し、依存関係のライセンスが `about.toml` でレビューされていない場合は中止します。
 
-ローカルのビルドは、アプリ内アップデーター向けに署名されず、`.rpm` も署名されないままです。署名鍵を持っているのは[リリースワークフロー](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md)だけです。自分でビルドしたコピーもアップデートを確認しますが、その **インストールして再起動** がインストールするのは、リリースワークフローによって署名されたバージョンだけです。
+ローカルのビルドは、アプリ内アップデーター向けに署名されず、`.rpm` も署名されないままです。署名鍵を持っているのは[リリースワークフロー](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md)だけです。自分でビルドしたコピーもアップデートを確認しますが、その **インストールして再起動** がインストールするのは、リリースワークフローによって署名されたバージョンだけです。
 
 ## 便利なコマンド
 
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

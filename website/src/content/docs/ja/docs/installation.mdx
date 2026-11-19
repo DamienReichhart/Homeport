@@ -6,7 +6,7 @@ description: Windows、macOS、Linux に Homeport をインストールします
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport には Windows、macOS、Linux 向けのインストーラーがあり、それぞれ x64 と ARM に対応しています。お使いのシステムに合ったファイルを案内する[ダウンロードページ](/download/)か、[GitHub の最新リリース](https://github.com/DamienReichhart/Homeport/releases/latest)から入手してください。Linux では、Homeport のパッケージリポジトリを使って 1 つのコマンドでインストールできます。
+Homeport には Windows、macOS、Linux 向けのインストーラーがあり、それぞれ x64 と ARM に対応しています。お使いのシステムに合ったファイルを案内する[ダウンロードページ](/download/)か、[GitHub の最新リリース](https://github.com/DamienReichhart/homeport/releases/latest)から入手してください。Linux では、Homeport のパッケージリポジトリを使って 1 つのコマンドでインストールできます。
 
 どの方法でインストールしても最新の状態に保たれます。Windows、macOS、AppImage では Homeport が自身をアップデートし、Linux のパッケージはシステムのほかの部分と一緒にアップデートされます。[アップデート](/docs/reference/updating/)を参照してください。
 
@@ -86,7 +86,7 @@ Linux 版の Homeport には glibc 2.35 以降（Ubuntu 22.04、Debian 12、Fedo
 2. Homeport のリポジトリを追加する
 3. `homeport` パッケージをインストールする（すでにインストールされている場合はアップデートする）
 
-何度実行しても問題ありません。先に[スクリプトを読む](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh)こともできますし、下の手動セットアップに従うこともできます。どちらも同じことをします。
+何度実行しても問題ありません。先に[スクリプトを読む](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh)こともできますし、下の手動セットアップに従うこともできます。どちらも同じことをします。
 
 ### 手動セットアップ
 
@@ -164,7 +164,7 @@ Homeport をインストールする方法は今後さらに増える予定で�
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

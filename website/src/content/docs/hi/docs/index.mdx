@@ -6,7 +6,7 @@ description: Homeport क्या है, यह क्या करता ह�
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport** कहीं भी चल रहे Docker Engine, containerd और Incus को प्रबंधित करने के लिए एक डेस्कटॉप ऐप है — इस मशीन का इंजन, या SSH, TLS या TCP पर रिमोट इंजन — और उनसे बने Swarm, और साथ ही वे Kubernetes क्लस्टर जिन तक आपका kubeconfig पहुँचता है और वे Nomad क्लस्टर जिनका आप नाम देते हैं, Docker Desktop की तर्ज़ पर। यह Windows, macOS और Linux पर चलता है, मुफ़्त है, और [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) के तहत ओपन सोर्स है।
+**Homeport** कहीं भी चल रहे Docker Engine, containerd और Incus को प्रबंधित करने के लिए एक डेस्कटॉप ऐप है — इस मशीन का इंजन, या SSH, TLS या TCP पर रिमोट इंजन — और उनसे बने Swarm, और साथ ही वे Kubernetes क्लस्टर जिन तक आपका kubeconfig पहुँचता है और वे Nomad क्लस्टर जिनका आप नाम देते हैं, Docker Desktop की तर्ज़ पर। यह Windows, macOS और Linux पर चलता है, मुफ़्त है, और [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE) के तहत ओपन सोर्स है।
 
 Homeport ख़ुद कंटेनर नहीं चलाता। यह आपके पास पहले से मौजूद इंजन से कनेक्ट होता है, जिन्हें **होस्ट** कहा जाता है, और उन पर मौजूद हर चीज़ के लिए आपको एक ही विंडो देता है: कंटेनर, इमेज, वॉल्यूम, नेटवर्क और Compose **स्टैक**। यह Kubernetes और Nomad **क्लस्टर** से भी कनेक्ट होता है, ताकि आप देख सकें कि उन पर क्या चल रहा है और उसे प्रबंधित कर सकें। किसी होस्ट या क्लस्टर पर कुछ भी इंस्टॉल नहीं होता।
 

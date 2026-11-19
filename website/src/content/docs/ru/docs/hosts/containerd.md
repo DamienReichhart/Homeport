@@ -3,7 +3,7 @@ title: containerd
 description: Подключение к containerd на этом компьютере или по SSH, выбор пространства имён, запуск задач его контейнеров, чтение их журналов, открытие оболочки и управление образами и снимками.
 ---
 
-**containerd** работает под k3s, nerdctl, BuildKit и на многих серверах, где нет Docker. Homeport подключается к нему напрямую, через его собственный API gRPC, как решено в [ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). Хост containerd получает в боковой панели собственные страницы: **Контейнеры**, **Образы**, **Снимки** и **Пространства имён**. Страницы Docker, стеки и Доска для него не предлагаются.
+**containerd** работает под k3s, nerdctl, BuildKit и на многих серверах, где нет Docker. Homeport подключается к нему напрямую, через его собственный API gRPC, как решено в [ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). Хост containerd получает в боковой панели собственные страницы: **Контейнеры**, **Образы**, **Снимки** и **Пространства имён**. Страницы Docker, стеки и Доска для него не предлагаются.
 
 ## Добавление хоста containerd
 

@@ -6,7 +6,7 @@ body:
     attributes:
       value: |
         Thank you for taking the time. Please report security problems privately, through
-        [GitHub's vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new),
+        [GitHub's vulnerability reporting](https://github.com/DamienReichhart/homeport/security/advisories/new),
         not here.
   - type: textarea
     id: what-happened

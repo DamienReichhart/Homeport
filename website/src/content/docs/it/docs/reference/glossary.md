@@ -151,7 +151,7 @@ Il modo in cui Homeport verifica i server SSH: confermi l’impronta della chiav
 
 ## In italiano
 
-L’app, la documentazione e il sito in italiano usano questi termini, così una schermata e una pagina dicono sempre la stessa cosa. Ogni altra lingua ha la propria tabella in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
+L’app, la documentazione e il sito in italiano usano questi termini, così una schermata e una pagina dicono sempre la stessa cosa. Ogni altra lingua ha la propria tabella in [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n).
 
 | Inglese        | Italiano              |
 | -------------- | --------------------- |

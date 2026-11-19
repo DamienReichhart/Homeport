@@ -6,8 +6,8 @@
  */
 import { assetName } from './release-assets-plan';
 
-export const REPO = 'DamienReichhart/Homeport';
-const HOMEPAGE = 'https://damienreichhart.github.io/Homeport/';
+export const REPO = 'DamienReichhart/homeport';
+const HOMEPAGE = 'https://damienreichhart.github.io/homeport/';
 const DESCRIPTION = 'Manage Docker Engines anywhere, local or remote over SSH, TLS or TCP';
 const DOWNLOAD = `https://github.com/${REPO}/releases/download`;
 

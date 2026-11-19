@@ -7,7 +7,7 @@ const base = import.meta.env.BASE_URL;
 const site = new URL('https://damienreichhart.github.io');
 
 beforeEach(() => {
-  import.meta.env.BASE_URL = '/Homeport/';
+  import.meta.env.BASE_URL = '/homeport/';
 });
 
 afterEach(() => {
@@ -17,16 +17,16 @@ afterEach(() => {
 test('describes Homeport with absolute URLs under the base path', () => {
   expect(softwareApplication(site, undefined, ROOT_LOCALE)).toMatchObject({
     '@type': 'SoftwareApplication',
-    url: 'https://damienreichhart.github.io/Homeport/',
-    downloadUrl: 'https://damienreichhart.github.io/Homeport/download/',
+    url: 'https://damienreichhart.github.io/homeport/',
+    downloadUrl: 'https://damienreichhart.github.io/homeport/download/',
   });
 });
 
 test("points at the language's own pages", () => {
   const fr = LOCALES.find((l) => l.code === 'fr')!;
   expect(softwareApplication(site, undefined, fr)).toMatchObject({
-    url: 'https://damienreichhart.github.io/Homeport/fr/',
-    downloadUrl: 'https://damienreichhart.github.io/Homeport/fr/download/',
+    url: 'https://damienreichhart.github.io/homeport/fr/',
+    downloadUrl: 'https://damienreichhart.github.io/homeport/fr/download/',
   });
 });
 

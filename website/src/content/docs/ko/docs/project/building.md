@@ -25,7 +25,7 @@ Homeport는 [Tauri 2](https://tauri.app) 앱입니다. Rust 코어 위에 React�
 ## 실행
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 현재 플랫폼용 설치 프로그램이 `target/release/bundle/`에 만들어집니다. 빌드는 먼저 라이선스 고지를 생성하며, 의존성의 라이선스가 `about.toml`에서 검토되지 않았으면 중단됩니다.
 
-로컬 빌드는 앱 내 업데이터용으로 서명되지 않으며 `.rpm`도 서명되지 않은 채로 남습니다. 서명 키는 [릴리스 워크플로](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md)에만 있습니다. 직접 빌드한 사본도 업데이트를 확인하지만, **설치 후 다시 시작**은 릴리스 워크플로가 서명한 버전만 설치합니다.
+로컬 빌드는 앱 내 업데이터용으로 서명되지 않으며 `.rpm`도 서명되지 않은 채로 남습니다. 서명 키는 [릴리스 워크플로](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md)에만 있습니다. 직접 빌드한 사본도 업데이트를 확인하지만, **설치 후 다시 시작**은 릴리스 워크플로가 서명한 버전만 설치합니다.
 
 ## 유용한 명령
 
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

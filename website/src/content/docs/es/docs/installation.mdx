@@ -6,7 +6,7 @@ description: Instala Homeport en Windows, macOS o Linux.
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport tiene instaladores para Windows, macOS y Linux, cada uno para x64 y ARM. Descárgalos desde la [página de descarga](/download/), que te indica el archivo adecuado para tu sistema, o desde la [última release de GitHub](https://github.com/DamienReichhart/Homeport/releases/latest). En Linux, el repositorio de paquetes de Homeport lo instala con un solo comando.
+Homeport tiene instaladores para Windows, macOS y Linux, cada uno para x64 y ARM. Descárgalos desde la [página de descarga](/download/), que te indica el archivo adecuado para tu sistema, o desde la [última release de GitHub](https://github.com/DamienReichhart/homeport/releases/latest). En Linux, el repositorio de paquetes de Homeport lo instala con un solo comando.
 
 Toda instalación se mantiene al día: Homeport se actualiza solo en Windows, en macOS y con la AppImage, y los paquetes de Linux se actualizan con el resto del sistema. Consulta [actualizar](/docs/reference/updating/).
 
@@ -84,7 +84,7 @@ El script funciona en Debian, Ubuntu y sus derivadas (`apt`), Fedora, RHEL y sus
 2. añade el repositorio de Homeport,
 3. instala el paquete `homeport`, o lo actualiza si ya está instalado.
 
-Volver a ejecutarlo no causa ningún problema. Puedes [leer el script](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh) antes, o seguir la configuración manual de abajo: hace lo mismo.
+Volver a ejecutarlo no causa ningún problema. Puedes [leer el script](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh) antes, o seguir la configuración manual de abajo: hace lo mismo.
 
 ### Configuración manual
 
@@ -163,7 +163,7 @@ Hay más formas de instalar Homeport previstas. Sigue una issue para enterarte d
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

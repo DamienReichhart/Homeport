@@ -3,7 +3,7 @@ title: Incus
 description: इस मशीन पर, SSH पर या ट्रस्ट टोकन के साथ HTTPS पर Incus से कनेक्ट करें, और वह प्रोजेक्ट चुनें जो उसके पेज दिखाते हैं।
 ---
 
-**Incus** सिस्टम कंटेनर और वर्चुअल मशीन चलाता है, जो [गाइड](/docs/guides/instances/) के **इंस्टेंस** हैं। Homeport उससे उसके अपने REST API के ज़रिए कनेक्ट होता है, जैसा [ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) तय करता है। Incus होस्ट को साइडबार में अपने ख़ुद के पेज मिलते हैं: **इंस्टेंस**, **इमेज**, **प्रोफ़ाइल**, **स्टोरेज** और **नेटवर्क**। Docker के पेज, स्टैक और बोर्ड उस पर उपलब्ध नहीं होते।
+**Incus** सिस्टम कंटेनर और वर्चुअल मशीन चलाता है, जो [गाइड](/docs/guides/instances/) के **इंस्टेंस** हैं। Homeport उससे उसके अपने REST API के ज़रिए कनेक्ट होता है, जैसा [ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) तय करता है। Incus होस्ट को साइडबार में अपने ख़ुद के पेज मिलते हैं: **इंस्टेंस**, **इमेज**, **प्रोफ़ाइल**, **स्टोरेज** और **नेटवर्क**। Docker के पेज, स्टैक और बोर्ड उस पर उपलब्ध नहीं होते।
 
 ## Incus होस्ट जोड़ना
 

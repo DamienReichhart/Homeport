@@ -93,7 +93,7 @@ Homeport उन सीक्रेट के ऊपर कभी नई कु�
 - दूसरे कंप्यूटर पर **इम्पोर्ट करें** पासफ़्रेज़ माँगता है, फिर हर होस्ट के सीक्रेट को उस कंप्यूटर की अपनी कीचेन कुंजी के तहत एन्क्रिप्ट करके सहेजता है, किसी भी दूसरे सीक्रेट की तरह।
 - जिस होस्ट के क्रेडेंशियल इस कंप्यूटर पर पहले से खो चुके हैं, वह उनके बिना एक्सपोर्ट होता है, और एक्सपोर्ट बताता है कि कौन-से।
 
-फ़ाइल को उन कुंजियों की तरह ही संभालें जो उसमें हैं: इम्पोर्ट होने के बाद उसे मिटा दें। फ़ॉर्मेट [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) में बताया गया है।
+फ़ाइल को उन कुंजियों की तरह ही संभालें जो उसमें हैं: इम्पोर्ट होने के बाद उसे मिटा दें। फ़ॉर्मेट [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) में बताया गया है।
 
 ### बैकअप
 
@@ -179,4 +179,4 @@ Homeport में कोई टेलीमेट्री और कोई क
 
 ## किसी कमज़ोरी की रिपोर्ट करना
 
-कृपया सुरक्षा समस्याओं की रिपोर्ट किसी पब्लिक issue के बजाय निजी तौर पर [GitHub की private vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new) के ज़रिए करें।
+कृपया सुरक्षा समस्याओं की रिपोर्ट किसी पब्लिक issue के बजाय निजी तौर पर [GitHub की private vulnerability reporting](https://github.com/DamienReichhart/homeport/security/advisories/new) के ज़रिए करें।

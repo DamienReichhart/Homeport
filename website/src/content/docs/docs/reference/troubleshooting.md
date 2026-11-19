@@ -3,7 +3,7 @@ title: Troubleshooting
 description: Fixes for the problems you're most likely to meet, by the message Homeport shows.
 ---
 
-If your problem isn't here, [open an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report) from **Settings → About**.
+If your problem isn't here, [open an issue](https://github.com/DamienReichhart/homeport/issues/new/choose) with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report) from **Settings → About**.
 
 ## Installing and starting
 
@@ -335,7 +335,7 @@ Exec in a virtual machine goes through `incus-agent` inside it, which Incus's ow
 
 ### "Something went wrong"
 
-A page of Homeport hit a problem it didn't expect and shows this instead of its content; the sidebar still works. **Reload** usually brings the page back, and **Back to overview** leaves it. If it keeps happening, copy the report from **Details** into [an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report).
+A page of Homeport hit a problem it didn't expect and shows this instead of its content; the sidebar still works. **Reload** usually brings the page back, and **Back to overview** leaves it. If it keeps happening, copy the report from **Details** into [an issue](https://github.com/DamienReichhart/homeport/issues/new/choose), with the [diagnostics bundle](#exporting-diagnostics-for-a-bug-report).
 
 ### "… isn't connected"
 

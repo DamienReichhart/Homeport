@@ -93,7 +93,7 @@ Homeport는 이미 가진 비밀 정보 위에 새 키를 만들지 않습니다
 - 다른 컴퓨터에서 **가져오기**는 암호 문구를 물은 다음, 다른 비밀 정보와 마찬가지로 각 호스트의 비밀 정보를 그 컴퓨터 자체의 키체인 키로 암호화하여 저장합니다.
 - 이 컴퓨터에서 이미 자격 증명을 잃은 호스트는 자격 증명 없이 내보내지며, 내보내기 결과에 어떤 호스트인지 표시됩니다.
 
-파일은 그 안에 든 키처럼 다루세요. 가져온 뒤에는 삭제하세요. 형식은 [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md)에 설명되어 있습니다.
+파일은 그 안에 든 키처럼 다루세요. 가져온 뒤에는 삭제하세요. 형식은 [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md)에 설명되어 있습니다.
 
 ### 백업
 
@@ -179,4 +179,4 @@ Homeport에는 원격 측정도 충돌 보고도 없습니다. 로그는 사용�
 
 ## 취약점 보고
 
-보안 문제는 공개 이슈 대신 [GitHub의 비공개 취약점 보고](https://github.com/DamienReichhart/Homeport/security/advisories/new)를 통해 비공개로 보고해 주세요.
+보안 문제는 공개 이슈 대신 [GitHub의 비공개 취약점 보고](https://github.com/DamienReichhart/homeport/security/advisories/new)를 통해 비공개로 보고해 주세요.

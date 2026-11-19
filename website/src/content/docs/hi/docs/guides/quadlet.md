@@ -5,7 +5,7 @@ description: किसी Podman होस्ट की Quadlet यूनिट 
 
 **Quadlet** वह तरीक़ा है जिससे Podman systemd के तहत लंबे समय तक चलने वाली सर्विस चलाता है। Quadlet यूनिट एक फ़ाइल है — `web.container`, `shop.pod`, `cache.volume`, `lan.network`, `app.kube`, `base.image`, `api.build` — जिसे systemd का जनरेटर एक सर्विस, `web.service`, में बदलता है, जो बूट पर कंटेनर शुरू करती है और रुकने पर उसे फिर से शुरू करती है। रूटफ़ुल Podman अपनी यूनिट `/etc/containers/systemd/` में रखता है; रूटलेस Podman हर यूज़र की यूनिट `~/.config/containers/systemd/` में रखता है।
 
-**Quadlet** पेज साइडबार में तब दिखता है जब कोई Podman होस्ट चुना गया हो। यह Podman के अपने API से, उसी सॉकेट पर जिसे होस्ट पहले से इस्तेमाल करता है, और शुरू करने व रोकने के लिए `systemctl` से काम करता है, जैसा [ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md) तय करता है।
+**Quadlet** पेज साइडबार में तब दिखता है जब कोई Podman होस्ट चुना गया हो। यह Podman के अपने API से, उसी सॉकेट पर जिसे होस्ट पहले से इस्तेमाल करता है, और शुरू करने व रोकने के लिए `systemctl` से काम करता है, जैसा [ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md) तय करता है।
 
 ## हर Podman और कनेक्शन क्या अनुमति देता है
 

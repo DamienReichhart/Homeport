@@ -3,7 +3,7 @@ title: containerd
 description: Se connecter à containerd sur cette machine ou via SSH, choisir un espace de noms, exécuter les tâches de ses conteneurs, lire leurs journaux, ouvrir un shell, et gérer images et instantanés.
 ---
 
-**containerd** tourne sous k3s, nerdctl, BuildKit et de nombreux serveurs qui n’ont pas Docker. Homeport s’y connecte directement, via sa propre API gRPC, comme le décide l’[ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). Un hôte containerd a ses propres pages dans la barre latérale : **Conteneurs**, **Images**, **Instantanés** et **Espaces de noms**. Les pages de Docker, les stacks et le Tableau n’y sont pas proposés.
+**containerd** tourne sous k3s, nerdctl, BuildKit et de nombreux serveurs qui n’ont pas Docker. Homeport s’y connecte directement, via sa propre API gRPC, comme le décide l’[ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). Un hôte containerd a ses propres pages dans la barre latérale : **Conteneurs**, **Images**, **Instantanés** et **Espaces de noms**. Les pages de Docker, les stacks et le Tableau n’y sont pas proposés.
 
 ## Ajouter un hôte containerd
 

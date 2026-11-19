@@ -31,7 +31,7 @@ compose, YAML, job और यूनिट एडिटर CodeMirror एडि�
 
 हर बदलाव पर हर पेज और मुख्य डायलॉग की [axe](https://github.com/dequelabs/axe-core) से जाँच की जाती है: बटन, फ़ील्ड और क्षेत्रों के नाम होते हैं, हेडिंग और लैंडमार्क क्रम में होते हैं, और कुछ भी ARIA का गलत इस्तेमाल नहीं करता। Homeport पेज की भाषा सेट करता है, ताकि स्क्रीन रीडर हर भाषा को उसकी अपनी आवाज़ में पढ़े, और अरबी दाएँ से बाएँ दिखाई जाती है।
 
-Homeport की विंडो एक वेब व्यू है: Linux पर WebKitGTK, macOS पर WKWebView और Windows पर WebView2। हर एक पर Orca, VoiceOver और NVDA के साथ एक व्यावहारिक ऑडिट चल रहा है ([#184](https://github.com/DamienReichhart/Homeport/issues/184)); जब तक यह पूरा नहीं होता, स्क्रीन रीडर के अनुभव को सिर्फ़ टूल से जाँचा गया मानें।
+Homeport की विंडो एक वेब व्यू है: Linux पर WebKitGTK, macOS पर WKWebView और Windows पर WebView2। हर एक पर Orca, VoiceOver और NVDA के साथ एक व्यावहारिक ऑडिट चल रहा है ([#184](https://github.com/DamienReichhart/homeport/issues/184)); जब तक यह पूरा नहीं होता, स्क्रीन रीडर के अनुभव को सिर्फ़ टूल से जाँचा गया मानें।
 
 ### ज्ञात सीमाएँ
 
@@ -45,7 +45,7 @@ Homeport की विंडो एक वेब व्यू है: Linux प�
 
 ## किसी बाधा की रिपोर्ट करना
 
-अगर कोई चीज़ आपको अपने कीबोर्ड, स्क्रीन रीडर, मैग्निफ़ायर या किसी दूसरी सहायक तकनीक के साथ Homeport इस्तेमाल करने से रोकती है, तो `accessibility` लेबल के साथ [एक issue खोलें](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility)। बताएँ:
+अगर कोई चीज़ आपको अपने कीबोर्ड, स्क्रीन रीडर, मैग्निफ़ायर या किसी दूसरी सहायक तकनीक के साथ Homeport इस्तेमाल करने से रोकती है, तो `accessibility` लेबल के साथ [एक issue खोलें](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility)। बताएँ:
 
 - आप क्या करने की कोशिश कर रहे थे, और कहाँ (पेज, डायलॉग, होस्ट का प्रकार);
 - आपका ऑपरेटिंग सिस्टम और उसका संस्करण, और सहायक तकनीक और उसका संस्करण;

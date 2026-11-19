@@ -3,18 +3,18 @@ title: Contribuer
 description: Comment signaler des problèmes, proposer des fonctionnalités et contribuer au code de Homeport.
 ---
 
-Homeport est développé ouvertement sur [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport). Les contributions de toutes tailles sont les bienvenues.
+Homeport est développé ouvertement sur [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport). Les contributions de toutes tailles sont les bienvenues.
 
 ## Signaler un bug
 
-[Ouvrez une issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) avec :
+[Ouvrez une issue](https://github.com/DamienReichhart/homeport/issues/new/choose) avec :
 
 - ce que vous avez fait, ce que vous attendiez, et ce qui s’est passé — le message exact aide le plus ;
 - l’[archive de diagnostic](/docs/reference/troubleshooting/#exporter-le-diagnostic-pour-un-rapport-de-bug) obtenue avec **Paramètres → À propos → Exporter le diagnostic…** : un seul zip avec la version et la plateforme de Homeport, les types d’hôtes, de moteurs et de clusters que vous utilisez, et ses journaux sans leurs secrets. Vous lisez ce qu’il contient avant de l’enregistrer, et rien n’est envoyé nulle part.
 
 Si Homeport ne démarre pas, indiquez plutôt sa version et votre système d’exploitation, et tout élément pertinent du [fichier journal](/docs/reference/security/#journaux).
 
-Merci de signaler les problèmes de sécurité en privé, via le [signalement de vulnérabilités de GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
+Merci de signaler les problèmes de sécurité en privé, via le [signalement de vulnérabilités de GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new).
 
 ## Proposer une fonctionnalité
 
@@ -22,9 +22,9 @@ Ouvrez une issue qui décrit le problème que vous voulez résoudre, pas seuleme
 
 ## Contribuer au code
 
-1. Lisez [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md). Les fonctionnalités sont des tranches verticales autonomes, le frontend n’appelle Rust que via les liaisons IPC générées, et la logique Rust vit dans des services testés unitairement sans Tauri.
-2. Employez le vocabulaire du projet tiré de [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — dans le code, les textes de l’interface et les commits. Les principales décisions sont consignées dans [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr).
-3. Suivez la [charte graphique](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md) pour les couleurs et le ton : simple, précis, posé, en orthographe britannique.
+1. Lisez [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md). Les fonctionnalités sont des tranches verticales autonomes, le frontend n’appelle Rust que via les liaisons IPC générées, et la logique Rust vit dans des services testés unitairement sans Tauri.
+2. Employez le vocabulaire du projet tiré de [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — dans le code, les textes de l’interface et les commits. Les principales décisions sont consignées dans [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr).
+3. Suivez la [charte graphique](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md) pour les couleurs et le ton : simple, précis, posé, en orthographe britannique.
 4. Assurez-vous que ces commandes passent :
 
    ```sh
@@ -33,7 +33,7 @@ Ouvrez une issue qui décrit le problème que vous voulez résoudre, pas seuleme
    bun run rust:test
    ```
 
-5. Tenez la promesse sur les données : chaque version de Homeport ouvre les données de toutes les versions antérieures, jusqu’à 0.1.0, et les met à niveau sans rien perdre : hôtes, stacks, clusters, paramètres et secrets. Un changement de schéma est une nouvelle migration, jamais la modification d’une migration publiée, et la CI le vérifie avec une base de données d’exemple de chaque release. Voir [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+5. Tenez la promesse sur les données : chaque version de Homeport ouvre les données de toutes les versions antérieures, jusqu’à 0.1.0, et les met à niveau sans rien perdre : hôtes, stacks, clusters, paramètres et secrets. Un changement de schéma est une nouvelle migration, jamais la modification d’une migration publiée, et la CI le vérifie avec une base de données d’exemple de chaque release. Voir [Data compatibility](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility).
 6. Rédigez les messages de commit selon les [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Les notes de version en sont générées.
 7. Ouvrez une pull request vers la branche `dev`. La CI exécute les vérifications du frontend et la vérification des licences sous Linux, et `cargo clippy` et `cargo test` sous Linux, macOS et Windows, donc le code derrière `#[cfg(windows)]` ou `#[cfg(target_os = "macos")]` est compilé avant d’être fusionné. Un test qui a besoin d’un Docker Engine est marqué `#[ignore = "needs a local Docker Engine"]` ; un job Linux distinct les exécute sur le moteur du runner.
 
@@ -41,9 +41,9 @@ Voir [compiler depuis les sources](/docs/project/building/) pour vous installer.
 
 ### Ajouter du texte à l’application
 
-Le texte de l’application vit dans un catalogue, jamais en dur, pour pouvoir être traduit ([ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). Pour ajouter une chaîne :
+Le texte de l’application vit dans un catalogue, jamais en dur, pour pouvoir être traduit ([ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). Pour ajouter une chaîne :
 
-1. Ajoutez une clé au fichier de la fonctionnalité dans [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) — `images.ts` pour la fonctionnalité des images, `ui.ts` pour le kit d’interface, `common.ts` seulement pour les mots qui veulent dire la même chose partout (Cancel, Close, Retry). Les clés commencent par le nom du fichier et disent à quoi sert le texte : `images.remove.title`, `images.column.size`.
+1. Ajoutez une clé au fichier de la fonctionnalité dans [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) — `images.ts` pour la fonctionnalité des images, `ui.ts` pour le kit d’interface, `common.ts` seulement pour les mots qui veulent dire la même chose partout (Cancel, Close, Retry). Les clés commencent par le nom du fichier et disent à quoi sert le texte : `images.remove.title`, `images.column.size`.
 2. Écrivez la valeur comme un [message ICU](https://formatjs.github.io/docs/core-concepts/icu-syntax/) : `{name}` pour une valeur, `{count, plural, one {# image} other {# images}}` au lieu de construire les pluriels à la main, `<strong>…</strong>` pour une mise en valeur rendue avec `tRich`. Une clé par phrase ; ne collez pas de fragments ensemble, parce que l’ordre des mots change d’une langue à l’autre.
 3. Utilisez-la avec `t('images.remove.title', { name })` depuis `@/shared/i18n` — dans les composants, les mutations et les notifications. Les clés sont typées, donc une faute de frappe fait échouer la vérification des types. Utilisez des clés littérales : quand le texte dépend d’une valeur, associez la valeur à des clés (`{ start: 'containers.done.start', stop: 'containers.done.stop' }`) plutôt que de construire `` `containers.done.${action}` ``.
 
@@ -53,7 +53,7 @@ Les messages d’erreur sont écrits en Rust : chaque crate déclare ses clés 
 
 ## Traduire Homeport
 
-L’application et le site web parlent anglais, français, espagnol, allemand, italien, portugais du Brésil, russe, chinois simplifié, japonais, coréen, hindi et arabe. Chaque langue emploie un seul mot par terme du produit : cherchez-les dans [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) avant de traduire, et ajoutez-y une ligne quand vous en choisissez un nouveau.
+L’application et le site web parlent anglais, français, espagnol, allemand, italien, portugais du Brésil, russe, chinois simplifié, japonais, coréen, hindi et arabe. Chaque langue emploie un seul mot par terme du produit : cherchez-les dans [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) avant de traduire, et ajoutez-y une ligne quand vous en choisissez un nouveau.
 
 ### Ajouter ou modifier une chaîne
 
@@ -79,8 +79,8 @@ Si un test ne voit pas une langue que vous venez d’ajouter, supprimez `node_mo
 
 ## Améliorer cette documentation
 
-Chaque page de la documentation a un lien **Modifier cette page** en bas. Les pages sont des fichiers Markdown dans [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs).
+Chaque page de la documentation a un lien **Modifier cette page** en bas. Les pages sont des fichiers Markdown dans [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs).
 
 ## Comment se font les releases
 
-Chaque push sur `main` avec un nouveau numéro de version construit les programmes d’installation pour chaque plateforme, exécute toute la suite de tests, et publie une release GitHub avec les sommes de contrôle et la provenance de build. Le processus est décrit dans [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md).
+Chaque push sur `main` avec un nouveau numéro de version construit les programmes d’installation pour chaque plateforme, exécute toute la suite de tests, et publie une release GitHub avec les sommes de contrôle et la provenance de build. Le processus est décrit dans [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md).

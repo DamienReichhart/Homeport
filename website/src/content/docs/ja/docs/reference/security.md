@@ -93,7 +93,7 @@ Homeport は、すでに保持しているシークレットの上に新しい�
 - もう一方のコンピューターで **インポート** を使うとパスフレーズを求められ、その後、各ホストのシークレットは、ほかのものと同様にそのコンピューター自身のキーチェーンの鍵で暗号化して保存されます。
 - このコンピューターですでに認証情報が失われているホストは、認証情報なしでエクスポートされ、エクスポートにはどのホストかが示されます。
 
-このファイルは、含まれているキーと同じように扱ってください。インポートしたら削除しましょう。形式は [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) で説明しています。
+このファイルは、含まれているキーと同じように扱ってください。インポートしたら削除しましょう。形式は [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) で説明しています。
 
 ### バックアップ
 
@@ -179,4 +179,4 @@ Homeport にはテレメトリもクラッシュレポートもありません�
 
 ## 脆弱性の報告
 
-セキュリティの問題は、公開の issue ではなく、[GitHub の非公開の脆弱性報告](https://github.com/DamienReichhart/Homeport/security/advisories/new)を通じて非公開で報告してください。
+セキュリティの問題は、公開の issue ではなく、[GitHub の非公開の脆弱性報告](https://github.com/DamienReichhart/homeport/security/advisories/new)を通じて非公開で報告してください。

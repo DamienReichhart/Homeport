@@ -6,7 +6,7 @@ description: Homeport가 무엇이고 무엇을 하는지, 그리고 이 문서�
 import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
-**Homeport**는 이 컴퓨터의 것이든 SSH, TLS, TCP로 연결하는 원격의 것이든 어디에 있는 Docker Engine, containerd, Incus를 관리하고, 이들이 이루는 Swarm, kubeconfig로 접근할 수 있는 Kubernetes 클러스터, 직접 지정한 Nomad 클러스터도 관리하는 데스크톱 앱으로, Docker Desktop과 같은 방식을 따릅니다. Windows, macOS, Linux에서 실행되고, 무료이며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)에 따른 오픈 소스입니다.
+**Homeport**는 이 컴퓨터의 것이든 SSH, TLS, TCP로 연결하는 원격의 것이든 어디에 있는 Docker Engine, containerd, Incus를 관리하고, 이들이 이루는 Swarm, kubeconfig로 접근할 수 있는 Kubernetes 클러스터, 직접 지정한 Nomad 클러스터도 관리하는 데스크톱 앱으로, Docker Desktop과 같은 방식을 따릅니다. Windows, macOS, Linux에서 실행되고, 무료이며, [GNU Affero General Public License 버전 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE)에 따른 오픈 소스입니다.
 
 Homeport는 컨테이너를 직접 실행하지 않습니다. 이미 가지고 있는 엔진, 즉 **호스트**에 연결하여 그 위의 모든 것, 곧 컨테이너, 이미지, 볼륨, 네트워크, Compose **스택**을 하나의 창에서 다룰 수 있게 합니다. 또한 Kubernetes와 Nomad **클러스터**에 연결하여 그 위에서 실행되는 것을 확인하고 관리할 수 있습니다. 호스트나 클러스터에는 아무것도 설치하지 않습니다.
 

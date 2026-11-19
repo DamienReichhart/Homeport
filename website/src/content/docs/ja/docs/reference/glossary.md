@@ -151,7 +151,7 @@ Homeport が SSH サーバーを確認する方法です。初回接続時にサ
 
 ## 日本語では
 
-日本語のアプリ、ドキュメント、Web サイトはこれらの用語を使うため、画面とページの言葉は常に一致します。ほかの言語にはそれぞれの表が [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) にあります。
+日本語のアプリ、ドキュメント、Web サイトはこれらの用語を使うため、画面とページの言葉は常に一致します。ほかの言語にはそれぞれの表が [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) にあります。
 
 | 英語           | 日本語           |
 | -------------- | ---------------- |

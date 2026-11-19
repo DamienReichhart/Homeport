@@ -3,18 +3,18 @@ title: योगदान देना
 description: समस्याओं की रिपोर्ट कैसे करें, सुविधाएँ कैसे सुझाएँ और Homeport में कोड का योगदान कैसे दें।
 ---
 
-Homeport खुले में [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport) पर विकसित किया जाता है। हर आकार के योगदान का स्वागत है।
+Homeport खुले में [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport) पर विकसित किया जाता है। हर आकार के योगदान का स्वागत है।
 
 ## बग की रिपोर्ट करना
 
-इनके साथ [एक issue खोलें](https://github.com/DamienReichhart/Homeport/issues/new/choose):
+इनके साथ [एक issue खोलें](https://github.com/DamienReichhart/homeport/issues/new/choose):
 
 - आपने क्या किया, आपको क्या उम्मीद थी, और क्या हुआ — सटीक संदेश सबसे ज़्यादा मदद करता है;
 - **सेटिंग्स → परिचय → डायग्नोस्टिक्स एक्सपोर्ट करें…** से [डायग्नोस्टिक्स बंडल](/docs/reference/troubleshooting/#बग-रिपोर्ट-के-लिए-डायग्नोस्टिक्स-एक्सपोर्ट-करना): एक zip, जिसमें Homeport का संस्करण और प्लैटफ़ॉर्म, आपके इस्तेमाल किए जा रहे होस्ट, इंजन और क्लस्टर के प्रकार, और सीक्रेट हटाए गए उसके लॉग होते हैं। सहेजने से पहले आप पढ़ते हैं कि इसमें क्या है, और कुछ भी कहीं नहीं भेजा जाता।
 
 अगर Homeport शुरू नहीं होता, तो इसके बजाय उसका संस्करण और अपना ऑपरेटिंग सिस्टम बताएँ, और [लॉग फ़ाइल](/docs/reference/security/#लॉग) से कुछ भी प्रासंगिक।
 
-कृपया सुरक्षा समस्याओं की रिपोर्ट निजी तौर पर, [GitHub की vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new) के ज़रिए करें।
+कृपया सुरक्षा समस्याओं की रिपोर्ट निजी तौर पर, [GitHub की vulnerability reporting](https://github.com/DamienReichhart/homeport/security/advisories/new) के ज़रिए करें।
 
 ## कोई सुविधा सुझाना
 
@@ -22,9 +22,9 @@ Homeport खुले में [github.com/DamienReichhart/Homeport](https://gi
 
 ## कोड का योगदान देना
 
-1. [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md) पढ़ें। सुविधाएँ आत्मनिर्भर vertical slice हैं, फ़्रंटएंड Rust को सिर्फ़ बनाई गई IPC बाइंडिंग के ज़रिए कॉल करता है, और Rust लॉजिक ऐसी सर्विस में रहता है जिनकी यूनिट टेस्टिंग Tauri के बिना होती है।
-2. कोड, UI टेक्स्ट और कमिट में [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) से प्रोजेक्ट की शब्दावली का इस्तेमाल करें — Host, Stack, Managed, External, Adopt। मुख्य निर्णय [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr) में दर्ज हैं।
-3. रंगों और लहजे के लिए [ब्रांड गाइड](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md) का पालन करें: सादा, सटीक, शांत, ब्रिटिश वर्तनी में।
+1. [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md) पढ़ें। सुविधाएँ आत्मनिर्भर vertical slice हैं, फ़्रंटएंड Rust को सिर्फ़ बनाई गई IPC बाइंडिंग के ज़रिए कॉल करता है, और Rust लॉजिक ऐसी सर्विस में रहता है जिनकी यूनिट टेस्टिंग Tauri के बिना होती है।
+2. कोड, UI टेक्स्ट और कमिट में [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) से प्रोजेक्ट की शब्दावली का इस्तेमाल करें — Host, Stack, Managed, External, Adopt। मुख्य निर्णय [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr) में दर्ज हैं।
+3. रंगों और लहजे के लिए [ब्रांड गाइड](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md) का पालन करें: सादा, सटीक, शांत, ब्रिटिश वर्तनी में।
 4. पक्का करें कि ये पास होते हैं:
 
    ```sh
@@ -33,7 +33,7 @@ Homeport खुले में [github.com/DamienReichhart/Homeport](https://gi
    bun run rust:test
    ```
 
-5. डेटा का वादा निभाएँ: Homeport का हर संस्करण हर पिछले संस्करण का डेटा खोलता है, 0.1.0 तक, और कुछ भी खोए बिना उसे अपग्रेड करता है: होस्ट, स्टैक, क्लस्टर, सेटिंग्स और सीक्रेट। स्कीमा में कोई भी बदलाव एक नया माइग्रेशन है, किसी रिलीज़ हो चुके माइग्रेशन में संपादन कभी नहीं, और CI इसे हर रिलीज़ के एक नमूना डेटाबेस पर जाँचता है। देखें [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)।
+5. डेटा का वादा निभाएँ: Homeport का हर संस्करण हर पिछले संस्करण का डेटा खोलता है, 0.1.0 तक, और कुछ भी खोए बिना उसे अपग्रेड करता है: होस्ट, स्टैक, क्लस्टर, सेटिंग्स और सीक्रेट। स्कीमा में कोई भी बदलाव एक नया माइग्रेशन है, किसी रिलीज़ हो चुके माइग्रेशन में संपादन कभी नहीं, और CI इसे हर रिलीज़ के एक नमूना डेटाबेस पर जाँचता है। देखें [Data compatibility](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility)।
 6. कमिट संदेश [Conventional Commits](https://www.conventionalcommits.org) के रूप में लिखें — `feat(stacks): …`, `fix(hosts): …`। रिलीज़ नोट उन्हीं से बनाए जाते हैं।
 7. `dev` ब्रांच के ख़िलाफ़ एक pull request खोलें। CI Linux पर फ़्रंटएंड जाँच और लाइसेंस जाँच चलाता है, और Linux, macOS और Windows पर `cargo clippy` और `cargo test`, ताकि `#[cfg(windows)]` या `#[cfg(target_os = "macos")]` के पीछे का कोड मर्ज होने से पहले कंपाइल हो जाए। जिस टेस्ट को Docker Engine चाहिए, वह `#[ignore = "needs a local Docker Engine"]` से चिह्नित होता है; एक अलग Linux job उन्हें runner के इंजन पर चलाता है।
 
@@ -41,9 +41,9 @@ Homeport खुले में [github.com/DamienReichhart/Homeport](https://gi
 
 ### ऐप में टेक्स्ट जोड़ना
 
-ऐप का टेक्स्ट एक कैटलॉग में रहता है, कभी inline नहीं, ताकि उसका अनुवाद हो सके ([ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md))। एक string जोड़ने के लिए:
+ऐप का टेक्स्ट एक कैटलॉग में रहता है, कभी inline नहीं, ताकि उसका अनुवाद हो सके ([ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md))। एक string जोड़ने के लिए:
 
-1. [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) में सुविधा की फ़ाइल में एक key जोड़ें — इमेज सुविधा के लिए `images.ts`, UI kit के लिए `ui.ts`, `common.ts` सिर्फ़ उन शब्दों के लिए जिनका मतलब हर जगह एक ही है (Cancel, Close, Retry)। Key फ़ाइल के नाम से शुरू होती हैं और बताती हैं कि टेक्स्ट किसलिए है: `images.remove.title`, `images.column.size`।
+1. [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) में सुविधा की फ़ाइल में एक key जोड़ें — इमेज सुविधा के लिए `images.ts`, UI kit के लिए `ui.ts`, `common.ts` सिर्फ़ उन शब्दों के लिए जिनका मतलब हर जगह एक ही है (Cancel, Close, Retry)। Key फ़ाइल के नाम से शुरू होती हैं और बताती हैं कि टेक्स्ट किसलिए है: `images.remove.title`, `images.column.size`।
 2. मान को [ICU message](https://formatjs.github.io/docs/core-concepts/icu-syntax/) के रूप में लिखें: किसी मान के लिए `{name}`, हाथ से बहुवचन बनाने के बजाय `{count, plural, one {# image} other {# images}}`, `tRich` से रेंडर होने वाले ज़ोर के लिए `<strong>…</strong>`। हर वाक्य के लिए एक key; टुकड़ों को आपस में न जोड़ें, क्योंकि भाषाओं के बीच शब्द-क्रम बदलता है।
 3. इसका इस्तेमाल `@/shared/i18n` से `t('images.remove.title', { name })` के साथ करें — कंपोनेंट, mutation और toast, सभी में एक जैसा। Key टाइप की हुई होती हैं, इसलिए कोई टाइपो टाइप जाँच को विफल कर देता है। शाब्दिक key का इस्तेमाल करें: जब टेक्स्ट किसी मान पर निर्भर हो, तो `` `containers.done.${action}` `` बनाने के बजाय मान को key से मैप करें (`{ start: 'containers.done.start', stop: 'containers.done.stop' }`)।
 
@@ -53,7 +53,7 @@ Homeport खुले में [github.com/DamienReichhart/Homeport](https://gi
 
 ## Homeport का अनुवाद करना
 
-ऐप और वेबसाइट अंग्रेज़ी, फ़्रेंच, स्पैनिश, जर्मन, इतालवी, ब्राज़ीलियाई पुर्तगाली, रूसी, सरलीकृत चीनी, जापानी, कोरियाई, हिन्दी और अरबी बोलते हैं। हर भाषा हर प्रोडक्ट शब्द के लिए एक शब्द इस्तेमाल करती है: अनुवाद करने से पहले उन्हें [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) में देखें, और जब आप कोई नया शब्द चुनें तो वहाँ एक पंक्ति जोड़ें।
+ऐप और वेबसाइट अंग्रेज़ी, फ़्रेंच, स्पैनिश, जर्मन, इतालवी, ब्राज़ीलियाई पुर्तगाली, रूसी, सरलीकृत चीनी, जापानी, कोरियाई, हिन्दी और अरबी बोलते हैं। हर भाषा हर प्रोडक्ट शब्द के लिए एक शब्द इस्तेमाल करती है: अनुवाद करने से पहले उन्हें [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) में देखें, और जब आप कोई नया शब्द चुनें तो वहाँ एक पंक्ति जोड़ें।
 
 ### कोई string जोड़ना या बदलना
 
@@ -79,8 +79,8 @@ String चाहे जो भी हो, `bun run check` (और इसलि�
 
 ## इस दस्तावेज़ को बेहतर बनाना
 
-हर दस्तावेज़ पेज के नीचे एक **पृष्ठ संपादित करें** लिंक है। पेज [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs) में Markdown फ़ाइलें हैं।
+हर दस्तावेज़ पेज के नीचे एक **पृष्ठ संपादित करें** लिंक है। पेज [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs) में Markdown फ़ाइलें हैं।
 
 ## रिलीज़ कैसे होती हैं
 
-नए संस्करण संख्या के साथ `main` पर हर push हर प्लैटफ़ॉर्म के लिए इंस्टॉलर बनाता है, पूरा टेस्ट सूट चलाता है, और चेकसम और बिल्ड प्रोवेनेंस के साथ एक GitHub रिलीज़ प्रकाशित करता है। यह प्रक्रिया [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) में बताई गई है।
+नए संस्करण संख्या के साथ `main` पर हर push हर प्लैटफ़ॉर्म के लिए इंस्टॉलर बनाता है, पूरा टेस्ट सूट चलाता है, और चेकसम और बिल्ड प्रोवेनेंस के साथ एक GitHub रिलीज़ प्रकाशित करता है। यह प्रक्रिया [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) में बताई गई है।

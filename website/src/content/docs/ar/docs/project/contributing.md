@@ -3,18 +3,18 @@ title: المساهمة
 description: كيفية الإبلاغ عن المشكلات واقتراح الميزات والمساهمة بالشيفرة في Homeport.
 ---
 
-يُطوَّر Homeport بشكل علني على [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport). المساهمات بكل أحجامها مرحب بها.
+يُطوَّر Homeport بشكل علني على [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport). المساهمات بكل أحجامها مرحب بها.
 
 ## الإبلاغ عن خطأ
 
-[افتح مشكلة](https://github.com/DamienReichhart/Homeport/issues/new/choose) تتضمن:
+[افتح مشكلة](https://github.com/DamienReichhart/homeport/issues/new/choose) تتضمن:
 
 - ما فعلته، وما توقعته، وما حدث — الرسالة الحرفية هي الأكثر فائدة؛
 - [حزمة التشخيص](/docs/reference/troubleshooting/#تصدير-التشخيص-لتقرير-خطأ) من **الإعدادات ← حول ← تصدير التشخيص…**: ملف zip واحد فيه إصدار Homeport ومنصته، وأنواع المضيفات والمحركات والعناقيد التي تستخدمها، وسجلاته بعد إزالة الأسرار منها. تقرأ محتواه قبل حفظه، ولا يُرسَل أي شيء إلى أي مكان.
 
 إذا لم يبدأ Homeport، فاذكر إصداره ونظام تشغيلك بدلًا من ذلك، وأي شيء ذي صلة من [ملف السجل](/docs/reference/security/#السجلات).
 
-يُرجى الإبلاغ عن المشكلات الأمنية بشكل خاص، عبر [الإبلاغ عن الثغرات في GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
+يُرجى الإبلاغ عن المشكلات الأمنية بشكل خاص، عبر [الإبلاغ عن الثغرات في GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new).
 
 ## اقتراح ميزة
 
@@ -22,9 +22,9 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
 
 ## المساهمة بالشيفرة
 
-1. اقرأ [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md). الميزات شرائح عمودية مستقلة بذاتها، ولا تستدعي الواجهة الأمامية Rust إلا عبر روابط IPC المُنشأة، ويعيش منطق Rust في خدمات تُختبر وحداتها دون Tauri.
-2. استخدم مفردات المشروع من [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) — Host وStack وManaged وExternal وAdopt — في الشيفرة ونصوص الواجهة والإيداعات. القرارات الرئيسية مدوّنة في [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr).
-3. اتبع [دليل العلامة التجارية](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md) في الألوان والأسلوب: بسيط ومحدد وهادئ، بالتهجئة البريطانية.
+1. اقرأ [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md). الميزات شرائح عمودية مستقلة بذاتها، ولا تستدعي الواجهة الأمامية Rust إلا عبر روابط IPC المُنشأة، ويعيش منطق Rust في خدمات تُختبر وحداتها دون Tauri.
+2. استخدم مفردات المشروع من [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) — Host وStack وManaged وExternal وAdopt — في الشيفرة ونصوص الواجهة والإيداعات. القرارات الرئيسية مدوّنة في [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr).
+3. اتبع [دليل العلامة التجارية](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md) في الألوان والأسلوب: بسيط ومحدد وهادئ، بالتهجئة البريطانية.
 4. تأكد من نجاح هذه الأوامر:
 
    ```sh
@@ -33,7 +33,7 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
    bun run rust:test
    ```
 
-5. حافظ على وعد البيانات: يفتح كل إصدار من Homeport بيانات كل إصدار سابق، حتى 0.1.0، ويرقّيها دون فقدان أي شيء: المضيفات والمكدسات والعناقيد والإعدادات والأسرار. أي تغيير في المخطط هو ترحيل جديد، وليس تعديلًا لترحيل صدر من قبل أبدًا، ويتحقق CI منه مقابل قاعدة بيانات نموذجية من كل إصدار. راجع [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+5. حافظ على وعد البيانات: يفتح كل إصدار من Homeport بيانات كل إصدار سابق، حتى 0.1.0، ويرقّيها دون فقدان أي شيء: المضيفات والمكدسات والعناقيد والإعدادات والأسرار. أي تغيير في المخطط هو ترحيل جديد، وليس تعديلًا لترحيل صدر من قبل أبدًا، ويتحقق CI منه مقابل قاعدة بيانات نموذجية من كل إصدار. راجع [Data compatibility](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility).
 6. اكتب رسائل الإيداع بصيغة [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`، `fix(hosts): …`. تُنشأ ملاحظات الإصدار منها.
 7. افتح طلب سحب على الفرع `dev`. يشغّل CI فحوصات الواجهة الأمامية وفحص التراخيص على Linux، و`cargo clippy` و`cargo test` على Linux وmacOS وWindows، لذا تُصرَّف الشيفرة الموجودة خلف `#[cfg(windows)]` أو `#[cfg(target_os = "macos")]` قبل دمجها. الاختبار الذي يحتاج إلى محرك Docker يُوسم بـ `#[ignore = "needs a local Docker Engine"]`؛ وتشغّل مهمة Linux منفصلة تلك الاختبارات على محرك المشغّل.
 
@@ -41,9 +41,9 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
 
 ### إضافة نص إلى التطبيق
 
-يعيش نص التطبيق في كتالوج، وليس مضمّنًا في الشيفرة أبدًا، لكي يمكن ترجمته ([ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). لإضافة سلسلة نصية:
+يعيش نص التطبيق في كتالوج، وليس مضمّنًا في الشيفرة أبدًا، لكي يمكن ترجمته ([ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). لإضافة سلسلة نصية:
 
-1. أضف مفتاحًا إلى ملف الميزة في [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) — `images.ts` لميزة الصور، و`ui.ts` لمجموعة عناصر الواجهة، و`common.ts` فقط للكلمات التي تعني الشيء نفسه في كل مكان (Cancel وClose وRetry). تبدأ المفاتيح باسم الملف وتوضح الغرض من النص: `images.remove.title`، `images.column.size`.
+1. أضف مفتاحًا إلى ملف الميزة في [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) — `images.ts` لميزة الصور، و`ui.ts` لمجموعة عناصر الواجهة، و`common.ts` فقط للكلمات التي تعني الشيء نفسه في كل مكان (Cancel وClose وRetry). تبدأ المفاتيح باسم الملف وتوضح الغرض من النص: `images.remove.title`، `images.column.size`.
 2. اكتب القيمة كـ [رسالة ICU](https://formatjs.github.io/docs/core-concepts/icu-syntax/): `{name}` لقيمة، و`{count, plural, one {# image} other {# images}}` بدلًا من بناء صيغ الجمع يدويًا، و`<strong>…</strong>` للتأكيد الذي يُعرض باستخدام `tRich`. مفتاح واحد لكل جملة؛ لا تلصق الأجزاء معًا، لأن ترتيب الكلمات يتغير بين اللغات.
 3. استخدمه عبر `t('images.remove.title', { name })` من `@/shared/i18n` — في المكونات وعمليات التعديل والإشعارات المنبثقة على حد سواء. المفاتيح ذات أنواع محددة، لذا يُفشل أي خطأ مطبعي فحص الأنواع. استخدم مفاتيح حرفية: عندما يعتمد النص على قيمة، اربط القيمة بالمفاتيح (`{ start: 'containers.done.start', stop: 'containers.done.stop' }`) بدلًا من بناء `` `containers.done.${action}` ``.
 
@@ -53,7 +53,7 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
 
 ## ترجمة Homeport
 
-يتحدث التطبيق والموقع الإنجليزية والفرنسية والإسبانية والألمانية والإيطالية والبرتغالية البرازيلية والروسية والصينية المبسطة واليابانية والكورية والهندية والعربية. تستخدم كل لغة كلمة واحدة لكل مصطلح من مصطلحات المنتج: ابحث عنها في [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) قبل الترجمة، وأضف صفًا هناك عندما تختار مصطلحًا جديدًا.
+يتحدث التطبيق والموقع الإنجليزية والفرنسية والإسبانية والألمانية والإيطالية والبرتغالية البرازيلية والروسية والصينية المبسطة واليابانية والكورية والهندية والعربية. تستخدم كل لغة كلمة واحدة لكل مصطلح من مصطلحات المنتج: ابحث عنها في [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) قبل الترجمة، وأضف صفًا هناك عندما تختار مصطلحًا جديدًا.
 
 ### إضافة سلسلة نصية أو تغييرها
 
@@ -79,8 +79,8 @@ description: كيفية الإبلاغ عن المشكلات واقتراح ال
 
 ## تحسين هذه الوثائق
 
-تحتوي كل صفحة من صفحات الوثائق على رابط **تعديل الصفحة** في أسفلها. الصفحات ملفات Markdown في [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs).
+تحتوي كل صفحة من صفحات الوثائق على رابط **تعديل الصفحة** في أسفلها. الصفحات ملفات Markdown في [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs).
 
 ## كيف تتم الإصدارات
 
-كل دفع إلى `main` برقم إصدار جديد يبني أدوات التثبيت لكل المنصات، ويشغّل مجموعة الاختبارات الكاملة، وينشر إصدارًا على GitHub مع مجاميع التحقق ومصدر البناء. العملية موصوفة في [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md).
+كل دفع إلى `main` برقم إصدار جديد يبني أدوات التثبيت لكل المنصات، ويشغّل مجموعة الاختبارات الكاملة، وينشر إصدارًا على GitHub مع مجاميع التحقق ومصدر البناء. العملية موصوفة في [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md).

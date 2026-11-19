@@ -72,7 +72,7 @@ describe('t', () => {
 describe('pages', () => {
   it('reads the language of a page from its URL, after the base path', () => {
     const base = import.meta.env.BASE_URL;
-    import.meta.env.BASE_URL = '/Homeport/';
+    import.meta.env.BASE_URL = '/homeport/';
     try {
       expect(pageLocale(new URL('https://example.com/Homeport/fr/download/'))).toBe(fr);
       expect(pageLocale(new URL('https://example.com/Homeport/download/'))).toBe(ROOT_LOCALE);

@@ -5,7 +5,7 @@ description: 关于 Homeport 的常见问题。
 
 ### Homeport 免费吗？
 
-是的。Homeport 可免费用于个人和商业用途，并以 [GNU Affero 通用公共许可证第 3 版](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)（AGPL）开源。
+是的。Homeport 可免费用于个人和商业用途，并以 [GNU Affero 通用公共许可证第 3 版](https://github.com/DamienReichhart/homeport/blob/main/LICENSE)（AGPL）开源。
 
 ### AGPL 对我意味着什么？
 
@@ -138,4 +138,4 @@ Homeport 支持英语、法语、西班牙语、德语、意大利语、巴西�
 
 ### 我能如何帮忙？
 
-在 [GitHub issues](https://github.com/DamienReichhart/Homeport/issues) 中报告 bug 和建议功能，或参见[参与贡献](/docs/project/contributing/)。
+在 [GitHub issues](https://github.com/DamienReichhart/homeport/issues) 中报告 bug 和建议功能，或参见[参与贡献](/docs/project/contributing/)。

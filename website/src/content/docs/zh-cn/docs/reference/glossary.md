@@ -151,7 +151,7 @@ Homeport 检查 SSH 服务器的方式：首次连接时由你确认服务器的
 
 ## 中文术语
 
-简体中文的应用、文档和网站都使用以下术语，因此界面和页面上的说法始终一致。其他每种语言在 [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) 中都有自己的表格。
+简体中文的应用、文档和网站都使用以下术语，因此界面和页面上的说法始终一致。其他每种语言在 [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) 中都有自己的表格。
 
 | 英文           | 简体中文 |
 | -------------- | -------- |

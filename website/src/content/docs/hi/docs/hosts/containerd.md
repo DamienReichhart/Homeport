@@ -3,7 +3,7 @@ title: containerd
 description: इस मशीन पर या SSH पर containerd से कनेक्ट करें, एक नेमस्पेस चुनें, उसके कंटेनर के टास्क चलाएँ, उनके लॉग पढ़ें, शेल खोलें, और इमेज और स्नैपशॉट प्रबंधित करें।
 ---
 
-**containerd** k3s, nerdctl, BuildKit और ऐसे कई सर्वर के नीचे चलता है जिनमें Docker नहीं है। Homeport उससे सीधे, उसके अपने gRPC API के ज़रिए कनेक्ट होता है, जैसा [ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) तय करता है। containerd होस्ट को साइडबार में अपने ख़ुद के पेज मिलते हैं: **कंटेनर**, **इमेज**, **स्नैपशॉट** और **नेमस्पेस**। Docker के पेज, स्टैक और बोर्ड उस पर उपलब्ध नहीं होते।
+**containerd** k3s, nerdctl, BuildKit और ऐसे कई सर्वर के नीचे चलता है जिनमें Docker नहीं है। Homeport उससे सीधे, उसके अपने gRPC API के ज़रिए कनेक्ट होता है, जैसा [ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) तय करता है। containerd होस्ट को साइडबार में अपने ख़ुद के पेज मिलते हैं: **कंटेनर**, **इमेज**, **स्नैपशॉट** और **नेमस्पेस**। Docker के पेज, स्टैक और बोर्ड उस पर उपलब्ध नहीं होते।
 
 ## containerd होस्ट जोड़ना
 

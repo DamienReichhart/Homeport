@@ -5,7 +5,7 @@ description: Common questions about Homeport.
 
 ### Is Homeport free?
 
-Yes. Homeport is free to use, for personal and commercial work, and open source under the [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) (AGPL).
+Yes. Homeport is free to use, for personal and commercial work, and open source under the [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE) (AGPL).
 
 ### What does the AGPL mean for me?
 
@@ -138,4 +138,4 @@ No — Homeport is a desktop app. Your existing `docker` CLI works alongside it,
 
 ### How can I help?
 
-Report bugs and suggest features in [GitHub issues](https://github.com/DamienReichhart/Homeport/issues), or see [contributing](/docs/project/contributing/).
+Report bugs and suggest features in [GitHub issues](https://github.com/DamienReichhart/homeport/issues), or see [contributing](/docs/project/contributing/).

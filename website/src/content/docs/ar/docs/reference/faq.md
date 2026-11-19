@@ -5,7 +5,7 @@ description: أسئلة شائعة حول Homeport.
 
 ### هل Homeport مجاني؟
 
-نعم. استخدام Homeport مجاني، للأعمال الشخصية والتجارية، وهو مفتوح المصدر بموجب [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) (AGPL).
+نعم. استخدام Homeport مجاني، للأعمال الشخصية والتجارية، وهو مفتوح المصدر بموجب [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE) (AGPL).
 
 ### ماذا تعني AGPL بالنسبة لي؟
 
@@ -138,4 +138,4 @@ Nomad، نعم. أضف عنقودًا بعنوان وكيله، مع رمز ACL 
 
 ### كيف يمكنني المساعدة؟
 
-أبلغ عن الأخطاء واقترح الميزات في [مشكلات GitHub](https://github.com/DamienReichhart/Homeport/issues)، أو راجع [المساهمة](/docs/project/contributing/).
+أبلغ عن الأخطاء واقترح الميزات في [مشكلات GitHub](https://github.com/DamienReichhart/homeport/issues)، أو راجع [المساهمة](/docs/project/contributing/).

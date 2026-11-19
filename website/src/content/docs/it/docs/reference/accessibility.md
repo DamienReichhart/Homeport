@@ -31,7 +31,7 @@ Quando il sistema operativo chiede di ridurre il movimento (**Riduci movimento**
 
 Ogni pagina e le finestre di dialogo principali vengono controllate con [axe](https://github.com/dequelabs/axe-core) a ogni modifica: pulsanti, campi e regioni hanno un nome, titoli e punti di riferimento sono in ordine, e nulla usa ARIA in modo scorretto. Homeport imposta la lingua della pagina, così uno screen reader legge ogni lingua con la sua voce, e l’arabo viene mostrato da destra a sinistra.
 
-La finestra di Homeport è una web view: WebKitGTK su Linux, WKWebView su macOS e WebView2 su Windows. È in corso una verifica pratica con Orca, VoiceOver e NVDA su ciascuno ([#184](https://github.com/DamienReichhart/Homeport/issues/184)); finché non è terminata, considera l’esperienza con gli screen reader come testata solo da strumenti automatici.
+La finestra di Homeport è una web view: WebKitGTK su Linux, WKWebView su macOS e WebView2 su Windows. È in corso una verifica pratica con Orca, VoiceOver e NVDA su ciascuno ([#184](https://github.com/DamienReichhart/homeport/issues/184)); finché non è terminata, considera l’esperienza con gli screen reader come testata solo da strumenti automatici.
 
 ### Limiti noti
 
@@ -45,7 +45,7 @@ Il testo rispetta WCAG 2.2 AA (4.5:1) sia nel tema chiaro sia in quello scuro, e
 
 ## Segnalare una barriera
 
-Se qualcosa ti impedisce di usare Homeport con la tastiera, lo screen reader, l’ingranditore o un’altra tecnologia assistiva, [apri una issue](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility) con l’etichetta `accessibility`. Indica:
+Se qualcosa ti impedisce di usare Homeport con la tastiera, lo screen reader, l’ingranditore o un’altra tecnologia assistiva, [apri una issue](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility) con l’etichetta `accessibility`. Indica:
 
 - cosa stavi cercando di fare, e dove (pagina, finestra di dialogo, tipo di host);
 - il tuo sistema operativo e la sua versione, e la tecnologia assistiva e la sua versione;

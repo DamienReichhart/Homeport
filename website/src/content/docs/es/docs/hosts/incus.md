@@ -3,7 +3,7 @@ title: Incus
 description: Conéctate a Incus en este equipo, por SSH o por HTTPS con un token de confianza, y elige el proyecto que muestran sus páginas.
 ---
 
-**Incus** ejecuta contenedores de sistema y máquinas virtuales, las **instancias** de [la guía](/docs/guides/instances/). Homeport se conecta a él a través de su propia API REST, como decide el [ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md). Un host de Incus tiene sus propias páginas en la barra lateral: **Instancias**, **Imágenes**, **Perfiles**, **Almacenamiento** y **Redes**. Las páginas de Docker, los stacks y el Tablero no se ofrecen en él.
+**Incus** ejecuta contenedores de sistema y máquinas virtuales, las **instancias** de [la guía](/docs/guides/instances/). Homeport se conecta a él a través de su propia API REST, como decide el [ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md). Un host de Incus tiene sus propias páginas en la barra lateral: **Instancias**, **Imágenes**, **Perfiles**, **Almacenamiento** y **Redes**. Las páginas de Docker, los stacks y el Tablero no se ofrecen en él.
 
 ## Añadir un host de Incus
 

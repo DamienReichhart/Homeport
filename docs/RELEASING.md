@@ -6,7 +6,7 @@ Every push to `main` runs the **Release** workflow (`.github/workflows/release.y
 2. **CI and Build**, in parallel: the whole of `ci.yml` (frontend checks, licenses, Rust fmt, and clippy and tests on Linux, macOS and Windows), and a native build for each platform. Each build signs its installers for the in-app updater (`.sig` files), and the Linux builds sign the `.rpm` with the package key.
 3. **Publish**, once CI and every build passed: records a [build provenance attestation](https://docs.github.com/actions/security-for-github-actions/using-artifact-attestations) for each file, then creates the release with every installer, updater file and `SHA256SUMS.txt`. That creates the tag on the commit that was built.
 
-Once the release is out, the **Pages** workflow rebuilds the [website](https://damienreichhart.github.io/Homeport/) so its download page and changelog list the new version, and republishes the [package repositories and the update manifest](#package-repositories-and-updates) with it. From then on, installed copies see the update.
+Once the release is out, the **Pages** workflow rebuilds the [website](https://damienreichhart.github.io/homeport/) so its download page and changelog list the new version, and republishes the [package repositories and the update manifest](#package-repositories-and-updates) with it. From then on, installed copies see the update.
 
 Nothing is published unless every job succeeds. To retry, re-run the failed jobs, run the workflow from the Actions tab, or push a fix.
 
@@ -42,7 +42,7 @@ A version with a suffix (`1.0.0-beta.1`) is published as a prerelease and isn't 
 
 ## Data compatibility
 
-**Every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets.** The website makes the same promise to users ([Your data across versions](https://damienreichhart.github.io/Homeport/docs/reference/updating/#your-data-across-versions)); these rules and tests keep it:
+**Every version of Homeport opens the data of every earlier version, back to 0.1.0, and upgrades it without losing anything: Hosts, Stacks, Clusters, settings and secrets.** The website makes the same promise to users ([Your data across versions](https://damienreichhart.github.io/homeport/docs/reference/updating/#your-data-across-versions)); these rules and tests keep it:
 
 - **Migrations are append-only.** A change to the schema is a new file in `crates/foundation/storage/src/db/migrations/`, added at the end of `MIGRATION_SLICE`. A released `.sql` file is never edited, renamed, reordered or removed: a database that already ran it would end up with a different schema than a new one. `RELEASED`, next to the files, lists each released migration with its SHA-256 and the first release that shipped it, and `released_migrations_are_unchanged` (`crates/foundation/storage/src/db/mod.rs`) fails when a released file's bytes no longer match, or when a file isn't in `MIGRATION_SLICE`.
 - **A migration that reshapes a table copies every column.** Rebuilding a table (create the new one, copy, drop, rename, as `0015_swarm_stacks.sql` does) carries over every column of every row, sealed ones included. Two tests check it against a sample database of every release since 0.1.0 (`crates/foundation/storage/tests/fixtures/<version>.db`, built from that release's own migrations with rows of every kind it could store): `every_fixture_migrates_without_losing_a_row` (`crates/foundation/storage/tests/fixtures.rs`) counts the rows of each table before and after, and `src-tauri/tests/upgrade.rs` opens each fixture with today's code and reads every Host, Stack (Managed, Linked, Synced), deploy, registry login, repository, Cluster, setting and Engine event back through the stores, unsealing every secret. `every_release_has_a_fixture` compares the fixtures with `git tag`, so no release goes unchecked.
@@ -132,7 +132,7 @@ bun scripts/repositories.ts --out /tmp/site --packages target/release/bundle/deb
 
 ## Scoop and the AUR
 
-**Deferred until after 1.0** ([#7](https://github.com/DamienReichhart/Homeport/issues/7), [#8](https://github.com/DamienReichhart/Homeport/issues/8), milestone _Later_). Everything below is in place but dormant: no secret is set, so each release skips both channels with a notice, and the website lists them under **Coming later**. Shipping either is only the one-time setup below.
+**Deferred until after 1.0** ([#7](https://github.com/DamienReichhart/homeport/issues/7), [#8](https://github.com/DamienReichhart/homeport/issues/8), milestone _Later_). Everything below is in place but dormant: no secret is set, so each release skips both channels with a notice, and the website lists them under **Coming later**. Shipping either is only the one-time setup below.
 
 After a stable release is published, the **channels** job of the Release workflow renders, from the release's `SHA256SUMS.txt`, the Scoop manifest (`scoop/homeport.json`, both NSIS installers) and the AUR package (`aur/PKGBUILD` and `aur/.SRCINFO`, `homeport-bin` repackaging both `.deb` files) with `bun scripts/channels.ts`, and keeps them as the run's `channels` artifact. Then it updates each channel whose secret is set, and skips the others with a notice. Prereleases skip the job.
 
@@ -180,4 +180,4 @@ The installers are unsigned, so SmartScreen warns on first launch ("More info â†
 
 ### Linux
 
-The repositories and every `.rpm` are signed with the [package key](#signing-keys), which `apt`, `dnf` and `zypper` check. A downloaded `.deb` isn't signed itself; users can check it against `SHA256SUMS.txt` or with `gh attestation verify <file> --repo DamienReichhart/Homeport`.
+The repositories and every `.rpm` are signed with the [package key](#signing-keys), which `apt`, `dnf` and `zypper` check. A downloaded `.deb` isn't signed itself; users can check it against `SHA256SUMS.txt` or with `gh attestation verify <file> --repo DamienReichhart/homeport`.

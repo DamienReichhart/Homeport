@@ -25,7 +25,7 @@ Homeport è un’app [Tauri 2](https://tauri.app): un’interfaccia React e Type
 ## Eseguilo
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 I programmi di installazione per la tua piattaforma vengono scritti in `target/release/bundle/`. La build genera prima le note di licenza, e si ferma se la licenza di una dipendenza non è stata esaminata in `about.toml`.
 
-Le build locali non sono firmate per l’aggiornamento integrato nell’app e lasciano l’`.rpm` non firmato; solo il [workflow di release](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) ha le chiavi di firma. Una copia che compili da te controlla comunque gli aggiornamenti, ma il suo **Installa e riavvia** installa solo versioni firmate dal workflow di release.
+Le build locali non sono firmate per l’aggiornamento integrato nell’app e lasciano l’`.rpm` non firmato; solo il [workflow di release](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) ha le chiavi di firma. Una copia che compili da te controlla comunque gli aggiornamenti, ma il suo **Installa e riavvia** installa solo versioni firmate dal workflow di release.
 
 ## Comandi utili
 
@@ -86,7 +86,7 @@ Il sito si trova in `website/` ed è costruito con [Astro](https://astro.build) 
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

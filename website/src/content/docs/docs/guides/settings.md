@@ -116,6 +116,6 @@ Shows Homeport's version and the platform it was built for, for example `v1.0.0 
 
 **Open log folder** shows where Homeport writes its [log](/docs/reference/security/#logs).
 
-**Export diagnostics…** saves a zip to attach when you [report an issue](https://github.com/DamienReichhart/Homeport/issues/new/choose): a summary of versions and of the kinds of Hosts and Clusters you use, and the logs with secrets removed. The dialog shows what's in it first, and nothing is sent anywhere. See [Exporting diagnostics](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
+**Export diagnostics…** saves a zip to attach when you [report an issue](https://github.com/DamienReichhart/homeport/issues/new/choose): a summary of versions and of the kinds of Hosts and Clusters you use, and the logs with secrets removed. The dialog shows what's in it first, and nothing is sent anywhere. See [Exporting diagnostics](/docs/reference/troubleshooting/#exporting-diagnostics-for-a-bug-report).
 
 **Licenses** shows Homeport's licence (the GNU AGPL, version 3), a link to the source code of the version you run, and the notices of every open-source package it's built with.

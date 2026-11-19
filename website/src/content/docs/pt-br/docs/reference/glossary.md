@@ -151,7 +151,7 @@ Como o Homeport verifica os servidores SSH: você confirma a impressão digital 
 
 ## Em português do Brasil
 
-O aplicativo, a documentação e o site em português do Brasil usam estes termos, para que uma tela e uma página digam sempre a mesma coisa. Cada um dos outros idiomas tem a sua própria tabela em [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
+O aplicativo, a documentação e o site em português do Brasil usam estes termos, para que uma tela e uma página digam sempre a mesma coisa. Cada um dos outros idiomas tem a sua própria tabela em [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n).
 
 | Inglês         | Português do Brasil          |
 | -------------- | ---------------------------- |
