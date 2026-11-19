@@ -74,8 +74,8 @@ describe('pages', () => {
     const base = import.meta.env.BASE_URL;
     import.meta.env.BASE_URL = '/homeport/';
     try {
-      expect(pageLocale(new URL('https://example.com/Homeport/fr/download/'))).toBe(fr);
-      expect(pageLocale(new URL('https://example.com/Homeport/download/'))).toBe(ROOT_LOCALE);
+      expect(pageLocale(new URL('https://example.com/homeport/fr/download/'))).toBe(fr);
+      expect(pageLocale(new URL('https://example.com/homeport/download/'))).toBe(ROOT_LOCALE);
     } finally {
       import.meta.env.BASE_URL = base;
     }
