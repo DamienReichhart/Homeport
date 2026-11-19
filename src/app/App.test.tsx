@@ -66,8 +66,8 @@ describe('app', () => {
   });
 
   it.each([
-    ['Documentation', 'https://damienreichhart.github.io/Homeport/docs/'],
-    ['GitHub', 'https://github.com/DamienReichhart/Homeport'],
+    ['Documentation', 'https://damienreichhart.github.io/homeport/docs/'],
+    ['GitHub', 'https://github.com/DamienReichhart/homeport'],
   ])('opens %s in the browser from the bottom of the sidebar', async (label, url) => {
     renderApp('/settings');
     const nav = await screen.findByRole('navigation', { name: 'Main' });

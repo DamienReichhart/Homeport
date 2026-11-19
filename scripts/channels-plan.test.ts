@@ -32,13 +32,13 @@ describe('Scoop and AUR files', () => {
     const manifest = JSON.parse(scoopManifest('0.7.0', sums));
     expect(manifest.version).toBe('0.7.0');
     expect(manifest.architecture['64bit']).toEqual({
-      url: `https://github.com/DamienReichhart/Homeport/releases/download/v0.7.0/${f.windowsX64}`,
+      url: `https://github.com/DamienReichhart/homeport/releases/download/v0.7.0/${f.windowsX64}`,
       hash: hash('a'),
     });
     expect(manifest.architecture.arm64.hash).toBe(hash('b'));
     expect(manifest.installer.args.at(-1)).toBe('/D=$dir');
     expect(manifest.autoupdate.architecture['64bit'].url).toBe(
-      'https://github.com/DamienReichhart/Homeport/releases/download/v$version/Homeport-$version-windows-x64-setup.exe',
+      'https://github.com/DamienReichhart/homeport/releases/download/v$version/Homeport-$version-windows-x64-setup.exe',
     );
     expect(manifest.autoupdate.architecture.arm64.url).toContain(
       'v$version/Homeport-$version-windows-arm64-setup.exe',
@@ -52,7 +52,7 @@ describe('Scoop and AUR files', () => {
     expect(pkgbuild).toContain(`sha256sums_aarch64=('${hash('d')}')`);
     expect(pkgbuild).toContain('rm -rf "$pkgdir/usr/share/homeport"');
     expect(pkgbuild).toContain(
-      'source_x86_64=("https://github.com/DamienReichhart/Homeport/releases/download/v${pkgver}/Homeport-${pkgver}-linux-x64.deb")',
+      'source_x86_64=("https://github.com/DamienReichhart/homeport/releases/download/v${pkgver}/Homeport-${pkgver}-linux-x64.deb")',
     );
     expect(pkgbuild).toContain(
       'noextract=("Homeport-${pkgver}-linux-x64.deb" "Homeport-${pkgver}-linux-arm64.deb")',
@@ -62,7 +62,7 @@ describe('Scoop and AUR files', () => {
     expect(srcinfo).toContain('\tpkgver = 0.7.0');
     expect(srcinfo).toContain(`\tsha256sums_x86_64 = ${hash('c')}`);
     expect(srcinfo).toContain(
-      `\tsource_aarch64 = https://github.com/DamienReichhart/Homeport/releases/download/v0.7.0/${f.debArm64}`,
+      `\tsource_aarch64 = https://github.com/DamienReichhart/homeport/releases/download/v0.7.0/${f.debArm64}`,
     );
     expect(srcinfo.trim().endsWith('pkgname = homeport-bin')).toBe(true);
   });

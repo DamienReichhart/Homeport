@@ -5,7 +5,7 @@ description: Homeport についてよくある質問。
 
 ### Homeport は無料ですか？
 
-はい。Homeport は個人でも商用でも無料で使え、[GNU Affero General Public License バージョン 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE)（AGPL）のもとで公開されたオープンソースです。
+はい。Homeport は個人でも商用でも無料で使え、[GNU Affero General Public License バージョン 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE)（AGPL）のもとで公開されたオープンソースです。
 
 ### AGPL は自分にどう関係しますか？
 
@@ -138,4 +138,4 @@ Homeport は英語、フランス語、スペイン語、ドイツ語、イタ�
 
 ### 協力するにはどうすればよいですか？
 
-[GitHub の issue](https://github.com/DamienReichhart/Homeport/issues) でバグを報告したり機能を提案したりするか、[コントリビューション](/docs/project/contributing/)を参照してください。
+[GitHub の issue](https://github.com/DamienReichhart/homeport/issues) でバグを報告したり機能を提案したりするか、[コントリビューション](/docs/project/contributing/)を参照してください。

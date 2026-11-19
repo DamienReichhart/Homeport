@@ -3,18 +3,18 @@ title: 기여하기
 description: 문제를 보고하고, 기능을 제안하고, Homeport에 코드를 기여하는 방법.
 ---
 
-Homeport는 [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport)에서 공개적으로 개발됩니다. 규모와 관계없이 모든 기여를 환영합니다.
+Homeport는 [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport)에서 공개적으로 개발됩니다. 규모와 관계없이 모든 기여를 환영합니다.
 
 ## 버그 보고
 
-다음 내용을 담아 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues/new/choose).
+다음 내용을 담아 [이슈를 여세요](https://github.com/DamienReichhart/homeport/issues/new/choose).
 
 - 무엇을 했고, 무엇을 기대했고, 무슨 일이 일어났는지. 정확한 메시지가 가장 도움이 됩니다.
 - **설정 → 정보 → 진단 정보 내보내기…**에서 만드는 [진단 정보 번들](/docs/reference/troubleshooting/#버그-보고용-진단-정보-내보내기). Homeport의 버전과 플랫폼, 사용 중인 호스트, 엔진, 클러스터의 종류, 비밀 정보를 제거한 로그를 담은 zip 하나입니다. 저장하기 전에 내용을 확인할 수 있으며, 어디로도 아무것도 전송되지 않습니다.
 
 Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [로그 파일](/docs/reference/security/#로그)에서 관련 있는 내용을 적어 주세요.
 
-보안 문제는 [GitHub의 취약점 보고](https://github.com/DamienReichhart/Homeport/security/advisories/new)를 통해 비공개로 보고해 주세요.
+보안 문제는 [GitHub의 취약점 보고](https://github.com/DamienReichhart/homeport/security/advisories/new)를 통해 비공개로 보고해 주세요.
 
 ## 기능 제안
 
@@ -22,9 +22,9 @@ Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [�
 
 ## 코드 기여
 
-1. [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md)를 읽으세요. 기능은 독립적인 수직 슬라이스로 구성되고, 프런트엔드는 생성된 IPC 바인딩을 통해서만 Rust를 호출하며, Rust 로직은 Tauri 없이 단위 테스트하는 서비스에 있습니다.
-2. 코드, UI 텍스트, 커밋에서 [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md)에 있는 프로젝트 어휘(Host, Stack, Managed, External, Adopt)를 사용하세요. 주요 결정은 [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr)에 기록되어 있습니다.
-3. 색상과 어조는 [브랜드 가이드](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md)를 따르세요. 평이하고, 구체적이고, 차분하게, 영국식 철자로 씁니다.
+1. [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md)를 읽으세요. 기능은 독립적인 수직 슬라이스로 구성되고, 프런트엔드는 생성된 IPC 바인딩을 통해서만 Rust를 호출하며, Rust 로직은 Tauri 없이 단위 테스트하는 서비스에 있습니다.
+2. 코드, UI 텍스트, 커밋에서 [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md)에 있는 프로젝트 어휘(Host, Stack, Managed, External, Adopt)를 사용하세요. 주요 결정은 [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr)에 기록되어 있습니다.
+3. 색상과 어조는 [브랜드 가이드](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md)를 따르세요. 평이하고, 구체적이고, 차분하게, 영국식 철자로 씁니다.
 4. 다음이 통과하는지 확인하세요.
 
    ```sh
@@ -33,7 +33,7 @@ Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [�
    bun run rust:test
    ```
 
-5. 데이터 약속을 지키세요. Homeport의 모든 버전은 0.1.0까지 거슬러 올라가는 모든 이전 버전의 데이터를 열고, 호스트, 스택, 클러스터, 설정, 비밀 정보를 하나도 잃지 않고 업그레이드합니다. 스키마 변경은 새 마이그레이션으로 하며, 이미 릴리스된 마이그레이션을 고치지 않습니다. CI가 모든 릴리스의 샘플 데이터베이스로 이를 확인합니다. [데이터 호환성](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)을 참고하세요.
+5. 데이터 약속을 지키세요. Homeport의 모든 버전은 0.1.0까지 거슬러 올라가는 모든 이전 버전의 데이터를 열고, 호스트, 스택, 클러스터, 설정, 비밀 정보를 하나도 잃지 않고 업그레이드합니다. 스키마 변경은 새 마이그레이션으로 하며, 이미 릴리스된 마이그레이션을 고치지 않습니다. CI가 모든 릴리스의 샘플 데이터베이스로 이를 확인합니다. [데이터 호환성](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility)을 참고하세요.
 6. 커밋 메시지는 [Conventional Commits](https://www.conventionalcommits.org) 형식(`feat(stacks): …`, `fix(hosts): …`)으로 작성하세요. 릴리스 노트가 커밋 메시지에서 생성됩니다.
 7. `dev` 브랜치를 대상으로 풀 리퀘스트를 여세요. CI는 Linux에서 프런트엔드 검사와 라이선스 검사를, Linux, macOS, Windows에서 `cargo clippy`와 `cargo test`를 실행하므로 `#[cfg(windows)]`나 `#[cfg(target_os = "macos")]` 뒤의 코드도 병합 전에 컴파일됩니다. Docker Engine이 필요한 테스트에는 `#[ignore = "needs a local Docker Engine"]` 표시가 붙으며, 별도의 Linux 작업이 러너의 엔진으로 이 테스트를 실행합니다.
 
@@ -41,9 +41,9 @@ Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [�
 
 ### 앱에 텍스트 추가
 
-앱의 텍스트는 번역할 수 있도록 인라인이 아니라 카탈로그에 둡니다([ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). 문자열을 추가하려면 다음을 따르세요.
+앱의 텍스트는 번역할 수 있도록 인라인이 아니라 카탈로그에 둡니다([ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). 문자열을 추가하려면 다음을 따르세요.
 
-1. [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en)에서 기능의 파일에 키를 추가합니다. 이미지 기능은 `images.ts`, UI 키트는 `ui.ts`이고, `common.ts`는 어디서나 같은 뜻인 단어(Cancel, Close, Retry)에만 씁니다. 키는 파일 이름으로 시작하고 텍스트의 용도를 나타냅니다: `images.remove.title`, `images.column.size`.
+1. [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en)에서 기능의 파일에 키를 추가합니다. 이미지 기능은 `images.ts`, UI 키트는 `ui.ts`이고, `common.ts`는 어디서나 같은 뜻인 단어(Cancel, Close, Retry)에만 씁니다. 키는 파일 이름으로 시작하고 텍스트의 용도를 나타냅니다: `images.remove.title`, `images.column.size`.
 2. 값은 [ICU 메시지](https://formatjs.github.io/docs/core-concepts/icu-syntax/)로 작성합니다. 값에는 `{name}`을, 복수형은 직접 만들지 말고 `{count, plural, one {# image} other {# images}}`를, 강조에는 `tRich`로 렌더링되는 `<strong>…</strong>`을 씁니다. 문장 하나에 키 하나를 쓰고, 조각을 이어 붙이지 마세요. 언어마다 어순이 다르기 때문입니다.
 3. 컴포넌트, 뮤테이션, 토스트 어디서든 `@/shared/i18n`의 `t('images.remove.title', { name })`로 사용합니다. 키에는 타입이 있으므로 오타가 있으면 타입 검사가 실패합니다. 리터럴 키를 사용하세요. 텍스트가 값에 따라 달라지면 `` `containers.done.${action}` ``처럼 키를 조립하지 말고 값을 키에 매핑하세요(`{ start: 'containers.done.start', stop: 'containers.done.stop' }`).
 
@@ -53,7 +53,7 @@ Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [�
 
 ## Homeport 번역
 
-앱과 웹사이트는 영어, 프랑스어, 스페인어, 독일어, 이탈리아어, 브라질 포르투갈어, 러시아어, 중국어 간체, 일본어, 한국어, 힌디어, 아랍어를 지원합니다. 각 언어는 제품 용어마다 단어 하나를 씁니다. 번역하기 전에 [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n)에서 찾아보고, 새 용어를 정하면 그곳에 행을 추가하세요.
+앱과 웹사이트는 영어, 프랑스어, 스페인어, 독일어, 이탈리아어, 브라질 포르투갈어, 러시아어, 중국어 간체, 일본어, 한국어, 힌디어, 아랍어를 지원합니다. 각 언어는 제품 용어마다 단어 하나를 씁니다. 번역하기 전에 [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n)에서 찾아보고, 새 용어를 정하면 그곳에 행을 추가하세요.
 
 ### 문자열 추가 또는 변경
 
@@ -79,8 +79,8 @@ Homeport가 시작되지 않으면 대신 버전과 운영 체제, 그리고 [�
 
 ## 이 문서 개선
 
-모든 문서 페이지 하단에는 **페이지 편집** 링크가 있습니다. 페이지는 [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs)에 있는 Markdown 파일입니다.
+모든 문서 페이지 하단에는 **페이지 편집** 링크가 있습니다. 페이지는 [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs)에 있는 Markdown 파일입니다.
 
 ## 릴리스 방식
 
-새 버전 번호와 함께 `main`에 푸시하면 모든 플랫폼용 설치 프로그램을 빌드하고, 전체 테스트 모음을 실행하고, 체크섬과 빌드 출처가 포함된 GitHub 릴리스를 게시합니다. 과정은 [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md)에 설명되어 있습니다.
+새 버전 번호와 함께 `main`에 푸시하면 모든 플랫폼용 설치 프로그램을 빌드하고, 전체 테스트 모음을 실행하고, 체크섬과 빌드 출처가 포함된 GitHub 릴리스를 게시합니다. 과정은 [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md)에 설명되어 있습니다.

@@ -5,7 +5,7 @@ description: اسرد وحدات Quadlet على مضيف Podman مع حالته�
 
 **Quadlet** هو الطريقة التي يشغّل بها Podman خدمات طويلة الأمد تحت systemd. وحدة Quadlet ملف — `web.container` و`shop.pod` و`cache.volume` و`lan.network` و`app.kube` و`base.image` و`api.build` — يحوّله مولّد systemd إلى خدمة، `web.service`، تشغّل الحاوية عند الإقلاع وتعيد تشغيلها عندما تتوقف. يحتفظ Podman بصلاحيات الجذر بوحداته في `/etc/containers/systemd/`؛ ويحتفظ Podman دون صلاحيات الجذر بوحدات كل مستخدم في `~/.config/containers/systemd/`.
 
-تظهر صفحة **Quadlet** في الشريط الجانبي ما دام مضيف Podman محددًا. وهي تمر عبر واجهة Podman البرمجية الخاصة على المقبس الذي يستخدمه المضيف أصلًا، وعبر `systemctl` للتشغيل والإيقاف، كما يقرّر [ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md).
+تظهر صفحة **Quadlet** في الشريط الجانبي ما دام مضيف Podman محددًا. وهي تمر عبر واجهة Podman البرمجية الخاصة على المقبس الذي يستخدمه المضيف أصلًا، وعبر `systemctl` للتشغيل والإيقاف، كما يقرّر [ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md).
 
 ## ما يتيحه كل إصدار من Podman وكل اتصال
 

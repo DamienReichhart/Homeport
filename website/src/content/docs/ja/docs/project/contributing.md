@@ -3,18 +3,18 @@ title: コントリビューション
 description: 問題の報告、機能の提案、Homeport へのコードのコントリビューションの方法。
 ---
 
-Homeport は [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport) でオープンに開発されています。規模を問わず、コントリビューションを歓迎します。
+Homeport は [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport) でオープンに開発されています。規模を問わず、コントリビューションを歓迎します。
 
 ## バグの報告
 
-次の内容を添えて [issue を作成](https://github.com/DamienReichhart/Homeport/issues/new/choose)してください:
+次の内容を添えて [issue を作成](https://github.com/DamienReichhart/homeport/issues/new/choose)してください:
 
 - 何をしたか、何を期待したか、何が起きたか（正確なメッセージが最も役に立ちます）
 - **設定 → Homeport について → 診断情報をエクスポート…** で作成する[診断情報のバンドル](/docs/reference/troubleshooting/#バグ報告用の診断情報のエクスポート)。Homeport のバージョンとプラットフォーム、使用しているホスト、エンジン、クラスターの種類、シークレットを取り除いたログを 1 つの zip にまとめたものです。保存する前に中身を確認でき、どこにも何も送信されません。
 
 Homeport が起動しない場合は、代わりにそのバージョンとオペレーティングシステム、そして[ログファイル](/docs/reference/security/#ログ)の中の関連する部分を添えてください。
 
-セキュリティの問題は、[GitHub の脆弱性報告](https://github.com/DamienReichhart/Homeport/security/advisories/new)を通じて非公開で報告してください。
+セキュリティの問題は、[GitHub の脆弱性報告](https://github.com/DamienReichhart/homeport/security/advisories/new)を通じて非公開で報告してください。
 
 ## 機能の提案
 
@@ -22,9 +22,9 @@ Homeport が起動しない場合は、代わりにそのバージョンとオ�
 
 ## コードのコントリビューション
 
-1. [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md) を読んでください。機能は自己完結した縦割りのスライスで構成され、フロントエンドは生成された IPC バインディングを通じてのみ Rust を呼び出し、Rust のロジックは Tauri なしで単体テストされるサービスに置かれます。
-2. コード、UI のテキスト、コミットでは、[`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) にあるプロジェクトの用語（Host、Stack、Managed、External、Adopt）を使ってください。主な決定事項は [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr) に記録されています。
-3. 色と文体は[ブランドガイド](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md)に従ってください。平易に、具体的に、落ち着いて、イギリス式の綴りで書きます。
+1. [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md) を読んでください。機能は自己完結した縦割りのスライスで構成され、フロントエンドは生成された IPC バインディングを通じてのみ Rust を呼び出し、Rust のロジックは Tauri なしで単体テストされるサービスに置かれます。
+2. コード、UI のテキスト、コミットでは、[`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) にあるプロジェクトの用語（Host、Stack、Managed、External、Adopt）を使ってください。主な決定事項は [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr) に記録されています。
+3. 色と文体は[ブランドガイド](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md)に従ってください。平易に、具体的に、落ち着いて、イギリス式の綴りで書きます。
 4. 次が通ることを確認してください:
 
    ```sh
@@ -33,7 +33,7 @@ Homeport が起動しない場合は、代わりにそのバージョンとオ�
    bun run rust:test
    ```
 
-5. データの約束を守ってください。Homeport のどのバージョンも、0.1.0 までさかのぼるすべての以前のバージョンのデータを開き、何も失わずにアップグレードします。ホスト、スタック、クラスター、設定、シークレットのすべてです。スキーマの変更は新しいマイグレーションとして行い、リリース済みのマイグレーションを編集してはいけません。CI は、すべてのリリースのサンプルデータベースに対してこれを確認します。[データの互換性](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)を参照してください。
+5. データの約束を守ってください。Homeport のどのバージョンも、0.1.0 までさかのぼるすべての以前のバージョンのデータを開き、何も失わずにアップグレードします。ホスト、スタック、クラスター、設定、シークレットのすべてです。スキーマの変更は新しいマイグレーションとして行い、リリース済みのマイグレーションを編集してはいけません。CI は、すべてのリリースのサンプルデータベースに対してこれを確認します。[データの互換性](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility)を参照してください。
 6. コミットメッセージは [Conventional Commits](https://www.conventionalcommits.org) の形式（`feat(stacks): …`、`fix(hosts): …`）で書いてください。リリースノートはそこから生成されます。
 7. `dev` ブランチに対してプルリクエストを作成してください。CI は Linux でフロントエンドのチェックとライセンスのチェックを、Linux、macOS、Windows で `cargo clippy` と `cargo test` を実行するため、`#[cfg(windows)]` や `#[cfg(target_os = "macos")]` の下のコードもマージ前にコンパイルされます。Docker Engine が必要なテストには `#[ignore = "needs a local Docker Engine"]` を付けます。別の Linux のジョブが、ランナーのエンジンに対してそれらを実行します。
 
@@ -41,9 +41,9 @@ Homeport が起動しない場合は、代わりにそのバージョンとオ�
 
 ### アプリにテキストを追加する
 
-アプリのテキストは、翻訳できるように、インラインではなくカタログに置かれます（[ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)）。文字列を追加するには:
+アプリのテキストは、翻訳できるように、インラインではなくカタログに置かれます（[ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)）。文字列を追加するには:
 
-1. [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) にある機能のファイルにキーを追加します。images 機能なら `images.ts`、UI キットなら `ui.ts`、どこでも同じ意味の言葉（Cancel、Close、Retry）だけなら `common.ts` です。キーはファイル名で始まり、テキストの用途を表します: `images.remove.title`、`images.column.size`。
+1. [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) にある機能のファイルにキーを追加します。images 機能なら `images.ts`、UI キットなら `ui.ts`、どこでも同じ意味の言葉（Cancel、Close、Retry）だけなら `common.ts` です。キーはファイル名で始まり、テキストの用途を表します: `images.remove.title`、`images.column.size`。
 2. 値は [ICU メッセージ](https://formatjs.github.io/docs/core-concepts/icu-syntax/)として書きます。値には `{name}`、複数形は手で組み立てずに `{count, plural, one {# image} other {# images}}`、強調には `tRich` で描画される `<strong>…</strong>` を使います。1 文につき 1 キーにし、断片をつなぎ合わせないでください。語順は言語によって変わるためです。
 3. `@/shared/i18n` の `t('images.remove.title', { name })` で使います。コンポーネント、ミューテーション、トーストのどれでも同じです。キーには型が付いているため、打ち間違えると型チェックで失敗します。リテラルのキーを使ってください。テキストが値によって変わる場合は、`` `containers.done.${action}` `` を組み立てるのではなく、値をキーに対応付けます（`{ start: 'containers.done.start', stop: 'containers.done.stop' }`）。
 
@@ -53,7 +53,7 @@ Homeport が起動しない場合は、代わりにそのバージョンとオ�
 
 ## Homeport の翻訳
 
-アプリと Web サイトは、英語、フランス語、スペイン語、ドイツ語、イタリア語、ブラジルポルトガル語、ロシア語、簡体字中国語、日本語、韓国語、ヒンディー語、アラビア語に対応しています。各言語は製品の用語ごとに 1 つの言葉を使います。翻訳する前に [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) で調べ、新しい言葉を選んだときはそこに行を追加してください。
+アプリと Web サイトは、英語、フランス語、スペイン語、ドイツ語、イタリア語、ブラジルポルトガル語、ロシア語、簡体字中国語、日本語、韓国語、ヒンディー語、アラビア語に対応しています。各言語は製品の用語ごとに 1 つの言葉を使います。翻訳する前に [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) で調べ、新しい言葉を選んだときはそこに行を追加してください。
 
 ### 文字列の追加や変更
 
@@ -79,8 +79,8 @@ Homeport が起動しない場合は、代わりにそのバージョンとオ�
 
 ## このドキュメントの改善
 
-ドキュメントの各ページの下部には **ページを編集** のリンクがあります。ページは [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs) にある Markdown ファイルです。
+ドキュメントの各ページの下部には **ページを編集** のリンクがあります。ページは [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs) にある Markdown ファイルです。
 
 ## リリースの流れ
 
-新しいバージョン番号を含む `main` へのプッシュのたびに、すべてのプラットフォーム向けのインストーラーがビルドされ、テストスイート全体が実行され、チェックサムとビルド来歴付きの GitHub リリースが公開されます。手順は [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) で説明しています。
+新しいバージョン番号を含む `main` へのプッシュのたびに、すべてのプラットフォーム向けのインストーラーがビルドされ、テストスイート全体が実行され、チェックサムとビルド来歴付きの GitHub リリースが公開されます。手順は [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) で説明しています。

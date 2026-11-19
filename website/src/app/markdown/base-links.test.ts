@@ -26,8 +26,8 @@ function card(base: string, href: string): string | undefined {
 
 describe('baseLinks', () => {
   test('prefixes site paths with the base', () => {
-    expect(link('/Homeport', '/docs/installation/')).toBe('/Homeport/docs/installation/');
-    expect(card('/Homeport/', '/docs/hosts/')).toBe('/Homeport/docs/hosts/');
+    expect(link('/homeport', '/docs/installation/')).toBe('/homeport/docs/installation/');
+    expect(card('/homeport/', '/docs/hosts/')).toBe('/homeport/docs/hosts/');
   });
 
   test('leaves other links alone', () => {
@@ -36,11 +36,11 @@ describe('baseLinks', () => {
       '//cdn.example.com/x',
       '#ssh',
       'relative/',
-      '/Homeport/docs/',
+      '/homeport/docs/',
     ]) {
-      expect(link('/Homeport', href)).toBe(href);
+      expect(link('/homeport', href)).toBe(href);
     }
-    expect(card('/Homeport', 'https://example.com/')).toBeUndefined();
+    expect(card('/homeport', 'https://example.com/')).toBeUndefined();
   });
 
   test('does nothing on a custom domain', () => {
@@ -52,22 +52,22 @@ describe('baseLinks in a translated page', () => {
   const fr = (href: string) => {
     const node = { properties: { href } };
     let result = href;
-    (baseLinks('/Homeport', 'fr') as unknown as Visitors).element.visit(node, {
+    (baseLinks('/homeport', 'fr') as unknown as Visitors).element.visit(node, {
       setProperty: (_: unknown, _name: string, value: string) => (result = value),
     });
     return result;
   };
 
   test('keeps links to the docs and the translated pages in its language', () => {
-    expect(fr('/docs/hosts/')).toBe('/Homeport/fr/docs/hosts/');
-    expect(fr('/docs/hosts/ssh/#bastions')).toBe('/Homeport/fr/docs/hosts/ssh/#bastions');
-    expect(fr('/download/')).toBe('/Homeport/fr/download/');
-    expect(fr('/')).toBe('/Homeport/fr/');
-    expect(fr('/fr/docs/')).toBe('/Homeport/fr/docs/');
+    expect(fr('/docs/hosts/')).toBe('/homeport/fr/docs/hosts/');
+    expect(fr('/docs/hosts/ssh/#bastions')).toBe('/homeport/fr/docs/hosts/ssh/#bastions');
+    expect(fr('/download/')).toBe('/homeport/fr/download/');
+    expect(fr('/')).toBe('/homeport/fr/');
+    expect(fr('/fr/docs/')).toBe('/homeport/fr/docs/');
   });
 
   test('leaves the English-only pages and other links alone', () => {
-    expect(fr('/privacy/')).toBe('/Homeport/privacy/');
+    expect(fr('/privacy/')).toBe('/homeport/privacy/');
     expect(fr('https://example.com/docs/')).toBe('https://example.com/docs/');
   });
 

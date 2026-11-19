@@ -3,7 +3,7 @@ title: containerd
 description: このマシン上か SSH 経由で containerd に接続し、名前空間を選び、コンテナのタスクを実行し、ログを読み、シェルを開き、イメージとスナップショットを管理します。
 ---
 
-**containerd** は、k3s、nerdctl、BuildKit、そして Docker のない多くのサーバーの下で動いています。Homeport は、[ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) で決めたとおり、containerd 独自の gRPC API を通じて直接接続します。containerd のホストには、サイドバーに専用のページ（**コンテナ**、**イメージ**、**スナップショット**、**名前空間**）があります。Docker 用のページ、スタック、ボードは表示されません。
+**containerd** は、k3s、nerdctl、BuildKit、そして Docker のない多くのサーバーの下で動いています。Homeport は、[ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) で決めたとおり、containerd 独自の gRPC API を通じて直接接続します。containerd のホストには、サイドバーに専用のページ（**コンテナ**、**イメージ**、**スナップショット**、**名前空間**）があります。Docker 用のページ、スタック、ボードは表示されません。
 
 ## containerd のホストを追加する
 

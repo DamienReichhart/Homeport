@@ -31,7 +31,7 @@ When your operating system asks for reduced motion (**Reduce motion** on macOS, 
 
 Every page and the main dialogs are checked with [axe](https://github.com/dequelabs/axe-core) on each change: buttons, fields and regions have names, headings and landmarks are in order, and nothing misuses ARIA. Homeport sets the page's language, so a screen reader reads each language with its own voice, and Arabic is shown right to left.
 
-Homeport's window is a web view: WebKitGTK on Linux, WKWebView on macOS and WebView2 on Windows. A hands-on audit with Orca, VoiceOver and NVDA on each is under way ([#184](https://github.com/DamienReichhart/Homeport/issues/184)); until it's done, treat the screen-reader experience as tested by tools only.
+Homeport's window is a web view: WebKitGTK on Linux, WKWebView on macOS and WebView2 on Windows. A hands-on audit with Orca, VoiceOver and NVDA on each is under way ([#184](https://github.com/DamienReichhart/homeport/issues/184)); until it's done, treat the screen-reader experience as tested by tools only.
 
 ### Known limits
 
@@ -45,7 +45,7 @@ Text meets WCAG 2.2 AA (4.5:1) in both the light and the dark theme, and so do t
 
 ## Reporting a barrier
 
-If something stops you from using Homeport with your keyboard, screen reader, magnifier or other assistive technology, [open an issue](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility) with the `accessibility` label. Say:
+If something stops you from using Homeport with your keyboard, screen reader, magnifier or other assistive technology, [open an issue](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility) with the `accessibility` label. Say:
 
 - what you were trying to do, and where (page, dialog, Host kind);
 - your operating system and its version, and the assistive technology and its version;

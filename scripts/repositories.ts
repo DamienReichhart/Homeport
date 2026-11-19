@@ -78,7 +78,7 @@ function sign(fpr: string, file: string, mode: 'clearsign' | 'detach', output: s
 }
 
 async function githubReleases(): Promise<GitHubRelease[]> {
-  const repo = process.env.GITHUB_REPOSITORY ?? 'DamienReichhart/Homeport';
+  const repo = process.env.GITHUB_REPOSITORY ?? 'DamienReichhart/homeport';
   const headers: Record<string, string> = {
     accept: 'application/vnd.github+json',
     'user-agent': 'homeport-repositories-build',

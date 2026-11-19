@@ -151,7 +151,7 @@ La façon dont Homeport vérifie les serveurs SSH : vous confirmez l’empreint
 
 ## En français
 
-L’application, la documentation et le site web en français emploient ces termes, pour qu’un écran et une page disent toujours la même chose. Chaque autre langue a sa propre table dans [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
+L’application, la documentation et le site web en français emploient ces termes, pour qu’un écran et une page disent toujours la même chose. Chaque autre langue a sa propre table dans [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n).
 
 | Anglais        | Français                 |
 | -------------- | ------------------------ |

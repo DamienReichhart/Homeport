@@ -12,7 +12,7 @@ import { defineConfig } from '@playwright/test';
 
 const PORT = 4329;
 /** The base path astro.config.mjs builds for, without a trailing slash. */
-const base = (process.env.SITE_URL ? process.env.BASE_PATH || '/' : '/Homeport').replace(/\/$/, '');
+const base = (process.env.SITE_URL ? process.env.BASE_PATH || '/' : '/homeport').replace(/\/$/, '');
 
 export default defineConfig({
   testDir: 'e2e',

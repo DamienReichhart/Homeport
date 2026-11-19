@@ -93,7 +93,7 @@ Homeport never makes a new key over secrets it already holds. When the keychain 
 - **Import** on the other computer asks for the passphrase, then stores each Host's secrets encrypted under that computer's own keychain key, like any other.
 - A Host whose credentials are already lost on this computer is exported without them, and the export says which.
 
-Treat the file like the keys it holds: delete it once imported. The format is described in [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
+Treat the file like the keys it holds: delete it once imported. The format is described in [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
 
 ### Backups
 
@@ -179,4 +179,4 @@ Releases are built by GitHub Actions from the public source code. Each file come
 
 ## Reporting a vulnerability
 
-Please report security problems privately through [GitHub's private vulnerability reporting](https://github.com/DamienReichhart/Homeport/security/advisories/new) rather than a public issue.
+Please report security problems privately through [GitHub's private vulnerability reporting](https://github.com/DamienReichhart/homeport/security/advisories/new) rather than a public issue.

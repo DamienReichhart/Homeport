@@ -3,7 +3,7 @@ title: containerd
 description: Connect to containerd on this machine or over SSH, pick a namespace, run its containers' tasks, read their logs, open a shell, and manage images and snapshots.
 ---
 
-**containerd** runs underneath k3s, nerdctl, BuildKit and many servers that have no Docker. Homeport connects to it directly, through its own gRPC API, as [ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) decides. A containerd Host gets pages of its own in the sidebar: **Containers**, **Images**, **Snapshots** and **Namespaces**. Docker's pages, Stacks and the Board aren't offered on it.
+**containerd** runs underneath k3s, nerdctl, BuildKit and many servers that have no Docker. Homeport connects to it directly, through its own gRPC API, as [ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md) decides. A containerd Host gets pages of its own in the sidebar: **Containers**, **Images**, **Snapshots** and **Namespaces**. Docker's pages, Stacks and the Board aren't offered on it.
 
 ## Adding a containerd Host
 

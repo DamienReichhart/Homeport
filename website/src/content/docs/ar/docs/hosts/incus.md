@@ -3,7 +3,7 @@ title: Incus
 description: اتصل بـ Incus على هذا الجهاز، أو عبر SSH، أو عبر HTTPS برمز الثقة، واختر المشروع الذي تعرضه صفحاته.
 ---
 
-يشغّل **Incus** حاويات النظام والآلات الافتراضية، أي **المثيلات** الواردة في [الدليل](/docs/guides/instances/). يتصل به Homeport عبر واجهة REST API الخاصة به، كما يقرر [ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md). يحصل مضيف Incus على صفحات خاصة به في الشريط الجانبي: **المثيلات** و**الصور** و**ملفات التعريف** و**التخزين** و**الشبكات**. ولا تُتاح عليه صفحات Docker ولا المكدسات ولا اللوحة.
+يشغّل **Incus** حاويات النظام والآلات الافتراضية، أي **المثيلات** الواردة في [الدليل](/docs/guides/instances/). يتصل به Homeport عبر واجهة REST API الخاصة به، كما يقرر [ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md). يحصل مضيف Incus على صفحات خاصة به في الشريط الجانبي: **المثيلات** و**الصور** و**ملفات التعريف** و**التخزين** و**الشبكات**. ولا تُتاح عليه صفحات Docker ولا المكدسات ولا اللوحة.
 
 ## إضافة مضيف Incus
 

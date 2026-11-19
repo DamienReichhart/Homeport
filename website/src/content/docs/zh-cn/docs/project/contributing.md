@@ -3,18 +3,18 @@ title: 参与贡献
 description: 如何报告问题、建议功能以及为 Homeport 贡献代码。
 ---
 
-Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport) 上公开开发。欢迎任何规模的贡献。
+Homeport 在 [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport) 上公开开发。欢迎任何规模的贡献。
 
 ## 报告 bug
 
-[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new/choose)，并附上：
+[创建 issue](https://github.com/DamienReichhart/homeport/issues/new/choose)，并附上：
 
 - 你做了什么、预期结果是什么、实际发生了什么，确切的消息最有帮助；
 - 通过**设置 → 关于 → 导出诊断信息…**得到的[诊断包](/docs/reference/troubleshooting/#为-bug-报告导出诊断信息)：一个 zip，包含 Homeport 的版本和平台、你所用的主机、引擎和集群的类型，以及已移除机密的日志。保存前你可以查看其中的内容，且不会向任何地方发送任何东西。
 
 如果 Homeport 无法启动，请改为提供它的版本和你的操作系统，以及[日志文件](/docs/reference/security/#日志)中的任何相关内容。
 
-请通过 [GitHub 的漏洞报告](https://github.com/DamienReichhart/Homeport/security/advisories/new)私下报告安全问题。
+请通过 [GitHub 的漏洞报告](https://github.com/DamienReichhart/homeport/security/advisories/new)私下报告安全问题。
 
 ## 建议功能
 
@@ -22,9 +22,9 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 ## 贡献代码
 
-1. 阅读 [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md)。功能是自包含的垂直切片，前端只通过生成的 IPC 绑定调用 Rust，Rust 逻辑位于无需 Tauri 即可进行单元测试的服务中。
-2. 在代码、界面文本和提交中使用 [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) 中的项目词汇：Host、Stack、Managed、External、Adopt。主要决策记录在 [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr) 中。
-3. 颜色和语气遵循[品牌指南](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md)：朴实、具体、平和，使用英式拼写。
+1. 阅读 [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md)。功能是自包含的垂直切片，前端只通过生成的 IPC 绑定调用 Rust，Rust 逻辑位于无需 Tauri 即可进行单元测试的服务中。
+2. 在代码、界面文本和提交中使用 [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) 中的项目词汇：Host、Stack、Managed、External、Adopt。主要决策记录在 [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr) 中。
+3. 颜色和语气遵循[品牌指南](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md)：朴实、具体、平和，使用英式拼写。
 4. 确保以下命令通过：
 
    ```sh
@@ -33,7 +33,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
    bun run rust:test
    ```
 
-5. 遵守数据承诺：Homeport 的每个版本都能打开之前每个版本（一直到 0.1.0）的数据，并在升级时不丢失任何内容：主机、堆栈、集群、设置和机密。架构变更要写成新的迁移，绝不修改已发布的迁移，CI 会用每个版本的示例数据库检查这一点。参见[数据兼容性](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility)。
+5. 遵守数据承诺：Homeport 的每个版本都能打开之前每个版本（一直到 0.1.0）的数据，并在升级时不丢失任何内容：主机、堆栈、集群、设置和机密。架构变更要写成新的迁移，绝不修改已发布的迁移，CI 会用每个版本的示例数据库检查这一点。参见[数据兼容性](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility)。
 6. 提交信息遵循 [Conventional Commits](https://www.conventionalcommits.org)，例如 `feat(stacks): …`、`fix(hosts): …`。发布说明由它们生成。
 7. 针对 `dev` 分支创建 pull request。CI 会在 Linux 上运行前端检查和许可证检查，并在 Linux、macOS 和 Windows 上运行 `cargo clippy` 和 `cargo test`，因此 `#[cfg(windows)]` 或 `#[cfg(target_os = "macos")]` 下的代码在合并前都会被编译。需要 Docker Engine 的测试被标记为 `#[ignore = "needs a local Docker Engine"]`；一个单独的 Linux job 会在 runner 的引擎上运行这些测试。
 
@@ -41,9 +41,9 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 ### 向应用添加文本
 
-应用的文本保存在目录（catalogue）中，从不内联，以便翻译（[ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)）。添加字符串的步骤：
+应用的文本保存在目录（catalogue）中，从不内联，以便翻译（[ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)）。添加字符串的步骤：
 
-1. 在 [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) 中该功能的文件里添加一个键：镜像功能用 `images.ts`，UI 组件库用 `ui.ts`，`common.ts` 只用于在任何地方含义都相同的词（Cancel、Close、Retry）。键以文件名开头，并说明文本的用途：`images.remove.title`、`images.column.size`。
+1. 在 [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) 中该功能的文件里添加一个键：镜像功能用 `images.ts`，UI 组件库用 `ui.ts`，`common.ts` 只用于在任何地方含义都相同的词（Cancel、Close、Retry）。键以文件名开头，并说明文本的用途：`images.remove.title`、`images.column.size`。
 2. 将值写成 [ICU 消息](https://formatjs.github.io/docs/core-concepts/icu-syntax/)：用 `{name}` 表示值，用 `{count, plural, one {# image} other {# images}}` 代替手动构造复数，用 `<strong>…</strong>` 表示强调（通过 `tRich` 渲染）。每个句子一个键；不要把片段拼接在一起，因为不同语言的词序不同。
 3. 通过 `@/shared/i18n` 中的 `t('images.remove.title', { name })` 使用它，在组件、mutation 和 toast 中都一样。键是有类型的，因此拼写错误会导致类型检查失败。请使用字面量键：当文本取决于某个值时，将该值映射到键（`{ start: 'containers.done.start', stop: 'containers.done.stop' }`），而不是构造 `` `containers.done.${action}` ``。
 
@@ -53,7 +53,7 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 ## 翻译 Homeport
 
-应用和网站支持英语、法语、西班牙语、德语、意大利语、巴西葡萄牙语、俄语、简体中文、日语、韩语、印地语和阿拉伯语。每种语言对每个产品术语只使用一个词：翻译前请在 [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n) 中查找，选定新词时请在那里添加一行。
+应用和网站支持英语、法语、西班牙语、德语、意大利语、巴西葡萄牙语、俄语、简体中文、日语、韩语、印地语和阿拉伯语。每种语言对每个产品术语只使用一个词：翻译前请在 [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n) 中查找，选定新词时请在那里添加一行。
 
 ### 添加或修改字符串
 
@@ -79,8 +79,8 @@ Homeport 在 [github.com/DamienReichhart/Homeport](https://github.com/DamienReic
 
 ## 改进本文档
 
-每个文档页面底部都有一个**编辑此页**链接。这些页面是 [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs) 中的 Markdown 文件。
+每个文档页面底部都有一个**编辑此页**链接。这些页面是 [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs) 中的 Markdown 文件。
 
 ## 发布流程
 
-每次推送到 `main` 且版本号更新时，都会为每个平台构建安装程序，运行完整的测试套件，并发布一个包含校验和与构建来源证明的 GitHub release。该流程在 [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) 中有说明。
+每次推送到 `main` 且版本号更新时，都会为每个平台构建安装程序，运行完整的测试套件，并发布一个包含校验和与构建来源证明的 GitHub release。该流程在 [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) 中有说明。

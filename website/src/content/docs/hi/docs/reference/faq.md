@@ -5,7 +5,7 @@ description: Homeport के बारे में आम सवाल।
 
 ### क्या Homeport मुफ़्त है?
 
-हाँ। Homeport निजी और व्यावसायिक काम के लिए इस्तेमाल करने के लिए मुफ़्त है, और [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) (AGPL) के तहत ओपन सोर्स है।
+हाँ। Homeport निजी और व्यावसायिक काम के लिए इस्तेमाल करने के लिए मुफ़्त है, और [GNU Affero General Public License, version 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE) (AGPL) के तहत ओपन सोर्स है।
 
 ### मेरे लिए AGPL का क्या मतलब है?
 
@@ -138,4 +138,4 @@ Homeport अंग्रेज़ी, फ़्रेंच, स्पैनि�
 
 ### मैं कैसे मदद कर सकता हूँ?
 
-[GitHub issues](https://github.com/DamienReichhart/Homeport/issues) में बग की रिपोर्ट करें और सुविधाएँ सुझाएँ, या [योगदान देना](/docs/project/contributing/) देखें।
+[GitHub issues](https://github.com/DamienReichhart/homeport/issues) में बग की रिपोर्ट करें और सुविधाएँ सुझाएँ, या [योगदान देना](/docs/project/contributing/) देखें।

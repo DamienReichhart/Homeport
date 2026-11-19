@@ -3,7 +3,7 @@ title: Solução de problemas
 description: Correções para os problemas que você tem mais chance de encontrar, pela mensagem que o Homeport mostra.
 ---
 
-Se o seu problema não estiver aqui, [abra uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug) de **Configurações → Sobre**.
+Se o seu problema não estiver aqui, [abra uma issue](https://github.com/DamienReichhart/homeport/issues/new/choose) com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug) de **Configurações → Sobre**.
 
 ## Instalação e inicialização
 
@@ -335,7 +335,7 @@ O exec em uma máquina virtual passa pelo `incus-agent` dentro dela, que as pró
 
 ### "Algo deu errado"
 
-Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar à visão geral** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug).
+Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar à visão geral** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/homeport/issues/new/choose), com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug).
 
 ### "… não está conectado"
 

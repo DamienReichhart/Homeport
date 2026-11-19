@@ -6,7 +6,7 @@ description: ثبّت Homeport على Windows أو macOS أو Linux.
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-يتوفر Homeport بأدوات تثبيت لـ Windows وmacOS وLinux، لكل منها إصدار لـ x64 وARM. احصل عليها من [صفحة التنزيل](/download/)، التي توجّهك إلى الملف المناسب لنظامك، أو من [أحدث إصدار على GitHub](https://github.com/DamienReichhart/Homeport/releases/latest). وعلى Linux، يثبّته مستودع حزم Homeport بأمر واحد.
+يتوفر Homeport بأدوات تثبيت لـ Windows وmacOS وLinux، لكل منها إصدار لـ x64 وARM. احصل عليها من [صفحة التنزيل](/download/)، التي توجّهك إلى الملف المناسب لنظامك، أو من [أحدث إصدار على GitHub](https://github.com/DamienReichhart/homeport/releases/latest). وعلى Linux، يثبّته مستودع حزم Homeport بأمر واحد.
 
 يبقى كل تثبيت محدّثًا: يحدّث Homeport نفسه على Windows وmacOS ومع AppImage، وتُحدَّث حزم Linux مع بقية نظامك. راجع [التحديث](/docs/reference/updating/).
 
@@ -84,7 +84,7 @@ xattr -dr com.apple.quarantine /Applications/Homeport.app
 2. يضيف مستودع Homeport،
 3. يثبّت حزمة `homeport`، أو يحدّثها إذا كانت مثبّتة مسبقًا.
 
-تشغيله مرة أخرى لا يضر. يمكنك [قراءة السكربت](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh) أولًا، أو اتباع الإعداد اليدوي أدناه: فهو يفعل الشيء نفسه.
+تشغيله مرة أخرى لا يضر. يمكنك [قراءة السكربت](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh) أولًا، أو اتباع الإعداد اليدوي أدناه: فهو يفعل الشيء نفسه.
 
 ### الإعداد اليدوي
 
@@ -163,7 +163,7 @@ _لا يُسمح لـ Homeport باستخدام محرك Docker على /var/run/
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

@@ -93,7 +93,7 @@ Homeport ne crée jamais de nouvelle clé par-dessus des secrets qu’il détien
 - **Importer** sur l’autre ordinateur demande la phrase secrète, puis enregistre les secrets de chaque hôte chiffrés avec la propre clé de trousseau de cet ordinateur, comme les autres.
 - Un hôte dont les identifiants sont déjà perdus sur cet ordinateur est exporté sans eux, et l’export indique lesquels.
 
-Traitez le fichier comme les clés qu’il contient : supprimez-le une fois importé. Le format est décrit dans l’[ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
+Traitez le fichier comme les clés qu’il contient : supprimez-le une fois importé. Le format est décrit dans l’[ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
 
 ### Sauvegardes
 
@@ -179,4 +179,4 @@ Les releases sont construites par GitHub Actions à partir du code source public
 
 ## Signaler une vulnérabilité
 
-Merci de signaler les problèmes de sécurité en privé via le [signalement privé de vulnérabilités de GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new) plutôt que dans une issue publique.
+Merci de signaler les problèmes de sécurité en privé via le [signalement privé de vulnérabilités de GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new) plutôt que dans une issue publique.

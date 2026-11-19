@@ -116,6 +116,6 @@ Homeport의 버전과 빌드 대상 플랫폼을 보여 줍니다. 예: `v1.0.0 
 
 **로그 폴더 열기** 버튼은 Homeport가 [로그](/docs/reference/security/#로그)를 기록하는 곳을 보여 줍니다.
 
-**진단 정보 내보내기…** 버튼은 [문제를 보고](https://github.com/DamienReichhart/Homeport/issues/new/choose)할 때 첨부할 zip을 저장합니다. 버전과 사용 중인 호스트 및 클러스터 종류의 요약, 그리고 비밀 정보를 제거한 로그가 들어 있습니다. 대화 상자가 먼저 내용을 보여 주며, 어디로도 아무것도 전송되지 않습니다. [진단 정보 내보내기](/docs/reference/troubleshooting/#버그-보고용-진단-정보-내보내기)를 참고하세요.
+**진단 정보 내보내기…** 버튼은 [문제를 보고](https://github.com/DamienReichhart/homeport/issues/new/choose)할 때 첨부할 zip을 저장합니다. 버전과 사용 중인 호스트 및 클러스터 종류의 요약, 그리고 비밀 정보를 제거한 로그가 들어 있습니다. 대화 상자가 먼저 내용을 보여 주며, 어디로도 아무것도 전송되지 않습니다. [진단 정보 내보내기](/docs/reference/troubleshooting/#버그-보고용-진단-정보-내보내기)를 참고하세요.
 
 **라이선스** 항목은 Homeport의 라이선스(GNU AGPL 버전 3), 실행 중인 버전의 소스 코드 링크, 그리고 Homeport를 만드는 데 사용된 모든 오픈 소스 패키지의 고지 사항을 보여 줍니다.

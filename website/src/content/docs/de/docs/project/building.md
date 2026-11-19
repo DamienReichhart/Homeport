@@ -25,7 +25,7 @@ Homeport ist eine [Tauri-2](https://tauri.app)-App: eine Oberfläche in React un
 ## Ausführen
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 Die Installationsprogramme für Ihre Plattform werden nach `target/release/bundle/` geschrieben. Der Build erzeugt zuerst die Lizenzhinweise und bricht ab, wenn die Lizenz einer Abhängigkeit nicht in `about.toml` geprüft wurde.
 
-Lokale Builds sind nicht für den In-App-Updater signiert und lassen die `.rpm` unsigniert; nur der [Release-Workflow](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) hat die Signaturschlüssel. Eine selbst gebaute Kopie sucht trotzdem nach Updates, aber ihr **Installieren und neu starten** installiert nur Versionen, die vom Release-Workflow signiert wurden.
+Lokale Builds sind nicht für den In-App-Updater signiert und lassen die `.rpm` unsigniert; nur der [Release-Workflow](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) hat die Signaturschlüssel. Eine selbst gebaute Kopie sucht trotzdem nach Updates, aber ihr **Installieren und neu starten** installiert nur Versionen, die vom Release-Workflow signiert wurden.
 
 ## Nützliche Befehle
 
@@ -66,7 +66,7 @@ Die CI führt sie ebenfalls aus, im Job `engine-tests` von `.github/workflows/ci
 
 `e2e/` steuert die echte App – das Rust-Backend, die Webview und die Aufrufe zwischen beiden – mit [WebdriverIO](https://webdriver.io) über `tauri-driver`, gegen die lokale Docker Engine. Die Szenarien: Die App startet und verbindet sich mit der lokalen Engine; die Logs eines Containers werden gestreamt und er wird aus der App gestoppt; ein Image wird gepullt; ein verwalteter Stack wird mit einer verschlüsselten Umgebung bereitgestellt; ein Neustart behält die Hosts, den Stack und sein Geheimnis; und ein SSH-Host wird mit einem vorhandenen Schlüssel hinzugefügt, sein Serverschlüssel vertraut und er verbunden. Sie finden Elemente über Rolle, Beschriftung und Text, nie über CSS-Klassen.
 
-Sie laufen nur unter Linux: macOS hat keinen WebDriver für seine Webview. Neben den [Voraussetzungen](#voraussetzungen) und einer Docker Engine brauchen sie `tauri-driver` (`cargo install tauri-driver --locked`), den Treiber von WebKit, ein virtuelles Display und einen Schlüsselbund: unter Debian und Ubuntu `webkit2gtk-driver`, `xvfb`, `dbus-x11` und `gnome-keyring`.
+Sie laufen nur unter Linux: macOS hat keinen WebDriver für seine Webview. Neben den [Voraussetzungen](#voraussetzungen) und einer Docker Engine brauchen sie `tauri-driver` (`cargo install tauri-driver --locked`), den Treiber von WebKit, ein virtuelles Display und einen Schlüsselbund: unter Debian und Ubuntu `webkitgtk-webdriver` (`webkit2gtk-driver` vor Ubuntu 26.04 und Debian 13), `xvfb`, `dbus-x11` und `gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ Die Website liegt in `website/` und wird mit [Astro](https://astro.build) und [S
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

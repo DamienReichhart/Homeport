@@ -158,7 +158,7 @@ export interface NotesInput {
 }
 
 /** The website's download page, which offers each visitor the file for their computer. */
-const DOWNLOAD_PAGE = 'https://damienreichhart.github.io/Homeport/download/';
+const DOWNLOAD_PAGE = 'https://damienreichhart.github.io/homeport/download/';
 
 /** Markdown for the GitHub release: what changed, then which file to download. */
 export function releaseNotes({ version, previous, commits, repository }: NotesInput): string {
@@ -207,7 +207,7 @@ export function releaseNotes({ version, previous, commits, repository }: NotesIn
     '',
     "Files ending in `.sig` and `-update.app.tar.gz` are used by the in-app updater; you don't need them.",
     '',
-    'On Debian, Ubuntu, Fedora and openSUSE, the [Homeport package repository](https://damienreichhart.github.io/Homeport/docs/installation/#linux) installs it and keeps it up to date. Windows, macOS and AppImage installs update from the app.',
+    'On Debian, Ubuntu, Fedora and openSUSE, the [Homeport package repository](https://damienreichhart.github.io/homeport/docs/installation/#linux) installs it and keeps it up to date. Windows, macOS and AppImage installs update from the app.',
     '',
     'Check a download against `SHA256SUMS.txt`, or verify where it was built with',
     `\`gh attestation verify <file> --repo ${repository ?? '<owner>/<repo>'}\`.`,

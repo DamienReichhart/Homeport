@@ -151,7 +151,7 @@ Wie Homeport SSH-Server prüft: Sie bestätigen bei der ersten Verbindung den Fi
 
 ## Auf Deutsch
 
-Die deutsche App, Dokumentation und Website verwenden diese Begriffe, damit ein Bildschirm und eine Seite immer dasselbe sagen. Jede andere Sprache hat ihre eigene Tabelle in [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
+Die deutsche App, Dokumentation und Website verwenden diese Begriffe, damit ein Bildschirm und eine Seite immer dasselbe sagen. Jede andere Sprache hat ihre eigene Tabelle in [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n).
 
 | Englisch       | Deutsch                |
 | -------------- | ---------------------- |

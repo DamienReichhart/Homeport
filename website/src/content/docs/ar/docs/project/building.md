@@ -25,7 +25,7 @@ Homeport تطبيق [Tauri 2](https://tauri.app): واجهة بلغتي React و
 ## شغّله
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 تُكتب أدوات التثبيت الخاصة بمنصتك في `target/release/bundle/`. ينشئ البناء إشعارات التراخيص أولًا، ويتوقف إذا لم يُراجَع ترخيص إحدى التبعيات في `about.toml`.
 
-لا تُوقَّع عمليات البناء المحلية لأداة التحديث داخل التطبيق، وتترك حزمة `.rpm` غير موقّعة؛ إذ لا يملك مفاتيح التوقيع سوى [سير عمل الإصدار](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md). النسخة التي تبنيها بنفسك تظل تتحقق من التحديثات، لكن **تثبيت وإعادة التشغيل** فيها لا يثبّت إلا الإصدارات الموقّعة من سير عمل الإصدار.
+لا تُوقَّع عمليات البناء المحلية لأداة التحديث داخل التطبيق، وتترك حزمة `.rpm` غير موقّعة؛ إذ لا يملك مفاتيح التوقيع سوى [سير عمل الإصدار](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md). النسخة التي تبنيها بنفسك تظل تتحقق من التحديثات، لكن **تثبيت وإعادة التشغيل** فيها لا يثبّت إلا الإصدارات الموقّعة من سير عمل الإصدار.
 
 ## أوامر مفيدة
 
@@ -66,7 +66,7 @@ cargo test --workspace --exclude homeport -- --ignored
 
 يقود `e2e/` التطبيق الحقيقي — الواجهة الخلفية بلغة Rust، وwebview، والاستدعاءات بينهما — باستخدام [WebdriverIO](https://webdriver.io) عبر `tauri-driver`، مقابل محرك Docker المحلي. السيناريوهات: يبدأ التطبيق ويتصل بالمحرك المحلي؛ وتتدفق سجلات حاوية وتتوقف من التطبيق؛ وتُسحب صورة؛ ويُنشر مكدس مُدار ببيئة مشفّرة؛ وتُبقي إعادة التشغيل المضيفات والمكدس وسرّه؛ ويُضاف مضيف SSH بمفتاح موجود، ويُوثق بمفتاح خادمه، ويتصل. وهي تعثر على العناصر حسب الدور والتسمية والنص، ولا تعتمد أبدًا على فئات CSS.
 
-لا تعمل إلا على Linux: لا يوجد على macOS برنامج WebDriver لـ webview الخاص به. وإلى جانب [المتطلبات المسبقة](#المتطلبات-المسبقة) ومحرك Docker، تحتاج إلى `tauri-driver` (`cargo install tauri-driver --locked`)، وبرنامج تشغيل WebKit، وشاشة افتراضية، وسلسلة مفاتيح: على Debian وUbuntu، `webkit2gtk-driver` و`xvfb` و`dbus-x11` و`gnome-keyring`.
+لا تعمل إلا على Linux: لا يوجد على macOS برنامج WebDriver لـ webview الخاص به. وإلى جانب [المتطلبات المسبقة](#المتطلبات-المسبقة) ومحرك Docker، تحتاج إلى `tauri-driver` (`cargo install tauri-driver --locked`)، وبرنامج تشغيل WebKit، وشاشة افتراضية، وسلسلة مفاتيح: على Debian وUbuntu، `webkitgtk-webdriver` (`webkit2gtk-driver` قبل Ubuntu 26.04 وDebian 13) و`xvfb` و`dbus-x11` و`gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

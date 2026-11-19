@@ -25,7 +25,7 @@ Homeport is a [Tauri 2](https://tauri.app) app: a React and TypeScript interface
 ## Run it
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 Installers for your platform are written to `target/release/bundle/`. The build generates the licence notices first, and stops if a dependency's licence hasn't been reviewed in `about.toml`.
 
-Local builds aren't signed for the in-app updater and leave the `.rpm` unsigned; only the [release workflow](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) has the signing keys. A copy you build yourself still checks for updates, but its **Install and restart** only installs versions signed by the release workflow.
+Local builds aren't signed for the in-app updater and leave the `.rpm` unsigned; only the [release workflow](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) has the signing keys. A copy you build yourself still checks for updates, but its **Install and restart** only installs versions signed by the release workflow.
 
 ## Useful commands
 
@@ -66,7 +66,7 @@ CI runs them too, in the `engine-tests` job of `.github/workflows/ci.yml`, on ev
 
 `e2e/` drives the real app — the Rust backend, the webview and the calls between them — with [WebdriverIO](https://webdriver.io) through `tauri-driver`, against the local Docker Engine. The scenarios: the app starts and connects to the local Engine; a container's logs stream and it stops from the app; an image is pulled; a Managed Stack is deployed with an encrypted environment; a restart keeps the Hosts, the Stack and its secret; and an SSH Host is added with an existing key, its server key trusted, and connected. They find elements by role, label and text, never by CSS class.
 
-They run on Linux only: macOS has no WebDriver for its webview. Besides the [prerequisites](#prerequisites) and a Docker Engine, they need `tauri-driver` (`cargo install tauri-driver --locked`), WebKit's driver, a virtual display and a keyring: on Debian and Ubuntu, `webkit2gtk-driver`, `xvfb`, `dbus-x11` and `gnome-keyring`.
+They run on Linux only: macOS has no WebDriver for its webview. Besides the [prerequisites](#prerequisites) and a Docker Engine, they need `tauri-driver` (`cargo install tauri-driver --locked`), WebKit's driver, a virtual display and a keyring: on Debian and Ubuntu, `webkitgtk-webdriver` (`webkit2gtk-driver` before Ubuntu 26.04 and Debian 13), `xvfb`, `dbus-x11` and `gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ The site lives in `website/` and is built with [Astro](https://astro.build) and 
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

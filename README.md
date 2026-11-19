@@ -7,7 +7,7 @@
 
 **Every Docker Engine, on one board.**
 
-[Website](https://damienreichhart.github.io/Homeport/) · [Documentation](https://damienreichhart.github.io/Homeport/docs/) · [Download](https://damienreichhart.github.io/Homeport/download/)
+[Website](https://damienreichhart.github.io/homeport/) · [Documentation](https://damienreichhart.github.io/homeport/docs/) · [Download](https://damienreichhart.github.io/homeport/download/)
 
 A desktop app for managing Docker Engines, containerd and Incus anywhere — this machine's, or remote ones over SSH, TLS or TCP — the Swarms they form, and the Kubernetes clusters your kubeconfig reaches and the Nomad clusters you name, in the spirit of Docker Desktop. Built with [Tauri 2](https://tauri.app), React 19, TypeScript and Rust ([bollard](https://github.com/fussybeaver/bollard) for the Engine API, [tonic](https://github.com/hyperium/tonic) for containerd's, Incus's REST API over the same connections, [kube-rs](https://kube.rs) for Kubernetes, Nomad's HTTP API with reqwest, SQLite for its own data).
 
@@ -38,12 +38,12 @@ Secrets (SSH keys, TLS material, kubeconfig credentials, stack environments, reg
 On Debian, Ubuntu, Fedora, RHEL and openSUSE, install it from the Homeport package repository, so `apt`, `dnf` or `zypper` keeps it up to date:
 
 ```sh
-curl -fsSL https://damienreichhart.github.io/Homeport/install.sh | sh
+curl -fsSL https://damienreichhart.github.io/homeport/install.sh | sh
 ```
 
-The [installation guide](https://damienreichhart.github.io/Homeport/docs/installation/#manual-setup) shows the same setup step by step, without the script.
+The [installation guide](https://damienreichhart.github.io/homeport/docs/installation/#manual-setup) shows the same setup step by step, without the script.
 
-Installers for Windows 10 and 11 (x64 and ARM64), macOS 10.15 or later (Apple silicon and Intel) and Linux with glibc 2.35 or later, such as Ubuntu 22.04, Debian 12 and Fedora 36 (x64 and ARM64), are on the [download page](https://damienreichhart.github.io/Homeport/download/) and the [releases page](https://github.com/DamienReichhart/Homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned after 1.0 ([#5 to #10](https://github.com/DamienReichhart/Homeport/milestone/18)).
+Installers for Windows 10 and 11 (x64 and ARM64), macOS 10.15 or later (Apple silicon and Intel) and Linux with glibc 2.35 or later, such as Ubuntu 22.04, Debian 12 and Fedora 36 (x64 and ARM64), are on the [download page](https://damienreichhart.github.io/homeport/download/) and the [releases page](https://github.com/DamienReichhart/homeport/releases/latest). Windows, macOS and AppImage installs update themselves from inside Homeport. Homebrew, winget, Scoop, the AUR, Flathub and Snap are planned after 1.0 ([#5 to #10](https://github.com/DamienReichhart/homeport/milestone/18)).
 
 Pushing a new version to `main` publishes it; see [docs/RELEASING.md](docs/RELEASING.md).
 
@@ -86,7 +86,7 @@ The website and user documentation live in [`website/`](website), built with [As
 ```sh
 cd website
 bun install
-bun run dev     # http://localhost:4321/Homeport/
+bun run dev     # http://localhost:4321/homeport/
 bun run lint    # checks the layers (docs/ARCHITECTURE.md#website-layout) and file sizes
 bun run test    # unit tests (bun test), next to the code they test
 bun run build   # type-checks, validates links and builds into website/dist/

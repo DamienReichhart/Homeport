@@ -5,7 +5,7 @@ description: Elenca le unità Quadlet di un host Podman con il loro stato system
 
 **Quadlet** è il modo in cui Podman esegue servizi di lunga durata sotto systemd. Un’unità Quadlet è un file (`web.container`, `shop.pod`, `cache.volume`, `lan.network`, `app.kube`, `base.image`, `api.build`) che il generatore di systemd trasforma in un servizio, `web.service`, che avvia il container all’avvio del sistema e lo riavvia quando si arresta. Podman rootful tiene le sue unità in `/etc/containers/systemd/`; Podman rootless tiene quelle di ogni utente in `~/.config/containers/systemd/`.
 
-La pagina **Quadlet** compare nella barra laterale quando è selezionato un host Podman. Passa dall’API di Podman stesso sul socket che l’host usa già, e da `systemctl` per avviare e arrestare, come stabilisce l’[ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md).
+La pagina **Quadlet** compare nella barra laterale quando è selezionato un host Podman. Passa dall’API di Podman stesso sul socket che l’host usa già, e da `systemctl` per avviare e arrestare, come stabilisce l’[ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md).
 
 ## Cosa consente ogni versione di Podman e ogni connessione
 

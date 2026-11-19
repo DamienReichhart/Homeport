@@ -31,7 +31,7 @@ Quando o seu sistema operacional pede movimento reduzido (**Reduzir movimento** 
 
 Todas as páginas e as principais caixas de diálogo são verificadas com o [axe](https://github.com/dequelabs/axe-core) a cada mudança: botões, campos e regiões têm nomes, os títulos e os pontos de referência estão em ordem, e nada usa ARIA de forma indevida. O Homeport define o idioma da página, para que um leitor de tela leia cada idioma com a voz própria dele, e o árabe é exibido da direita para a esquerda.
 
-A janela do Homeport é um web view: WebKitGTK no Linux, WKWebView no macOS e WebView2 no Windows. Uma auditoria prática com o Orca, o VoiceOver e o NVDA em cada um está em andamento ([#184](https://github.com/DamienReichhart/Homeport/issues/184)); até que ela termine, considere a experiência com leitores de tela como testada apenas por ferramentas.
+A janela do Homeport é um web view: WebKitGTK no Linux, WKWebView no macOS e WebView2 no Windows. Uma auditoria prática com o Orca, o VoiceOver e o NVDA em cada um está em andamento ([#184](https://github.com/DamienReichhart/homeport/issues/184)); até que ela termine, considere a experiência com leitores de tela como testada apenas por ferramentas.
 
 ### Limites conhecidos
 
@@ -45,7 +45,7 @@ O texto atende ao WCAG 2.2 AA (4,5:1) tanto no tema claro quanto no escuro, assi
 
 ## Relatar uma barreira
 
-Se algo impedir você de usar o Homeport com o teclado, o leitor de tela, a lupa ou outra tecnologia assistiva, [abra uma issue](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility) com o rótulo `accessibility`. Diga:
+Se algo impedir você de usar o Homeport com o teclado, o leitor de tela, a lupa ou outra tecnologia assistiva, [abra uma issue](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility) com o rótulo `accessibility`. Diga:
 
 - o que você estava tentando fazer, e onde (página, caixa de diálogo, tipo de host);
 - o seu sistema operacional e a versão dele, e a tecnologia assistiva e a versão dela;

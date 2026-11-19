@@ -5,7 +5,7 @@ description: Podman 호스트의 Quadlet 유닛을 systemd 상태와 함께 나�
 
 Podman은 **Quadlet** 방식으로 systemd 아래에서 오래 실행되는 서비스를 실행합니다. Quadlet 유닛은 `web.container`, `shop.pod`, `cache.volume`, `lan.network`, `app.kube`, `base.image`, `api.build` 같은 파일이며, systemd의 생성기가 이를 `web.service` 같은 서비스로 바꿉니다. 이 서비스는 부팅할 때 컨테이너를 시작하고, 컨테이너가 중지되면 다시 시작합니다. rootful Podman은 유닛을 `/etc/containers/systemd/`에 보관하고, rootless Podman은 각 사용자의 유닛을 `~/.config/containers/systemd/`에 보관합니다.
 
-**Quadlet** 페이지는 Podman 호스트를 선택한 동안 사이드바에 나타납니다. [ADR 0019](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md)에서 정한 대로, 호스트가 이미 사용하는 소켓을 통해 Podman 자체 API를 사용하고, 시작과 중지에는 `systemctl`을 사용합니다.
+**Quadlet** 페이지는 Podman 호스트를 선택한 동안 사이드바에 나타납니다. [ADR 0019](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0019-quadlet-units-through-podmans-api-and-systemctl.md)에서 정한 대로, 호스트가 이미 사용하는 소켓을 통해 Podman 자체 API를 사용하고, 시작과 중지에는 `systemctl`을 사용합니다.
 
 ## Podman 버전과 연결별로 가능한 작업
 

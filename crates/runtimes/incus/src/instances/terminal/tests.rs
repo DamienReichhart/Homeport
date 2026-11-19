@@ -74,9 +74,18 @@ async fn read_until(
     rx: &mut tokio::sync::mpsc::UnboundedReceiver<ExecEvent>,
     until: &str,
 ) -> (String, Option<ExecEvent>) {
+    read_until_within(rx, until, Duration::from_secs(20)).await
+}
+
+/// [`read_until`], giving up once nothing is printed for `quiet`.
+async fn read_until_within(
+    rx: &mut tokio::sync::mpsc::UnboundedReceiver<ExecEvent>,
+    until: &str,
+    quiet: Duration,
+) -> (String, Option<ExecEvent>) {
     let mut text = String::new();
     loop {
-        match tokio::time::timeout(Duration::from_secs(20), rx.recv()).await {
+        match tokio::time::timeout(quiet, rx.recv()).await {
             Ok(Some(ExecEvent::Output { data })) => {
                 text.push_str(&data);
                 if text.contains(until) {
@@ -154,8 +163,18 @@ async fn incus_live_exec_and_console_open_on_a_running_instance() {
         .await
         .unwrap();
     let mut rx = collect(console.clone(), output);
-    console.write(b"\n").await.unwrap();
-    let (text, _) = read_until(&mut rx, "login").await;
+    // The console is the boot console: while the instance still boots, its
+    // getty is not up and a newline brings no prompt, so press Enter again
+    // until one shows.
+    let mut text = String::new();
+    for _ in 0..12 {
+        console.write(b"\n").await.unwrap();
+        let (more, _) = read_until_within(&mut rx, "login", Duration::from_secs(5)).await;
+        text.push_str(&more);
+        if text.contains("login") {
+            break;
+        }
+    }
     assert!(text.contains("login"), "{text:?}");
     console.close().await;
 

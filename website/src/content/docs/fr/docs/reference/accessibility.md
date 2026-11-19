@@ -31,7 +31,7 @@ Quand votre système d’exploitation demande des animations réduites (**Rédui
 
 Chaque page et les principales boîtes de dialogue sont vérifiées avec [axe](https://github.com/dequelabs/axe-core) à chaque modification : les boutons, champs et régions ont des noms, les titres et les repères sont dans l’ordre, et rien ne fait un mauvais usage d’ARIA. Homeport définit la langue de la page, pour qu’un lecteur d’écran lise chaque langue avec sa propre voix, et l’arabe s’affiche de droite à gauche.
 
-La fenêtre de Homeport est une vue web : WebKitGTK sous Linux, WKWebView sous macOS et WebView2 sous Windows. Un audit manuel avec Orca, VoiceOver et NVDA sur chacune est en cours ([#184](https://github.com/DamienReichhart/Homeport/issues/184)) ; tant qu’il n’est pas terminé, considérez que l’expérience avec un lecteur d’écran n’a été testée que par des outils.
+La fenêtre de Homeport est une vue web : WebKitGTK sous Linux, WKWebView sous macOS et WebView2 sous Windows. Un audit manuel avec Orca, VoiceOver et NVDA sur chacune est en cours ([#184](https://github.com/DamienReichhart/homeport/issues/184)) ; tant qu’il n’est pas terminé, considérez que l’expérience avec un lecteur d’écran n’a été testée que par des outils.
 
 ### Limites connues
 
@@ -45,7 +45,7 @@ Le texte respecte WCAG 2.2 AA (4,5:1) dans le thème clair comme dans le thème 
 
 ## Signaler un obstacle
 
-Si quelque chose vous empêche d’utiliser Homeport avec votre clavier, votre lecteur d’écran, votre loupe ou une autre technologie d’assistance, [ouvrez une issue](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility) avec le label `accessibility`. Indiquez :
+Si quelque chose vous empêche d’utiliser Homeport avec votre clavier, votre lecteur d’écran, votre loupe ou une autre technologie d’assistance, [ouvrez une issue](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility) avec le label `accessibility`. Indiquez :
 
 - ce que vous essayiez de faire, et où (page, boîte de dialogue, type d’hôte) ;
 - votre système d’exploitation et sa version, et la technologie d’assistance et sa version ;

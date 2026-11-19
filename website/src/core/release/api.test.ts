@@ -47,7 +47,7 @@ function respond(routes: Record<string, Response>) {
   });
 }
 
-const api = 'https://api.github.com/repos/DamienReichhart/Homeport/releases?per_page=50';
+const api = 'https://api.github.com/repos/DamienReichhart/homeport/releases?per_page=50';
 const env = { ...process.env };
 
 beforeEach(() => {

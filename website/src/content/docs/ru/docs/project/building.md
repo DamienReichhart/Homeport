@@ -25,7 +25,7 @@ Homeport — приложение на [Tauri 2](https://tauri.app): интер�
 ## Запуск
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 Установщики для вашей платформы записываются в `target/release/bundle/`. Сборка сначала формирует лицензионные уведомления и останавливается, если лицензия какой-либо зависимости не проверена в `about.toml`.
 
-Локальные сборки не подписаны для встроенного средства обновления, а `.rpm` остаётся неподписанным; ключи подписи есть только у [процесса выпуска](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md). Собранная вами копия всё равно проверяет обновления, но её кнопка **Установить и перезапустить** устанавливает только версии, подписанные процессом выпуска.
+Локальные сборки не подписаны для встроенного средства обновления, а `.rpm` остаётся неподписанным; ключи подписи есть только у [процесса выпуска](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md). Собранная вами копия всё равно проверяет обновления, но её кнопка **Установить и перезапустить** устанавливает только версии, подписанные процессом выпуска.
 
 ## Полезные команды
 
@@ -66,7 +66,7 @@ CI тоже запускает их — в задании `engine-tests` фай�
 
 `e2e/` управляет настоящим приложением — бэкендом на Rust, webview и вызовами между ними — с помощью [WebdriverIO](https://webdriver.io) через `tauri-driver`, с локальным Docker Engine. Сценарии: приложение запускается и подключается к локальному движку; журналы контейнера передаются потоком, и контейнер останавливается из приложения; образ скачивается; управляемый стек разворачивается с зашифрованным окружением; после перезапуска сохраняются хосты, стек и его секрет; SSH-хост добавляется с существующим ключом, ключ его сервера принимается как доверенный, и хост подключается. Тесты находят элементы по роли, подписи и тексту, но никогда по CSS-классу.
 
-Они работают только в Linux: в macOS нет WebDriver для его webview. Помимо [того, что нужно заранее](#что-нужно-заранее), и Docker Engine, им нужны `tauri-driver` (`cargo install tauri-driver --locked`), драйвер WebKit, виртуальный дисплей и связка ключей: в Debian и Ubuntu — `webkit2gtk-driver`, `xvfb`, `dbus-x11` и `gnome-keyring`.
+Они работают только в Linux: в macOS нет WebDriver для его webview. Помимо [того, что нужно заранее](#что-нужно-заранее), и Docker Engine, им нужны `tauri-driver` (`cargo install tauri-driver --locked`), драйвер WebKit, виртуальный дисплей и связка ключей: в Debian и Ubuntu — `webkitgtk-webdriver` (`webkit2gtk-driver` до Ubuntu 26.04 и Debian 13), `xvfb`, `dbus-x11` и `gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

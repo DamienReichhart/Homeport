@@ -3,7 +3,7 @@ title: Incus
 description: 连接本机上的 Incus，或通过 SSH、通过带信任令牌的 HTTPS 连接，并选择其页面显示的项目。
 ---
 
-**Incus** 运行系统容器和虚拟机，即[指南](/docs/guides/instances/)中的**实例**。Homeport 通过 Incus 自身的 REST API 连接它，这是 [ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) 的决定。Incus 主机在侧边栏中有自己的页面：**实例**、**镜像**、**配置文件**、**存储**和**网络**。Docker 的页面、堆栈和看板在其上不可用。
+**Incus** 运行系统容器和虚拟机，即[指南](/docs/guides/instances/)中的**实例**。Homeport 通过 Incus 自身的 REST API 连接它，这是 [ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) 的决定。Incus 主机在侧边栏中有自己的页面：**实例**、**镜像**、**配置文件**、**存储**和**网络**。Docker 的页面、堆栈和看板在其上不可用。
 
 ## 添加 Incus 主机
 

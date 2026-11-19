@@ -151,7 +151,7 @@ Cómo comprueba Homeport los servidores SSH: confirmas la huella de la clave de 
 
 ## En español
 
-La app, la documentación y el sitio web en español usan estos términos, para que una pantalla y una página digan siempre lo mismo. Cada uno de los demás idiomas tiene su propia tabla en [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n).
+La app, la documentación y el sitio web en español usan estos términos, para que una pantalla y una página digan siempre lo mismo. Cada uno de los demás idiomas tiene su propia tabla en [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n).
 
 | Inglés         | Español                  |
 | -------------- | ------------------------ |

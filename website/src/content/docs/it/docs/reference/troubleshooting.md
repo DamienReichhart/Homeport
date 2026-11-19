@@ -3,7 +3,7 @@ title: Risoluzione dei problemi
 description: Soluzioni ai problemi che è più probabile incontrare, in base al messaggio mostrato da Homeport.
 ---
 
-Se il tuo problema non è qui, [apri una issue](https://github.com/DamienReichhart/Homeport/issues/new/choose) con il [pacchetto di diagnostica](#esportare-la-diagnostica-per-una-segnalazione-di-bug) da **Impostazioni → Informazioni**.
+Se il tuo problema non è qui, [apri una issue](https://github.com/DamienReichhart/homeport/issues/new/choose) con il [pacchetto di diagnostica](#esportare-la-diagnostica-per-una-segnalazione-di-bug) da **Impostazioni → Informazioni**.
 
 ## Installazione e avvio
 
@@ -335,7 +335,7 @@ L’esecuzione di comandi in una macchina virtuale passa per l’`incus-agent` a
 
 ### «Si è verificato un problema»
 
-Una pagina di Homeport ha incontrato un problema imprevisto e mostra questo messaggio al posto del suo contenuto; la barra laterale funziona ancora. **Ricarica** di solito riporta la pagina, e **Torna alla panoramica** la abbandona. Se continua a succedere, copia il rapporto da **Dettagli** in [una issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), con il [pacchetto di diagnostica](#esportare-la-diagnostica-per-una-segnalazione-di-bug).
+Una pagina di Homeport ha incontrato un problema imprevisto e mostra questo messaggio al posto del suo contenuto; la barra laterale funziona ancora. **Ricarica** di solito riporta la pagina, e **Torna alla panoramica** la abbandona. Se continua a succedere, copia il rapporto da **Dettagli** in [una issue](https://github.com/DamienReichhart/homeport/issues/new/choose), con il [pacchetto di diagnostica](#esportare-la-diagnostica-per-una-segnalazione-di-bug).
 
 ### «… non è connesso.»
 

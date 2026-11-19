@@ -31,7 +31,7 @@ compose、YAML、job 和单元编辑器都是 CodeMirror 编辑器，并为屏�
 
 每次更改时，每个页面和主要对话框都会用 [axe](https://github.com/dequelabs/axe-core) 检查：按钮、字段和区域都有名称，标题和地标的顺序正确，并且没有误用 ARIA。Homeport 会设置页面的语言，因此屏幕阅读器会用对应语言的语音朗读每种语言，阿拉伯语会从右到左显示。
 
-Homeport 的窗口是一个 Web 视图：Linux 上为 WebKitGTK，macOS 上为 WKWebView，Windows 上为 WebView2。目前正在分别使用 Orca、VoiceOver 和 NVDA 进行实际审查（[#184](https://github.com/DamienReichhart/Homeport/issues/184)）；在完成之前，请将屏幕阅读器体验视为仅经过工具测试。
+Homeport 的窗口是一个 Web 视图：Linux 上为 WebKitGTK，macOS 上为 WKWebView，Windows 上为 WebView2。目前正在分别使用 Orca、VoiceOver 和 NVDA 进行实际审查（[#184](https://github.com/DamienReichhart/homeport/issues/184)）；在完成之前，请将屏幕阅读器体验视为仅经过工具测试。
 
 ### 已知局限
 
@@ -45,7 +45,7 @@ Homeport 的窗口是一个 Web 视图：Linux 上为 WebKitGTK，macOS 上为 W
 
 ## 报告障碍
 
-如果有什么阻碍了你通过键盘、屏幕阅读器、放大镜或其他辅助技术使用 Homeport，请[创建 issue](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility)，并加上 `accessibility` 标签。请说明：
+如果有什么阻碍了你通过键盘、屏幕阅读器、放大镜或其他辅助技术使用 Homeport，请[创建 issue](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility)，并加上 `accessibility` 标签。请说明：
 
 - 你想做什么，以及在哪里（页面、对话框、主机类型）；
 - 你的操作系统及其版本，以及辅助技术及其版本；

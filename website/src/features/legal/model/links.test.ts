@@ -21,6 +21,6 @@ test('every legal document has a route', () => {
 });
 
 test('links to the documents under the base path', () => {
-  import.meta.env.BASE_URL = '/Homeport/';
-  expect(legalLinks()[0]).toEqual({ label: 'Legal notice', url: '/Homeport/legal-notice/' });
+  import.meta.env.BASE_URL = '/homeport/';
+  expect(legalLinks()[0]).toEqual({ label: 'Legal notice', url: '/homeport/legal-notice/' });
 });

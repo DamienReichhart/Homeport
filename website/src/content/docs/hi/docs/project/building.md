@@ -25,7 +25,7 @@ Homeport एक [Tauri 2](https://tauri.app) ऐप है: Rust कोर क�
 ## इसे चलाएँ
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 आपके प्लैटफ़ॉर्म के इंस्टॉलर `target/release/bundle/` में लिखे जाते हैं। बिल्ड पहले लाइसेंस सूचनाएँ बनाता है, और अगर किसी डिपेंडेंसी के लाइसेंस की `about.toml` में समीक्षा नहीं हुई है तो रुक जाता है।
 
-लोकल बिल्ड ऐप के अंदर के अपडेटर के लिए साइन नहीं किए जाते और `.rpm` को बिना साइन किए छोड़ते हैं; सिर्फ़ [रिलीज़ वर्कफ़्लो](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) के पास साइनिंग कुंजियाँ हैं। आपकी ख़ुद बनाई कॉपी फिर भी अपडेट जाँचती है, लेकिन उसका **इंस्टॉल करें और रीस्टार्ट करें** सिर्फ़ रिलीज़ वर्कफ़्लो से साइन किए गए संस्करण इंस्टॉल करता है।
+लोकल बिल्ड ऐप के अंदर के अपडेटर के लिए साइन नहीं किए जाते और `.rpm` को बिना साइन किए छोड़ते हैं; सिर्फ़ [रिलीज़ वर्कफ़्लो](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) के पास साइनिंग कुंजियाँ हैं। आपकी ख़ुद बनाई कॉपी फिर भी अपडेट जाँचती है, लेकिन उसका **इंस्टॉल करें और रीस्टार्ट करें** सिर्फ़ रिलीज़ वर्कफ़्लो से साइन किए गए संस्करण इंस्टॉल करता है।
 
 ## काम के कमांड
 
@@ -66,7 +66,7 @@ CI भी उन्हें चलाता है, `.github/workflows/ci.yml` 
 
 `e2e/` असली ऐप को चलाता है — Rust बैकएंड, webview और उनके बीच की कॉल — [WebdriverIO](https://webdriver.io) के साथ `tauri-driver` के ज़रिए, लोकल Docker Engine पर। परिदृश्य: ऐप शुरू होता है और लोकल इंजन से कनेक्ट होता है; किसी कंटेनर के लॉग स्ट्रीम होते हैं और वह ऐप से रुकता है; एक इमेज पुल की जाती है; एक प्रबंधित स्टैक एन्क्रिप्टेड परिवेश के साथ डिप्लॉय किया जाता है; रीस्टार्ट के बाद होस्ट, स्टैक और उसका सीक्रेट बने रहते हैं; और एक SSH होस्ट मौजूदा कुंजी के साथ जोड़ा जाता है, उसकी सर्वर कुंजी पर भरोसा किया जाता है, और वह कनेक्ट होता है। वे एलिमेंट को role, label और टेक्स्ट से ढूँढ़ते हैं, कभी CSS class से नहीं।
 
-वे सिर्फ़ Linux पर चलते हैं: macOS पर उसके webview के लिए कोई WebDriver नहीं है। [पूर्व-आवश्यकताओं](#पूर्व-आवश्यकताएँ) और एक Docker Engine के अलावा, उन्हें `tauri-driver` (`cargo install tauri-driver --locked`), WebKit का ड्राइवर, एक वर्चुअल डिस्प्ले और एक keyring चाहिए: Debian और Ubuntu पर, `webkit2gtk-driver`, `xvfb`, `dbus-x11` और `gnome-keyring`।
+वे सिर्फ़ Linux पर चलते हैं: macOS पर उसके webview के लिए कोई WebDriver नहीं है। [पूर्व-आवश्यकताओं](#पूर्व-आवश्यकताएँ) और एक Docker Engine के अलावा, उन्हें `tauri-driver` (`cargo install tauri-driver --locked`), WebKit का ड्राइवर, एक वर्चुअल डिस्प्ले और एक keyring चाहिए: Debian और Ubuntu पर, `webkitgtk-webdriver` (`webkit2gtk-driver` Ubuntu 26.04 और Debian 13 से पहले), `xvfb`, `dbus-x11` और `gnome-keyring`।
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

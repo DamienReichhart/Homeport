@@ -5,7 +5,7 @@ description: Частые вопросы о Homeport.
 
 ### Homeport бесплатен?
 
-Да. Homeport можно бесплатно использовать для личной и коммерческой работы, и он распространяется с открытым исходным кодом по лицензии [GNU Affero General Public License версии 3](https://github.com/DamienReichhart/Homeport/blob/main/LICENSE) (AGPL).
+Да. Homeport можно бесплатно использовать для личной и коммерческой работы, и он распространяется с открытым исходным кодом по лицензии [GNU Affero General Public License версии 3](https://github.com/DamienReichhart/homeport/blob/main/LICENSE) (AGPL).
 
 ### Что AGPL означает для меня?
 
@@ -138,4 +138,4 @@ Homeport говорит на английском, французском, ис�
 
 ### Как я могу помочь?
 
-Сообщайте об ошибках и предлагайте функции в [issues на GitHub](https://github.com/DamienReichhart/Homeport/issues) или см. [участие в разработке](/docs/project/contributing/).
+Сообщайте об ошибках и предлагайте функции в [issues на GitHub](https://github.com/DamienReichhart/homeport/issues) или см. [участие в разработке](/docs/project/contributing/).

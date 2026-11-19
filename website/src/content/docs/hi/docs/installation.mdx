@@ -6,7 +6,7 @@ description: Windows, macOS या Linux पर Homeport इंस्टॉल �
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport के पास Windows, macOS और Linux के लिए इंस्टॉलर हैं, हर एक x64 और ARM के लिए। उन्हें [डाउनलोड पेज](/download/) से पाएँ, जो आपको आपके सिस्टम के लिए सही फ़ाइल की ओर ले जाता है, या [नवीनतम GitHub रिलीज़](https://github.com/DamienReichhart/Homeport/releases/latest) से। Linux पर, Homeport पैकेज रिपॉज़िटरी इसे एक ही कमांड से इंस्टॉल करती है।
+Homeport के पास Windows, macOS और Linux के लिए इंस्टॉलर हैं, हर एक x64 और ARM के लिए। उन्हें [डाउनलोड पेज](/download/) से पाएँ, जो आपको आपके सिस्टम के लिए सही फ़ाइल की ओर ले जाता है, या [नवीनतम GitHub रिलीज़](https://github.com/DamienReichhart/homeport/releases/latest) से। Linux पर, Homeport पैकेज रिपॉज़िटरी इसे एक ही कमांड से इंस्टॉल करती है।
 
 हर इंस्टॉल अप-टू-डेट रहता है: Windows, macOS और AppImage पर Homeport ख़ुद को अपडेट करता है, और Linux पैकेज आपके बाकी सिस्टम के साथ अपडेट होते हैं। [अपडेट करना](/docs/reference/updating/) देखें।
 
@@ -85,7 +85,7 @@ Linux के लिए Homeport को x64 या ARM64 पर glibc 2.35 या
 2. Homeport रिपॉज़िटरी जोड़ती है,
 3. `homeport` पैकेज इंस्टॉल करती है, या अगर वह पहले से इंस्टॉल है तो उसे अपडेट करती है।
 
-इसे फिर से चलाने से कोई नुक़सान नहीं होता। आप पहले [स्क्रिप्ट पढ़ सकते हैं](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh), या नीचे दिए गए मैनुअल सेटअप का पालन कर सकते हैं: वह भी यही करता है।
+इसे फिर से चलाने से कोई नुक़सान नहीं होता। आप पहले [स्क्रिप्ट पढ़ सकते हैं](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh), या नीचे दिए गए मैनुअल सेटअप का पालन कर सकते हैं: वह भी यही करता है।
 
 ### मैनुअल सेटअप
 
@@ -164,7 +164,7 @@ Homeport इंस्टॉल करने के और तरीक़ों 
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

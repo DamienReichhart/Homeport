@@ -25,7 +25,7 @@ Homeport es una app [Tauri 2](https://tauri.app): una interfaz de React y TypeSc
 ## Ejecutarlo
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 Los instaladores para tu plataforma se escriben en `target/release/bundle/`. La compilación genera primero los avisos de licencia, y se detiene si la licencia de una dependencia no se ha revisado en `about.toml`.
 
-Las compilaciones locales no están firmadas para el actualizador integrado y dejan el `.rpm` sin firmar; solo el [workflow de release](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md) tiene las claves de firma. Una copia que compiles tú mismo sigue buscando actualizaciones, pero su **Instalar y reiniciar** solo instala versiones firmadas por el workflow de release.
+Las compilaciones locales no están firmadas para el actualizador integrado y dejan el `.rpm` sin firmar; solo el [workflow de release](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md) tiene las claves de firma. Una copia que compiles tú mismo sigue buscando actualizaciones, pero su **Instalar y reiniciar** solo instala versiones firmadas por el workflow de release.
 
 ## Comandos útiles
 
@@ -66,7 +66,7 @@ La CI también las ejecuta, en el job `engine-tests` de `.github/workflows/ci.ym
 
 `e2e/` controla la app real —el backend de Rust, la webview y las llamadas entre ambos— con [WebdriverIO](https://webdriver.io) a través de `tauri-driver`, contra el Docker Engine local. Los escenarios: la app arranca y se conecta al Engine local; los logs de un contenedor se transmiten y se detiene desde la app; se descarga una imagen; se despliega un stack gestionado con un entorno cifrado; un reinicio conserva los hosts, el stack y su secreto; y se añade un host SSH con una clave existente, se acepta la clave de su servidor y se conecta. Encuentran los elementos por su rol, su etiqueta y su texto, nunca por una clase CSS.
 
-Solo se ejecutan en Linux: macOS no tiene WebDriver para su webview. Además de los [requisitos previos](#requisitos-previos) y un Docker Engine, necesitan `tauri-driver` (`cargo install tauri-driver --locked`), el driver de WebKit, una pantalla virtual y un llavero: en Debian y Ubuntu, `webkit2gtk-driver`, `xvfb`, `dbus-x11` y `gnome-keyring`.
+Solo se ejecutan en Linux: macOS no tiene WebDriver para su webview. Además de los [requisitos previos](#requisitos-previos) y un Docker Engine, necesitan `tauri-driver` (`cargo install tauri-driver --locked`), el driver de WebKit, una pantalla virtual y un llavero: en Debian y Ubuntu, `webkitgtk-webdriver` (`webkit2gtk-driver` antes de Ubuntu 26.04 y Debian 13), `xvfb`, `dbus-x11` y `gnome-keyring`.
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ El sitio está en `website/` y se compila con [Astro](https://astro.build) y [St
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

@@ -10,7 +10,7 @@ const asset = (name: string, size = 1) => ({
 const raw = (overrides: Partial<GitHubRelease> = {}): GitHubRelease => ({
   tag_name: 'v0.4.0',
   name: 'Homeport v0.4.0',
-  html_url: 'https://github.com/DamienReichhart/Homeport/releases/tag/v0.4.0',
+  html_url: 'https://github.com/DamienReichhart/homeport/releases/tag/v0.4.0',
   published_at: '2026-11-03T12:00:00Z',
   prerelease: false,
   draft: false,

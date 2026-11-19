@@ -25,7 +25,7 @@ Homeport 是一个 [Tauri 2](https://tauri.app) 应用：在 Rust 核心之上�
 ## 运行
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 适用于你的平台的安装程序会写入 `target/release/bundle/`。构建会先生成许可证声明，如果某个依赖的许可证尚未在 `about.toml` 中审查，构建就会停止。
 
-本地构建没有为应用内更新程序签名，`.rpm` 也不会被签名；只有[发布工作流](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md)拥有签名密钥。你自己构建的副本仍会检查更新，但其**安装并重启**只会安装由发布工作流签名的版本。
+本地构建没有为应用内更新程序签名，`.rpm` 也不会被签名；只有[发布工作流](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md)拥有签名密钥。你自己构建的副本仍会检查更新，但其**安装并重启**只会安装由发布工作流签名的版本。
 
 ## 常用命令
 
@@ -66,7 +66,7 @@ CI 也会运行它们，位于 `.github/workflows/ci.yml` 的 `engine-tests` job
 
 `e2e/` 通过 `tauri-driver`，使用 [WebdriverIO](https://webdriver.io) 驱动真实的应用（Rust 后端、webview 以及两者之间的调用），并连接本地 Docker Engine。测试场景包括：应用启动并连接到本地引擎；容器的日志以流的方式显示，并从应用中停止该容器；拉取镜像；部署一个带加密环境变量的托管堆栈；重启后主机、堆栈及其机密都会保留；以及使用已有密钥添加 SSH 主机、信任其服务器密钥并连接。它们按角色、标签和文本查找元素，从不按 CSS 类查找。
 
-这些测试只能在 Linux 上运行：macOS 没有用于其 webview 的 WebDriver。除了[前提条件](#前提条件)和 Docker Engine 之外，它们还需要 `tauri-driver`（`cargo install tauri-driver --locked`）、WebKit 的驱动、一个虚拟显示器和一个密钥环：在 Debian 和 Ubuntu 上，即 `webkit2gtk-driver`、`xvfb`、`dbus-x11` 和 `gnome-keyring`。
+这些测试只能在 Linux 上运行：macOS 没有用于其 webview 的 WebDriver。除了[前提条件](#前提条件)和 Docker Engine 之外，它们还需要 `tauri-driver`（`cargo install tauri-driver --locked`）、WebKit 的驱动、一个虚拟显示器和一个密钥环：在 Debian 和 Ubuntu 上，即 `webkitgtk-webdriver`（Ubuntu 26.04 和 Debian 13 之前为 `webkit2gtk-driver`）、`xvfb`、`dbus-x11` 和 `gnome-keyring`。
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

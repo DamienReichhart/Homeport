@@ -3,7 +3,7 @@ title: Incus
 description: 이 컴퓨터에서, SSH로, 또는 신뢰 토큰을 사용한 HTTPS로 Incus에 연결하고, 페이지에 표시할 프로젝트를 선택합니다.
 ---
 
-**Incus**는 시스템 컨테이너와 가상 머신, 즉 [안내서](/docs/guides/instances/)에서 다루는 **인스턴스**를 실행합니다. Homeport는 [ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md)에서 정한 대로 Incus 자체의 REST API를 통해 연결합니다. Incus 호스트는 사이드바에 전용 페이지인 **인스턴스**, **이미지**, **프로필**, **스토리지**, **네트워크**를 가집니다. Docker 페이지, 스택, 보드는 제공되지 않습니다.
+**Incus**는 시스템 컨테이너와 가상 머신, 즉 [안내서](/docs/guides/instances/)에서 다루는 **인스턴스**를 실행합니다. Homeport는 [ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md)에서 정한 대로 Incus 자체의 REST API를 통해 연결합니다. Incus 호스트는 사이드바에 전용 페이지인 **인스턴스**, **이미지**, **프로필**, **스토리지**, **네트워크**를 가집니다. Docker 페이지, 스택, 보드는 제공되지 않습니다.
 
 ## Incus 호스트 추가
 

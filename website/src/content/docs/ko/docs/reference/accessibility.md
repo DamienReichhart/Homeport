@@ -31,7 +31,7 @@ compose, YAML, job, 유닛 편집기는 화면 낭독기용 이름이 붙은 Cod
 
 모든 페이지와 주요 대화 상자는 변경할 때마다 [axe](https://github.com/dequelabs/axe-core)로 검사합니다. 버튼, 필드, 영역에는 이름이 있고, 제목과 랜드마크는 순서대로 있으며, ARIA를 잘못 쓰는 곳이 없습니다. Homeport는 페이지의 언어를 설정하므로 화면 낭독기가 각 언어를 해당 언어의 음성으로 읽으며, 아랍어는 오른쪽에서 왼쪽으로 표시됩니다.
 
-Homeport의 창은 웹 뷰입니다. Linux에서는 WebKitGTK, macOS에서는 WKWebView, Windows에서는 WebView2입니다. 각각에서 Orca, VoiceOver, NVDA로 직접 하는 감사가 진행 중입니다([#184](https://github.com/DamienReichhart/Homeport/issues/184)). 감사가 끝날 때까지 화면 낭독기 경험은 도구로만 검사된 것으로 보세요.
+Homeport의 창은 웹 뷰입니다. Linux에서는 WebKitGTK, macOS에서는 WKWebView, Windows에서는 WebView2입니다. 각각에서 Orca, VoiceOver, NVDA로 직접 하는 감사가 진행 중입니다([#184](https://github.com/DamienReichhart/homeport/issues/184)). 감사가 끝날 때까지 화면 낭독기 경험은 도구로만 검사된 것으로 보세요.
 
 ### 알려진 한계
 
@@ -45,7 +45,7 @@ Homeport의 창은 웹 뷰입니다. Linux에서는 WebKitGTK, macOS에서는 WK
 
 ## 장벽 보고
 
-키보드, 화면 낭독기, 화면 돋보기 또는 다른 보조 기술로 Homeport를 사용하는 데 방해가 되는 것이 있다면 `accessibility` 레이블을 붙여 [이슈를 여세요](https://github.com/DamienReichhart/Homeport/issues/new?labels=accessibility). 다음을 적어 주세요.
+키보드, 화면 낭독기, 화면 돋보기 또는 다른 보조 기술로 Homeport를 사용하는 데 방해가 되는 것이 있다면 `accessibility` 레이블을 붙여 [이슈를 여세요](https://github.com/DamienReichhart/homeport/issues/new?labels=accessibility). 다음을 적어 주세요.
 
 - 무엇을 하려고 했고, 어디에서였는지(페이지, 대화 상자, 호스트 종류)
 - 운영 체제와 버전, 보조 기술과 버전

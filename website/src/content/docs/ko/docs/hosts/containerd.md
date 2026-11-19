@@ -3,7 +3,7 @@ title: containerd
 description: 이 컴퓨터나 SSH로 containerd에 연결하고, 네임스페이스를 선택하고, 컨테이너의 태스크를 실행하고, 로그를 읽고, 셸을 열고, 이미지와 스냅샷을 관리합니다.
 ---
 
-**containerd**는 k3s, nerdctl, BuildKit, 그리고 Docker가 없는 많은 서버의 밑에서 실행됩니다. Homeport는 [ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md)에서 정한 대로 containerd 자체의 gRPC API를 통해 직접 연결합니다. containerd 호스트는 사이드바에 전용 페이지인 **컨테이너**, **이미지**, **스냅샷**, **네임스페이스**를 가집니다. Docker 페이지, 스택, 보드는 제공되지 않습니다.
+**containerd**는 k3s, nerdctl, BuildKit, 그리고 Docker가 없는 많은 서버의 밑에서 실행됩니다. Homeport는 [ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md)에서 정한 대로 containerd 자체의 gRPC API를 통해 직접 연결합니다. containerd 호스트는 사이드바에 전용 페이지인 **컨테이너**, **이미지**, **스냅샷**, **네임스페이스**를 가집니다. Docker 페이지, 스택, 보드는 제공되지 않습니다.
 
 ## containerd 호스트 추가
 

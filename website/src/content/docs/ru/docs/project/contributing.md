@@ -3,18 +3,18 @@ title: Участие в разработке
 description: Как сообщать о проблемах, предлагать функции и вносить код в Homeport.
 ---
 
-Homeport разрабатывается открыто на [github.com/DamienReichhart/Homeport](https://github.com/DamienReichhart/Homeport). Вклад любого размера приветствуется.
+Homeport разрабатывается открыто на [github.com/DamienReichhart/homeport](https://github.com/DamienReichhart/homeport). Вклад любого размера приветствуется.
 
 ## Сообщение об ошибке
 
-[Создайте issue](https://github.com/DamienReichhart/Homeport/issues/new/choose), указав:
+[Создайте issue](https://github.com/DamienReichhart/homeport/issues/new/choose), указав:
 
 - что вы сделали, чего ожидали и что произошло — точный текст сообщения помогает больше всего;
 - [пакет диагностики](/docs/reference/troubleshooting/#экспорт-диагностики-для-сообщения-об-ошибке) из **Настройки → О программе → Экспортировать диагностику…**: один zip-архив с версией и платформой Homeport, типами хостов, движков и кластеров, которые вы используете, и его журналами с удалёнными секретами. Вы видите его содержимое до сохранения, и ничего никуда не отправляется.
 
 Если Homeport не запускается, укажите вместо этого его версию и вашу операционную систему, а также всё существенное из [файла журнала](/docs/reference/security/#журналы).
 
-О проблемах безопасности сообщайте, пожалуйста, конфиденциально, через [механизм сообщений об уязвимостях GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new).
+О проблемах безопасности сообщайте, пожалуйста, конфиденциально, через [механизм сообщений об уязвимостях GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new).
 
 ## Предложение функции
 
@@ -22,9 +22,9 @@ Homeport разрабатывается открыто на [github.com/DamienRe
 
 ## Участие кодом
 
-1. Прочитайте [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/ARCHITECTURE.md). Функции — это самодостаточные вертикальные срезы, фронтенд обращается к Rust только через сгенерированные привязки IPC, а логика на Rust находится в сервисах, которые тестируются модульными тестами без Tauri.
-2. Используйте словарь проекта из [`GLOSSARY.md`](https://github.com/DamienReichhart/Homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — в коде, текстах интерфейса и коммитах. Основные решения записаны в [`docs/adr`](https://github.com/DamienReichhart/Homeport/tree/main/docs/adr).
-3. Следуйте [руководству по бренду](https://github.com/DamienReichhart/Homeport/blob/main/docs/BRAND.md) в отношении цветов и стиля: просто, конкретно, спокойно, в британской орфографии.
+1. Прочитайте [`docs/ARCHITECTURE.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/ARCHITECTURE.md). Функции — это самодостаточные вертикальные срезы, фронтенд обращается к Rust только через сгенерированные привязки IPC, а логика на Rust находится в сервисах, которые тестируются модульными тестами без Tauri.
+2. Используйте словарь проекта из [`GLOSSARY.md`](https://github.com/DamienReichhart/homeport/blob/main/GLOSSARY.md) — Host, Stack, Managed, External, Adopt — в коде, текстах интерфейса и коммитах. Основные решения записаны в [`docs/adr`](https://github.com/DamienReichhart/homeport/tree/main/docs/adr).
+3. Следуйте [руководству по бренду](https://github.com/DamienReichhart/homeport/blob/main/docs/BRAND.md) в отношении цветов и стиля: просто, конкретно, спокойно, в британской орфографии.
 4. Убедитесь, что проходят следующие проверки:
 
    ```sh
@@ -33,7 +33,7 @@ Homeport разрабатывается открыто на [github.com/DamienRe
    bun run rust:test
    ```
 
-5. Соблюдайте обещание о данных: каждая версия Homeport открывает данные всех предыдущих версий, вплоть до 0.1.0, и обновляет их, ничего не теряя: хосты, стеки, кластеры, настройки и секреты. Изменение схемы — это новая миграция, а не правка уже выпущенной, и CI проверяет её на образце базы данных каждого релиза. См. [Data compatibility](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md#data-compatibility).
+5. Соблюдайте обещание о данных: каждая версия Homeport открывает данные всех предыдущих версий, вплоть до 0.1.0, и обновляет их, ничего не теряя: хосты, стеки, кластеры, настройки и секреты. Изменение схемы — это новая миграция, а не правка уже выпущенной, и CI проверяет её на образце базы данных каждого релиза. См. [Data compatibility](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md#data-compatibility).
 6. Пишите сообщения коммитов в формате [Conventional Commits](https://www.conventionalcommits.org) — `feat(stacks): …`, `fix(hosts): …`. Из них формируются примечания к выпуску.
 7. Откройте pull request в ветку `dev`. CI запускает проверки фронтенда и проверку лицензий в Linux, а `cargo clippy` и `cargo test` — в Linux, macOS и Windows, так что код под `#[cfg(windows)]` или `#[cfg(target_os = "macos")]` компилируется до слияния. Тест, которому нужен Docker Engine, помечается `#[ignore = "needs a local Docker Engine"]`; такие тесты запускает отдельное задание в Linux на движке исполнителя.
 
@@ -41,9 +41,9 @@ Homeport разрабатывается открыто на [github.com/DamienRe
 
 ### Добавление текста в приложение
 
-Тексты приложения хранятся в каталоге, никогда не встраиваются в код, чтобы их можно было перевести ([ADR 0011](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). Чтобы добавить строку:
+Тексты приложения хранятся в каталоге, никогда не встраиваются в код, чтобы их можно было перевести ([ADR 0011](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0011-formatjs-catalogues-and-keyed-errors.md)). Чтобы добавить строку:
 
-1. Добавьте ключ в файл функции в [`src/shared/i18n/en/`](https://github.com/DamienReichhart/Homeport/tree/main/src/shared/i18n/en) — `images.ts` для функции образов, `ui.ts` для набора компонентов UI, `common.ts` только для слов, которые везде значат одно и то же (Cancel, Close, Retry). Ключи начинаются с имени файла и говорят, для чего текст: `images.remove.title`, `images.column.size`.
+1. Добавьте ключ в файл функции в [`src/shared/i18n/en/`](https://github.com/DamienReichhart/homeport/tree/main/src/shared/i18n/en) — `images.ts` для функции образов, `ui.ts` для набора компонентов UI, `common.ts` только для слов, которые везде значат одно и то же (Cancel, Close, Retry). Ключи начинаются с имени файла и говорят, для чего текст: `images.remove.title`, `images.column.size`.
 2. Запишите значение как [сообщение ICU](https://formatjs.github.io/docs/core-concepts/icu-syntax/): `{name}` для значения, `{count, plural, one {# image} other {# images}}` вместо ручного построения форм множественного числа, `<strong>…</strong>` для выделения, отображаемого через `tRich`. Один ключ на предложение; не склеивайте фрагменты, потому что порядок слов в разных языках разный.
 3. Используйте его через `t('images.remove.title', { name })` из `@/shared/i18n` — одинаково в компонентах, мутациях и уведомлениях. Ключи типизированы, так что опечатка не пройдёт проверку типов. Используйте литеральные ключи: если текст зависит от значения, сопоставьте значения с ключами (`{ start: 'containers.done.start', stop: 'containers.done.stop' }`), а не собирайте `` `containers.done.${action}` ``.
 
@@ -53,7 +53,7 @@ Homeport разрабатывается открыто на [github.com/DamienRe
 
 ## Перевод Homeport
 
-Приложение и сайт говорят на английском, французском, испанском, немецком, итальянском, бразильском португальском, русском, упрощённом китайском, японском, корейском, хинди и арабском. В каждом языке для каждого термина продукта используется одно слово: перед переводом найдите его в [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n), а выбрав новое, добавьте туда строку.
+Приложение и сайт говорят на английском, французском, испанском, немецком, итальянском, бразильском португальском, русском, упрощённом китайском, японском, корейском, хинди и арабском. В каждом языке для каждого термина продукта используется одно слово: перед переводом найдите его в [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n), а выбрав новое, добавьте туда строку.
 
 ### Добавление или изменение строки
 
@@ -79,8 +79,8 @@ Homeport разрабатывается открыто на [github.com/DamienRe
 
 ## Улучшение этой документации
 
-Внизу каждой страницы документации есть ссылка **Редактировать страницу**. Страницы — это файлы Markdown в [`website/src/content/docs`](https://github.com/DamienReichhart/Homeport/tree/main/website/src/content/docs).
+Внизу каждой страницы документации есть ссылка **Редактировать страницу**. Страницы — это файлы Markdown в [`website/src/content/docs`](https://github.com/DamienReichhart/homeport/tree/main/website/src/content/docs).
 
 ## Как происходят выпуски
 
-Каждая отправка в `main` с новым номером версии собирает установщики для всех платформ, запускает полный набор тестов и публикует релиз на GitHub с контрольными суммами и происхождением сборки. Процесс описан в [`docs/RELEASING.md`](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md).
+Каждая отправка в `main` с новым номером версии собирает установщики для всех платформ, запускает полный набор тестов и публикует релиз на GitHub с контрольными суммами и происхождением сборки. Процесс описан в [`docs/RELEASING.md`](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md).

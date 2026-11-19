@@ -3,7 +3,7 @@ title: containerd
 description: Connettiti a containerd su questo computer o tramite SSH, scegli un namespace, esegui i task dei suoi container, leggine i log, apri una shell e gestisci immagini e snapshot.
 ---
 
-**containerd** funziona sotto k3s, nerdctl, BuildKit e molti server che non hanno Docker. Homeport vi si connette direttamente, tramite la sua API gRPC, come stabilisce l’[ADR 0020](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). Un host containerd ha pagine proprie nella barra laterale: **Container**, **Immagini**, **Snapshot** e **Namespace**. Le pagine di Docker, gli stack e la Bacheca non sono disponibili su di esso.
+**containerd** funziona sotto k3s, nerdctl, BuildKit e molti server che non hanno Docker. Homeport vi si connette direttamente, tramite la sua API gRPC, come stabilisce l’[ADR 0020](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0020-containerd-over-grpc.md). Un host containerd ha pagine proprie nella barra laterale: **Container**, **Immagini**, **Snapshot** e **Namespace**. Le pagine di Docker, gli stack e la Bacheca non sono disponibili su di esso.
 
 ## Aggiungere un host containerd
 

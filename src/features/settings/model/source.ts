@@ -1,5 +1,5 @@
 /** Where Homeport's source code is published. */
-export const REPOSITORY = 'https://github.com/DamienReichhart/Homeport';
+export const REPOSITORY = 'https://github.com/DamienReichhart/homeport';
 
 /**
  * The source code of exactly the running version, as the AGPL asks every

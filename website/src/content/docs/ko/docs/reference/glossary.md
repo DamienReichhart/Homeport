@@ -151,7 +151,7 @@ Homeport가 SSH 서버를 확인하는 방식입니다. 첫 연결에서 서버 
 
 ## 한국어
 
-한국어 앱, 문서, 웹사이트는 화면과 페이지가 항상 같은 말을 하도록 다음 용어를 씁니다. 다른 언어마다 [`docs/i18n/`](https://github.com/DamienReichhart/Homeport/tree/main/docs/i18n)에 각자의 표가 있습니다.
+한국어 앱, 문서, 웹사이트는 화면과 페이지가 항상 같은 말을 하도록 다음 용어를 씁니다. 다른 언어마다 [`docs/i18n/`](https://github.com/DamienReichhart/homeport/tree/main/docs/i18n)에 각자의 표가 있습니다.
 
 | 영어           | 한국어          |
 | -------------- | --------------- |

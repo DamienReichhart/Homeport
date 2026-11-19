@@ -6,7 +6,7 @@ description: Installer Homeport sous Windows, macOS ou Linux.
 import { Aside, Code, Steps, Tabs, TabItem } from '@astrojs/starlight/components';
 import { COMING_LATER, INSTALL_COMMAND, MANUAL_SETUP } from '@/core/packages';
 
-Homeport propose des programmes d’installation pour Windows, macOS et Linux, chacun pour x64 et ARM. Téléchargez-les depuis la [page de téléchargement](/download/), qui vous indique le bon fichier pour votre système, ou depuis la [dernière release GitHub](https://github.com/DamienReichhart/Homeport/releases/latest). Sous Linux, le dépôt de paquets Homeport l’installe en une seule commande.
+Homeport propose des programmes d’installation pour Windows, macOS et Linux, chacun pour x64 et ARM. Téléchargez-les depuis la [page de téléchargement](/download/), qui vous indique le bon fichier pour votre système, ou depuis la [dernière release GitHub](https://github.com/DamienReichhart/homeport/releases/latest). Sous Linux, le dépôt de paquets Homeport l’installe en une seule commande.
 
 Chaque installation reste à jour : Homeport se met à jour lui-même sous Windows, sous macOS et avec l’AppImage, et les paquets Linux se mettent à jour avec le reste de votre système. Voir [mise à jour](/docs/reference/updating/).
 
@@ -85,7 +85,7 @@ Le script fonctionne sur Debian, Ubuntu et leurs dérivées (`apt`), Fedora, RHE
 2. ajoute le dépôt Homeport,
 3. installe le paquet `homeport`, ou le met à jour s’il est déjà installé.
 
-Le relancer est sans danger. Vous pouvez d’abord [lire le script](https://github.com/DamienReichhart/Homeport/blob/main/packaging/linux/install.sh), ou suivre la configuration manuelle ci-dessous : elle fait la même chose.
+Le relancer est sans danger. Vous pouvez d’abord [lire le script](https://github.com/DamienReichhart/homeport/blob/main/packaging/linux/install.sh), ou suivre la configuration manuelle ci-dessous : elle fait la même chose.
 
 ### Configuration manuelle
 
@@ -164,7 +164,7 @@ D’autres façons d’installer Homeport sont prévues. Suivez une issue pour s
 <ul>
   {COMING_LATER.map((channel) => (
     <li>
-      <a href={`https://github.com/DamienReichhart/Homeport/issues/${channel.issue}`}>
+      <a href={`https://github.com/DamienReichhart/homeport/issues/${channel.issue}`}>
         {channel.name}
       </a>{' '}
       — {channel.what}

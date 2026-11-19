@@ -93,7 +93,7 @@ Homeport 绝不会在已持有的机密信息之上新建密钥。当数据库�
 - 在另一台计算机上，**导入**会要求输入口令，然后像其他机密一样，使用那台计算机自己的钥匙串密钥加密保存每台主机的机密。
 - 在本机上凭据已经丢失的主机会在不含凭据的情况下导出，导出时会说明是哪些主机。
 
-请像对待其中的密钥一样对待该文件：导入后删除它。文件格式在 [ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) 中有说明。
+请像对待其中的密钥一样对待该文件：导入后删除它。文件格式在 [ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md) 中有说明。
 
 ### 备份
 
@@ -179,4 +179,4 @@ Homeport 没有遥测，也没有崩溃报告：除非你自己发送，否则�
 
 ## 报告漏洞
 
-请通过 [GitHub 的私有漏洞报告](https://github.com/DamienReichhart/Homeport/security/advisories/new)私下报告安全问题，而不是创建公开 issue。
+请通过 [GitHub 的私有漏洞报告](https://github.com/DamienReichhart/homeport/security/advisories/new)私下报告安全问题，而不是创建公开 issue。

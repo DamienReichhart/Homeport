@@ -93,7 +93,7 @@ Homeport non crea mai una nuova chiave sopra i segreti che ha già. Quando il po
 - **Importa** sull’altro computer chiede la passphrase, poi memorizza i segreti di ogni host cifrati con la chiave del portachiavi di quel computer, come tutti gli altri.
 - Un host le cui credenziali sono già perse su questo computer viene esportato senza di esse, e l’esportazione indica quale.
 
-Tratta il file come le chiavi che contiene: eliminalo dopo l’importazione. Il formato è descritto nell’[ADR 0013](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
+Tratta il file come le chiavi che contiene: eliminalo dopo l’importazione. Il formato è descritto nell’[ADR 0013](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0013-passphrase-protected-export-bundles.md).
 
 ### Backup
 
@@ -179,4 +179,4 @@ Le release vengono compilate da GitHub Actions a partire dal codice sorgente pub
 
 ## Segnalare una vulnerabilità
 
-Segnala i problemi di sicurezza in privato tramite la [segnalazione privata delle vulnerabilità di GitHub](https://github.com/DamienReichhart/Homeport/security/advisories/new) invece che con una issue pubblica.
+Segnala i problemi di sicurezza in privato tramite la [segnalazione privata delle vulnerabilità di GitHub](https://github.com/DamienReichhart/homeport/security/advisories/new) invece che con una issue pubblica.

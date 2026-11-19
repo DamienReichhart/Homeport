@@ -25,7 +25,7 @@ Homeport は [Tauri 2](https://tauri.app) のアプリです。Rust のコアの
 ## 実行する
 
 ```sh
-git clone https://github.com/DamienReichhart/Homeport.git
+git clone https://github.com/DamienReichhart/homeport.git
 cd Homeport
 bun install
 bun run tauri:dev
@@ -41,7 +41,7 @@ bun run tauri:build
 
 お使いのプラットフォーム向けのインストーラーが `target/release/bundle/` に書き出されます。ビルドはまずライセンス表記を生成し、依存関係のライセンスが `about.toml` でレビューされていない場合は中止します。
 
-ローカルのビルドは、アプリ内アップデーター向けに署名されず、`.rpm` も署名されないままです。署名鍵を持っているのは[リリースワークフロー](https://github.com/DamienReichhart/Homeport/blob/main/docs/RELEASING.md)だけです。自分でビルドしたコピーもアップデートを確認しますが、その **インストールして再起動** がインストールするのは、リリースワークフローによって署名されたバージョンだけです。
+ローカルのビルドは、アプリ内アップデーター向けに署名されず、`.rpm` も署名されないままです。署名鍵を持っているのは[リリースワークフロー](https://github.com/DamienReichhart/homeport/blob/main/docs/RELEASING.md)だけです。自分でビルドしたコピーもアップデートを確認しますが、その **インストールして再起動** がインストールするのは、リリースワークフローによって署名されたバージョンだけです。
 
 ## 便利なコマンド
 
@@ -66,7 +66,7 @@ CI でも、`.github/workflows/ci.yml` の `engine-tests` ジョブで、`dev` �
 
 `e2e/` は、実際のアプリ（Rust のバックエンド、Web ビュー、その間の呼び出し）を、`tauri-driver` を介して [WebdriverIO](https://webdriver.io) で、ローカルの Docker Engine に対して操作します。シナリオは次のとおりです。アプリが起動してローカルのエンジンに接続する。コンテナのログがストリーミングされ、アプリからそのコンテナを停止する。イメージをプルする。暗号化された環境変数を持つ管理スタックをデプロイする。再起動してもホスト、スタック、そのシークレットが保持される。既存のキーで SSH のホストを追加し、サーバーのキーを信頼して接続する。要素は CSS クラスではなく、ロール、ラベル、テキストで探します。
 
-これらは Linux でのみ動作します。macOS にはその Web ビュー用の WebDriver がないためです。[前提条件](#前提条件)と Docker Engine に加えて、`tauri-driver`（`cargo install tauri-driver --locked`）、WebKit のドライバー、仮想ディスプレイ、キーリングが必要です。Debian と Ubuntu では、`webkit2gtk-driver`、`xvfb`、`dbus-x11`、`gnome-keyring` です。
+これらは Linux でのみ動作します。macOS にはその Web ビュー用の WebDriver がないためです。[前提条件](#前提条件)と Docker Engine に加えて、`tauri-driver`（`cargo install tauri-driver --locked`）、WebKit のドライバー、仮想ディスプレイ、キーリングが必要です。Debian と Ubuntu では、`webkitgtk-webdriver`（Ubuntu 26.04 と Debian 13 より前は `webkit2gtk-driver`）、`xvfb`、`dbus-x11`、`gnome-keyring` です。
 
 ```sh
 bun tauri build --debug --no-bundle
@@ -86,7 +86,7 @@ bun install
 ```sh
 cd website
 bun install
-bun run dev      # http://localhost:4321/Homeport/
+bun run dev      # http://localhost:4321/homeport/
 bun run build    # checks types and links, then builds into website/dist/
 ```
 

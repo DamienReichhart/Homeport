@@ -8,9 +8,9 @@ afterEach(() => {
 });
 
 test('prefixes the base path of a project site', () => {
-  import.meta.env.BASE_URL = '/Homeport/';
-  expect(href('/docs/')).toBe('/Homeport/docs/');
-  expect(href('download/')).toBe('/Homeport/download/');
+  import.meta.env.BASE_URL = '/homeport/';
+  expect(href('/docs/')).toBe('/homeport/docs/');
+  expect(href('download/')).toBe('/homeport/download/');
 });
 
 test('leaves paths alone on a custom domain', () => {
@@ -20,9 +20,9 @@ test('leaves paths alone on a custom domain', () => {
 });
 
 test('takes the base path off again', () => {
-  import.meta.env.BASE_URL = '/Homeport/';
-  expect(unbased('/Homeport/fr/download/')).toBe('/fr/download/');
-  expect(unbased('/Homeport/')).toBe('/');
-  expect(unbased('/Homeport')).toBe('/');
+  import.meta.env.BASE_URL = '/homeport/';
+  expect(unbased('/homeport/fr/download/')).toBe('/fr/download/');
+  expect(unbased('/homeport/')).toBe('/');
+  expect(unbased('/homeport')).toBe('/');
   expect(unbased('/Homeportal/')).toBe('/Homeportal/');
 });

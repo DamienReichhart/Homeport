@@ -3,7 +3,7 @@ title: Incus
 description: このマシン上、SSH 経由、または信頼トークンを使った HTTPS 経由で Incus に接続し、ページに表示するプロジェクトを選びます。
 ---
 
-**Incus** は、システムコンテナと仮想マシン、つまり[ガイド](/docs/guides/instances/)で扱う **インスタンス** を実行します。Homeport は、[ADR 0021](https://github.com/DamienReichhart/Homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) で決めたとおり、Incus 独自の REST API を通じて接続します。Incus のホストには、サイドバーに専用のページ（**インスタンス**、**イメージ**、**プロファイル**、**ストレージ**、**ネットワーク**）があります。Docker 用のページ、スタック、ボードは表示されません。
+**Incus** は、システムコンテナと仮想マシン、つまり[ガイド](/docs/guides/instances/)で扱う **インスタンス** を実行します。Homeport は、[ADR 0021](https://github.com/DamienReichhart/homeport/blob/main/docs/adr/0021-incus-over-its-rest-api.md) で決めたとおり、Incus 独自の REST API を通じて接続します。Incus のホストには、サイドバーに専用のページ（**インスタンス**、**イメージ**、**プロファイル**、**ストレージ**、**ネットワーク**）があります。Docker 用のページ、スタック、ボードは表示されません。
 
 ## Incus のホストを追加する
 
