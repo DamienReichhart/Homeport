@@ -90,11 +90,15 @@ jobs:
         with:
           bun-version-file: package.json
       - run: bun install --frozen-lockfile
+      # WebKitWebDriver ships in webkitgtk-webdriver since Ubuntu 26.04 and
+      # Debian 13, and in webkit2gtk-driver before.
       - name: Install Tauri, WebDriver, display and keyring
         run: |
           sudo apt-get update
+          driver=webkitgtk-webdriver
+          apt-cache policy "$driver" | grep -q 'Candidate: [0-9]' || driver=webkit2gtk-driver
           sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libsoup-3.0-dev librsvg2-dev \
-            libayatana-appindicator3-dev libssl-dev webkit2gtk-driver xvfb dbus-x11 gnome-keyring
+            libayatana-appindicator3-dev libssl-dev "$driver" xvfb dbus-x11 gnome-keyring
       # Ubuntu's AppArmor stops unprivileged user namespaces, which WebKit's
       # web process sandbox uses: allow them on this throwaway runner.
       - run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
@@ -203,6 +207,8 @@ jobs:
   # The Nomad live tests talk to a Nomad dev agent (nomad agent -dev), from
   # HashiCorp's APT repository, through its HTTP API only, as the app does.
   # The agent runs as root so the docker driver can run the tests' jobs.
+  # The cloud fingerprinters are off: on a hosted runner the AWS one times
+  # out on the metadata endpoint, and the agent then refuses to start.
   nomad-tests:
     runs-on: ubuntu-latest
     steps:
@@ -217,12 +223,24 @@ jobs:
           echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/hashicorp.list
           sudo apt-get update
           sudo apt-get install -y nomad
-          sudo nomad agent -dev -bind 127.0.0.1 > "$RUNNER_TEMP/nomad.log" 2>&1 &
+          cat > "$RUNNER_TEMP/nomad.hcl" <<'HCL'
+          client {
+            options = {
+              "fingerprint.denylist" = "env_aws,env_gce,env_azure,env_digitalocean"
+            }
+          }
+          HCL
+          sudo nomad agent -dev -bind 127.0.0.1 -config "$RUNNER_TEMP/nomad.hcl" > "$RUNNER_TEMP/nomad.log" 2>&1 &
           for _ in $(seq 1 60); do
             curl -sf http://127.0.0.1:4646/v1/status/leader | grep -q : && break
             sleep 1
           done
           nomad version
+          if ! curl -sf http://127.0.0.1:4646/v1/status/leader | grep -q :; then
+            echo "the Nomad agent did not come up"
+            cat "$RUNNER_TEMP/nomad.log"
+            exit 1
+          fi
       - run: cargo test -p homeport-nomad -- --ignored nomad_live
       - name: Show the agent's log
         if: failure()
