@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useCapabilities, type Stack, type StackOwner } from '@/shared/api';
-import { formatDateTime } from '@/shared/lib';
+import { formatDateTime, formatRelative } from '@/shared/lib';
 import {
   Badge,
   Button,
@@ -62,7 +62,7 @@ export function StackHistory({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-      <div className="rounded-md border">
+      <div className="bg-card rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -85,12 +85,13 @@ export function StackHistory({
                     <button
                       type="button"
                       className="text-start hover:underline"
+                      title={formatDateTime(Date.parse(d.startedAt) / 1000)}
                       onClick={() => setSelected(d.id)}
                     >
-                      {formatDateTime(Date.parse(d.startedAt) / 1000)}
+                      {formatRelative(Date.parse(d.startedAt) / 1000)}
                     </button>
                     {d.id === current && (
-                      <Badge variant="secondary" className="ms-2">
+                      <Badge variant="outline" className="ms-2">
                         {t('stacks.history.current')}
                       </Badge>
                     )}
