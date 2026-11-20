@@ -60,19 +60,27 @@ export function NetworkDialog({
             {network.containers.length === 0 && (
               <p className="text-muted-foreground text-sm">{t('networks.dialog.noContainer')}</p>
             )}
-            {network.containers.map((name) => (
-              <div
-                key={name}
-                className="flex items-center justify-between rounded-md border px-3 py-1.5"
-              >
-                <span className="text-sm">{name}</span>
-                {!network.builtIn && (
-                  <Button variant="ghost" size="sm" onClick={() => disconnect.mutate(name)}>
-                    <UnplugIcon /> {t('networks.dialog.disconnect')}
-                  </Button>
-                )}
-              </div>
-            ))}
+            {network.containers.length > 0 && (
+              <ul className="divide-border divide-y rounded-md border">
+                {network.containers.map((name) => (
+                  <li key={name} className="flex h-10 items-center justify-between gap-2 px-3">
+                    <span className="truncate text-sm" title={name}>
+                      {name}
+                    </span>
+                    {!network.builtIn && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={disconnect.isPending}
+                        onClick={() => disconnect.mutate(name)}
+                      >
+                        <UnplugIcon /> {t('networks.dialog.disconnect')}
+                      </Button>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
             {!network.builtIn && network.name !== 'host' && (
               <div className="flex gap-2">
                 <Select value={joining} onValueChange={setJoining}>

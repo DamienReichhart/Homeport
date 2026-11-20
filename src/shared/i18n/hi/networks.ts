@@ -10,6 +10,7 @@ export default {
   'networks.create': 'नेटवर्क बनाएँ',
   'networks.search': 'नेटवर्क खोजें',
   'networks.empty': 'कोई नेटवर्क नहीं',
+  'networks.empty.description': 'एक ही नेटवर्क के कंटेनर एक-दूसरे तक नाम से पहुँचते हैं।',
 
   'networks.column.name': 'नाम',
   'networks.column.stack': 'स्टैक',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': 'कंटेनर',
   'networks.builtIn': 'बिल्ट-इन',
   'networks.internal': 'आंतरिक',
-  'networks.inspectOne': '{name} का निरीक्षण करें',
-  'networks.removeOne': '{name} हटाएँ',
+  'networks.moreActions': '{name} के लिए और कार्रवाइयाँ',
+  'networks.action.inspect': 'निरीक्षण करें',
 
-  'networks.remove.title': 'नेटवर्क {name} हटाएँ?',
+  'networks.remove.title': '{host} से नेटवर्क {name} हटाएँ?',
   'networks.remove.attached':
     'इससे अभी भी {count, plural, one {# कंटेनर जुड़ा है} other {# कंटेनर जुड़े हैं}}; पहले उन्हें डिस्कनेक्ट करें।',
   'networks.remove.unused':
     'कोई कंटेनर इसका इस्तेमाल नहीं करता। जो कंटेनर इसके नाम से इसका संदर्भ देते हैं, वे शुरू नहीं हो पाएँगे।',
-  'networks.prune.title': 'इस्तेमाल न होने वाले नेटवर्क हटाएँ?',
+  'networks.prune.title': '{host} पर इस्तेमाल न होने वाले नेटवर्क हटाएँ?',
   'networks.prune.description': 'हर वह कस्टम नेटवर्क हटाया जाता है जिससे कोई कंटेनर जुड़ा नहीं है।',
 
   'networks.connected': 'कनेक्ट किया गया',

@@ -4,8 +4,17 @@ import { baseCommands, network } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { clientWithoutRetries, renderApp } from '@/test/render';
 
+type User = ReturnType<typeof userEvent.setup>;
+
+/** Opens a network's row menu and chooses Remove. */
+async function chooseRemove(user: User, name: string) {
+  await user.click(await screen.findByRole('button', { name: `More actions for ${name}` }));
+  await user.click(await screen.findByRole('menuitem', { name: 'Remove' }));
+}
+
 describe('networks page', () => {
   it('lists networks and offers no removal for built-in ones', async () => {
+    const user = userEvent.setup();
     mockCommands({
       ...baseCommands,
       networks_list: () => [
@@ -19,9 +28,12 @@ describe('networks page', () => {
     expect(screen.getByText('built-in')).toBeInTheDocument();
     expect(screen.getByText('internal')).toBeInTheDocument();
     expect(screen.getByText('shop')).toBeInTheDocument();
-    expect(screen.getByLabelText('Remove backend')).toBeInTheDocument();
-    expect(screen.getByLabelText('Inspect bridge')).toBeInTheDocument();
-    expect(screen.queryByLabelText('Remove bridge')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'More actions for backend' }));
+    expect(await screen.findByRole('menuitem', { name: 'Remove' })).toBeInTheDocument();
+    await user.keyboard('{Escape}');
+    await user.click(screen.getByRole('button', { name: 'More actions for bridge' }));
+    expect(await screen.findByRole('menuitem', { name: 'Inspect' })).toBeInTheDocument();
+    expect(screen.queryByRole('menuitem', { name: 'Remove' })).toBeNull();
   });
 
   it('creates a network through the dialog, sending only what was typed', async () => {
@@ -36,9 +48,10 @@ describe('networks page', () => {
     });
     const user = userEvent.setup();
     renderApp('/networks');
-    await user.click(await screen.findByRole('button', { name: 'Create network' }));
+    // The header's button; the empty page offers the same.
+    await user.click((await screen.findAllByRole('button', { name: 'Create network' }))[0]!);
     const dialog = await screen.findByRole('dialog');
-    const create = within(dialog).getByRole('button', { name: 'Create' });
+    const create = within(dialog).getByRole('button', { name: 'Create network' });
     expect(create).toBeDisabled();
 
     await user.type(within(dialog).getByLabelText('Name'), ' backend ');
@@ -74,10 +87,11 @@ describe('networks page', () => {
     });
     const user = userEvent.setup();
     renderApp('/networks');
-    await user.click(await screen.findByRole('button', { name: 'Create network' }));
+    // The header's button; the empty page offers the same.
+    await user.click((await screen.findAllByRole('button', { name: 'Create network' }))[0]!);
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('Name'), 'backend');
-    await user.click(within(dialog).getByRole('button', { name: 'Create' }));
+    await user.click(within(dialog).getByRole('button', { name: 'Create network' }));
     expect(
       await within(dialog).findByText('The subnet overlaps another network.'),
     ).toBeInTheDocument();
@@ -114,8 +128,9 @@ describe('networks page', () => {
     });
     const user = userEvent.setup();
     renderApp('/networks');
-    await user.click(await screen.findByLabelText('Remove backend'));
+    await chooseRemove(user, 'backend');
     const confirmation = await screen.findByRole('alertdialog');
+    expect(within(confirmation).getByText('Remove network backend from local?')).toBeVisible();
     expect(within(confirmation).getByText(/No container uses it/)).toBeInTheDocument();
     expect(removed).toEqual([]);
     await user.click(within(confirmation).getByRole('button', { name: 'Remove' }));
@@ -135,7 +150,7 @@ describe('networks page', () => {
     });
     const user = userEvent.setup();
     renderApp('/networks');
-    await user.click(await screen.findByLabelText('Remove backend'));
+    await chooseRemove(user, 'backend');
     const confirmation = await screen.findByRole('alertdialog');
     await user.click(within(confirmation).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
@@ -157,7 +172,7 @@ describe('networks page', () => {
     });
     const user = userEvent.setup();
     renderApp('/networks');
-    await user.click(await screen.findByLabelText('Remove backend'));
+    await chooseRemove(user, 'backend');
     const confirmation = await screen.findByRole('alertdialog');
     expect(within(confirmation).getByText(/1 attached container/)).toBeInTheDocument();
     const remove = within(confirmation).getByRole('button', { name: 'Remove' });

@@ -11,6 +11,7 @@ export default {
   'networks.create': 'إنشاء شبكة',
   'networks.search': 'البحث في الشبكات',
   'networks.empty': 'لا توجد شبكات',
+  'networks.empty.description': 'تصل الحاويات على الشبكة نفسها بعضها إلى بعض بالاسم.',
 
   'networks.column.name': 'الاسم',
   'networks.column.stack': 'المكدس',
@@ -19,14 +20,14 @@ export default {
   'networks.column.containers': 'الحاويات',
   'networks.builtIn': 'مضمّنة',
   'networks.internal': 'داخلية',
-  'networks.inspectOne': 'فحص {name}',
-  'networks.removeOne': 'إزالة {name}',
+  'networks.moreActions': 'مزيد من الإجراءات لـ {name}',
+  'networks.action.inspect': 'فحص',
 
-  'networks.remove.title': 'هل تريد إزالة الشبكة {name}؟',
+  'networks.remove.title': 'هل تريد إزالة الشبكة {name} من {host}؟',
   'networks.remove.attached':
     'لا تزال {count, plural, zero {لا توجد حاويات متصلة بها} one {حاوية واحدة متصلة بها} two {حاويتان متصلتين بها} few {# حاويات متصلة بها} many {# حاوية متصلة بها} other {# حاوية متصلة بها}}؛ افصلها أولًا.',
   'networks.remove.unused': 'لا تستخدمها أي حاوية. ستفشل الحاويات التي تشير إليها بالاسم في البدء.',
-  'networks.prune.title': 'هل تريد إزالة الشبكات غير المستخدمة؟',
+  'networks.prune.title': 'هل تريد إزالة الشبكات غير المستخدمة على {host}؟',
   'networks.prune.description': 'تُزال كل شبكة مخصصة لا تتصل بها أي حاوية.',
 
   'networks.connected': 'تم الاتصال',

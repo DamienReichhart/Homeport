@@ -10,6 +10,7 @@ export default {
   'networks.create': 'ネットワークを作成',
   'networks.search': 'ネットワークを検索',
   'networks.empty': 'ネットワークはありません',
+  'networks.empty.description': '同じネットワーク上のコンテナは、名前で互いにアクセスできます。',
 
   'networks.column.name': '名前',
   'networks.column.stack': 'スタック',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': 'コンテナ',
   'networks.builtIn': '組み込み',
   'networks.internal': '内部',
-  'networks.inspectOne': '{name} を検査',
-  'networks.removeOne': '{name} を削除',
+  'networks.moreActions': '{name} のその他の操作',
+  'networks.action.inspect': '検査',
 
-  'networks.remove.title': 'ネットワーク {name} を削除しますか？',
+  'networks.remove.title': '{host} からネットワーク {name} を削除しますか？',
   'networks.remove.attached':
     'まだ {count, plural, other {# 個のコンテナ}}が接続されています。先に切断してください。',
   'networks.remove.unused':
     'このネットワークを使っているコンテナはありません。名前で参照しているコンテナは起動に失敗します。',
-  'networks.prune.title': '未使用のネットワークを削除しますか？',
+  'networks.prune.title': '{host} の未使用のネットワークを削除しますか？',
   'networks.prune.description':
     'コンテナが接続されていないカスタムネットワークはすべて削除されます。',
 

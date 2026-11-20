@@ -10,6 +10,7 @@ export default {
   'networks.create': 'Créer un réseau',
   'networks.search': 'Rechercher des réseaux',
   'networks.empty': 'Aucun réseau',
+  'networks.empty.description': 'Les conteneurs d’un même réseau se joignent par leur nom.',
 
   'networks.column.name': 'Nom',
   'networks.column.stack': 'Stack',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': 'Conteneurs',
   'networks.builtIn': 'intégré',
   'networks.internal': 'interne',
-  'networks.inspectOne': 'Inspecter {name}',
-  'networks.removeOne': 'Supprimer {name}',
+  'networks.moreActions': 'Plus d’actions pour {name}',
+  'networks.action.inspect': 'Inspecter',
 
-  'networks.remove.title': 'Supprimer le réseau {name} ?',
+  'networks.remove.title': 'Supprimer le réseau {name} de {host} ?',
   'networks.remove.attached':
     'Il a encore {count, plural, one {# conteneur attaché} other {# conteneurs attachés}} ; déconnectez-les d’abord.',
   'networks.remove.unused':
     'Aucun conteneur ne l’utilise. Les conteneurs qui y font référence par son nom ne pourront pas démarrer.',
-  'networks.prune.title': 'Supprimer les réseaux inutilisés ?',
+  'networks.prune.title': 'Supprimer les réseaux inutilisés de {host} ?',
   'networks.prune.description':
     'Tous les réseaux personnalisés auxquels aucun conteneur n’est attaché sont supprimés.',
 

@@ -7,6 +7,7 @@ export default {
   'networks.create': 'Create network',
   'networks.search': 'Search networks',
   'networks.empty': 'No networks',
+  'networks.empty.description': 'Containers on the same network reach each other by name.',
 
   'networks.column.name': 'Name',
   'networks.column.stack': 'Stack',
@@ -15,15 +16,15 @@ export default {
   'networks.column.containers': 'Containers',
   'networks.builtIn': 'built-in',
   'networks.internal': 'internal',
-  'networks.inspectOne': 'Inspect {name}',
-  'networks.removeOne': 'Remove {name}',
+  'networks.moreActions': 'More actions for {name}',
+  'networks.action.inspect': 'Inspect',
 
-  'networks.remove.title': 'Remove network {name}?',
+  'networks.remove.title': 'Remove network {name} from {host}?',
   'networks.remove.attached':
     'It still has {count, plural, one {# attached container} other {# attached containers}}; disconnect them first.',
   'networks.remove.unused':
     'No container uses it. Containers that reference it by name will fail to start.',
-  'networks.prune.title': 'Remove unused networks?',
+  'networks.prune.title': 'Remove unused networks on {host}?',
   'networks.prune.description': 'Every custom network no container is attached to is removed.',
 
   'networks.connected': 'Connected',

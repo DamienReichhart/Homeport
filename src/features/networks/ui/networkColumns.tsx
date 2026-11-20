@@ -1,6 +1,16 @@
-import { InfoIcon, Trash2Icon } from 'lucide-react';
+import { EllipsisVerticalIcon, InfoIcon, Trash2Icon } from 'lucide-react';
 import type { NetworkView } from '@/shared/api';
-import { Badge, Button, type ColumnDef } from '@/shared/ui';
+import { cn } from '@/shared/lib';
+import {
+  Badge,
+  Button,
+  type ColumnDef,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/shared/ui';
 import { t } from '@/shared/i18n';
 
 /** The networks table's columns; the last one holds the row's actions. */
@@ -17,10 +27,20 @@ export function networkColumns({
       header: t('networks.column.name'),
       accessorFn: (n) => n.name,
       cell: ({ row }) => (
-        <span className="flex items-center gap-2 font-medium">
-          {row.original.name}
-          {row.original.builtIn && <Badge variant="secondary">{t('networks.builtIn')}</Badge>}
-          {row.original.internal && <Badge variant="outline">{t('networks.internal')}</Badge>}
+        <span className="flex max-w-sm min-w-0 items-center gap-2">
+          <span className="truncate font-medium" title={row.original.name}>
+            {row.original.name}
+          </span>
+          {row.original.builtIn && (
+            <Badge variant="outline" className="text-muted-foreground">
+              {t('networks.builtIn')}
+            </Badge>
+          )}
+          {row.original.internal && (
+            <Badge variant="outline" className="text-muted-foreground">
+              {t('networks.internal')}
+            </Badge>
+          )}
         </span>
       ),
     },
@@ -36,14 +56,27 @@ export function networkColumns({
       id: 'subnet',
       header: t('networks.column.subnet'),
       accessorFn: (n) => n.subnets.join(', '),
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.subnets.join(', ') || '—'}</span>
-      ),
+      cell: ({ row }) =>
+        row.original.subnets.length ? (
+          <span className="font-mono text-xs">{row.original.subnets.join(', ')}</span>
+        ) : (
+          <span className="text-muted-foreground">—</span>
+        ),
     },
     {
       id: 'containers',
       header: t('networks.column.containers'),
       accessorFn: (n) => n.containers.length,
+      cell: ({ row }) => (
+        <span
+          className={cn(
+            'tabular-nums',
+            row.original.containers.length === 0 && 'text-muted-foreground',
+          )}
+        >
+          {row.original.containers.length}
+        </span>
+      ),
     },
     {
       id: 'actions',
@@ -51,24 +84,31 @@ export function networkColumns({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('networks.inspectOne', { name: row.original.name })}
-            onClick={() => onInspect(row.original)}
-          >
-            <InfoIcon />
-          </Button>
-          {!row.original.builtIn && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('networks.removeOne', { name: row.original.name })}
-              onClick={() => onRemove(row.original)}
-            >
-              <Trash2Icon />
-            </Button>
-          )}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('networks.moreActions', { name: row.original.name })}
+              >
+                <EllipsisVerticalIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto">
+              <DropdownMenuItem onSelect={() => onInspect(row.original)}>
+                <InfoIcon /> {t('networks.action.inspect')}
+              </DropdownMenuItem>
+              {/* Docker's own networks can't be removed: no dead entry for them. */}
+              {!row.original.builtIn && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="destructive" onSelect={() => onRemove(row.original)}>
+                    <Trash2Icon /> {t('common.remove')}
+                  </DropdownMenuItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       ),
     },

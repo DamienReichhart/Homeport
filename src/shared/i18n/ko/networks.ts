@@ -10,6 +10,7 @@ export default {
   'networks.create': '네트워크 만들기',
   'networks.search': '네트워크 검색',
   'networks.empty': '네트워크 없음',
+  'networks.empty.description': '같은 네트워크의 컨테이너는 이름으로 서로에게 접근합니다.',
 
   'networks.column.name': '이름',
   'networks.column.stack': '스택',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': '컨테이너',
   'networks.builtIn': '기본 제공',
   'networks.internal': '내부',
-  'networks.inspectOne': '{name} 검사',
-  'networks.removeOne': '{name} 삭제',
+  'networks.moreActions': '{name} 추가 작업',
+  'networks.action.inspect': '검사',
 
-  'networks.remove.title': '{name} 네트워크를 삭제하시겠습니까?',
+  'networks.remove.title': '{host}에서 {name} 네트워크를 삭제하시겠습니까?',
   'networks.remove.attached':
     '아직 {count, plural, other {연결된 컨테이너 #개}}가 있습니다. 먼저 연결을 해제하세요.',
   'networks.remove.unused':
     '이 네트워크를 사용하는 컨테이너가 없습니다. 이름으로 이 네트워크를 참조하는 컨테이너는 시작에 실패합니다.',
-  'networks.prune.title': '사용하지 않는 네트워크를 삭제하시겠습니까?',
+  'networks.prune.title': '{host}에서 사용하지 않는 네트워크를 삭제하시겠습니까?',
   'networks.prune.description': '연결된 컨테이너가 없는 모든 사용자 지정 네트워크가 삭제됩니다.',
 
   'networks.connected': '연결했습니다',
