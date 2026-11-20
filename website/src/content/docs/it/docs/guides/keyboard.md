@@ -44,10 +44,11 @@ Passa il puntatore su una pagina della barra laterale per vederne i tasti.
 
 ### In una pagina
 
-| Tasti        | Azione                                                                                                                                                                                                                                              |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Porta il cursore nel campo di ricerca della pagina. <kbd>Esc</kbd> in un campo vuoto lo abbandona.                                                                                                                                                  |
-| <kbd>N</kbd> | Avvia l’azione principale della pagina: **Esegui container**, **Scarica**, **Crea volume**, **Crea rete**, **Nuovo stack** o **Aggiungi host**; e nelle pagine di Podman, containerd, Incus e Helm, la loro, come **Nuovo pod** o **Nuova istanza** |
+| Tasti                       | Azione                                                                                                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd>                | Porta il cursore nel campo di ricerca della pagina. <kbd>Esc</kbd> in un campo vuoto lo abbandona.                                                                                                                                                  |
+| <kbd>N</kbd>                | Avvia l’azione principale della pagina: **Esegui container**, **Scarica**, **Crea volume**, **Crea rete**, **Nuovo stack** o **Aggiungi host**; e nelle pagine di Podman, containerd, Incus e Helm, la loro, come **Nuovo pod** o **Nuova istanza** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | In un elenco con un elemento aperto accanto, aprire l’elemento sopra o sotto                                                                                                                                                                        |
 
 Il pulsante dell’azione principale di una pagina mostra <kbd>N</kbd> quando ci passi sopra il puntatore.
 

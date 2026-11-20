@@ -44,10 +44,11 @@ Survolez une page dans la barre latérale pour voir ses touches.
 
 ### Sur une page
 
-| Touches      | Effet                                                                                                                                                                                                                                                                                      |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <kbd>/</kbd> | Placer le curseur dans le champ de recherche de la page. <kbd>Esc</kbd> dans un champ vide le quitte.                                                                                                                                                                                      |
-| <kbd>N</kbd> | Déclencher l’action principale de la page : **Exécuter un conteneur**, **Récupérer**, **Créer un volume**, **Créer un réseau**, **Nouvelle stack** ou **Ajouter un hôte** ; et sur les pages de Podman, containerd, Incus et Helm, la leur, comme **Nouveau pod** ou **Nouvelle instance** |
+| Touches                     | Effet                                                                                                                                                                                                                                                                                      |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <kbd>/</kbd>                | Placer le curseur dans le champ de recherche de la page. <kbd>Esc</kbd> dans un champ vide le quitte.                                                                                                                                                                                      |
+| <kbd>N</kbd>                | Déclencher l’action principale de la page : **Exécuter un conteneur**, **Récupérer**, **Créer un volume**, **Créer un réseau**, **Nouvelle stack** ou **Ajouter un hôte** ; et sur les pages de Podman, containerd, Incus et Helm, la leur, comme **Nouveau pod** ou **Nouvelle instance** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Dans une liste dont un élément est ouvert à côté, ouvrir l’élément au-dessus ou en dessous                                                                                                                                                                                                 |
 
 Le bouton de l’action principale d’une page affiche <kbd>N</kbd> quand vous le survolez.
 

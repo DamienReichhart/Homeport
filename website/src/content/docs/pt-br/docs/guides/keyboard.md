@@ -44,10 +44,11 @@ Passe o ponteiro sobre uma página na barra lateral para ver as teclas dela.
 
 ### Em uma página
 
-| Teclas       | Faz                                                                                                                                                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <kbd>/</kbd> | Focar o campo de pesquisa da página. <kbd>Esc</kbd> em um campo vazio sai dele.                                                                                                                                                                              |
-| <kbd>N</kbd> | Iniciar a ação principal da página: **Executar contêiner**, **Baixar**, **Criar volume**, **Criar rede**, **Nova stack** ou **Adicionar host**; e nas páginas do Podman, do containerd, do Incus e do Helm, a delas, como **Novo pod** ou **Nova instância** |
+| Teclas                      | Faz                                                                                                                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <kbd>/</kbd>                | Focar o campo de pesquisa da página. <kbd>Esc</kbd> em um campo vazio sai dele.                                                                                                                                                                              |
+| <kbd>N</kbd>                | Iniciar a ação principal da página: **Executar contêiner**, **Baixar**, **Criar volume**, **Criar rede**, **Nova stack** ou **Adicionar host**; e nas páginas do Podman, do containerd, do Incus e do Helm, a delas, como **Novo pod** ou **Nova instância** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Numa lista com um item aberto ao lado, abrir o item de cima ou de baixo                                                                                                                                                                                      |
 
 O botão da ação principal de uma página mostra <kbd>N</kbd> quando você passa o ponteiro sobre ele.
 

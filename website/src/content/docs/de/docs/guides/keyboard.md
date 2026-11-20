@@ -44,10 +44,11 @@ Fahren Sie in der Seitenleiste mit dem Mauszeiger über eine Seite, um ihre Tast
 
 ### Auf einer Seite
 
-| Tasten       | Bewirkt                                                                                                                                                                                                                                                                          |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Das Suchfeld der Seite fokussieren. <kbd>Esc</kbd> in einem leeren Feld verlässt es.                                                                                                                                                                                             |
-| <kbd>N</kbd> | Die Hauptaktion der Seite starten: **Container ausführen**, **Pullen**, **Volume erstellen**, **Netzwerk erstellen**, **Neuer Stack** oder **Host hinzufügen**; und auf den Seiten von Podman, containerd, Incus und Helm deren eigene, etwa **Neuer Pod** oder **Neue Instanz** |
+| Tasten                      | Bewirkt                                                                                                                                                                                                                                                                          |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd>                | Das Suchfeld der Seite fokussieren. <kbd>Esc</kbd> in einem leeren Feld verlässt es.                                                                                                                                                                                             |
+| <kbd>N</kbd>                | Die Hauptaktion der Seite starten: **Container ausführen**, **Pullen**, **Volume erstellen**, **Netzwerk erstellen**, **Neuer Stack** oder **Host hinzufügen**; und auf den Seiten von Podman, containerd, Incus und Helm deren eigene, etwa **Neuer Pod** oder **Neue Instanz** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | In einer Liste, deren Eintrag daneben geöffnet ist, den Eintrag darüber oder darunter öffnen                                                                                                                                                                                     |
 
 Die Schaltfläche der Hauptaktion einer Seite zeigt <kbd>N</kbd>, wenn Sie mit dem Mauszeiger darüberfahren.
 
