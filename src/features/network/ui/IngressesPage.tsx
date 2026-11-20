@@ -14,8 +14,10 @@ function columns(showNamespace: boolean): ColumnDef<IngressView, unknown>[] {
       accessorFn: (i) => i.name,
       cell: ({ row }) => (
         <span className="flex items-center gap-2 font-medium">
-          {row.original.name}
-          {row.original.tls && <Badge variant="secondary">TLS</Badge>}
+          <span className="max-w-64 truncate" title={row.original.name}>
+            {row.original.name}
+          </span>
+          {row.original.tls && <Badge variant="outline">TLS</Badge>}
         </span>
       ),
     },
@@ -33,14 +35,27 @@ function columns(showNamespace: boolean): ColumnDef<IngressView, unknown>[] {
       id: 'hosts',
       header: t('network.column.hosts'),
       accessorFn: (i) => i.hosts.join(', ') || '*',
+      cell: ({ getValue }) => (
+        <span className="inline-block max-w-72 truncate align-bottom" title={getValue<string>()}>
+          {getValue<string>()}
+        </span>
+      ),
     },
     {
       id: 'addresses',
       header: t('network.column.addresses'),
       accessorFn: (i) => i.addresses.join(', '),
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.addresses.join(', ') || '—'}</span>
-      ),
+      cell: ({ row }) => {
+        const addresses = row.original.addresses.join(', ');
+        return (
+          <span
+            className="inline-block max-w-64 truncate align-bottom font-mono text-xs"
+            title={addresses}
+          >
+            {addresses || '—'}
+          </span>
+        );
+      },
     },
     {
       id: 'age',

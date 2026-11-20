@@ -12,7 +12,14 @@ function columns(showNamespace: boolean): ColumnDef<ClusterServiceView, unknown>
       id: 'name',
       header: t('network.column.name'),
       accessorFn: (s) => s.name,
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span
+          className="inline-block max-w-64 truncate align-bottom font-medium"
+          title={row.original.name}
+        >
+          {row.original.name}
+        </span>
+      ),
     },
     ...(showNamespace
       ? [
@@ -39,15 +46,33 @@ function columns(showNamespace: boolean): ColumnDef<ClusterServiceView, unknown>
       id: 'external',
       header: t('network.column.external'),
       accessorFn: (s) => s.external.join(', '),
-      cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.external.join(', ') || '—'}</span>
-      ),
+      cell: ({ row }) => {
+        const external = row.original.external.join(', ');
+        return (
+          <span
+            className="inline-block max-w-64 truncate align-bottom font-mono text-xs"
+            title={external}
+          >
+            {external || '—'}
+          </span>
+        );
+      },
     },
     {
       id: 'ports',
       header: t('network.column.ports'),
       accessorFn: (s) => s.ports.join(', '),
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.ports.join(', ')}</span>,
+      cell: ({ row }) => {
+        const ports = row.original.ports.join(', ');
+        return (
+          <span
+            className="inline-block max-w-56 truncate align-bottom font-mono text-xs"
+            title={ports}
+          >
+            {ports}
+          </span>
+        );
+      },
     },
     {
       id: 'age',

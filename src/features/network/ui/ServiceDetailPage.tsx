@@ -34,7 +34,7 @@ function Overview({ clusterId, service }: { clusterId: string; service: ClusterS
     [t('network.detail.labels'), <Labels values={service.labels} />],
   ];
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Card>
         <CardContent>
           <KeyValue items={items} />
