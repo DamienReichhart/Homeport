@@ -7,7 +7,7 @@ export default {
     'Homeport はあなたのマシンで動作し、サーバーには何もインストールしません。無料のオープンソースです。',
   'home.hero.docs': 'ドキュメントを読む',
   'home.map.label':
-    '路線図として描いたサーバー群の例。このマシンは 5 本の路線の終点です。ローカルソケットは laptop へ、SSH は prod-eu-1、nas、edge-1 へ、TLS は staging と vps-fra-1 へ、TCP は lan-box へ、クラスター API は k8s-prod、jobs、lab へ通じています。vps-fra-1 上の 1 個のスタックに対応が必要です。',
+    '路線図として描いたサーバー群の例。このマシンは 5 本の路線の終点です。ローカルソケットは This Mac へ、SSH は prod-eu-1、nas、edge-1 へ、TLS は staging と vps-fra-1 へ、TCP は lan-box へ、クラスター API は k8s-prod、jobs、lab へ通じています。vps-fra-1 上の 1 個のスタックに対応が必要です。',
   'home.map.thisMachine': 'このマシン',
   'home.map.needsYou': '1 個のスタックに対応が必要',
   'home.map.keyNeedsYou': '要対応',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'スタックの管理',
   'home.questions.act.screenshot':
     '管理スタックの定義。compose.yaml エディター、その環境変数、「デプロイ」ボタンが表示されています。',
+  'home.questions.background.title': 'バックグラウンドで見守る',
+  'home.questions.background.body':
+    'システムトレイにすべてのホストの状態を表示し、コンテナがクラッシュしたときやホストの接続が切れたときに通知します。ログイン時に Homeport を起動し、必要になるまで隠しておくこともできます。',
+  'home.questions.keyboard.title': 'キーボード優先',
+  'home.questions.keyboard.body':
+    'コマンドパレットで、どこへでも移動し、ホストを切り替え、コマンドを実行し、どのホストにあるコンテナ、イメージ、ボリュームでも見つけられます。すべてのページにショートカットがあり、? で一覧を表示できます。',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'サーバーには何も住み着きません。',

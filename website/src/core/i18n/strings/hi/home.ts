@@ -7,7 +7,7 @@ export default {
     'Homeport आपकी मशीन पर चलता है और आपके सर्वरों पर कुछ भी इंस्टॉल नहीं करता। मुफ़्त और ओपन सोर्स।',
   'home.hero.docs': 'दस्तावेज़ पढ़ें',
   'home.map.label':
-    'लाइन मैप के रूप में बना एक उदाहरण फ़्लीट। यह मशीन पाँच लाइनों के छोर पर है: लोकल सॉकेट laptop तक पहुँचता है, SSH prod-eu-1, nas और edge-1 तक, TLS staging और vps-fra-1 तक, TCP lan-box तक, और क्लस्टर API k8s-prod, jobs और lab तक। vps-fra-1 पर एक स्टैक को आपकी ज़रूरत है।',
+    'लाइन मैप के रूप में बना एक उदाहरण फ़्लीट। यह मशीन पाँच लाइनों के छोर पर है: लोकल सॉकेट This Mac तक पहुँचता है, SSH prod-eu-1, nas और edge-1 तक, TLS staging और vps-fra-1 तक, TCP lan-box तक, और क्लस्टर API k8s-prod, jobs और lab तक। vps-fra-1 पर एक स्टैक को आपकी ज़रूरत है।',
   'home.map.thisMachine': 'यह मशीन',
   'home.map.needsYou': '1 स्टैक को आपकी ज़रूरत है',
   'home.map.keyNeedsYou': 'आपकी ज़रूरत',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'स्टैक प्रबंधित करना',
   'home.questions.act.screenshot':
     'किसी प्रबंधित स्टैक की परिभाषा: compose.yaml एडिटर, उसका परिवेश और “डिप्लॉय करें” बटन।',
+  'home.questions.background.title': 'बैकग्राउंड में निगरानी',
+  'home.questions.background.body':
+    'सिस्टम ट्रे में हर होस्ट की स्थिति, किसी कंटेनर के क्रैश होने या किसी होस्ट का कनेक्शन टूटने पर सूचनाएँ, और लॉगिन पर Homeport का शुरू होना, तब तक छिपा हुआ जब तक आपको उसकी ज़रूरत न हो।',
+  'home.questions.keyboard.title': 'कीबोर्ड सबसे पहले',
+  'home.questions.keyboard.body':
+    'एक कमांड पैलेट, जिससे आप कहीं भी जा सकते हैं, होस्ट बदल सकते हैं या कोई कमांड चला सकते हैं, और कोई भी कंटेनर, इमेज या वॉल्यूम ढूँढ सकते हैं, चाहे वह किसी भी होस्ट पर हो। हर पेज के लिए शॉर्टकट, जिनकी सूची ? से दिखती है।',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'आपके सर्वरों पर कुछ नहीं बसता।',

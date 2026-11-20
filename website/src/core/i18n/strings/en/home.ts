@@ -7,7 +7,7 @@ export default {
     'Homeport runs on your machine and installs nothing on your servers. Free and open source.',
   'home.hero.docs': 'Read the docs',
   'home.map.label':
-    'An example fleet drawn as a line map. This machine is at the end of five lines: the local socket reaches laptop, SSH reaches prod-eu-1, nas and edge-1, TLS reaches staging and vps-fra-1, TCP reaches lan-box, and the cluster API reaches k8s-prod, jobs and lab. One Stack on vps-fra-1 needs you.',
+    'An example fleet drawn as a line map. This machine is at the end of five lines: the local socket reaches This Mac, SSH reaches prod-eu-1, nas and edge-1, TLS reaches staging and vps-fra-1, TCP reaches lan-box, and the cluster API reaches k8s-prod, jobs and lab. One Stack on vps-fra-1 needs you.',
   'home.map.thisMachine': 'This machine',
   'home.map.needsYou': '1 Stack needs you',
   'home.map.keyNeedsYou': 'Needs you',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'Managing Stacks',
   'home.questions.act.screenshot':
     "A Managed Stack's definition: the compose.yaml editor, its environment and the Deploy button.",
+  'home.questions.background.title': 'Watching in the background',
+  'home.questions.background.body':
+    'Every Host’s status in the system tray, notifications when a container crashes or a Host drops, and Homeport starting at login, hidden until you need it.',
+  'home.questions.keyboard.title': 'Keyboard first',
+  'home.questions.keyboard.body':
+    'A command palette to go anywhere, switch Host or run a command, and to find any container, image or volume on whichever Host has it. Shortcuts for every page, listed with ?.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'Nothing moves in.',

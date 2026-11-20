@@ -49,6 +49,27 @@ body {
   width: auto;
 }
 
+/* The site's theme switch in the docs header (app/chrome/ThemeToggle.astro). */
+.header .icon-button {
+  line-height: 0;
+  display: inline-grid;
+  place-items: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0;
+  border-radius: var(--hp-radius);
+  background: transparent;
+  color: var(--hp-text-muted);
+  cursor: pointer;
+}
+.header .icon-button > span {
+  display: inline-grid;
+}
+.header .icon-button:hover {
+  background: var(--hp-bg-raised);
+  color: var(--hp-text);
+}
+
 /* Type. */
 .sl-markdown-content :is(h1, h2, h3, h4),
 h1#_top {
@@ -79,8 +100,10 @@ h1#_top {
   text-decoration-color: currentColor;
 }
 .sl-markdown-content code:not(:where(.not-content *, pre *)) {
-  padding: 0.1em 0.35em;
+  padding: 0.05em 0.25em;
+  border: 1px solid var(--hp-border);
   border-radius: var(--hp-radius);
+  background: var(--hp-code-bg);
   font-size: 0.88em;
 }
 .sl-markdown-content strong {
@@ -94,12 +117,26 @@ h1#_top {
   font-variant-numeric: tabular-nums;
 }
 .sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+  overflow-wrap: normal;
+  word-break: normal;
   padding: 0.6rem 1rem 0.6rem 0;
   padding-inline: 0 1rem;
   border: 0;
   border-bottom: 1px solid var(--hp-border);
   background: transparent;
   vertical-align: top;
+}
+/* A table's first column names the row: it never breaks inside a word. */
+.sl-markdown-content :is(th, td):first-child:not(:where(.not-content *)) {
+  min-width: 6rem;
+  hyphens: none;
+}
+@media (max-width: 40rem) {
+  /* On a phone a wide table scrolls on its own instead of squeezing its words. */
+  .sl-markdown-content table:not(:where(.not-content *)) {
+    display: block;
+    overflow-x: auto;
+  }
 }
 .sl-markdown-content th:not(:where(.not-content *)) {
   border-bottom: 2px solid var(--hp-text);

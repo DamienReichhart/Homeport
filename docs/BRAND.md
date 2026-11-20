@@ -126,7 +126,7 @@ The website keeps the mark, the voice and Signal red's one meaning, and draws ev
 | Ground        | `#fbfbf8` map white   | `#0e1013` night map   | The page                                              |
 | Ink           | `#16181b`             | `#eceef0`             | Text, primary buttons, the socket line, station rings |
 | Muted / faint | `#4b5058` / `#5e636b` | `#b3b8bf` / `#9aa0a8` | Secondary text (7.8 / 5.8:1 light, 9.6 / 7.2:1 dark)  |
-| Band          | `#16181b`             | `#07080a`             | The one ink band (keys and security)                  |
+| Band          | `#16181b`             | `#1b1f25`             | The one ink band (keys and security)                  |
 | Signal        | `#c8102e`             | `#ff5c5c`             | **Only** a station or a fact that needs you           |
 
 The five lines, only ever on a line, a rail or the map's key, never on text or a surface: socket (ink), SSH green `#0b7a4b` / `#3fbf7f`, TLS cobalt `#1e4bb8` / `#6f93ff`, TCP ochre `#a8650a` / `#e0a043`, cluster API teal `#0f7a80` / `#33b9bf`. Each is 3:1 or more on both grounds.

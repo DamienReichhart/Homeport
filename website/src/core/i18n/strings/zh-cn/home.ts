@@ -6,7 +6,7 @@ export default {
   'home.hero.lead': 'Homeport 运行在你的电脑上，不在服务器上安装任何东西。免费、开源。',
   'home.hero.docs': '阅读文档',
   'home.map.label':
-    '以线路图形式画出的一组示例服务器。这台电脑位于五条线路的终点：本地套接字通往 laptop，SSH 通往 prod-eu-1、nas 和 edge-1，TLS 通往 staging 和 vps-fra-1，TCP 通往 lan-box，集群 API 通往 k8s-prod、jobs 和 lab。vps-fra-1 上有 1 个堆栈需要你处理。',
+    '以线路图形式画出的一组示例服务器。这台电脑位于五条线路的终点：本地套接字通往 This Mac，SSH 通往 prod-eu-1、nas 和 edge-1，TLS 通往 staging 和 vps-fra-1，TCP 通往 lan-box，集群 API 通往 k8s-prod、jobs 和 lab。vps-fra-1 上有 1 个堆栈需要你处理。',
   'home.map.thisMachine': '这台电脑',
   'home.map.needsYou': '1 个堆栈需要你处理',
   'home.map.keyNeedsYou': '待处理',
@@ -39,6 +39,12 @@ export default {
   'home.questions.act.link': '管理堆栈',
   'home.questions.act.screenshot':
     '托管堆栈的定义：compose.yaml 编辑器、它的环境变量和“部署”按钮。',
+  'home.questions.background.title': '在后台留意',
+  'home.questions.background.body':
+    '系统托盘中显示每台主机的状态，容器崩溃或主机掉线时发出通知；Homeport 可在登录时启动，隐藏在后台，直到你需要它。',
+  'home.questions.keyboard.title': '键盘优先',
+  'home.questions.keyboard.body':
+    '用命令面板前往任意位置、切换主机或运行命令，并在任何主机上找到任意容器、镜像或卷。每个页面都有快捷键，按 ? 查看列表。',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': '什么也不入驻。',

@@ -7,7 +7,7 @@ export default {
     'Homeport läuft auf Ihrem Computer und installiert nichts auf Ihren Servern. Kostenlos und Open Source.',
   'home.hero.docs': 'Dokumentation lesen',
   'home.map.label':
-    'Eine Beispielflotte als Linienplan. Dieser Computer liegt am Ende von fünf Linien: Der lokale Socket erreicht laptop, SSH erreicht prod-eu-1, nas und edge-1, TLS erreicht staging und vps-fra-1, TCP erreicht lan-box, und die Cluster-API erreicht k8s-prod, jobs und lab. Ein Stack auf vps-fra-1 braucht Sie.',
+    'Eine Beispielflotte als Linienplan. Dieser Computer liegt am Ende von fünf Linien: Der lokale Socket erreicht This Mac, SSH erreicht prod-eu-1, nas und edge-1, TLS erreicht staging und vps-fra-1, TCP erreicht lan-box, und die Cluster-API erreicht k8s-prod, jobs und lab. Ein Stack auf vps-fra-1 braucht Sie.',
   'home.map.thisMachine': 'Dieser Computer',
   'home.map.needsYou': '1 Stack braucht Sie',
   'home.map.keyNeedsYou': 'Braucht dich',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'Stacks verwalten',
   'home.questions.act.screenshot':
     'Die Definition eines verwalteten Stacks: der Editor für compose.yaml, seine Umgebung und die Schaltfläche „Bereitstellen“.',
+  'home.questions.background.title': 'Im Hintergrund wachsam',
+  'home.questions.background.body':
+    'Der Status jedes Hosts im Infobereich, Benachrichtigungen, wenn ein Container abstürzt oder ein Host wegfällt, und Homeport startet bei der Anmeldung, verborgen, bis Sie es brauchen.',
+  'home.questions.keyboard.title': 'Tastatur zuerst',
+  'home.questions.keyboard.body':
+    'Eine Befehlspalette, um überallhin zu gelangen, den Host zu wechseln oder einen Befehl auszuführen, und um jeden Container, jedes Image oder Volume auf dem Host zu finden, der es hat. Tastenkürzel für jede Seite, aufgelistet mit ?.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'Nichts zieht ein.',

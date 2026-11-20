@@ -98,7 +98,7 @@ export const LINES: Line[] = [
     id: 'socket',
     colour: '--hp-line-socket',
     path: 'M50 476 H330',
-    stations: [{ host: 'laptop', engine: 'OrbStack', x: 330, y: 476, label: 'below' }],
+    stations: [{ host: 'This Mac', engine: 'OrbStack', x: 330, y: 476, label: 'below' }],
   },
 ];
 

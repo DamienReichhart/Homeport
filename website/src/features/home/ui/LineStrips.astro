@@ -43,30 +43,45 @@ const s = strings(Astro.props.locale);
 </ol>
 
 <style>
-  /* The strips, under 64rem: each line a coloured rail with its stations. */
+  /*
+   * Under 64rem the map is drawn top to bottom: this machine at the top, an ink
+   * trunk down the start edge, and each line branching off it in its own colour
+   * to a rail with its stations.
+   */
   .line-map__strips {
+    position: relative;
     display: grid;
     gap: 1.75rem;
     margin: 0;
     padding: 0;
+    padding-inline-start: 2.5rem;
     list-style: none;
   }
-  @media (min-width: 40rem) {
-    .line-map__strips {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      column-gap: 2rem;
-    }
+  /* The trunk, from the terminus down; the last strip hides what runs past its branch. */
+  .line-map__strips::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.6rem;
+    top: 0.8rem;
+    bottom: 0;
+    width: 6px;
+    background: var(--hp-line-socket);
+  }
+  .strip:last-child::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(-2.5rem + 0.6rem - 1px);
+    top: calc(0.75rem + 3px);
+    bottom: -1px;
+    width: 8px;
+    background: var(--hp-bg);
   }
   .line-map__home {
     display: flex;
     align-items: center;
     gap: 0.75rem;
+    margin-inline-start: -2.5rem;
     font-weight: 600;
-  }
-  @media (min-width: 40rem) {
-    .line-map__home {
-      grid-column: 1 / -1;
-    }
   }
   .line-map__home-mark {
     width: 2.25rem;
@@ -75,12 +90,25 @@ const s = strings(Astro.props.locale);
     background: var(--hp-line-socket);
   }
   .strip {
+    position: relative;
     display: grid;
     gap: 0.6rem;
   }
+  /* The branch: from the trunk to the line's own rail, at the line's name. */
+  .strip::after {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(-2.5rem + 0.6rem);
+    top: calc(0.75rem - 3px);
+    width: calc(2.5rem - 0.6rem + 0.475rem + 3px);
+    height: 6px;
+    background: var(--line);
+  }
   .strip__name {
+    padding-inline-start: 2rem;
     color: var(--hp-text-muted);
     font-size: 0.95rem;
+    line-height: 1.5rem;
   }
   .strip ol {
     position: relative;
@@ -91,15 +119,14 @@ const s = strings(Astro.props.locale);
     padding-inline-start: 2rem;
     list-style: none;
   }
-  /* The rail runs through the centre of every station. */
+  /* The rail runs from the branch through the centre of every station. */
   .strip ol::before {
     content: '';
     position: absolute;
     inset-inline-start: calc(0.475rem - 3px);
-    top: 0.4rem;
+    top: -1.35rem;
     bottom: 0.4rem;
     width: 6px;
-    border-radius: 1px;
     background: var(--line);
   }
   .strip li {
@@ -124,7 +151,6 @@ const s = strings(Astro.props.locale);
     font-size: 0.95rem;
     font-weight: 600;
   }
-
   @media (min-width: 64rem) {
     .line-map__strips {
       display: none;

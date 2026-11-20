@@ -18,11 +18,16 @@ const { locale } = Astro.props;
 const s = strings(locale);
 
 const stops = [
-  { id: 'up', shot: 'board', doc: '/docs/guides/overview/' },
-  { id: 'died', shot: 'container-logs', doc: '/docs/guides/containers/' },
-  { id: 'changed', shot: 'events', doc: '/docs/guides/overview/' },
-  { id: 'act', shot: 'stack-editor', doc: '/docs/guides/stacks/' },
+  // Each shot shows only the part of the window that answers its question, so its text is readable.
+  { id: 'up', shot: 'board', region: '240 0 880 470', doc: '/docs/guides/overview/' },
+  { id: 'died', shot: 'container-logs', region: '590 8 830 530', doc: '/docs/guides/containers/' },
+  { id: 'changed', shot: 'events', region: '240 0 960 560', doc: '/docs/guides/overview/' },
+  { id: 'act', shot: 'stack-editor', region: '560 0 880 560', doc: '/docs/guides/stacks/' },
 ] as const;
+const also = (['background', 'keyboard'] as const).map((id) => ({
+  title: s[`home.questions.${id}.title`],
+  body: s[`home.questions.${id}.body`],
+}));
 ---
 
 <section class="section section--ruled" id="questions">
@@ -48,11 +53,21 @@ const stops = [
             name={stop.shot}
             folder={locale.code}
             alt={s[`home.questions.${stop.id}.screenshot`]}
+            region={stop.region}
             sizes={STOP_SIZES}
           />
         </li>
       ))}
     </ol>
+
+    <dl class="also">
+      {also.map((item) => (
+        <div>
+          <dt>{item.title}</dt>
+          <dd>{item.body}</dd>
+        </div>
+      ))}
+    </dl>
   </div>
 </section>
 
@@ -101,6 +116,32 @@ const stops = [
     letter-spacing: -0.02em;
   }
   .stop p {
+    color: var(--hp-text-muted);
+  }
+  /* What Homeport does without being asked: two facts under the line. */
+  .also {
+    display: grid;
+    gap: 0 3.5rem;
+    margin: 5rem 0 0;
+    border-top: 2px solid var(--hp-text);
+  }
+  @media (min-width: 48rem) {
+    .also {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .also div {
+    display: grid;
+    gap: 0.4rem;
+    padding-block: 1.4rem;
+    border-bottom: 1px solid var(--hp-border);
+  }
+  .also dt {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+  .also dd {
+    margin: 0;
     color: var(--hp-text-muted);
   }
   @media (min-width: 64rem) {

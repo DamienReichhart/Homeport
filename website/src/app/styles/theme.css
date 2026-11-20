@@ -60,8 +60,8 @@
   --hp-on-primary: #0e1013;
   --hp-signal: #ff5c5c;
   --hp-code-bg: #15181c;
-  /* The ink band: the darkest surface, for the part of a page that holds keys. */
-  --hp-band: #07080a;
+  /* The band: set off from the page (ink by day, raised at night), for the part that holds keys. */
+  --hp-band: #1b1f25;
   --hp-band-text: #eceef0;
   --hp-band-muted: #a9aeb5;
   --hp-band-rule: rgb(236 238 240 / 0.14);
