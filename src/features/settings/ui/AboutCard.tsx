@@ -25,15 +25,17 @@ export function AboutCard() {
               {info.data ? `v${info.data.version} · ${info.data.os}/${info.data.arch}` : '…'}
             </p>
           </div>
-          <Button variant="outline" size="sm" className="ms-auto" onClick={openLogFolder}>
-            <FolderOpenIcon /> {t('settings.about.openLogFolder')}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setDiagnosticsOpen(true)}>
-            {t('settings.about.exportDiagnostics')}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setLicensesOpen(true)}>
-            {t('settings.about.licenses')}
-          </Button>
+          <div className="ms-auto flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={openLogFolder}>
+              <FolderOpenIcon /> {t('settings.about.openLogFolder')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setDiagnosticsOpen(true)}>
+              {t('settings.about.exportDiagnostics')}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setLicensesOpen(true)}>
+              {t('settings.about.licenses')}
+            </Button>
+          </div>
         </CardContent>
       </Card>
       <LicensesDialog open={licensesOpen} onOpenChange={setLicensesOpen} />
