@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'المضيفات',
   'hosts.description': 'محركات Docker التي يتصل بها Homeport.',
   'hosts.add': 'إضافة مضيف',
-  'hosts.empty': 'لا توجد مضيفات بعد.',
+  'hosts.empty': 'لا توجد مضيفات بعد',
+  'hosts.emptyDescription':
+    'أضف محرك Docker أو Podman أو containerd أو Incus: على هذا الكمبيوتر، أو على خادم عبر SSH أو TLS.',
   'hosts.column.name': 'الاسم',
   'hosts.column.type': 'النوع',
   'hosts.column.address': 'العنوان',
@@ -171,7 +173,7 @@ export default {
   'hosts.bundle.confirmation': 'عبارة المرور مرة أخرى',
   'hosts.bundle.problem.short': 'استخدم {min} أحرف على الأقل.',
   'hosts.bundle.problem.mismatch': 'عبارتا المرور مختلفتان.',
-  'hosts.bundle.export.button': 'تصدير',
+  'hosts.bundle.export.button': 'تصدير المضيفات إلى ملف…',
   'hosts.bundle.export.title': 'تصدير المضيفات',
   'hosts.bundle.export.description':
     'يكتب المضيفات التي تختارها، مع مفاتيحها وشهاداتها ومفاتيح الخوادم الموثوقة، في ملف واحد مشفّر بعبارة مرور. استورده على كمبيوتر آخر لاستخدامها هناك.',
@@ -183,7 +185,7 @@ export default {
     '{count, plural, zero {لم يُصدَّر أي مضيف} one {تم تصدير مضيف واحد} two {تم تصدير مضيفين} few {تم تصدير # مضيفات} many {تم تصدير # مضيفًا} other {تم تصدير # مضيف}}',
   'hosts.bundle.export.withoutSecrets':
     'صُدّرت هذه دون بيانات اعتمادها، التي لا يمكن فتحها على هذا الكمبيوتر:',
-  'hosts.bundle.import.button': 'استيراد',
+  'hosts.bundle.import.button': 'استيراد مضيفات من ملف…',
   'hosts.bundle.import.title': 'استيراد مضيفات من ملف تصدير',
   'hosts.bundle.import.description':
     'افتح ملفًا صُدّر من Homeport باستخدام عبارة مروره، ثم اختر المضيفات المراد إضافتها. تُخزَّن بيانات اعتمادها مشفّرة على هذا الكمبيوتر.',

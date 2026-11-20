@@ -6,7 +6,9 @@ export default {
   'hosts.title': '主机',
   'hosts.description': 'Homeport 连接的 Docker Engine。',
   'hosts.add': '添加主机',
-  'hosts.empty': '暂无主机。',
+  'hosts.empty': '暂无主机',
+  'hosts.emptyDescription':
+    '添加 Docker、Podman、containerd 或 Incus 引擎：在本机上，或通过 SSH、TLS 连接服务器。',
   'hosts.column.name': '名称',
   'hosts.column.type': '类型',
   'hosts.column.address': '地址',
@@ -166,7 +168,7 @@ export default {
   'hosts.bundle.confirmation': '再次输入口令',
   'hosts.bundle.problem.short': '请至少使用 {min} 个字符。',
   'hosts.bundle.problem.mismatch': '两次输入的口令不一致。',
-  'hosts.bundle.export.button': '导出',
+  'hosts.bundle.export.button': '将主机导出到文件…',
   'hosts.bundle.export.title': '导出主机',
   'hosts.bundle.export.description':
     '将你选择的主机连同其密钥、证书和受信任的服务器密钥写入一个用口令加密的文件。在另一台计算机上导入即可在那里使用它们。',
@@ -176,7 +178,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, other {已导出 # 个主机}}',
   'hosts.bundle.export.withoutSecrets':
     '以下主机在不含凭据的情况下导出，因为其凭据无法在本机上打开：',
-  'hosts.bundle.import.button': '导入',
+  'hosts.bundle.import.button': '从文件导入主机…',
   'hosts.bundle.import.title': '从导出文件导入主机',
   'hosts.bundle.import.description':
     '使用口令打开从 Homeport 导出的文件，然后选择要添加的主机。其凭据会加密保存在本机上。',

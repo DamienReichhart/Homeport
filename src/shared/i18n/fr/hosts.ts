@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'Hôtes',
   'hosts.description': 'Les Docker Engines auxquels Homeport se connecte.',
   'hosts.add': 'Ajouter un hôte',
-  'hosts.empty': 'Aucun hôte pour l’instant.',
+  'hosts.empty': 'Aucun hôte pour l’instant',
+  'hosts.emptyDescription':
+    'Ajoutez un moteur Docker, Podman, containerd ou Incus : sur cet ordinateur, ou sur un serveur en SSH ou TLS.',
   'hosts.column.name': 'Nom',
   'hosts.column.type': 'Type',
   'hosts.column.address': 'Adresse',
@@ -175,7 +177,7 @@ export default {
   'hosts.bundle.confirmation': 'Phrase secrète, à nouveau',
   'hosts.bundle.problem.short': 'Utilisez au moins {min} caractères.',
   'hosts.bundle.problem.mismatch': 'Les deux phrases secrètes diffèrent.',
-  'hosts.bundle.export.button': 'Exporter',
+  'hosts.bundle.export.button': 'Exporter des hôtes vers un fichier…',
   'hosts.bundle.export.title': 'Exporter des hôtes',
   'hosts.bundle.export.description':
     'Écrit les hôtes choisis, avec leurs clés, leurs certificats et les clés de serveur approuvées, dans un seul fichier chiffré par une phrase secrète. Importez-le sur un autre ordinateur pour les y utiliser.',
@@ -186,7 +188,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, one {# hôte exporté} other {# hôtes exportés}}',
   'hosts.bundle.export.withoutSecrets':
     'Ceux-ci ont été exportés sans leurs identifiants, qui ne peuvent pas être ouverts sur cet ordinateur :',
-  'hosts.bundle.import.button': 'Importer',
+  'hosts.bundle.import.button': 'Importer des hôtes depuis un fichier…',
   'hosts.bundle.import.title': 'Importer des hôtes depuis un export',
   'hosts.bundle.import.description':
     'Ouvrez un fichier exporté depuis Homeport avec sa phrase secrète, puis choisissez les hôtes à ajouter. Leurs identifiants sont enregistrés chiffrés sur cet ordinateur.',

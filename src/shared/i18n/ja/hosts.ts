@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'ホスト',
   'hosts.description': 'Homeport が接続する Docker エンジンです。',
   'hosts.add': 'ホストを追加',
-  'hosts.empty': 'まだホストはありません。',
+  'hosts.empty': 'まだホストはありません',
+  'hosts.emptyDescription':
+    'Docker、Podman、containerd、Incus のエンジンを追加します。このコンピューター上のものでも、SSH や TLS で接続するサーバー上のものでも構いません。',
   'hosts.column.name': '名前',
   'hosts.column.type': 'タイプ',
   'hosts.column.address': 'アドレス',
@@ -177,7 +179,7 @@ export default {
   'hosts.bundle.confirmation': 'パスフレーズ（確認）',
   'hosts.bundle.problem.short': '{min} 文字以上にしてください。',
   'hosts.bundle.problem.mismatch': '2 つのパスフレーズが一致しません。',
-  'hosts.bundle.export.button': 'エクスポート',
+  'hosts.bundle.export.button': 'ホストをファイルにエクスポート…',
   'hosts.bundle.export.title': 'ホストをエクスポート',
   'hosts.bundle.export.description':
     '選んだホストを、キー、証明書、信頼済みサーバーキーとともに、パスフレーズで暗号化した 1 つのファイルに書き出します。別のコンピューターでインポートすると、そこで使えます。',
@@ -188,7 +190,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, other {# 台のホストをエクスポートしました}}',
   'hosts.bundle.export.withoutSecrets':
     '次のものは、このコンピューターで認証情報を開けないため、認証情報なしでエクスポートされました:',
-  'hosts.bundle.import.button': 'インポート',
+  'hosts.bundle.import.button': 'ファイルからホストをインポート…',
   'hosts.bundle.import.title': 'エクスポートからホストをインポート',
   'hosts.bundle.import.description':
     'Homeport からエクスポートしたファイルをパスフレーズで開き、追加するホストを選んでください。認証情報はこのコンピューター上で暗号化して保存されます。',

@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'Hosts',
   'hosts.description': 'Los Docker Engines a los que se conecta Homeport.',
   'hosts.add': 'Añadir host',
-  'hosts.empty': 'Aún no hay hosts.',
+  'hosts.empty': 'Aún no hay hosts',
+  'hosts.emptyDescription':
+    'Añade un Engine de Docker, Podman, containerd o Incus: en este equipo, o en un servidor por SSH o TLS.',
   'hosts.column.name': 'Nombre',
   'hosts.column.type': 'Tipo',
   'hosts.column.address': 'Dirección',
@@ -175,7 +177,7 @@ export default {
   'hosts.bundle.confirmation': 'Repite la frase de contraseña',
   'hosts.bundle.problem.short': 'Usa al menos {min} caracteres.',
   'hosts.bundle.problem.mismatch': 'Las dos frases de contraseña no coinciden.',
-  'hosts.bundle.export.button': 'Exportar',
+  'hosts.bundle.export.button': 'Exportar hosts a un archivo…',
   'hosts.bundle.export.title': 'Exportar hosts',
   'hosts.bundle.export.description':
     'Escribe los hosts que elijas, con sus claves, certificados y claves de servidor de confianza, en un archivo cifrado con una frase de contraseña. Impórtalo en otro equipo para usarlos allí.',
@@ -187,7 +189,7 @@ export default {
     '{count, plural, one {Se exportó # host} other {Se exportaron # hosts}}',
   'hosts.bundle.export.withoutSecrets':
     'Estos se exportaron sin sus credenciales, que no se pueden abrir en este equipo:',
-  'hosts.bundle.import.button': 'Importar',
+  'hosts.bundle.import.button': 'Importar hosts desde un archivo…',
   'hosts.bundle.import.title': 'Importar hosts desde una exportación',
   'hosts.bundle.import.description':
     'Abre un archivo exportado desde Homeport con su frase de contraseña y luego elige los hosts que añadir. Sus credenciales se guardan cifradas en este equipo.',

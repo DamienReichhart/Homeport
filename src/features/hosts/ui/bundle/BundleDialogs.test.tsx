@@ -17,6 +17,14 @@ vi.mock('@/shared/lib/dialogs', () => ({
 
 const PASS = 'a long passphrase';
 
+/** Opens the Hosts page's "More actions" menu, once the list is in, and picks `item`. */
+async function openMenuItem(user: ReturnType<typeof userEvent.setup>, item: string) {
+  const page = within(screen.getByRole('main'));
+  await page.findByText('local');
+  await user.click(page.getByRole('button', { name: 'More actions' }));
+  await user.click(await screen.findByRole('menuitem', { name: item }));
+}
+
 beforeEach(() => {
   dialogs.pickSavePath.mockReset();
   dialogs.pickFile.mockReset();
@@ -41,7 +49,7 @@ describe('export hosts dialog', () => {
     const exported = setup();
     dialogs.pickSavePath.mockResolvedValue('/home/me/hosts.homeport');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Export' }));
+    await openMenuItem(user, 'Export hosts to a file…');
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByLabelText(/local/));
     const submit = within(dialog).getByRole('button', { name: 'Export 1 host…' });
@@ -67,7 +75,7 @@ describe('export hosts dialog', () => {
     const exported = setup();
     dialogs.pickSavePath.mockResolvedValue(null);
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Export' }));
+    await openMenuItem(user, 'Export hosts to a file…');
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('Passphrase'), PASS);
     await user.type(within(dialog).getByLabelText('Passphrase again'), PASS);
@@ -81,7 +89,7 @@ describe('export hosts dialog', () => {
     setup(['prod']);
     dialogs.pickSavePath.mockResolvedValue('/tmp/x.homeport');
     const user = userEvent.setup();
-    await user.click(await screen.findByRole('button', { name: 'Export' }));
+    await openMenuItem(user, 'Export hosts to a file…');
     const dialog = await screen.findByRole('dialog');
     await user.type(within(dialog).getByLabelText('Passphrase'), PASS);
     await user.type(within(dialog).getByLabelText('Passphrase again'), PASS);
@@ -136,7 +144,7 @@ describe('import bundle dialog', () => {
     dialogs.pickFile.mockResolvedValue('/home/me/hosts.homeport');
     const user = userEvent.setup();
     renderApp('/hosts');
-    await user.click(await screen.findByRole('button', { name: 'Import' }));
+    await openMenuItem(user, 'Import hosts from a file…');
     const dialog = await screen.findByRole('dialog');
     await user.click(within(dialog).getByRole('button', { name: 'Choose file…' }));
     expect(await within(dialog).findByText('/home/me/hosts.homeport')).toBeInTheDocument();

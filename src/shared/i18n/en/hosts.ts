@@ -3,7 +3,9 @@ export default {
   'hosts.title': 'Hosts',
   'hosts.description': 'The Docker Engines Homeport connects to.',
   'hosts.add': 'Add host',
-  'hosts.empty': 'No hosts yet.',
+  'hosts.empty': 'No hosts yet',
+  'hosts.emptyDescription':
+    'Add a Docker, Podman, containerd or Incus Engine: on this computer, or on a server over SSH or TLS.',
   'hosts.column.name': 'Name',
   'hosts.column.type': 'Type',
   'hosts.column.address': 'Address',
@@ -166,7 +168,7 @@ export default {
   'hosts.bundle.confirmation': 'Passphrase again',
   'hosts.bundle.problem.short': 'Use at least {min} characters.',
   'hosts.bundle.problem.mismatch': 'The two passphrases differ.',
-  'hosts.bundle.export.button': 'Export',
+  'hosts.bundle.export.button': 'Export hosts to a file…',
   'hosts.bundle.export.title': 'Export hosts',
   'hosts.bundle.export.description':
     'Writes the hosts you pick, with their keys, certificates and trusted server keys, to one file encrypted with a passphrase. Import it on another computer to use them there.',
@@ -177,7 +179,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, one {Exported # host} other {Exported # hosts}}',
   'hosts.bundle.export.withoutSecrets':
     'These were exported without their credentials, which can’t be opened on this computer:',
-  'hosts.bundle.import.button': 'Import',
+  'hosts.bundle.import.button': 'Import hosts from a file…',
   'hosts.bundle.import.title': 'Import hosts from an export',
   'hosts.bundle.import.description':
     'Open a file exported from Homeport with its passphrase, then pick the hosts to add. Their credentials are stored encrypted on this computer.',

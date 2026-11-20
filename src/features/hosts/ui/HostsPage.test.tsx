@@ -5,7 +5,7 @@ import { mockCommands } from '@/test/ipc';
 import { clientWithoutRetries, renderApp } from '@/test/render';
 
 describe('hosts page', () => {
-  it('lists every Host with its kind, address and status', async () => {
+  it('lists every Host with its kind and address, naming only the states that need a look', async () => {
     mockCommands({
       ...baseCommands,
       hosts_list: () => [
@@ -36,9 +36,18 @@ describe('hosts page', () => {
     expect(await page.findByText('prod')).toBeInTheDocument();
     expect(screen.getByText('deploy@prod.example.com')).toBeInTheDocument();
     expect(screen.getByText('edge.example.com:2376')).toBeInTheDocument();
-    expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
-    expect(screen.getByText('Unreachable')).toBeInTheDocument();
-    expect(screen.getByText('Credentials lost')).toBeInTheDocument();
+    // A connected Host shows what it runs; what's wrong is named.
+    expect(page.getByText('Engine 29.1')).toBeInTheDocument();
+    expect(page.getByText('Unreachable')).toBeInTheDocument();
+    expect(page.getByText('Credentials lost')).toBeInTheDocument();
+  });
+
+  it('offers to add the first Host when there is none', async () => {
+    mockCommands({ ...baseCommands, hosts_list: () => [] });
+    renderApp('/hosts');
+    const page = within(screen.getByRole('main'));
+    expect(await page.findByText('No hosts yet')).toBeInTheDocument();
+    expect(page.getAllByRole('link', { name: 'Add host' }).length).toBe(2);
   });
 
   it('shows a list that fails to load in place', async () => {

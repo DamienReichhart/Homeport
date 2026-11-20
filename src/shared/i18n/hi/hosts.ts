@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'होस्ट',
   'hosts.description': 'वे Docker Engine जिनसे Homeport कनेक्ट होता है।',
   'hosts.add': 'होस्ट जोड़ें',
-  'hosts.empty': 'अभी कोई होस्ट नहीं।',
+  'hosts.empty': 'अभी कोई होस्ट नहीं',
+  'hosts.emptyDescription':
+    'Docker, Podman, containerd या Incus इंजन जोड़ें: इस कंप्यूटर पर, या SSH या TLS के ज़रिए किसी सर्वर पर।',
   'hosts.column.name': 'नाम',
   'hosts.column.type': 'प्रकार',
   'hosts.column.address': 'पता',
@@ -175,7 +177,7 @@ export default {
   'hosts.bundle.confirmation': 'पासफ़्रेज़ फिर से',
   'hosts.bundle.problem.short': 'कम से कम {min} अक्षर इस्तेमाल करें।',
   'hosts.bundle.problem.mismatch': 'दोनों पासफ़्रेज़ अलग हैं।',
-  'hosts.bundle.export.button': 'एक्सपोर्ट करें',
+  'hosts.bundle.export.button': 'होस्ट को फ़ाइल में एक्सपोर्ट करें…',
   'hosts.bundle.export.title': 'होस्ट एक्सपोर्ट करें',
   'hosts.bundle.export.description':
     'आपके चुने होस्ट को, उनकी कुंजियों, प्रमाणपत्रों और भरोसेमंद सर्वर कुंजियों के साथ, पासफ़्रेज़ से एन्क्रिप्ट की गई एक फ़ाइल में लिखता है। उन्हें किसी दूसरे कंप्यूटर पर इस्तेमाल करने के लिए वहाँ इसे इम्पोर्ट करें।',
@@ -187,7 +189,7 @@ export default {
     '{count, plural, one {# होस्ट एक्सपोर्ट किया गया} other {# होस्ट एक्सपोर्ट किए गए}}',
   'hosts.bundle.export.withoutSecrets':
     'इन्हें इनके क्रेडेंशियल के बिना एक्सपोर्ट किया गया, जो इस कंप्यूटर पर खोले नहीं जा सकते:',
-  'hosts.bundle.import.button': 'इम्पोर्ट करें',
+  'hosts.bundle.import.button': 'फ़ाइल से होस्ट इम्पोर्ट करें…',
   'hosts.bundle.import.title': 'एक्सपोर्ट से होस्ट इम्पोर्ट करें',
   'hosts.bundle.import.description':
     'Homeport से एक्सपोर्ट की गई फ़ाइल उसके पासफ़्रेज़ से खोलें, फिर जोड़ने के लिए होस्ट चुनें। उनके क्रेडेंशियल इस कंप्यूटर पर एन्क्रिप्ट करके सहेजे जाते हैं।',

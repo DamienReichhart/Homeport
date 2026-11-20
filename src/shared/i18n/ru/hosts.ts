@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'Хосты',
   'hosts.description': 'Docker Engine, к которым подключается Homeport.',
   'hosts.add': 'Добавить хост',
-  'hosts.empty': 'Хостов пока нет.',
+  'hosts.empty': 'Хостов пока нет',
+  'hosts.emptyDescription':
+    'Добавьте движок Docker, Podman, containerd или Incus: на этом компьютере или на сервере по SSH или TLS.',
   'hosts.column.name': 'Имя',
   'hosts.column.type': 'Тип',
   'hosts.column.address': 'Адрес',
@@ -175,7 +177,7 @@ export default {
   'hosts.bundle.confirmation': 'Парольная фраза ещё раз',
   'hosts.bundle.problem.short': 'Используйте не менее {min} символов.',
   'hosts.bundle.problem.mismatch': 'Парольные фразы не совпадают.',
-  'hosts.bundle.export.button': 'Экспортировать',
+  'hosts.bundle.export.button': 'Экспортировать хосты в файл…',
   'hosts.bundle.export.title': 'Экспорт хостов',
   'hosts.bundle.export.description':
     'Записывает выбранные хосты с их ключами, сертификатами и доверенными ключами серверов в один файл, зашифрованный парольной фразой. Импортируйте его на другом компьютере, чтобы пользоваться ими там.',
@@ -187,7 +189,7 @@ export default {
     '{count, plural, one {Экспортирован # хост} few {Экспортировано # хоста} many {Экспортировано # хостов} other {Экспортировано # хоста}}',
   'hosts.bundle.export.withoutSecrets':
     'Эти хосты экспортированы без учётных данных, которые на этом компьютере не удаётся открыть:',
-  'hosts.bundle.import.button': 'Импортировать',
+  'hosts.bundle.import.button': 'Импортировать хосты из файла…',
   'hosts.bundle.import.title': 'Импорт хостов из экспорта',
   'hosts.bundle.import.description':
     'Откройте файл, экспортированный из Homeport, с его парольной фразой, затем выберите хосты для добавления. Их учётные данные хранятся на этом компьютере в зашифрованном виде.',

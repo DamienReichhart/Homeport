@@ -6,7 +6,9 @@ export default {
   'hosts.title': '호스트',
   'hosts.description': 'Homeport가 연결하는 Docker Engine입니다.',
   'hosts.add': '호스트 추가',
-  'hosts.empty': '아직 호스트가 없습니다.',
+  'hosts.empty': '아직 호스트가 없습니다',
+  'hosts.emptyDescription':
+    'Docker, Podman, containerd 또는 Incus 엔진을 추가하세요. 이 컴퓨터의 엔진이나 SSH 또는 TLS로 연결하는 서버의 엔진을 추가할 수 있습니다.',
   'hosts.column.name': '이름',
   'hosts.column.type': '유형',
   'hosts.column.address': '주소',
@@ -171,7 +173,7 @@ export default {
   'hosts.bundle.confirmation': '암호 문구 다시 입력',
   'hosts.bundle.problem.short': '{min}자 이상 사용하세요.',
   'hosts.bundle.problem.mismatch': '두 암호 문구가 다릅니다.',
-  'hosts.bundle.export.button': '내보내기',
+  'hosts.bundle.export.button': '호스트를 파일로 내보내기…',
   'hosts.bundle.export.title': '호스트 내보내기',
   'hosts.bundle.export.description':
     '선택한 호스트를 키, 인증서, 신뢰하는 서버 키와 함께 암호 문구로 암호화된 파일 하나에 씁니다. 다른 컴퓨터에서 가져오면 그곳에서 사용할 수 있습니다.',
@@ -181,7 +183,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, other {호스트 #개}}를 내보냈습니다',
   'hosts.bundle.export.withoutSecrets':
     '다음 항목은 이 컴퓨터에서 자격 증명을 열 수 없어 자격 증명 없이 내보냈습니다.',
-  'hosts.bundle.import.button': '가져오기',
+  'hosts.bundle.import.button': '파일에서 호스트 가져오기…',
   'hosts.bundle.import.title': '내보내기 파일에서 호스트 가져오기',
   'hosts.bundle.import.description':
     'Homeport에서 내보낸 파일을 암호 문구로 연 다음 추가할 호스트를 선택하세요. 자격 증명은 이 컴퓨터에 암호화되어 저장됩니다.',
