@@ -379,4 +379,5 @@ export default {
   'containers.palette.run': 'Run a container',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': 'Open the Stack {stack}',
+  'containers.logs.show': 'Show',
 } as const;

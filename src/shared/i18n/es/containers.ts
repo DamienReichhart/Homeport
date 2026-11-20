@@ -371,4 +371,5 @@ export default {
   'containers.palette.run': 'Ejecutar un contenedor',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': 'Abrir el stack {stack}',
+  'containers.logs.show': 'Mostrar',
 } satisfies Translation<typeof en>;

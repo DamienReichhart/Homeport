@@ -378,4 +378,5 @@ export default {
   'containers.palette.run': 'تشغيل حاوية',
   'containers.idTitle': 'المعرّف {id}',
   'containers.detail.openStack': 'فتح المكدس {stack}',
+  'containers.logs.show': 'عرض',
 } satisfies Translation<typeof en>;

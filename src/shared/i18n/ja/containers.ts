@@ -398,4 +398,5 @@ export default {
   'containers.palette.run': 'コンテナを実行',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': 'スタック {stack} を開く',
+  'containers.logs.show': '表示',
 } satisfies Translation<typeof en>;

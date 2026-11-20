@@ -361,4 +361,5 @@ export default {
   'containers.palette.run': '运行容器',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': '打开堆栈 {stack}',
+  'containers.logs.show': '显示',
 } satisfies Translation<typeof en>;

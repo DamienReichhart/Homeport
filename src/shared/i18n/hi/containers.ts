@@ -392,4 +392,5 @@ export default {
   'containers.palette.run': 'कंटेनर चलाएँ',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': 'स्टैक {stack} खोलें',
+  'containers.logs.show': 'दिखाएँ',
 } satisfies Translation<typeof en>;

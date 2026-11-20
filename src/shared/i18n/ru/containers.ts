@@ -385,4 +385,5 @@ export default {
   'containers.palette.run': 'Запустить контейнер',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': 'Открыть стек {stack}',
+  'containers.logs.show': 'Показать',
 } satisfies Translation<typeof en>;

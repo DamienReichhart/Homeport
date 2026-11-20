@@ -375,4 +375,5 @@ export default {
   'containers.palette.run': '컨테이너 실행',
   'containers.idTitle': 'ID {id}',
   'containers.detail.openStack': '스택 {stack} 열기',
+  'containers.logs.show': '표시',
 } satisfies Translation<typeof en>;
