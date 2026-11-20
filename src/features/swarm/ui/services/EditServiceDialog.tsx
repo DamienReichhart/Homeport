@@ -53,6 +53,7 @@ function EditFields({
         <Label htmlFor="edit-image">{t('swarm.create.image')}</Label>
         <Input
           id="edit-image"
+          className="font-mono"
           value={form.image}
           onChange={(e) => set({ image: e.target.value })}
         />

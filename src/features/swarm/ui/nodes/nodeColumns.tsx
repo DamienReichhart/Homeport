@@ -16,6 +16,12 @@ const MANAGER_STATUS: Record<NonNullable<SwarmNode['managerStatus']>, MessageKey
   unreachable: 'swarm.nodes.manager.unreachable',
 };
 
+/** A node's labels as `key=value` words. */
+const labelText = (n: SwarmNode) =>
+  Object.entries(n.labels)
+    .map(([k, v]) => `${k}=${v ?? ''}`)
+    .join(' ');
+
 /** The Nodes table's columns; the last one holds the row's menu. */
 export function nodeColumns({
   hosts,
@@ -39,13 +45,13 @@ export function nodeColumns({
         const node = row.original;
         const host = hosts?.find((h) => h.host.id === node.hostId);
         return (
-          <span className="flex flex-wrap items-center gap-2 font-medium">
+          <span className="flex items-center gap-2 font-medium whitespace-nowrap">
             <StatusDot tone={node.state === 'ready' ? 'success' : 'danger'} />
             {node.hostname}
             {host && (
               <Link
                 to={`/hosts/${host.host.id}`}
-                className="text-primary text-xs font-normal hover:underline"
+                className="text-muted-foreground text-xs font-normal hover:underline"
                 onClick={(e) => e.stopPropagation()}
               >
                 {t('swarm.nodes.isHost', { name: host.host.name })}
@@ -60,7 +66,7 @@ export function nodeColumns({
       header: t('swarm.nodes.column.role'),
       accessorFn: (n) => n.role,
       cell: ({ row }) => (
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 whitespace-nowrap">
           {row.original.role === 'manager' ? t('swarm.role.manager') : t('swarm.role.worker')}
           {row.original.managerStatus && (
             <Badge
@@ -76,20 +82,34 @@ export function nodeColumns({
       id: 'availability',
       header: t('swarm.nodes.column.availability'),
       accessorFn: (n) => n.availability,
-      cell: ({ row }) => t(AVAILABILITY[row.original.availability]),
+      // Active is the norm; a paused or drained node takes no new tasks, worth a look.
+      cell: ({ row }) =>
+        row.original.availability === 'active' ? (
+          <span className="text-muted-foreground">{t(AVAILABILITY.active)}</span>
+        ) : (
+          <Badge variant="warning">{t(AVAILABILITY[row.original.availability])}</Badge>
+        ),
     },
     {
       id: 'state',
       header: t('swarm.nodes.column.state'),
       accessorFn: (n) => n.state,
       cell: ({ row }) => (
-        <span title={row.original.message ?? undefined}>{row.original.state}</span>
+        <span
+          className={row.original.state === 'ready' ? 'text-muted-foreground' : 'text-destructive'}
+          title={row.original.message ?? undefined}
+        >
+          {row.original.state}
+        </span>
       ),
     },
     {
       id: 'engine',
       header: t('swarm.nodes.column.engine'),
       accessorFn: (n) => n.engineVersion ?? '',
+      cell: ({ row }) => (
+        <span className="font-mono text-xs">{row.original.engineVersion ?? '—'}</span>
+      ),
     },
     {
       id: 'address',
@@ -100,14 +120,14 @@ export function nodeColumns({
     {
       id: 'labels',
       header: t('swarm.nodes.column.labels'),
-      accessorFn: (n) =>
-        Object.entries(n.labels)
-          .map(([k, v]) => `${k}=${v ?? ''}`)
-          .join(' '),
+      accessorFn: labelText,
       cell: ({ row }) => (
-        <span className="flex flex-wrap gap-1">
+        <span
+          className="flex max-w-56 gap-1 overflow-hidden"
+          title={labelText(row.original) || undefined}
+        >
           {Object.entries(row.original.labels).map(([k, v]) => (
-            <Badge key={k} variant="secondary" className="font-mono text-xs">
+            <Badge key={k} variant="outline" className="font-mono text-xs">
               {k}={v}
             </Badge>
           ))}

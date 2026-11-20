@@ -3,6 +3,7 @@ import { Badge, type ColumnDef } from '@/shared/ui';
 import { portsLabel } from '../../model/services';
 import { ReplicasBadge } from './ReplicasBadge';
 import { ServiceMenu, type ServiceActions } from './ServiceMenu';
+import { UpdateState } from './UpdateState';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const MODES: Record<ServiceView['mode'], MessageKey> = {
@@ -12,7 +13,7 @@ const MODES: Record<ServiceView['mode'], MessageKey> = {
   globalJob: 'swarm.services.mode.globalJob',
 };
 
-/** The Services table's columns; the last one holds the row's menu. */
+/** The Services table's columns; the last one holds the row's actions. */
 export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, unknown>[] {
   return [
     {
@@ -26,7 +27,10 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       header: t('swarm.services.column.image'),
       accessorFn: (s) => s.image,
       cell: ({ row }) => (
-        <span className="font-mono text-xs" title={row.original.imageDigest ?? undefined}>
+        <span
+          className="block max-w-64 truncate font-mono text-xs"
+          title={row.original.imageDigest ?? row.original.image}
+        >
           {row.original.image}
         </span>
       ),
@@ -35,15 +39,15 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       id: 'mode',
       header: t('swarm.services.column.mode'),
       accessorFn: (s) => s.mode,
-      cell: ({ row }) =>
-        row.original.mode === 'replicated'
-          ? t('swarm.services.mode.replicatedCount', { count: row.original.replicas ?? 0 })
-          : t(MODES[row.original.mode]),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{t(MODES[row.original.mode])}</span>
+      ),
     },
     {
       id: 'replicas',
       header: t('swarm.services.column.replicas'),
       accessorFn: (s) => s.running,
+      meta: { compact: true },
       cell: ({ row }) => <ReplicasBadge service={row.original} />,
     },
     {
@@ -51,7 +55,12 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       header: t('swarm.services.column.ports'),
       accessorFn: portsLabel,
       cell: ({ row }) => (
-        <span className="font-mono text-xs">{portsLabel(row.original) || '—'}</span>
+        <span
+          className="block max-w-48 truncate font-mono text-xs"
+          title={portsLabel(row.original) || undefined}
+        >
+          {portsLabel(row.original) || '—'}
+        </span>
       ),
     },
     {
@@ -65,21 +74,13 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       id: 'update',
       header: t('swarm.services.column.update'),
       accessorFn: (s) => s.updateState ?? '',
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs" title={row.original.updateMessage ?? ''}>
-          {row.original.updateState ?? '—'}
-        </span>
-      ),
+      cell: ({ row }) => <UpdateState service={row.original} />,
     },
     {
       id: 'actions',
       header: '',
       enableSorting: false,
-      cell: ({ row }) => (
-        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <ServiceMenu service={row.original} {...actions} />
-        </div>
-      ),
+      cell: ({ row }) => <ServiceMenu service={row.original} {...actions} />,
     },
   ];
 }

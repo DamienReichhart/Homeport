@@ -13,6 +13,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@/shared/ui';
 import { canScale } from '../../model/services';
 import { t } from '@/shared/i18n';
@@ -24,37 +27,51 @@ export interface ServiceActions {
   onRemove: (service: ServiceView) => void;
 }
 
-/** A service's actions: logs, scale (replicated only), roll back, remove. */
+/**
+ * A service row's actions: its logs at hand, then scale (replicated only),
+ * roll back and remove in its menu.
+ */
 export function ServiceMenu({ service, ...actions }: { service: ServiceView } & ServiceActions) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={t('swarm.services.actionsFor', { name: service.name })}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <EllipsisVerticalIcon />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onSelect={() => actions.onLogs(service)}>
-          <ScrollTextIcon /> {t('swarm.services.action.logs')}
-        </DropdownMenuItem>
-        {canScale(service) && (
-          <DropdownMenuItem onSelect={() => actions.onScale(service)}>
-            <ScaleIcon /> {t('swarm.services.action.scale')}
+    <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('swarm.services.logsOf', { name: service.name })}
+            onClick={() => actions.onLogs(service)}
+          >
+            <ScrollTextIcon />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{t('swarm.services.action.logs')}</TooltipContent>
+      </Tooltip>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={t('swarm.services.actionsFor', { name: service.name })}
+          >
+            <EllipsisVerticalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {canScale(service) && (
+            <DropdownMenuItem onSelect={() => actions.onScale(service)}>
+              <ScaleIcon /> {t('swarm.services.action.scale')}
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem onSelect={() => actions.onRollback(service)}>
+            <Undo2Icon /> {t('swarm.services.action.rollback')}
           </DropdownMenuItem>
-        )}
-        <DropdownMenuItem onSelect={() => actions.onRollback(service)}>
-          <Undo2Icon /> {t('swarm.services.action.rollback')}
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem variant="destructive" onSelect={() => actions.onRemove(service)}>
-          <Trash2Icon /> {t('common.remove')}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive" onSelect={() => actions.onRemove(service)}>
+            <Trash2Icon /> {t('common.remove')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

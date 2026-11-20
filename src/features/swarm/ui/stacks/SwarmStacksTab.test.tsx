@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
@@ -55,8 +55,10 @@ describe('a Swarm’s Stacks', () => {
       '/swarms/s1/services/svc-db',
     );
     expect(await screen.findByText('shop_default')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Remove' }));
-    await user.click(await screen.findByRole('button', { name: 'Remove' }));
+    const zone = screen.getByRole('region', { name: 'Remove this Stack' });
+    await user.click(within(zone).getByRole('button', { name: 'Remove Stack' }));
+    const dialog = await screen.findByRole('alertdialog');
+    await user.click(within(dialog).getByRole('button', { name: 'Remove Stack' }));
     expect(removed).toEqual([{ swarmId: 's1', name: 'shop' }]);
   });
 });

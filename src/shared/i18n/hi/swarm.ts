@@ -55,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': 'लेबल संपादित करें',
   'swarm.nodes.action.tasks': 'इसके टास्क दिखाएँ',
   'swarm.nodes.updated': '{name} अपडेट किया गया',
+  'swarm.nodes.drain.title': '{name} को ड्रेन करें?',
+  'swarm.nodes.drain.description':
+    'इसके टास्क यहाँ रोककर दूसरे नोड पर ले जाए जाते हैं, और दोबारा सक्रिय किए जाने तक इसे नए टास्क नहीं मिलते।',
+  'swarm.nodes.demote.title': '{name} को वर्कर बनाएँ?',
+  'swarm.nodes.demote.description':
+    'यह Swarm का प्रबंधन बंद कर देता है और अपने टास्क चलाता रहता है। Swarm को काम करने के लिए अपने ज़्यादातर मैनेजर चालू चाहिए, इसलिए पर्याप्त मैनेजर रखें।',
   'swarm.nodes.removed': '{name} को Swarm से हटाया गया',
   'swarm.nodes.labels.title': '{name} के लेबल',
   'swarm.nodes.labels.description':
@@ -71,6 +77,7 @@ export default {
 
   'swarm.services.search': 'सर्विस खोजें',
   'swarm.services.empty': 'इस Swarm पर कोई सर्विस नहीं चल रही',
+  'swarm.services.emptyHint': 'किसी इमेज से एक बनाएँ, या इस Swarm पर कोई स्टैक डिप्लॉय करें।',
   'swarm.services.column.name': 'नाम',
   'swarm.services.column.image': 'इमेज',
   'swarm.services.column.mode': 'मोड',
@@ -79,14 +86,15 @@ export default {
   'swarm.services.column.stack': 'स्टैक',
   'swarm.services.column.update': 'अपडेट',
   'swarm.services.mode.replicated': 'Replicated',
-  'swarm.services.mode.replicatedCount': 'Replicated ({count})',
   'swarm.services.mode.global': 'Global',
   'swarm.services.mode.replicatedJob': 'Job',
   'swarm.services.mode.globalJob': 'Global job',
   'swarm.services.actionsFor': '{name} के लिए कार्रवाइयाँ',
+  'swarm.services.logsOf': '{name} के लॉग',
   'swarm.services.action.logs': 'लॉग',
   'swarm.services.action.scale': 'स्केल करें',
   'swarm.services.action.rollback': 'वापस लें',
+  'swarm.services.action.remove': 'सर्विस हटाएँ',
   'swarm.services.scaled':
     '{name} को {count, plural, one {# रेप्लिका} other {# रेप्लिका}} पर स्केल किया गया',
   'swarm.services.rolledBack': '{name} वापस ली जा रही है',
@@ -126,6 +134,8 @@ export default {
   'swarm.objects.createConfig': 'कॉन्फ़िग बनाएँ',
   'swarm.objects.secretNote':
     'सीक्रेट का मान एक बार Swarm को जाता है और वापस पढ़ा नहीं जा सकता, न Homeport द्वारा न किसी और द्वारा: इसे सिर्फ़ वे सर्विस देखती हैं जिन्हें यह दिया गया है।',
+  'swarm.objects.configNote':
+    'कॉन्फ़िग वह फ़ाइल है जो Swarm उन सर्विस को देता है जिन्हें यह दी गई है, जैसे किसी वेब सर्वर की सेटिंग।',
   'swarm.objects.noSecrets': 'कोई सीक्रेट नहीं',
   'swarm.objects.noConfigs': 'कोई कॉन्फ़िग नहीं',
   'swarm.objects.column.name': 'नाम',
@@ -164,7 +174,6 @@ export default {
 
   'swarm.services.created': '{name} बनाई गई',
   'swarm.services.updating': '{name} अपनी नई सेटिंग्स पर बदल रही है',
-  'swarm.service.update': 'अपडेट {state}',
   'swarm.create.open': 'सर्विस बनाएँ',
   'swarm.create.title': 'सर्विस बनाएँ',
   'swarm.create.description':
@@ -234,7 +243,6 @@ export default {
   'swarm.membership.leave.last':
     'यह Swarm का आखिरी मैनेजर है: Swarm भी इसके साथ चला जाता है, हर सर्विस, सीक्रेट और कॉन्फ़िग के साथ। दूसरे नोड बिना मैनेजर वाले Swarm में रह जाते हैं।',
   'swarm.membership.leave.force': 'बलपूर्वक: मैनेजर होने पर भी छोड़ें',
-  'swarm.membership.leave.typeName': 'पुष्टि के लिए {name} टाइप करें',
   'swarm.membership.leave.submit': 'छोड़ें',
 
   'swarm.join.title': 'Join कमांड',
@@ -266,6 +274,8 @@ export default {
   'swarm.stacks.removed': '{name} हटाया गया',
   'swarm.stacks.removedPartly': '{name} हटाया गया, सिवाय इनके:',
   'swarm.stacks.remove.title': 'स्टैक {name} हटाएँ?',
+  'swarm.stacks.remove.zone': 'यह स्टैक हटाएँ',
+  'swarm.stacks.remove.submit': 'स्टैक हटाएँ',
   'swarm.stacks.remove.description':
     'इसकी सर्विस हटाई जाती हैं, फिर इसके नेटवर्क, सीक्रेट और कॉन्फ़िग, जैसा docker stack rm करता है। इसके वॉल्यूम हर नोड पर रखे जाते हैं।',
 } satisfies Translation<typeof en>;

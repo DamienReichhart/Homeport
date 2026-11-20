@@ -23,14 +23,24 @@ export function ServicesTab({ swarm }: { swarm: SwarmView }) {
     return <ErrorMessage error={services.error} onRetry={() => void services.refetch()} />;
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.services.search')} />
-        <Button className="ms-auto" onClick={() => setCreating(true)}>
-          <PlusIcon /> {t('swarm.create.open')}
-        </Button>
-      </div>
+      {services.data.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.services.search')} />
+          <Button className="ms-auto" onClick={() => setCreating(true)}>
+            <PlusIcon /> {t('swarm.create.open')}
+          </Button>
+        </div>
+      )}
       {services.data.length === 0 ? (
-        <EmptyState title={t('swarm.services.empty')} />
+        <EmptyState
+          title={t('swarm.services.empty')}
+          description={t('swarm.services.emptyHint')}
+          action={
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon /> {t('swarm.create.open')}
+            </Button>
+          }
+        />
       ) : (
         <DataTable
           columns={serviceColumns(actions)}

@@ -1,5 +1,5 @@
 import { serviceView } from '@/test/fixtures';
-import { canScale, parseReplicas, portsLabel, underReplicated } from './services';
+import { canScale, parseReplicas, portsLabel, underReplicated, updateTone } from './services';
 
 describe('services', () => {
   it('tells an under-replicated service', () => {
@@ -31,5 +31,15 @@ describe('services', () => {
         }),
       ),
     ).toBe('8080→80/tcp, 53/udp');
+  });
+
+  it('quiets a finished update and raises a paused one', () => {
+    expect(updateTone(null)).toBeNull();
+    expect(updateTone('completed')).toBeNull();
+    expect(updateTone('rollback_completed')).toBeNull();
+    expect(updateTone('updating')).toBe('warning');
+    expect(updateTone('rollback_started')).toBe('warning');
+    expect(updateTone('paused')).toBe('danger');
+    expect(updateTone('rollback_paused')).toBe('danger');
   });
 });

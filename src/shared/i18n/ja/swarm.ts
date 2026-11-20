@@ -55,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': 'ラベルを編集',
   'swarm.nodes.action.tasks': 'タスクを表示',
   'swarm.nodes.updated': '{name} を更新しました',
+  'swarm.nodes.drain.title': '{name} をドレインしますか？',
+  'swarm.nodes.drain.description':
+    'このノードのタスクはここで停止して他のノードに移り、再びアクティブにするまで新しいタスクを受け取りません。',
+  'swarm.nodes.demote.title': '{name} をワーカーに降格しますか？',
+  'swarm.nodes.demote.description':
+    'Swarm の管理をやめ、タスクの実行は続けます。Swarm が動くにはマネージャーの過半数が必要なので、十分な数を残してください。',
   'swarm.nodes.removed': '{name} を Swarm から削除しました',
   'swarm.nodes.labels.title': '{name} のラベル',
   'swarm.nodes.labels.description':
@@ -72,6 +78,8 @@ export default {
 
   'swarm.services.search': 'サービスを検索',
   'swarm.services.empty': 'この Swarm で実行されているサービスはありません',
+  'swarm.services.emptyHint':
+    'イメージから作成するか、この Swarm にスタックをデプロイしてください。',
   'swarm.services.column.name': '名前',
   'swarm.services.column.image': 'イメージ',
   'swarm.services.column.mode': 'モード',
@@ -80,14 +88,15 @@ export default {
   'swarm.services.column.stack': 'スタック',
   'swarm.services.column.update': '更新',
   'swarm.services.mode.replicated': 'レプリカ',
-  'swarm.services.mode.replicatedCount': 'レプリカ（{count}）',
   'swarm.services.mode.global': 'グローバル',
   'swarm.services.mode.replicatedJob': 'ジョブ',
   'swarm.services.mode.globalJob': 'グローバルジョブ',
   'swarm.services.actionsFor': '{name} の操作',
+  'swarm.services.logsOf': '{name} のログ',
   'swarm.services.action.logs': 'ログ',
   'swarm.services.action.scale': 'スケール',
   'swarm.services.action.rollback': 'ロールバック',
+  'swarm.services.action.remove': 'サービスを削除',
   'swarm.services.scaled': '{name} を {count, plural, other {# 個のレプリカ}}にスケールしました',
   'swarm.services.rolledBack': '{name} をロールバックしています',
   'swarm.services.removed': '{name} を削除しました',
@@ -126,6 +135,8 @@ export default {
   'swarm.objects.createConfig': 'コンフィグを作成',
   'swarm.objects.secretNote':
     'シークレットの値は一度だけ Swarm に送られ、Homeport を含め誰も読み戻すことはできません。見られるのは、それを渡されたサービスだけです。',
+  'swarm.objects.configNote':
+    'コンフィグは、Swarm が割り当てられたサービスに渡すファイルです。Web サーバーの設定などに使います。',
   'swarm.objects.noSecrets': 'シークレットはありません',
   'swarm.objects.noConfigs': 'コンフィグはありません',
   'swarm.objects.column.name': '名前',
@@ -163,7 +174,6 @@ export default {
 
   'swarm.services.created': '{name} を作成しました',
   'swarm.services.updating': '{name} を新しい設定に順次切り替えています',
-  'swarm.service.update': '更新 {state}',
   'swarm.create.open': 'サービスを作成',
   'swarm.create.title': 'サービスを作成',
   'swarm.create.description':
@@ -232,7 +242,6 @@ export default {
   'swarm.membership.leave.last':
     'これは Swarm の最後のマネージャーです。Swarm はすべてのサービス、シークレット、コンフィグとともに消えます。ほかのノードは、マネージャーのいない Swarm に残されます。',
   'swarm.membership.leave.force': '強制: マネージャーでも離脱する',
-  'swarm.membership.leave.typeName': '確認のため {name} と入力してください',
   'swarm.membership.leave.submit': '離脱',
 
   'swarm.join.title': '参加コマンド',
@@ -264,6 +273,8 @@ export default {
   'swarm.stacks.removed': '{name} を削除しました',
   'swarm.stacks.removedPartly': '{name} を削除しました。ただし、次のものは除きます:',
   'swarm.stacks.remove.title': 'スタック {name} を削除しますか？',
+  'swarm.stacks.remove.zone': 'このスタックを削除',
+  'swarm.stacks.remove.submit': 'スタックを削除',
   'swarm.stacks.remove.description':
     'docker stack rm と同じように、サービスが削除され、続いてネットワーク、シークレット、コンフィグが削除されます。ボリュームは各ノードに残ります。',
 } satisfies Translation<typeof en>;

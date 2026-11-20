@@ -52,6 +52,12 @@ export default {
   'swarm.nodes.action.labels': 'Editar etiquetas',
   'swarm.nodes.action.tasks': 'Mostrar sus tareas',
   'swarm.nodes.updated': '{name} actualizado',
+  'swarm.nodes.drain.title': '¿Drenar {name}?',
+  'swarm.nodes.drain.description':
+    'Sus tareas se detienen aquí y se trasladan a los otros nodos, y no recibe nuevas hasta que se vuelva a activar.',
+  'swarm.nodes.demote.title': '¿Degradar {name} a worker?',
+  'swarm.nodes.demote.description':
+    'Deja de gestionar el Swarm y sigue ejecutando sus tareas. El Swarm necesita la mayoría de sus managers activos para funcionar, así que conserve suficientes.',
   'swarm.nodes.removed': '{name} eliminado del Swarm',
   'swarm.nodes.labels.title': 'Etiquetas de {name}',
   'swarm.nodes.labels.description':
@@ -67,6 +73,8 @@ export default {
   'swarm.nodes.remove.force': 'Forzar: eliminarlo aunque esté activo',
   'swarm.services.search': 'Buscar servicios',
   'swarm.services.empty': 'No se ejecuta ningún servicio en este Swarm',
+  'swarm.services.emptyHint':
+    'Cree uno a partir de una imagen o despliegue un stack en este Swarm.',
   'swarm.services.column.name': 'Nombre',
   'swarm.services.column.image': 'Imagen',
   'swarm.services.column.mode': 'Modo',
@@ -75,14 +83,15 @@ export default {
   'swarm.services.column.stack': 'Stack',
   'swarm.services.column.update': 'Actualización',
   'swarm.services.mode.replicated': 'Replicado',
-  'swarm.services.mode.replicatedCount': 'Replicado ({count})',
   'swarm.services.mode.global': 'Global',
   'swarm.services.mode.replicatedJob': 'Job',
   'swarm.services.mode.globalJob': 'Job global',
   'swarm.services.actionsFor': 'Acciones de {name}',
+  'swarm.services.logsOf': 'Logs de {name}',
   'swarm.services.action.logs': 'Logs',
   'swarm.services.action.scale': 'Escalar',
   'swarm.services.action.rollback': 'Revertir',
+  'swarm.services.action.remove': 'Eliminar servicio',
   'swarm.services.scaled': '{name} escalado a {count, plural, one {# réplica} other {# réplicas}}',
   'swarm.services.rolledBack': '{name} se está revirtiendo',
   'swarm.services.removed': '{name} eliminado',
@@ -119,6 +128,8 @@ export default {
   'swarm.objects.createConfig': 'Crear config',
   'swarm.objects.secretNote':
     'El valor de un secreto se envía al Swarm una vez y no se puede volver a leer, ni Homeport ni nadie: solo lo ven los servicios a los que se da.',
+  'swarm.objects.configNote':
+    'Un config es un archivo que el Swarm entrega a los servicios que lo reciben, como los ajustes de un servidor web.',
   'swarm.objects.noSecrets': 'No hay secretos',
   'swarm.objects.noConfigs': 'No hay configs',
   'swarm.objects.column.name': 'Nombre',
@@ -155,7 +166,6 @@ export default {
     'El archivo se lee al crearlo, se envía al Swarm y no se guarda.',
   'swarm.services.created': '{name} creado',
   'swarm.services.updating': '{name} está pasando a sus nuevos ajustes',
-  'swarm.service.update': 'actualización {state}',
   'swarm.create.open': 'Crear servicio',
   'swarm.create.title': 'Crear un servicio',
   'swarm.create.description':
@@ -225,7 +235,6 @@ export default {
   'swarm.membership.leave.last':
     'Este es el último manager del Swarm: el Swarm desaparece con él, con todos sus servicios, secretos y configs. Los otros nodos se quedan en un Swarm sin manager.',
   'swarm.membership.leave.force': 'Forzar: salir aunque sea manager',
-  'swarm.membership.leave.typeName': 'Escribe {name} para confirmar',
   'swarm.membership.leave.submit': 'Salir',
   'swarm.join.title': 'Comandos de unión',
   'swarm.join.description':
@@ -255,6 +264,8 @@ export default {
   'swarm.stacks.removed': '{name} eliminado',
   'swarm.stacks.removedPartly': '{name} eliminado, salvo:',
   'swarm.stacks.remove.title': '¿Eliminar el stack {name}?',
+  'swarm.stacks.remove.zone': 'Eliminar este stack',
+  'swarm.stacks.remove.submit': 'Eliminar stack',
   'swarm.stacks.remove.description':
     'Se eliminan sus servicios y luego sus redes, secretos y configs, como hace docker stack rm. Sus volúmenes se conservan en cada nodo.',
 } satisfies Translation<typeof en>;

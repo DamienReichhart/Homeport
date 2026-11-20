@@ -55,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': 'Modifica le etichette',
   'swarm.nodes.action.tasks': 'Mostra i suoi task',
   'swarm.nodes.updated': '{name} aggiornato',
+  'swarm.nodes.drain.title': 'Svuotare {name}?',
+  'swarm.nodes.drain.description':
+    'I suoi task vengono fermati qui e spostati sugli altri nodi, e non ne riceve di nuovi finché non viene riattivato.',
+  'swarm.nodes.demote.title': 'Retrocedere {name} a worker?',
+  'swarm.nodes.demote.description':
+    'Smette di gestire lo Swarm e continua a eseguire i suoi task. Lo Swarm ha bisogno della maggior parte dei suoi manager attivi per funzionare: tienine abbastanza.',
   'swarm.nodes.removed': '{name} rimosso dallo Swarm',
   'swarm.nodes.labels.title': 'Etichette di {name}',
   'swarm.nodes.labels.description':
@@ -72,6 +78,7 @@ export default {
 
   'swarm.services.search': 'Cerca servizi',
   'swarm.services.empty': 'Nessun servizio in esecuzione su questo Swarm',
+  'swarm.services.emptyHint': 'Creane uno da un’immagine o distribuisci uno stack su questo Swarm.',
   'swarm.services.column.name': 'Nome',
   'swarm.services.column.image': 'Immagine',
   'swarm.services.column.mode': 'Modalità',
@@ -80,14 +87,15 @@ export default {
   'swarm.services.column.stack': 'Stack',
   'swarm.services.column.update': 'Aggiornamento',
   'swarm.services.mode.replicated': 'Replicato',
-  'swarm.services.mode.replicatedCount': 'Replicato ({count})',
   'swarm.services.mode.global': 'Globale',
   'swarm.services.mode.replicatedJob': 'Job',
   'swarm.services.mode.globalJob': 'Job globale',
   'swarm.services.actionsFor': 'Azioni per {name}',
+  'swarm.services.logsOf': 'Log di {name}',
   'swarm.services.action.logs': 'Log',
   'swarm.services.action.scale': 'Ridimensiona',
   'swarm.services.action.rollback': 'Annulla aggiornamento',
+  'swarm.services.action.remove': 'Rimuovi servizio',
   'swarm.services.scaled':
     '{name} ridimensionato a {count, plural, one {# replica} other {# repliche}}',
   'swarm.services.rolledBack': 'Rollback di {name} in corso',
@@ -127,6 +135,8 @@ export default {
   'swarm.objects.createConfig': 'Crea config',
   'swarm.objects.secretNote':
     'Il valore di un segreto viene inviato allo Swarm una volta e non può essere riletto, né da Homeport né da nessun altro: lo vedono solo i servizi a cui viene assegnato.',
+  'swarm.objects.configNote':
+    'Un config è un file che lo Swarm consegna ai servizi a cui è assegnato, come le impostazioni di un server web.',
   'swarm.objects.noSecrets': 'Nessun segreto',
   'swarm.objects.noConfigs': 'Nessun config',
   'swarm.objects.column.name': 'Nome',
@@ -164,7 +174,6 @@ export default {
 
   'swarm.services.created': '{name} creato',
   'swarm.services.updating': '{name} sta passando alle nuove impostazioni',
-  'swarm.service.update': 'aggiornamento {state}',
   'swarm.create.open': 'Crea servizio',
   'swarm.create.title': 'Crea un servizio',
   'swarm.create.description':
@@ -235,7 +244,6 @@ export default {
   'swarm.membership.leave.last':
     'Questo è l’ultimo manager dello Swarm: lo Swarm se ne va con esso, con ogni servizio, segreto e config. Gli altri nodi restano in uno Swarm senza manager.',
   'swarm.membership.leave.force': 'Forza: esci anche se è un manager',
-  'swarm.membership.leave.typeName': 'Digita {name} per confermare',
   'swarm.membership.leave.submit': 'Esci',
 
   'swarm.join.title': 'Comandi di adesione',
@@ -267,6 +275,8 @@ export default {
   'swarm.stacks.removed': '{name} rimosso',
   'swarm.stacks.removedPartly': '{name} rimosso, tranne:',
   'swarm.stacks.remove.title': 'Rimuovere lo stack {name}?',
+  'swarm.stacks.remove.zone': 'Rimuovi questo stack',
+  'swarm.stacks.remove.submit': 'Rimuovi stack',
   'swarm.stacks.remove.description':
     'Vengono rimossi i suoi servizi, poi le sue reti, segreti e config, come fa docker stack rm. I suoi volumi vengono conservati su ogni nodo.',
 } satisfies Translation<typeof en>;

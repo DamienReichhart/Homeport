@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { EyeIcon, PlusIcon, Trash2Icon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import type { SwarmObject } from '@/shared/api';
 import {
   Badge,
@@ -10,6 +10,9 @@ import {
   ErrorMessage,
   SearchInput,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   type ColumnDef,
 } from '@/shared/ui';
@@ -18,9 +21,47 @@ import { swarmFeatureQueries } from '../../api/queries';
 import { ConfigContentDialog } from './ConfigContentDialog';
 import { CreateObjectDialog } from './CreateObjectDialog';
 import { t } from '@/shared/i18n';
-import { formatDateTime } from '@/shared/lib';
+import { formatDateTime, formatRelative } from '@/shared/lib';
 
-const date = (value: string | null) => (value ? formatDateTime(value) : '—');
+/** When, relative ("3 days ago"), with the date and time in its tooltip. */
+function When({ value }: { value: string | null }) {
+  if (!value) return <span className="text-muted-foreground">—</span>;
+  return (
+    <span className="text-muted-foreground whitespace-nowrap" title={formatDateTime(value)}>
+      {formatRelative(Date.parse(value) / 1000)}
+    </span>
+  );
+}
+
+/** An icon button of a row, named and with its tooltip. */
+function RowButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label={label}
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+        >
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
 
 /** A Swarm's secrets or configs: their metadata and the services using them. */
 export function ObjectsTab({ swarmId, kind }: { swarmId: string; kind: ObjectKind }) {
@@ -60,25 +101,29 @@ export function ObjectsTab({ swarmId, kind }: { swarmId: string; kind: ObjectKin
       id: 'labels',
       header: t('swarm.objects.column.labels'),
       accessorFn: (o) => Object.keys(o.labels).join(' '),
-      cell: ({ row }) => (
-        <span className="flex flex-wrap gap-1">
-          {Object.entries(row.original.labels).map(([k, v]) => (
-            <Badge key={k} variant="secondary" className="font-mono text-xs">
-              {k}={v}
-            </Badge>
-          ))}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const labels = Object.entries(row.original.labels).map(([k, v]) => `${k}=${v}`);
+        return (
+          <span
+            className="text-muted-foreground block max-w-64 truncate font-mono text-xs"
+            title={labels.join('\n') || undefined}
+          >
+            {labels.join(', ') || '—'}
+          </span>
+        );
+      },
     },
     {
       id: 'created',
       header: t('swarm.objects.column.created'),
-      accessorFn: (o) => date(o.created),
+      accessorFn: (o) => o.created ?? '',
+      cell: ({ row }) => <When value={row.original.created} />,
     },
     {
       id: 'updated',
       header: t('swarm.objects.column.updated'),
-      accessorFn: (o) => date(o.updated),
+      accessorFn: (o) => o.updated ?? '',
+      cell: ({ row }) => <When value={row.original.updated} />,
     },
     {
       id: 'actions',
@@ -87,19 +132,15 @@ export function ObjectsTab({ swarmId, kind }: { swarmId: string; kind: ObjectKin
       cell: ({ row }) => (
         <div className="flex justify-end">
           {!secret && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('swarm.objects.viewOne', { name: row.original.name })}
+            <RowButton
+              label={t('swarm.objects.viewOne', { name: row.original.name })}
               onClick={() => setViewing(row.original)}
             >
               <EyeIcon />
-            </Button>
+            </RowButton>
           )}
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('swarm.objects.removeOne', { name: row.original.name })}
+          <RowButton
+            label={t('swarm.objects.removeOne', { name: row.original.name })}
             onClick={() =>
               confirm({
                 title: t('swarm.objects.remove.title', { name: row.original.name }),
@@ -113,31 +154,44 @@ export function ObjectsTab({ swarmId, kind }: { swarmId: string; kind: ObjectKin
             }
           >
             <Trash2Icon />
-          </Button>
+          </RowButton>
         </div>
       ),
     },
   ];
+
+  const createLabel = (
+    <>
+      <PlusIcon />
+      {secret ? t('swarm.objects.createSecret') : t('swarm.objects.createConfig')}
+    </>
+  );
 
   if (objects.isPending) return <Spinner />;
   if (objects.error)
     return <ErrorMessage error={objects.error} onRetry={() => void objects.refetch()} />;
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <SearchInput
-          value={query}
-          onChange={setQuery}
-          placeholder={secret ? t('swarm.objects.searchSecrets') : t('swarm.objects.searchConfigs')}
-        />
-        <Button className="ms-auto" onClick={() => setCreating(true)}>
-          <PlusIcon />
-          {secret ? t('swarm.objects.createSecret') : t('swarm.objects.createConfig')}
-        </Button>
-      </div>
-      {secret && <p className="text-muted-foreground text-sm">{t('swarm.objects.secretNote')}</p>}
+      {objects.data.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            placeholder={
+              secret ? t('swarm.objects.searchSecrets') : t('swarm.objects.searchConfigs')
+            }
+          />
+          <Button className="ms-auto" onClick={() => setCreating(true)}>
+            {createLabel}
+          </Button>
+        </div>
+      )}
       {objects.data.length === 0 ? (
-        <EmptyState title={secret ? t('swarm.objects.noSecrets') : t('swarm.objects.noConfigs')} />
+        <EmptyState
+          title={secret ? t('swarm.objects.noSecrets') : t('swarm.objects.noConfigs')}
+          description={secret ? t('swarm.objects.secretNote') : t('swarm.objects.configNote')}
+          action={<Button onClick={() => setCreating(true)}>{createLabel}</Button>}
+        />
       ) : (
         <DataTable
           columns={columns}
