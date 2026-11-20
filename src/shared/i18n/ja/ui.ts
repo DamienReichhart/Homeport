@@ -33,4 +33,6 @@ export default {
     'システム、エンジン、またはライブラリが出力したままの内容のため、翻訳されません。',
   'ui.errorDetails.openLogFolder': 'ログフォルダーを開く',
   'ui.errorDetails.copyReport': 'レポートをコピー',
+  'ui.env.show': '値を表示',
+  'ui.env.hide': '値を隠す',
 } satisfies Translation<typeof en>;

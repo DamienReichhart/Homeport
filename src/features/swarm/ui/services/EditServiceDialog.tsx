@@ -10,11 +10,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EnvTextarea,
   ErrorMessage,
   Input,
   Label,
   Spinner,
-  Textarea,
 } from '@/shared/ui';
 import { useUpdateService } from '../../api/mutations';
 import { swarmFeatureQueries } from '../../api/queries';
@@ -72,12 +72,11 @@ function EditFields({
       )}
       <div className="grid gap-1.5">
         <Label htmlFor="edit-env">{t('swarm.create.env')}</Label>
-        <Textarea
+        <EnvTextarea
           id="edit-env"
-          rows={6}
-          className="font-mono text-xs"
+          className="min-h-32"
           value={form.env}
-          onChange={(e) => set({ env: e.target.value })}
+          onChange={(env) => set({ env })}
         />
       </div>
       <label className="flex items-center gap-2 text-sm">

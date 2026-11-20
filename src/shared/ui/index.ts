@@ -139,6 +139,7 @@ export { FileBrowser } from './data/FileBrowser';
 export { JsonView } from './data/JsonView';
 export { Keys, WithShortcut } from './data/Keys';
 export { KeyValue } from './data/KeyValue';
+export { EnvTextarea, maskEnv } from './data/EnvTextarea';
 export { SearchInput } from './data/SearchInput';
 
 // chart

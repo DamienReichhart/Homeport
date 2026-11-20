@@ -162,8 +162,12 @@ describe('a Synced Stack', () => {
     for (const name of ['Save and redeploy', 'Forget definition', 'Adopt']) {
       expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
     }
-    expect(screen.getByLabelText('Environment')).toHaveValue('TOKEN=hunter2\n');
-    expect(screen.getByLabelText('Environment')).toBeEnabled();
+    // The environment is Homeport's: hidden until asked for, then editable.
+    const env = screen.getByLabelText('Environment');
+    expect(env).toHaveValue('TOKEN=••••••••\n');
+    await userEvent.click(screen.getByRole('button', { name: 'Show values' }));
+    expect(env).toHaveValue('TOKEN=hunter2\n');
+    expect(env).not.toHaveAttribute('readonly');
   });
 
   it('keeps a Managed Stack’s compose file editable', async () => {

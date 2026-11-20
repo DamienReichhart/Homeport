@@ -33,4 +33,6 @@ export default {
     'Tel que le système, le moteur ou la bibliothèque l’a écrit ; il n’est donc pas traduit.',
   'ui.errorDetails.openLogFolder': 'Ouvrir le dossier des journaux',
   'ui.errorDetails.copyReport': 'Copier le rapport',
+  'ui.env.show': 'Afficher les valeurs',
+  'ui.env.hide': 'Masquer les valeurs',
 } satisfies Translation<typeof en>;

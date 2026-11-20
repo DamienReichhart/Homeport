@@ -2,7 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCapabilities, type Stack, type SyncedStack } from '@/shared/api';
-import { Button, ErrorMessage, Label, Spinner, Textarea, useConfirm } from '@/shared/ui';
+import { Button, EnvTextarea, ErrorMessage, Label, Spinner, useConfirm } from '@/shared/ui';
 import { syncedQueries, useForgetSynced, useSaveSyncedEnv } from '../../api/synced';
 import type { ComposeJob } from '../../model/composeJob';
 import { repositoryQueries } from '@/features/repositories';
@@ -77,14 +77,12 @@ function Loaded({
       />
       <div className="grid gap-1.5">
         <Label htmlFor="synced-env-edit">{t('stacks.newSynced.env')}</Label>
-        <Textarea
+        <EnvTextarea
           id="synced-env-edit"
-          className="font-mono text-xs"
-          rows={5}
+          className="min-h-28"
           value={env}
-          onChange={(e) => setEnv(e.target.value)}
+          onChange={setEnv}
           disabled={!(capabilities.data?.keychain ?? true)}
-          spellCheck={false}
         />
         <p className="text-muted-foreground text-xs">{t('stacks.newSynced.envHelp')}</p>
       </div>
