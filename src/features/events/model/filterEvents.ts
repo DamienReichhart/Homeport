@@ -8,6 +8,17 @@ export function actorName(e: EngineEvent): string {
   return e.attributes.name ?? e.attributes.image ?? e.actorId.replace(/^sha256:/, '').slice(0, 12);
 }
 
+/**
+ * Whether an event is worth a look: a container killed for lack of memory,
+ * one that exited with an error, or a health check that started failing.
+ */
+export function isTrouble(e: EngineEvent): boolean {
+  if (e.kind !== 'container') return false;
+  if (e.action === 'oom' || e.action === 'health_status: unhealthy') return true;
+  const code = e.attributes.exitCode;
+  return e.action === 'die' && code !== undefined && code !== '0';
+}
+
 export function filterEvents(events: EngineEvent[], kind: string, query: string): EngineEvent[] {
   const q = query.trim().toLowerCase();
   return events.filter(

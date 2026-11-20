@@ -1,10 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
-import { ActivityIcon, Trash2Icon } from 'lucide-react';
+import { ActivityIcon, EllipsisIcon, Trash2Icon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { HostGate, resourceQueries } from '@/core/host';
 import { settingsQuery } from '@/core/settings';
 import {
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   EmptyState,
   ErrorMessage,
   PageHeader,
@@ -47,24 +51,34 @@ function EventsList({ hostId }: { hostId: string }) {
           days === undefined ? t('events.description') : t('events.descriptionKept', { days })
         }
         actions={
-          <Button
-            variant="outline"
-            disabled={all.length === 0}
-            onClick={() =>
-              confirm({
-                title: t('events.clear.title'),
-                description: t('events.clear.description'),
-                confirmLabel: t('events.clear.confirm'),
-                destructive: true,
-                onConfirm: () => clear.mutateAsync(),
-              })
-            }
-          >
-            <Trash2Icon /> {t('events.clear')}
-          </Button>
+          // Forgetting the history is rare and can't be undone: it's kept in the menu.
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+                <EllipsisIcon />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-auto">
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={all.length === 0}
+                onSelect={() =>
+                  confirm({
+                    title: t('events.clear.title'),
+                    description: t('events.clear.description'),
+                    confirmLabel: t('events.clear.confirm'),
+                    destructive: true,
+                    onConfirm: () => clear.mutateAsync(),
+                  })
+                }
+              >
+                <Trash2Icon /> {t('events.clear')}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         }
       />
-      <div className="mb-3 flex gap-3">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <SearchInput value={query} onChange={setQuery} placeholder={t('events.search')} />
         <Select value={kind} onValueChange={setKind}>
           <SelectTrigger className="w-40" aria-label={t('events.type')}>
