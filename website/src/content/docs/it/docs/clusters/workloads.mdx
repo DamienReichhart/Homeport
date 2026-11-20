@@ -5,7 +5,7 @@ description: Sfoglia i Namespace, i Deployment, gli StatefulSet, i DaemonSet, i 
 
 import { DocScreenshot } from '@/features/docs';
 
-Seleziona un cluster nel selettore e la barra laterale mostra le sue pagine. **Carichi di lavoro** e **Pod** elencano ciò che è in esecuzione su di esso; ogni elenco segue il cluster in tempo reale tramite un watch di Kubernetes, quindi un Deployment che ridimensioni o un Pod che si arresta in modo anomalo mostra il suo nuovo stato in pochi secondi senza aggiornare. Ogni pagina ti permette anche di agire su ciò che mostra: [log e un terminale](/docs/clusters/logs-exec/), [ridimensionare, riavviare ed eliminare](/docs/clusters/actions/), e [modificare YAML](/docs/clusters/yaml/).
+Seleziona un cluster nella barra laterale e le sue pagine si aprono sotto di esso. **Carichi di lavoro** e **Pod** elencano ciò che è in esecuzione su di esso; ogni elenco segue il cluster in tempo reale tramite un watch di Kubernetes, quindi un Deployment che ridimensioni o un Pod che si arresta in modo anomalo mostra il suo nuovo stato in pochi secondi senza aggiornare. Ogni pagina ti permette anche di agire su ciò che mostra: [log e un terminale](/docs/clusters/logs-exec/), [ridimensionare, riavviare ed eliminare](/docs/clusters/actions/), e [modificare YAML](/docs/clusters/yaml/).
 
 ## Namespace
 
@@ -47,7 +47,7 @@ La pagina di un carico di lavoro ha:
 - **Log** dei suoi Pod, tutti alternati o uno alla volta (non per un CronJob; i suoi Job hanno i propri).
 - **Condizioni**, **Eventi** (prima gli avvisi; Kubernetes li conserva per circa un’ora) e **YAML**, senza `managedFields`, con **Modifica**.
 
-La sua intestazione ha le sue azioni: **Ridimensiona**, **Riavvia**, **Sospendi** o **Riprendi** ed **Esegui ora** dove si applicano, ed **Elimina**; vedi [Ridimensionare, riavviare ed eliminare](/docs/clusters/actions/).
+La sua intestazione tiene le azioni di tutti i giorni — **Ridimensiona** e **Riavvia**, o **Esegui ora** e **Sospendi** (**Riprendi** una volta sospeso) per un CronJob — e il suo menu **Altre azioni** ha **Elimina**; vedi [Scalare, riavviare ed eliminare](/docs/clusters/actions/).
 
 ## Pod
 

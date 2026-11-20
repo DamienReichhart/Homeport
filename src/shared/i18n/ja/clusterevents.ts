@@ -6,7 +6,7 @@ export default {
   'clusterevents.nav': 'イベント',
   'clusterevents.title': 'イベント',
   'clusterevents.summary': '{count, plural, other {# 件のイベント}}',
-  'clusterevents.search': '理由、オブジェクト、メッセージで検索',
+  'clusterevents.search': 'イベントを検索',
   'clusterevents.empty': 'イベントはありません。Kubernetes はイベントを約 1 時間保持します。',
   'clusterevents.filter': '種類',
   'clusterevents.all': 'すべて',

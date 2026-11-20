@@ -5,6 +5,7 @@ import type { Translation } from '../types';
 export default {
   'settings.nav': '設定',
   'settings.title': '設定',
+  'settings.index.label': '設定のセクション',
   'settings.appearance.title': '外観',
   'settings.appearance.theme': 'テーマ',
   'settings.theme.system': 'システムに合わせる',
@@ -61,6 +62,7 @@ export default {
   'settings.sync.interval': 'リポジトリの確認間隔',
   'settings.sync.minutes': '分',
   'settings.data.title': 'データ',
+  'settings.about.title': 'Homeport について',
   'settings.data.description': 'Homeport がこのコンピューターに保持しているものです。',
   'settings.data.backup': 'バックアップ…',
   'settings.data.restore': '復元…',

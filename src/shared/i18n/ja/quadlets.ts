@@ -94,6 +94,7 @@ export default {
   'quadlets.form.extraInvalid':
     'ユニットと一緒に置くファイルには、それぞれフォルダーを含まない単純な名前が必要です。',
   'quadlets.remove.title': '{name} を削除しますか？',
+  'quadlets.remove.zone': 'このユニットを削除',
   'quadlets.remove.description':
     'Podman はユニットファイルを削除し、systemd を再読み込みします。ユニットが作成したコンテナ、ボリューム、イメージは残ります。',
   'quadlets.remove.stop': '実行中ならサービスを停止',

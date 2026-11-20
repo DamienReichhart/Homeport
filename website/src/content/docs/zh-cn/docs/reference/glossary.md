@@ -27,7 +27,7 @@ Incus 主机运行的东西：在主机内核上启动完整 Linux 发行版的�
 
 ### Project (Incus's)（项目）
 
-在 Incus 主机上，其实例、镜像、配置文件、自定义卷和网络所在的空间。Incus 主机的页面一次显示一个项目，在主机切换器下方选择。参见[项目](/docs/hosts/incus/#项目)。
+在 Incus 主机上，其实例、镜像、配置文件、自定义卷和网络所在的空间。Incus 主机的页面一次显示一个项目，在侧边栏中该主机的下方选择。参见[项目](/docs/hosts/incus/#项目)。
 
 ### Profile（配置文件）
 
@@ -127,7 +127,15 @@ Homeport 在主机上创建的一个短期 `busybox` 容器，用于打开卷（
 
 ### Board（看板）
 
-在一个表格中列出所有已连接主机的容器的页面，每个容器都标有其主机。参见[看板](/docs/guides/overview/#看板)。
+主页：每个主机、Swarm 和集群一个磁贴，所有这些上面的待处理事项，以及在一个表格中列出的所有已连接主机的容器，每个容器都标有其主机。参见[看板](/docs/guides/overview/#看板)。
+
+### Needs you（待处理）
+
+看板上需要你关注的事项列表：无法访问的主机或集群，不健康、已死亡、正在重启或以错误退出的容器，未就绪的 Kubernetes 工作负载，镜像已发布更新版本的堆栈。健康的内容永远不会出现在其中。参见[待处理](/docs/guides/overview/#待处理)。
+
+### Overview（概览）
+
+单个主机或集群自己的页面：其状态和地址、其引擎或 API 服务器、其使用情况和最近的事件。不是看板，看板涵盖所有主机和集群。参见[概览](/docs/guides/overview/#概览)。
 
 ### Command palette（命令面板）
 
@@ -167,6 +175,8 @@ Homeport 检查 SSH 服务器的方式：首次连接时由你确认服务器的
 | External Stack | 外部堆栈 |
 | Adopt          | 接管     |
 | Board          | 看板     |
+| Needs you      | 待处理   |
+| Overview       | 概览     |
 | Bastion        | 堡垒机   |
 | Deploy key     | 部署密钥 |
 | Port forward   | 端口转发 |

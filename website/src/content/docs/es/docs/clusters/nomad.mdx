@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 Un clúster puede ser un clúster de **Nomad** además de uno de Kubernetes. Homeport se comunica con la API HTTP que ya sirve un agente de Nomad, servidor o cliente, desde tu equipo: no se instala nada en el clúster y no se necesita la CLI `nomad` en este equipo. Todo lo que hace pasa por la API con los permisos del token ACL que le das.
 
-Los clústeres de Nomad están junto a tus hosts y tus clústeres de Kubernetes en el selector. Al seleccionar uno se muestran su versión, su región y su dirección en el Resumen, y sus propias páginas en la barra lateral: **[Jobs](#jobs)**, donde [ejecutas jobs](#ejecutar-un-job) y abres los [logs y shells](#logs-y-shell) de sus allocations, y **[Nodos](#nodos)**. Las páginas de Kubernetes se ocultan mientras está seleccionado.
+Los clústeres de Nomad aparecen en la barra lateral con tus clústeres de Kubernetes, cada uno con su estado. Al seleccionar uno se muestran su versión, su región y su dirección en el Resumen, y sus propias páginas en la barra lateral: **[Jobs](#jobs)**, donde [ejecutas jobs](#ejecutar-un-job) y abres los [logs y shells](#logs-y-shell) de sus allocations, y **[Nodos](#nodos)**. Las páginas de Kubernetes se ocultan mientras está seleccionado.
 
 Lo que puedes hacer, en el orden en que lo explica esta página:
 
@@ -20,9 +20,9 @@ Lo que puedes hacer, en el orden en que lo explica esta página:
 
 ## Añadir un clúster de Nomad
 
-Elige **Añadir clúster…** en el selector, luego la pestaña **Nomad**, y rellena:
+Elige **Añadir host o clúster**, bajo la lista de hosts de la barra lateral, luego **Añadir clúster…** y la pestaña **Nomad**, y rellena:
 
-- **Nombre**: lo que muestran el selector y el Resumen, como `nomad-prod`.
+- **Nombre**: lo que muestran la barra lateral, el Tablero y el Resumen, como `nomad-prod`.
 - **Dirección**: la API HTTP del agente, tal como `NOMAD_ADDR` se la da a la CLI `nomad`. `nomad.example.com` se convierte en `http://nomad.example.com:4646`: se añade el puerto 4646 cuando no se indica ninguno, y se usa `https://` cuando das material TLS.
 - **Región**: déjala vacía para usar la región del propio agente. Indícala para gestionar otra región a través de un agente federado, como hace `NOMAD_REGION`.
 - **Token ACL**: el secret ID del token, si el clúster tiene las ACL activadas. Consulta [el token](#el-token-acl) más abajo.
@@ -58,7 +58,7 @@ Un token que no puede leer el agente (`agent:read`) se conecta igualmente: la p�
 
 Abre un job para ver sus ajustes (prioridad, centros de datos, node pool, versión), sus **task groups** con sus tasks y sus drivers, y sus **allocations**, las más recientes primero, con el nodo en el que se ejecuta cada una.
 
-- **Detener** pregunta antes, indicando el job y su namespace. Nomad detiene todas las allocations y conserva la definición del job hasta que se ejecuta su recolección de basura; marca **Purgarlo** para eliminar el job y su historial al instante, como hace `nomad job stop -purge`. La purga está desactivada de forma predeterminada.
+- **Detener** pregunta antes, indicando el job y su namespace. Nomad detiene todas las allocations y conserva la definición del job hasta que se ejecuta su recolección de basura; marca **Purgarlo** para eliminar el job y su historial al instante, como hace `nomad job stop -purge`. La purga está desactivada de forma predeterminada. Con **Purgarlo** marcado, Homeport te pide antes que escribas el nombre del job.
 - **Escalar**, en un task group de un job `service` o `batch`, establece cuántas allocations ejecuta, como hace `nomad job scale`. Cuando el grupo tiene un bloque `scaling`, el número debe quedar entre su `min` y su `max`; Homeport rechaza uno fuera de ese rango antes de preguntar a Nomad, y muestra el motivo de Nomad cuando este lo rechaza, como un deployment en curso. Un autoescalador que actúe según la política puede volver a cambiar el número.
 
 Listar los jobs requiere las capacidades `list-jobs` y `read-job`; detener uno requiere `submit-job`, y escalar, `scale-job` (o `submit-job`), en el namespace del job.

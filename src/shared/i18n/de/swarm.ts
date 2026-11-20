@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarms',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': 'Ein Manager ist verbunden',
   'swarm.unreachable': 'Kein Manager verbunden',
   'swarm.hostCounts':
     '{managers, plural, one {# Manager-Host} other {# Manager-Hosts}}, {workers, plural, one {# Worker-Host} other {# Worker-Hosts}}',
@@ -56,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': 'Labels bearbeiten',
   'swarm.nodes.action.tasks': 'Seine Tasks anzeigen',
   'swarm.nodes.updated': '{name} aktualisiert',
+  'swarm.nodes.drain.title': '{name} leeren?',
+  'swarm.nodes.drain.description':
+    'Seine Tasks werden hier gestoppt und auf die anderen Nodes verlegt; neue nimmt er erst wieder an, wenn er aktiviert wird.',
+  'swarm.nodes.demote.title': '{name} zum Worker herabstufen?',
+  'swarm.nodes.demote.description':
+    'Er verwaltet den Swarm nicht mehr und führt seine Tasks weiter aus. Der Swarm braucht die meisten seiner Manager, um zu arbeiten; behalten Sie genug davon.',
   'swarm.nodes.removed': '{name} aus dem Swarm entfernt',
   'swarm.nodes.labels.title': 'Labels von {name}',
   'swarm.nodes.labels.description':
@@ -73,22 +78,24 @@ export default {
 
   'swarm.services.search': 'Services durchsuchen',
   'swarm.services.empty': 'Auf diesem Swarm laufen keine Services',
+  'swarm.services.emptyHint':
+    'Erstellen Sie einen aus einem Image oder deployen Sie einen Stack auf diesen Swarm.',
   'swarm.services.column.name': 'Name',
   'swarm.services.column.image': 'Image',
-  'swarm.services.column.mode': 'Modus',
   'swarm.services.column.replicas': 'Laufend',
   'swarm.services.column.ports': 'Ports',
   'swarm.services.column.stack': 'Stack',
   'swarm.services.column.update': 'Update',
   'swarm.services.mode.replicated': 'Repliziert',
-  'swarm.services.mode.replicatedCount': 'Repliziert ({count})',
   'swarm.services.mode.global': 'Global',
   'swarm.services.mode.replicatedJob': 'Job',
   'swarm.services.mode.globalJob': 'Globaler Job',
   'swarm.services.actionsFor': 'Aktionen für {name}',
+  'swarm.services.logsOf': 'Logs von {name}',
   'swarm.services.action.logs': 'Logs',
   'swarm.services.action.scale': 'Skalieren',
   'swarm.services.action.rollback': 'Zurücksetzen',
+  'swarm.services.action.remove': 'Service entfernen',
   'swarm.services.scaled':
     '{name} auf {count, plural, one {# Replikat} other {# Replikate}} skaliert',
   'swarm.services.rolledBack': '{name} wird zurückgesetzt',
@@ -128,6 +135,8 @@ export default {
   'swarm.objects.createConfig': 'Config erstellen',
   'swarm.objects.secretNote':
     'Der Wert eines Secrets geht einmal an den Swarm und kann nicht zurückgelesen werden, weder von Homeport noch von sonst jemandem: Nur die Services, denen es übergeben wird, sehen ihn.',
+  'swarm.objects.configNote':
+    'Eine Config ist eine Datei, die der Swarm den Services gibt, denen sie zugeteilt ist, etwa die Einstellungen eines Webservers.',
   'swarm.objects.noSecrets': 'Keine Secrets',
   'swarm.objects.noConfigs': 'Keine Configs',
   'swarm.objects.column.name': 'Name',
@@ -166,7 +175,6 @@ export default {
 
   'swarm.services.created': '{name} erstellt',
   'swarm.services.updating': '{name} geht auf seine neuen Einstellungen über',
-  'swarm.service.update': 'Update {state}',
   'swarm.create.open': 'Service erstellen',
   'swarm.create.title': 'Service erstellen',
   'swarm.create.description':
@@ -237,7 +245,6 @@ export default {
   'swarm.membership.leave.last':
     'Dies ist der letzte Manager des Swarms: Der Swarm verschwindet mit ihm, samt allen Services, Secrets und Configs. Andere Nodes bleiben in einem Swarm ohne Manager zurück.',
   'swarm.membership.leave.force': 'Erzwingen: verlassen, obwohl er ein Manager ist',
-  'swarm.membership.leave.typeName': 'Geben Sie zur Bestätigung {name} ein',
   'swarm.membership.leave.submit': 'Verlassen',
 
   'swarm.join.title': 'Beitrittsbefehle',
@@ -269,6 +276,9 @@ export default {
   'swarm.stacks.removed': '{name} entfernt',
   'swarm.stacks.removedPartly': '{name} entfernt, außer:',
   'swarm.stacks.remove.title': 'Stack {name} entfernen?',
+  'swarm.stacks.remove.zone': 'Diesen Stack entfernen',
+  'swarm.stacks.remove.submit': 'Stack entfernen',
   'swarm.stacks.remove.description':
     'Seine Services werden entfernt, dann seine Netzwerke, Secrets und Configs, wie bei docker stack rm. Seine Volumes bleiben auf jedem Node erhalten.',
+  'swarm.nodes.column.host': 'Host',
 } satisfies Translation<typeof en>;

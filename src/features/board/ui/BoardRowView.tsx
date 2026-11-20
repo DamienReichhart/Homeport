@@ -1,8 +1,9 @@
-import { ContainerRowMenu, containerTone, portLabels } from '@/features/containers';
+import { ContainerRowMenu, containerTone, portLabels, statusText } from '@/features/containers';
 import type { ContainerUsage } from '@/shared/api';
-import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
+import { cn, formatBytes, formatPercent, shortId } from '@/shared/lib';
 import { Badge, Checkbox, StatusDot, TableCell, TableRow } from '@/shared/ui';
 import type { BoardRow } from '../model/board';
+import { SHOWN_FROM } from './columns';
 import { t } from '@/shared/i18n';
 
 /** One container on the board; clicking it opens it on its Host. */
@@ -34,45 +35,47 @@ export function BoardRowView({
           onCheckedChange={(on) => onSelect(on === true)}
         />
       </TableCell>
-      <TableCell className="max-w-28 truncate">{row.hostName}</TableCell>
+      <TableCell className="text-muted-foreground max-w-28 truncate">{row.hostName}</TableCell>
       <TableCell>
         <div className="flex items-center gap-2">
           <StatusDot tone={containerTone(c.state, c.health)} />
-          <div className="max-w-48 min-w-0">
-            <p className="truncate font-medium">{c.name}</p>
-            <p className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</p>
-          </div>
+          <span
+            className="max-w-56 min-w-0 truncate font-medium"
+            title={t('containers.idTitle', { id: shortId(c.id) })}
+          >
+            {c.name}
+          </span>
         </div>
       </TableCell>
-      <TableCell className="max-w-36 truncate" title={c.image}>
+      <TableCell className={cn('max-w-36 truncate', SHOWN_FROM.image)} title={c.image}>
         {c.image}
       </TableCell>
-      <TableCell className="whitespace-nowrap">
+      <TableCell className={cn('whitespace-nowrap', SHOWN_FROM.basic)}>
         {/* The health shows as a badge, not repeated in the status. */}
-        <span className="text-sm">
-          {(c.status || c.state).replace(/\s*\((healthy|unhealthy|health: starting)\)/, '')}
-        </span>
+        <span className="text-sm">{statusText(c)}</span>
         {c.health && (
           <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ms-1.5">
             {c.health}
           </Badge>
         )}
       </TableCell>
-      <TableCell className="text-muted-foreground max-w-28 truncate">{c.stack ?? '—'}</TableCell>
-      <TableCell className="max-w-28 truncate" title={ports.map((p) => p.label).join(', ')}>
+      <TableCell className={cn('text-muted-foreground max-w-28 truncate', SHOWN_FROM.stack)}>
+        {c.stack ?? '—'}
+      </TableCell>
+      <TableCell
+        className={cn('max-w-28 truncate', SHOWN_FROM.ports)}
+        title={ports.map((p) => p.label).join(', ')}
+      >
         <span className="text-muted-foreground font-mono text-xs">
           {ports[0]?.label}
           {ports.length > 1 && ` +${ports.length - 1}`}
         </span>
       </TableCell>
-      <TableCell className="text-end tabular-nums">
+      <TableCell className={cn('text-end tabular-nums', SHOWN_FROM.basic)}>
         {usage ? formatPercent(usage.cpuPercent ?? 0) : '—'}
       </TableCell>
-      <TableCell className="text-end tabular-nums">
+      <TableCell className={cn('text-end tabular-nums', SHOWN_FROM.basic)}>
         {usage ? formatBytes(usage.memoryUsage) : '—'}
-      </TableCell>
-      <TableCell className="text-muted-foreground whitespace-nowrap">
-        {formatRelative(c.created)}
       </TableCell>
       <TableCell>
         <ContainerRowMenu hostId={row.hostId} container={c} />

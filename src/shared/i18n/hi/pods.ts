@@ -65,4 +65,5 @@ export default {
   'pods.tab.metrics': 'मेट्रिक्स',
   'pods.metrics.noSample':
     'metrics-server के पास अभी इस Pod का कोई सैंपल नहीं है: हो सकता है यह अभी शुरू हुआ हो, या चल न रहा हो।',
+  'pods.failing': '{count} विफल',
 } satisfies Translation<typeof en>;

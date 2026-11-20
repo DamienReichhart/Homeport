@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'ジョブを実行',
 
   'nomad.job.description': '名前空間 {namespace} の {type} ジョブ、バージョン {version}',
-  'nomad.job.back': 'ジョブ',
   'nomad.job.stop': '停止',
   'nomad.job.editAndRun': '編集して実行',
   'nomad.job.sourceFailed': 'Homeport はジョブの仕様を読み取れませんでした',
@@ -169,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'ドレインをキャンセルしました',
 
   'nomad.node.description': '{datacenter} のクライアントノード、ノードプール {pool}',
-  'nomad.node.back': 'ノード',
   'nomad.node.eligible': '新しいアロケーションの対象にする',
   'nomad.node.drain': 'ドレイン',
   'nomad.node.settings': 'ノード',

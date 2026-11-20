@@ -66,7 +66,7 @@ Incus's certificate is self-signed, so there's no CA to check it against. Homepo
 
 ## Projects
 
-Incus keeps Instances, images, profiles, custom volumes and networks in **projects**. The pages show one project at a time, picked under the Host switcher, which lists each with how many Instances and images it holds. Homeport remembers the pick for each Host between launches. Until you pick one, a Host shows `default`, or its only project on the restricted socket. Storage pools belong to the whole server; their volumes are shown for the selected project.
+Incus keeps Instances, images, profiles, custom volumes and networks in **projects**. The pages show one project at a time, picked under the selected Host in the sidebar, which lists each with how many Instances and images it holds. Homeport remembers the pick for each Host between launches. Until you pick one, a Host shows `default`, or its only project on the restricted socket. Storage pools belong to the whole server; their volumes are shown for the selected project.
 
 ## Events
 

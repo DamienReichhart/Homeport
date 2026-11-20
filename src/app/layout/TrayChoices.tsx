@@ -8,7 +8,7 @@ export function TrayChoices() {
   useTrayChoices({
     onHost: (hostId) => {
       select(hostId);
-      void navigate('/');
+      void navigate('/overview');
     },
     onAddHost: () => void navigate('/hosts/new'),
   });

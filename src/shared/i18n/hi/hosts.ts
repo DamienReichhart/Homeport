@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'होस्ट',
   'hosts.description': 'वे Docker Engine जिनसे Homeport कनेक्ट होता है।',
   'hosts.add': 'होस्ट जोड़ें',
-  'hosts.empty': 'अभी कोई होस्ट नहीं।',
+  'hosts.empty': 'अभी कोई होस्ट नहीं',
+  'hosts.emptyDescription':
+    'Docker, Podman, containerd या Incus इंजन जोड़ें: इस कंप्यूटर पर, या SSH या TLS के ज़रिए किसी सर्वर पर।',
   'hosts.column.name': 'नाम',
   'hosts.column.type': 'प्रकार',
   'hosts.column.address': 'पता',
@@ -14,19 +16,19 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'होस्ट सहेजा गया',
   'hosts.notFound': 'यह होस्ट अब मौजूद नहीं है।',
-  'hosts.addPage.description': 'Homeport को किसी Docker Engine से कनेक्ट करें।',
-  'hosts.switcher.label': 'होस्ट',
-  'hosts.switcher.placeholder': 'कोई होस्ट नहीं',
+  'hosts.addPage.description':
+    'इस कंप्यूटर पर मिला इंजन जोड़ें, कोई इम्पोर्ट करें, या नीचे उसका कनेक्शन दर्ज करें।',
+  'hosts.addPage.manual': 'कनेक्शन दर्ज करें',
   'hosts.switcher.add': 'होस्ट जोड़ें…',
   'hosts.switcher.manage': 'होस्ट प्रबंधित करें',
-  'hosts.switcher.hosts': 'होस्ट',
-  'hosts.switcher.clusters': 'क्लस्टर',
   'hosts.switcher.addCluster': 'क्लस्टर जोड़ें…',
   'hosts.switcher.manageClusters': 'क्लस्टर प्रबंधित करें',
   'hosts.switcher.whyUnusable': '{name} का इस्तेमाल क्यों नहीं हो सकता',
   'hosts.detail.enabled': 'सक्षम',
   'hosts.detail.reconnect': 'फिर से कनेक्ट करें',
   'hosts.connection.title': 'कनेक्शन',
+  'hosts.connection.save': 'बदलाव सहेजें',
+  'hosts.connection.discard': 'बदलाव छोड़ें',
   'hosts.remove.title': 'होस्ट हटाएँ',
   'hosts.remove.description':
     'Homeport इस होस्ट को, इसके क्रेडेंशियल और इसके प्रबंधित स्टैक की परिभाषाओं को भूल जाता है। होस्ट पर चल रही किसी चीज़ को छुआ नहीं जाता।',
@@ -34,6 +36,8 @@ export default {
   'hosts.remove.confirmDescription':
     'सहेजा गया कनेक्शन, SSH कुंजी या प्रमाणपत्र, और इसके प्रबंधित स्टैक की compose परिभाषाएँ मिटा देता है। होस्ट पर कंटेनर, इमेज और वॉल्यूम जैसे हैं वैसे ही रहते हैं।',
   'hosts.sshSetup.title': 'सर्वर पर Homeport को अधिकृत करें',
+  'hosts.sshSetup.show': 'कमांड दिखाएँ',
+  'hosts.sshSetup.hide': 'कमांड छिपाएँ',
   'hosts.sshSetup.description':
     'इन्हें <mono>{server}</mono> पर SSH यूज़र के रूप में चलाएँ, फिर फिर से कनेक्ट करें।',
   'hosts.sshSetup.descriptionBastions':
@@ -68,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'लोकल सॉकेट',
   'hosts.form.keepHint': 'सहेजा हुआ मान रखने के लिए खाली छोड़ें।',
+  'hosts.form.connectOver': 'कनेक्शन का तरीका',
   'hosts.form.name': 'नाम',
+  'hosts.form.nameHint': 'खाली छोड़ने पर इसका नाम {name} होगा।',
   'hosts.form.engine': 'इंजन',
   'hosts.form.engineHint':
-    'Docker-संगत में Docker और Podman आते हैं; कनेक्ट होने पर Homeport उनमें फ़र्क पहचान लेता है। containerd तक उसके सॉकेट से पहुँचा जाता है, यहाँ या SSH पर; Incus तक HTTPS (TLS) पर भी।',
+    'Docker-संगत में Docker और Podman आते हैं। containerd तक उसके सॉकेट से पहुँचा जाता है, यहाँ या SSH पर; Incus तक HTTPS (TLS) पर भी।',
   'hosts.form.socketOnly':
     '{engine} सिर्फ़ अपने सॉकेट पर जवाब देता है: लोकल रूप से या SSH से कनेक्ट करें।',
   'hosts.form.noPlainTcp':
@@ -113,7 +119,8 @@ export default {
   'hosts.ssh.auth': 'प्रमाणीकरण',
   'hosts.ssh.auth.generated': 'इस होस्ट के लिए नई कुंजी',
   'hosts.ssh.auth.imported': 'मौजूदा कुंजी',
-  'hosts.ssh.generated.editing': 'यह होस्ट अपनी कुंजी रखता है। इसे होस्ट पेज से फिर से बनाएँ।',
+  'hosts.ssh.generated.editing':
+    'यह होस्ट अपनी कुंजी रखता है। इसे बदलने के लिए ऊपर के कमांड के पास “कुंजी फिर से बनाएँ” इस्तेमाल करें।',
   'hosts.ssh.generated.new':
     'Homeport इस होस्ट के लिए एक Ed25519 कुंजी बनाता है और आपको वह कमांड दिखाता है जो इसे सर्वर पर अधिकृत करती है।',
   'hosts.ssh.privateKey': 'निजी कुंजी',
@@ -179,7 +186,7 @@ export default {
   'hosts.bundle.confirmation': 'पासफ़्रेज़ फिर से',
   'hosts.bundle.problem.short': 'कम से कम {min} अक्षर इस्तेमाल करें।',
   'hosts.bundle.problem.mismatch': 'दोनों पासफ़्रेज़ अलग हैं।',
-  'hosts.bundle.export.button': 'एक्सपोर्ट करें',
+  'hosts.bundle.export.button': 'होस्ट को फ़ाइल में एक्सपोर्ट करें…',
   'hosts.bundle.export.title': 'होस्ट एक्सपोर्ट करें',
   'hosts.bundle.export.description':
     'आपके चुने होस्ट को, उनकी कुंजियों, प्रमाणपत्रों और भरोसेमंद सर्वर कुंजियों के साथ, पासफ़्रेज़ से एन्क्रिप्ट की गई एक फ़ाइल में लिखता है। उन्हें किसी दूसरे कंप्यूटर पर इस्तेमाल करने के लिए वहाँ इसे इम्पोर्ट करें।',
@@ -191,7 +198,7 @@ export default {
     '{count, plural, one {# होस्ट एक्सपोर्ट किया गया} other {# होस्ट एक्सपोर्ट किए गए}}',
   'hosts.bundle.export.withoutSecrets':
     'इन्हें इनके क्रेडेंशियल के बिना एक्सपोर्ट किया गया, जो इस कंप्यूटर पर खोले नहीं जा सकते:',
-  'hosts.bundle.import.button': 'इम्पोर्ट करें',
+  'hosts.bundle.import.button': 'फ़ाइल से होस्ट इम्पोर्ट करें…',
   'hosts.bundle.import.title': 'एक्सपोर्ट से होस्ट इम्पोर्ट करें',
   'hosts.bundle.import.description':
     'Homeport से एक्सपोर्ट की गई फ़ाइल उसके पासफ़्रेज़ से खोलें, फिर जोड़ने के लिए होस्ट चुनें। उनके क्रेडेंशियल इस कंप्यूटर पर एन्क्रिप्ट करके सहेजे जाते हैं।',

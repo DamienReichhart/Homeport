@@ -5,6 +5,7 @@ import type { Translation } from '../types';
 export default {
   'settings.nav': '설정',
   'settings.title': '설정',
+  'settings.index.label': '설정 섹션',
   'settings.appearance.title': '모양',
   'settings.appearance.theme': '테마',
   'settings.theme.system': '시스템 설정에 맞춤',
@@ -60,6 +61,7 @@ export default {
   'settings.sync.interval': '저장소 확인 주기',
   'settings.sync.minutes': '분',
   'settings.data.title': '데이터',
+  'settings.about.title': 'Homeport 정보',
   'settings.data.description': 'Homeport가 이 컴퓨터에 보관하는 항목입니다.',
   'settings.data.backup': '백업…',
   'settings.data.restore': '복원…',

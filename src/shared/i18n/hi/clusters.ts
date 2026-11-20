@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'क्लस्टर',
-  'clusters.summary': '{count, plural, one {# क्लस्टर} other {# क्लस्टर}}',
+  'clusters.description': 'वे Kubernetes और Nomad क्लस्टर जिनसे Homeport कनेक्ट होता है।',
   'clusters.add': 'क्लस्टर जोड़ें',
   'clusters.notFound': 'यह क्लस्टर अब मौजूद नहीं है।',
   'clusters.empty.title': 'अभी कोई क्लस्टर नहीं',
   'clusters.empty.description':
-    'वे Kubernetes क्लस्टर जोड़ें जिन तक आपका kubeconfig पहुँचता है। Homeport उन पर कुछ भी इंस्टॉल नहीं करता।',
+    'वे Kubernetes क्लस्टर जोड़ें जिन तक आपका kubeconfig पहुँचता है, या पते से कोई Nomad agent जोड़ें। Homeport उन पर कुछ भी इंस्टॉल नहीं करता।',
   'clusters.column.name': 'नाम',
   'clusters.column.status': 'स्थिति',
   'clusters.column.kind': 'प्रकार',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'साइन इन का तरीका',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'क्लस्टर जोड़ें',
   'clusters.palette.manage': 'क्लस्टर प्रबंधित करें',
 
@@ -27,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL टोकन',
 
   'clusters.addPage.description':
-    'आपका चुना हर Kubernetes context, या आपका बताया हर Nomad agent, एक क्लस्टर बन जाता है। इसके क्रेडेंशियल एन्क्रिप्ट करके सहेजे जाते हैं, डिस्क पर कभी सादे रूप में नहीं।',
+    'किसी kubeconfig से context चुनें, या पते से कोई Nomad agent बताएँ।',
   'clusters.addPage.fromMachine': 'इस मशीन के kubeconfig से',
   'clusters.addPage.paste': 'kubeconfig पेस्ट करें',
   'clusters.addPage.nomad': 'Nomad',
@@ -55,6 +56,10 @@ export default {
   'clusters.detail.name': 'नाम',
   'clusters.detail.rename': 'नाम बदलें',
   'clusters.detail.renamed': 'क्लस्टर का नाम बदला गया',
+  'clusters.rename.open': 'नाम बदलें…',
+  'clusters.rename.title': '{name} का नाम बदलें',
+  'clusters.rename.description':
+    'सिर्फ़ Homeport में इसका नाम बदलता है; इसका kubeconfig context अपना नाम रखता है।',
   'clusters.connection.title': 'कनेक्शन',
   'clusters.connection.server': 'API सर्वर',
   'clusters.connection.address': 'पता',
@@ -124,6 +129,9 @@ export default {
   'clusters.remove.title': 'क्लस्टर हटाएँ',
   'clusters.remove.description':
     'Homeport क्लस्टर और उसके सहेजे गए क्रेडेंशियल भूल जाता है। क्लस्टर पर या आपके kubeconfig में कुछ नहीं बदलता।',
+  'clusters.remove.descriptionNomad':
+    'Homeport क्लस्टर और उसके सहेजे गए क्रेडेंशियल भूल जाता है। क्लस्टर पर कुछ नहीं बदलता।',
   'clusters.remove.confirmTitle': '{name} हटाएँ?',
   'clusters.remove.confirmDescription': 'आप इसे इसके kubeconfig से फिर से जोड़ सकते हैं।',
+  'clusters.remove.confirmDescriptionNomad': 'आप इसे इसके पते से फिर से जोड़ सकते हैं।',
 } satisfies Translation<typeof en>;

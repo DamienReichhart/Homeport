@@ -58,9 +58,9 @@ export default {
     '{count, plural, one {Arrêt forcé du conteneur} other {Arrêt forcé de # conteneurs}}',
   'containers.done.remove':
     '{count, plural, one {Conteneur supprimé} other {# conteneurs supprimés}}',
-  'containers.remove.title': 'Supprimer {name} ?',
+  'containers.remove.title': 'Supprimer {name} de {host} ?',
   'containers.remove.titleMany':
-    'Supprimer {count, plural, one {# conteneur} other {# conteneurs}} ?',
+    'Supprimer {count, plural, one {# conteneur} other {# conteneurs}} de {host} ?',
   'containers.remove.deleted':
     '{count, plural, one {Le conteneur, sa couche inscriptible et ses volumes anonymes sont supprimés.} other {Les conteneurs, leur couche inscriptible et leurs volumes anonymes sont supprimés.}}',
   'containers.remove.running': '{count} en cours d’exécution seront d’abord arrêtés.',
@@ -393,4 +393,7 @@ export default {
     'Terminé. Importez-le depuis la page Images, ou avec docker import.',
   'containers.export.done': 'Exporté vers {destination}',
   'containers.palette.run': 'Exécuter un conteneur',
+  'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Ouvrir la stack {stack}',
+  'containers.logs.show': 'Afficher',
 } satisfies Translation<typeof en>;

@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'このページで Homeport に予期しない問題が発生しました。通常は再読み込みで解決します。繰り返し発生する場合は、「詳細」からレポートをコピーして issue に貼り付けてください。',
   'app.crash.reload': '再読み込み',
-  'app.crash.backToOverview': '概要に戻る',
+  'app.crash.backToBoard': 'ボードに戻る',
   'app.shortcuts.title': 'キーボードショートカット',
   'app.shortcuts.description':
     'ここで使えるショートカットです。N や / などのキーは、フィールドに入力している間は反応しません。',
@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'ホスト',
   'app.palette.actions': '操作',
   'app.palette.switchTo': '{name} に切り替え',
+  'app.nav.search': '検索',
+  'app.nav.hosts': 'ホスト',
+  'app.nav.clusters': 'クラスター',
+  'app.nav.target': '{name}、{status}',
+  'app.nav.running': '{total} 個中 {running} 個のコンテナが実行中',
+  'app.nav.add': 'ホストまたはクラスターを追加',
 } satisfies Translation<typeof en>;

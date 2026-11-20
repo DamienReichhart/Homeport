@@ -19,7 +19,7 @@ export default {
   'app.crash.description':
     'Homeport ha riscontrato un problema imprevisto in questa pagina. Di solito ricaricarla risolve; se succede ancora, copia il rapporto da Dettagli in una segnalazione.',
   'app.crash.reload': 'Ricarica',
-  'app.crash.backToOverview': 'Torna alla panoramica',
+  'app.crash.backToBoard': 'Torna alla Bacheca',
   'app.shortcuts.title': 'Scorciatoie da tastiera',
   'app.shortcuts.description':
     'Le scorciatoie disponibili qui. Tasti come N e / non hanno effetto mentre scrivi in un campo.',
@@ -42,4 +42,10 @@ export default {
   'app.palette.hosts': 'Host',
   'app.palette.actions': 'Azioni',
   'app.palette.switchTo': 'Passa a {name}',
+  'app.nav.search': 'Cerca',
+  'app.nav.hosts': 'Host',
+  'app.nav.clusters': 'Cluster',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '{running} container su {total} in esecuzione',
+  'app.nav.add': 'Aggiungi host o cluster',
 } satisfies Translation<typeof en>;

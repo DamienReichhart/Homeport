@@ -10,8 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
   ErrorMessage,
-  Input,
   Label,
+  TypeToConfirm,
 } from '@/shared/ui';
 import { useLeaveSwarm } from '../../api/mutations';
 import { confirmsLeave, type LeaveRisk } from '../../model/membership';
@@ -63,12 +63,7 @@ export function LeaveSwarmDialog({
           </div>
         )}
         {risk === 'lastManager' && (
-          <div className="grid gap-1.5">
-            <Label htmlFor="leave-confirm">
-              {t('swarm.membership.leave.typeName', { name: view.host.name })}
-            </Label>
-            <Input id="leave-confirm" value={typed} onChange={(e) => setTyped(e.target.value)} />
-          </div>
+          <TypeToConfirm name={view.host.name} value={typed} onChange={setTyped} />
         )}
         {leave.error && <ErrorMessage error={leave.error} />}
         <DialogFooter>
@@ -76,7 +71,7 @@ export function LeaveSwarmDialog({
             {t('common.cancel')}
           </Button>
           <Button
-            variant="destructive"
+            variant={risk === 'lastManager' ? 'danger' : 'destructive'}
             disabled={!allowed || leave.isPending}
             onClick={() => leave.mutate(risk !== 'worker')}
           >

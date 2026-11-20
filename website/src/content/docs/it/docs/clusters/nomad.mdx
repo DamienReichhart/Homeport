@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 Un cluster può essere un cluster **Nomad** oltre che uno Kubernetes. Homeport parla con l’API HTTP che un agente Nomad, server o client, serve già, dal tuo computer: nulla viene installato sul cluster, e non serve alcuna CLI `nomad` su questo computer. Tutto ciò che fa passa dall’API con i diritti del token ACL che gli fornisci.
 
-I cluster Nomad si trovano accanto ai tuoi host e ai cluster Kubernetes nel selettore. Selezionarne uno mostra la sua versione, la regione e l’indirizzo nella Panoramica, e le sue pagine proprie nella barra laterale: **[Job](#job)**, dove [esegui i job](#eseguire-un-job) e apri i [log e le shell](#log-e-shell) delle loro allocation, e **[Nodi](#nodi)**. Le pagine di Kubernetes sono nascoste mentre è selezionato.
+I cluster Nomad sono elencati nella barra laterale con i tuoi cluster Kubernetes, ognuno con il suo stato. Selezionarne uno mostra la sua versione, la regione e l’indirizzo nella Panoramica, e le sue pagine proprie nella barra laterale: **[Job](#job)**, dove [esegui i job](#eseguire-un-job) e apri i [log e le shell](#log-e-shell) delle loro allocation, e **[Nodi](#nodi)**. Le pagine di Kubernetes sono nascoste mentre è selezionato.
 
 Cosa puoi fare, nell’ordine in cui questa pagina lo spiega:
 
@@ -20,9 +20,9 @@ Cosa puoi fare, nell’ordine in cui questa pagina lo spiega:
 
 ## Aggiungere un cluster Nomad
 
-Scegli **Aggiungi cluster…** nel selettore, poi la scheda **Nomad**, e compila:
+Scegli **Aggiungi host o cluster**, sotto l’elenco degli host nella barra laterale, poi **Aggiungi cluster…** e la scheda **Nomad**, e compila:
 
-- **Nome**: ciò che mostrano il selettore e la Panoramica, come `nomad-prod`.
+- **Nome**: ciò che mostrano la barra laterale, la Bacheca e la Panoramica, come `nomad-prod`.
 - **Indirizzo**: l’API HTTP dell’agente, come `NOMAD_ADDR` la fornisce alla CLI `nomad`. `nomad.example.com` diventa `http://nomad.example.com:4646`: la porta 4646 viene aggiunta quando non ne è indicata una, e si usa `https://` quando fornisci materiale TLS.
 - **Regione**: lasciala vuota per usare la regione dell’agente. Impostala per gestire un’altra regione tramite un agente federato, come fa `NOMAD_REGION`.
 - **Token ACL**: il secret ID del token, quando il cluster ha le ACL attivate. Vedi [il token](#il-token-acl) più sotto.
@@ -58,7 +58,7 @@ Un token che non può leggere l’agente (`agent:read`) si connette comunque: la
 
 Apri un job per vedere le sue impostazioni (priorità, datacenter, node pool, versione), i suoi **task group** con i loro task e driver, e le sue **allocation**, dalla più recente, con il nodo su cui gira ciascuna.
 
-- **Arresta** chiede prima conferma, indicando il job e il suo namespace. Nomad arresta ogni allocation e conserva la definizione del job finché non viene eseguita la sua garbage collection; spunta **Eliminalo definitivamente** per rimuovere subito il job e la sua cronologia, come fa `nomad job stop -purge`. L’eliminazione definitiva è disattivata per impostazione predefinita.
+- **Arresta** chiede prima conferma, indicando il job e il suo namespace. Nomad arresta ogni allocation e conserva la definizione del job finché non viene eseguita la sua garbage collection; spunta **Eliminalo definitivamente** per rimuovere subito il job e la sua cronologia, come fa `nomad job stop -purge`. L’eliminazione definitiva è disattivata per impostazione predefinita. Con **Eliminalo definitivamente** selezionato, Homeport ti chiede prima di digitare il nome del job.
 - **Ridimensiona**, su un task group di un job `service` o `batch`, imposta quante allocation esegue, come fa `nomad job scale`. Quando il gruppo ha un blocco `scaling`, il numero deve restare entro i suoi `min` e `max`; Homeport rifiuta un valore fuori dai limiti prima di chiedere a Nomad, e mostra il motivo di Nomad quando è Nomad a rifiutare, come un deployment in corso. Un autoscaler che agisce sulla policy può cambiare di nuovo il numero.
 
 Elencare i job richiede le capability `list-jobs` e `read-job`; arrestarne uno richiede `submit-job`, e ridimensionare `scale-job` (o `submit-job`), sul namespace del job.

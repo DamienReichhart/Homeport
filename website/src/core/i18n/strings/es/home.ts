@@ -85,7 +85,7 @@ export default {
     'Mira qué contenedores usan qué. Crea, conecta y desconecta, con una eliminación que te dice exactamente qué vas a perder.',
   'home.features.board.title': 'Un tablero para todos los hosts',
   'home.features.board.body':
-    'Todos los contenedores de todos los hosts en una sola tabla, filtrados y con acciones conjuntas. Cada host también en su propia página: detalles del Engine, uso de disco con una limpieza en un solo diálogo y un flujo en directo de lo que hace el Engine.',
+    'Un mosaico por cada host, Swarm y clúster, y primero lo que requiere tu atención en todos ellos. Todos los contenedores de todos los hosts en una sola tabla, filtrados y con acciones conjuntas. Cada host también en su propia página: detalles del Engine, uso de disco con una limpieza en un solo diálogo y un flujo en directo de lo que hace el Engine.',
   'home.features.keyboard.title': 'Primero el teclado',
   'home.features.keyboard.body':
     'Una paleta de comandos para ir a cualquier sitio, cambiar de host o ejecutar un comando, y para encontrar cualquier contenedor, imagen o volumen en el host que lo tenga. Atajos para cada página, listados con ?.',
@@ -134,7 +134,7 @@ export default {
     'Guarda un archivo compose y su entorno en Homeport y despliégalo en cualquier host: parte de una plantilla, combina varios archivos, elige perfiles; las variables se guardan cifradas y nunca se escriben en disco. O vincula una carpeta de proyecto de este equipo: Homeport edita sus archivos en su sitio y despliega desde ella, compilaciones incluidas. O sigue una rama de un repositorio git, con una clave de despliegue o un token: cada sincronización muestra los commits nuevos y lo que cambian antes de desplegar, y mientras Homeport está abierto los busca y, si se lo pides, despliega por sí solo. Cada nuevo despliegue muestra antes qué cambia, cada despliegue se conserva para que puedas revertir, y Actualizar descarga imágenes más recientes y vuelve a desplegar en un solo paso. Los stacks que alguien desplegó a mano también aparecen: inícialos, detenlos o elimínalos, o adóptalos.',
   'home.stacks.link': 'Gestionar stacks',
   'home.stacks.screenshot':
-    'La definición de un stack gestionado: el editor de compose.yaml, su entorno y el botón Guardar y volver a desplegar.',
+    'La definición de un stack gestionado: el editor de compose.yaml, su entorno y el botón Desplegar.',
 
   // Home: security.
   'home.security.eyebrow': 'Seguridad',

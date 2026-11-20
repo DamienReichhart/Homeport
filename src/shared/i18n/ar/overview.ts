@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': 'نظرة عامة',
-  'overview.title': 'نظرة عامة',
-  'overview.addHost': 'إضافة مضيف',
-  'overview.addCluster': 'إضافة عنقود',
   'overview.cluster.nodes': 'Nodes الجاهزة: {ready} من {total}',
   'overview.cluster.nodesNotAllowed': 'Nodes: غير مسموح',
   'overview.cluster.pods': 'Pods قيد التشغيل: {running} من {total}',
@@ -35,8 +32,6 @@ export default {
   'overview.cluster.noWarnings': 'لا توجد أحداث تحذير.',
   'overview.cluster.allEvents': 'كل الأحداث',
   'overview.host.running': '<strong>{running}</strong> / {total} قيد التشغيل',
-  'overview.host.images':
-    '{count, plural, zero {لا صور} one {صورة واحدة} two {صورتان} few {# صور} many {# صورة} other {# صورة}}',
   'overview.host.containerdContainers':
     '{count, plural, zero {لا حاويات} one {حاوية واحدة} two {حاويتان} few {# حاويات} many {# حاوية} other {# حاوية}} في {namespaces, plural, zero {0 مساحة أسماء} one {مساحة أسماء واحدة} two {مساحتي أسماء} few {# مساحات أسماء} many {# مساحة أسماء} other {# مساحة أسماء}}',
   'overview.host.incusInstances':
@@ -114,5 +109,12 @@ export default {
   'overview.pruned':
     'تمت إزالة {containers, plural, zero {0 حاوية} one {حاوية واحدة} two {حاويتين} few {# حاويات} many {# حاوية} other {# حاوية}}، و{images, plural, zero {0 صورة} one {صورة واحدة} two {صورتين} few {# صور} many {# صورة} other {# صورة}}، و{networks, plural, zero {0 شبكة} one {شبكة واحدة} two {شبكتين} few {# شبكات} many {# شبكة} other {# شبكة}}، و{volumes, plural, zero {0 وحدة تخزين} one {وحدة تخزين واحدة} two {وحدتي تخزين} few {# وحدات تخزين} many {# وحدة تخزين} other {# وحدة تخزين}} — وتم استرداد {space}.',
   'overview.palette.prune': 'تنظيف المضيف المحدد',
-  'overview.host.onBoard': 'حاوياته على اللوحة',
+  'overview.hostSettings': 'إعدادات المضيف',
+  'overview.clusterSettings': 'إعدادات العنقود',
+  'overview.vitals.title': 'لمحة سريعة',
+  'overview.vitals.containers': 'الحاويات',
+  'overview.vitals.running': '{running} من {total} قيد التشغيل',
+  'overview.vitals.cpu': 'المعالج',
+  'overview.vitals.memory': 'الذاكرة',
+  'overview.vitals.images': 'الصور',
 } satisfies Translation<typeof en>;

@@ -19,7 +19,7 @@ Os contêineres que pertencem a uma [stack](/docs/guides/stacks/) são agrupados
 
 | Coluna      | Mostra                                                                                                                          |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| **Nome**    | Um ponto de status, o nome (o nome do serviço, dentro de uma stack) e o ID curto.                                               |
+| **Nome**    | Um ponto de status e o nome (o nome do serviço dentro de uma stack); passe o ponteiro sobre o nome para ver o ID curto.         |
 | **Imagem**  | A imagem a partir da qual ele foi criado, com uma marca ⬆ quando uma [imagem mais recente](#imagens-mais-recentes) é publicada. |
 | **Status**  | Como o Engine o informa, por exemplo _Up 3 hours (healthy)_, com um selo de integridade se houver uma verificação.              |
 | **Portas**  | Até três portas, as publicadas primeiro. Uma porta publicada é um link que a abre no seu navegador.                             |
@@ -29,7 +29,7 @@ Os contêineres que pertencem a uma [stack](/docs/guides/stacks/) são agrupados
 
 A CPU e a memória se atualizam a cada dois segundos. **Pesquisar contêineres** compara nomes, imagens, stacks, serviços e prefixos de ID; **Somente em execução** esconde o resto.
 
-Selecione um contêiner para abri-lo.
+Selecione um contêiner para abri-lo. Numa janela com 1280 px de largura ou mais, ele abre ao lado da lista, que se reduz aos nomes, agrupados por stack; <kbd>↑</kbd> e <kbd>↓</kbd> então abrem o contêiner de cima ou de baixo. As listas de imagens, volumes, stacks, Pods, cargas de trabalho, jobs e afins fazem o mesmo.
 
 ### Imagens mais recentes
 
@@ -39,7 +39,7 @@ O Homeport pergunta ao registro pelo Engine do host, que compara os digests sem 
 
 ### Ações
 
-O botão no fim de cada linha inicia ou para o contêiner. O menu **⋮** tem o resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** ou **Retomar**, **Encerrar à força**, **Renomear**, [**Editar**](#editando-um-contêiner), [**Duplicar**](#duplicando-um-contêiner), [**Fazer commit em imagem…**](#fazendo-commit-de-um-contêiner), [**Exportar sistema de arquivos…**](#exportando-o-sistema-de-arquivos-de-um-contêiner) e **Remover**.
+No fim de cada linha, **Reiniciar** (enquanto ele roda) e **Parar** ou **Iniciar** agem na hora. O menu **⋮** tem o resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** ou **Retomar**, **Encerrar à força**, **Renomear**, [**Editar**](#editando-um-contêiner), [**Duplicar**](#duplicando-um-contêiner), [**Fazer commit em imagem…**](#fazendo-commit-de-um-contêiner), [**Exportar sistema de arquivos…**](#exportando-o-sistema-de-arquivos-de-um-contêiner) e **Remover**.
 
 Marque contêineres para agir sobre vários de uma vez com **Iniciar**, **Parar**, **Reiniciar** ou **Remover**. A caixa de seleção na linha de uma stack seleciona todos os contêineres dela.
 
@@ -53,7 +53,7 @@ Marque contêineres para agir sobre vários de uma vez com **Iniciar**, **Parar*
 
 ## A página de um contêiner
 
-O cabeçalho mostra a imagem e o status, com **Iniciar** ou **Parar**, **Reiniciar**, **Pausar** ou **Retomar**, e **Remover**; o menu **⋮** dele tem **Renomear**, **Editar**, **Duplicar**, **Fazer commit em imagem…** e **Exportar sistema de arquivos…**. As abas abaixo guardam todo o resto.
+O cabeçalho mostra a imagem e o status, com **Reiniciar** e **Parar**, ou só **Iniciar** para um contêiner parado. O menu **⋮** dele tem **Pausar** ou **Retomar**, **Encerrar à força**, **Renomear**, **Editar**, **Duplicar**, **Fazer commit em imagem…**, **Exportar sistema de arquivos…** e, por último e à parte, **Remover**, que pergunta uma vez e cita o host. As abas abaixo têm todo o resto.
 
 <Aside>
   Sair de uma aba encerra o que ela estava fazendo: os terminais fecham quando você sai de **Exec**,
@@ -71,8 +71,7 @@ Os logs são transmitidos conforme o contêiner os escreve. A barra de ferrament
 
 - **Histórico** — quantas linhas passadas carregar: as últimas 100, 1 000 (o padrão) ou 10 000, ou tudo.
 - **Desde** — qualquer momento, ou os últimos 5 minutos, a última hora ou as últimas 24 horas.
-- **Carimbos de data/hora** — mostra o carimbo de data/hora do Engine antes de cada linha.
-- **stdout** e **stderr** — mostra ou esconde cada fluxo.
+- **Exibir** — um menu para ligar **Carimbos de data/hora** e mostrar ou ocultar **stdout** e **stderr**. O botão dele conta os fluxos ocultos, para que uma visão filtrada não passe despercebida.
 - **Acompanhar** — continua rolando até a linha mais nova. As novas linhas continuam chegando mesmo quando está desativado.
 - **Localizar nos logs** — destaca as correspondências. Pressione <kbd>Enter</kbd> para a próxima correspondência e <kbd>Shift</kbd>+<kbd>Enter</kbd> para a anterior.
 - **Limpar** esvazia a visualização; **Baixar logs** salva o que você carregou como um arquivo de texto, até as últimas 100 000 linhas.
@@ -84,8 +83,8 @@ Quando o contêiner para, o log termina com _— fim dos logs —_.
 **Detalhes** resume o contêiner em cartões: estado e código de saída, comando, política de reinício, verificações de integridade, ambiente, montagens, portas, redes e rótulos. **JSON bruto** mostra o documento de inspeção completo do Engine.
 
 <Aside type="caution">
-  As variáveis de ambiente são mostradas em texto claro, como o Engine as armazena. Tenha isso em
-  mente antes de compartilhar a sua tela.
+  Os valores do ambiente aparecem como pontos até você escolher **Mostrar valores**. **JSON bruto**
+  mostra-os às claras, como o Engine os guarda: lembre-se disso antes de compartilhar a tela.
 </Aside>
 
 ### Integridade
@@ -133,17 +132,17 @@ Os processos rodando no contêiner, como `ps aux` os mostra, atualizados a cada 
 
 **Executar contêiner** na página Contêineres — ou o botão ▶ ao lado de uma imagem — abre **Executar um contêiner**:
 
-| Campo                                            | Observações                                                                                                                                                                 |
-| ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Imagem**                                       | Obrigatório. Sugere as imagens do host. Baixada antes se o host não a tiver, com o [login de registro](/docs/guides/settings/#registros) guardado.                          |
-| **Nome**                                         | Opcional; o Engine gera um se estiver vazio.                                                                                                                                |
-| **Comando**                                      | Substitui o comando padrão da imagem (não o entrypoint dela). Coloque os argumentos entre aspas como em um shell.                                                           |
-| **Portas**                                       | **Porta do host** → **Porta do contêiner**, `tcp` ou `udp`. Deixe a porta do host vazia para o Engine escolher uma livre. As portas são publicadas em todas as interfaces.  |
-| **Volumes**                                      | Um nome de volume ou um `/host/path` absoluto, montado em um caminho absoluto do contêiner, opcionalmente **somente leitura**. Um nome que ainda não existe cria um volume. |
-| **Ambiente**                                     | Um `KEY=value` por linha. As linhas em branco e as que começam com `#` são ignoradas.                                                                                       |
-| **Rede**                                         | **Padrão (bridge)**, ou qualquer rede do host.                                                                                                                              |
-| **Reinício**                                     | **Nunca**, **Em caso de falha**, **A menos que seja parado** ou **Sempre**.                                                                                                 |
-| **Remover o contêiner quando ele for encerrado** | Como `docker run --rm`. Um contêiner removido ao ser encerrado não pode também reiniciar.                                                                                   |
+| Campo                                            | Observações                                                                                                                                                                           |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Imagem**                                       | Obrigatório. Sugere as imagens do host. Baixada antes se o host não a tiver, com o [login de registro](/docs/guides/settings/#registros) guardado.                                    |
+| **Nome**                                         | Opcional; o Engine gera um se estiver vazio.                                                                                                                                          |
+| **Portas**                                       | **Porta do host** → **Porta do contêiner**, `tcp` ou `udp`. Deixe a porta do host vazia para o Engine escolher uma livre. As portas são publicadas em todas as interfaces.            |
+| **Volumes**                                      | Um nome de volume ou um `/host/path` absoluto, montado em um caminho absoluto do contêiner, opcionalmente **somente leitura**. Um nome que ainda não existe cria um volume.           |
+| **Ambiente**                                     | Um `KEY=value` por linha. As linhas em branco e as que começam com `#` são ignoradas. Quando **Duplicar** ou **Editar** o preenche, os valores ficam ocultos até **Mostrar valores**. |
+| **Comando**                                      | Substitui o comando padrão da imagem (não o entrypoint dela). Coloque os argumentos entre aspas como em um shell.                                                                     |
+| **Rede**                                         | **Padrão (bridge)**, ou qualquer rede do host.                                                                                                                                        |
+| **Reinício**                                     | **Nunca**, **Em caso de falha**, **A menos que seja parado** ou **Sempre**.                                                                                                           |
+| **Remover o contêiner quando ele for encerrado** | Como `docker run --rm`. Um contêiner removido ao ser encerrado não pode também reiniciar.                                                                                             |
 
 Escolha **Executar**: o Homeport cria e inicia o contêiner, depois abre os logs dele.
 

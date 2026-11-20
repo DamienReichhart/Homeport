@@ -17,13 +17,13 @@ La pagina **Pod** compare nella barra laterale solo quando è selezionato un hos
 | **Reti**      | Le reti a cui è collegato il pod.                                                                                                       |
 | **Creato**    | Quando è stato creato.                                                                                                                  |
 
-Ogni riga ha l’azione adatta al suo stato (**Avvia** per un pod arrestato, **Arresta** per uno in esecuzione) e **Rimuovi**. Seleziona un pod per aprirne la pagina. L’elenco si aggiorna da solo man mano che i container del pod si avviano e si arrestano, che sia da Homeport o da un terminale.
+Ogni riga ha a portata di mano l’azione adatta al suo stato — **Avvia** per un pod arrestato, **Arresta** per uno in esecuzione — e tiene **Riavvia**, **Sospendi** e **Rimuovi** nel suo menu. Seleziona un pod per aprirne la pagina. L’elenco si aggiorna da solo man mano che i container del pod si avviano e si arrestano, che sia da Homeport o da un terminale.
 
 Nella pagina **Container**, un container che gira in un pod mostra il nome del pod accanto al proprio; seleziona il nome per aprire il pod.
 
 ## La pagina di un pod
 
-L’intestazione ha **Esegui container** e le azioni del pod: **Avvia**, **Arresta**, **Riavvia**, **Sospendi**, **Riprendi** e **Rimuovi**, secondo quanto consente il suo stato. Ognuna agisce su tutti i container del pod insieme, come fanno `podman pod start` e simili.
+L’intestazione ha **Esegui container**, poi **Arresta** (o **Avvia**, o **Riprendi**) e **Riavvia**; **Sospendi** e **Rimuovi** sono nel suo menu **⋯**. Ognuna agisce su tutti i container del pod insieme, come fanno `podman pod start` e simili.
 
 - **Container** elenca i container del pod, con il container infra per ultimo. Selezionane uno per aprire la sua pagina di container, con log, terminale e file.
 - **Impostazioni** mostra le porte che il pod pubblica, i namespace condivisi dai suoi container, le sue reti, il nome host e le etichette, e il comando `podman pod create` con cui è stato creato, quando Podman lo ha conservato.

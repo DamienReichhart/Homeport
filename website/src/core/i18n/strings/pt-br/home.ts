@@ -86,7 +86,7 @@ export default {
     'Veja quais contêineres usam o quê. Crie, conecte e desconecte, com uma exclusão que diz exatamente o que você está prestes a perder.',
   'home.features.board.title': 'Um quadro para todos os hosts',
   'home.features.board.body':
-    'Todos os contêineres de todos os hosts em uma tabela, filtrados e operados juntos. Cada host também em uma página: detalhes do Engine, uso de disco com uma limpeza em uma só caixa de diálogo e um fluxo ao vivo do que o Engine está fazendo.',
+    'Um bloco para cada host, Swarm e cluster, e antes de tudo o que precisa de você em todos eles. Todos os contêineres de todos os hosts em uma tabela, filtrados e operados juntos. Cada host também em uma página: detalhes do Engine, uso de disco com uma limpeza em uma só caixa de diálogo e um fluxo ao vivo do que o Engine está fazendo.',
   'home.features.keyboard.title': 'Teclado em primeiro lugar',
   'home.features.keyboard.body':
     'Uma paleta de comandos para ir a qualquer lugar, trocar de host ou executar um comando, e para encontrar qualquer contêiner, imagem ou volume em qualquer host que o tenha. Atalhos em todas as páginas, listados com ?.',
@@ -136,7 +136,7 @@ export default {
     'Guarde um arquivo compose e o ambiente dele no Homeport e implante-o em qualquer host — comece de um modelo, combine vários arquivos, escolha perfis; as variáveis são armazenadas criptografadas, nunca gravadas em disco. Ou vincule uma pasta de projeto neste computador: o Homeport edita os arquivos dela no lugar e implanta a partir dela, builds incluídas. Ou acompanhe uma branch de um repositório git, com uma chave de deploy ou um token: cada sincronização mostra os novos commits e o que eles mudam antes de implantar e, enquanto o Homeport está aberto, ele os verifica, implantando sozinho se você pedir. Cada reimplantação mostra antes o que muda, cada implantação é guardada para que você possa reverter, e Atualizar baixa imagens mais novas e reimplanta em um só passo. As stacks que alguém implantou à mão também aparecem: inicie, pare ou remova essas stacks, ou adote-as.',
   'home.stacks.link': 'Gerenciar stacks',
   'home.stacks.screenshot':
-    'A definição de uma stack gerenciada: o editor do compose.yaml, o ambiente dela e o botão Salvar e reimplantar.',
+    'A definição de uma stack gerenciada: o editor do compose.yaml, o ambiente dela e o botão Implantar.',
 
   // Home: security.
   'home.security.eyebrow': 'Segurança',

@@ -6,7 +6,7 @@ export default {
   'apply.nav': 'YAML 적용',
   'apply.title': 'YAML 적용',
   'apply.description':
-    'kubectl apply처럼, 매니페스트를 붙여 넣거나 열고 {cluster} 클러스터에서 무엇이 바뀌는지 확인한 다음 적용합니다.',
+    '매니페스트가 {cluster} 클러스터에서 무엇을 바꾸는지 미리 본 다음 적용합니다.',
   'apply.open': '파일 열기…',
   'apply.openTitle': '매니페스트 열기',
   'apply.openFailed': 'Homeport가 해당 파일을 읽지 못했습니다',

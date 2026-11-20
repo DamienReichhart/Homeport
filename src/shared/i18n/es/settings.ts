@@ -5,6 +5,7 @@ import type { Translation } from '../types';
 export default {
   'settings.nav': 'Ajustes',
   'settings.title': 'Ajustes',
+  'settings.index.label': 'Secciones de Ajustes',
   'settings.appearance.title': 'Apariencia',
   'settings.appearance.theme': 'Tema',
   'settings.theme.system': 'Igual que el sistema',
@@ -61,6 +62,7 @@ export default {
   'settings.sync.interval': 'Comprobar los repositorios cada',
   'settings.sync.minutes': 'minutos',
   'settings.data.title': 'Datos',
+  'settings.about.title': 'Acerca de Homeport',
   'settings.data.description': 'Lo que Homeport guarda en este equipo.',
   'settings.data.backup': 'Hacer copia de seguridad…',
   'settings.data.restore': 'Restaurar…',

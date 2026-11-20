@@ -7,7 +7,7 @@ export default {
   'clusterevents.title': 'События',
   'clusterevents.summary':
     '{count, plural, one {# событие} few {# события} many {# событий} other {# события}}',
-  'clusterevents.search': 'Поиск по причине, объекту или сообщению',
+  'clusterevents.search': 'Поиск событий',
   'clusterevents.empty': 'Событий нет. Kubernetes хранит их около часа.',
   'clusterevents.filter': 'Тип',
   'clusterevents.all': 'Все',

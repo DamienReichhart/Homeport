@@ -20,16 +20,16 @@ Homeport a son propre client SSH. Il se connecte au serveur et redirige un canal
 
 <Steps>
 
-1. Choisissez **Ajouter un hôte…** dans le sélecteur d’hôte et gardez **SSH** sélectionné.
+1. Choisissez **Ajouter un hôte ou un cluster**, sous la liste des hôtes dans la barre latérale, puis **Ajouter un hôte…**, et gardez **SSH** sélectionné.
 
 2. Remplissez la connexion :
 
    | Champ                        | Ce qu’il faut saisir                                                                                                                                                     |
    | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | **Nom**                      | Un nom que vous reconnaîtrez, comme `production`.                                                                                                                        |
    | **Serveur**                  | Le nom d’hôte ou l’adresse IP du serveur.                                                                                                                                |
    | **Port**                     | Le port SSH ; `22` par défaut.                                                                                                                                           |
    | **Utilisateur**              | Le compte avec lequel se connecter. Il doit avoir accès au socket Docker, en général via le groupe `docker`.                                                             |
+   | **Nom**                      | Un nom que vous reconnaîtrez, comme `production`. Laissé vide, l’hôte prend le nom de son serveur : `prod` pour `prod.example.com`.                                      |
    | **Chemin du socket distant** | Là où le moteur écoute sur le serveur : `/var/run/docker.sock` par défaut, `/run/user/<uid>/docker.sock` pour Docker rootless, ou `/run/podman/podman.sock` pour Podman. |
 
 3. Choisissez comment vous connecter sous **Authentification** (voir ci-dessous).
@@ -122,7 +122,7 @@ Pour une clé créée par Homeport, ou une clé que vous avez importée, la cart
 
 </Steps>
 
-Tant que la clé n’est pas autorisée, l’hôte affiche **Accès refusé** : _Le serveur SSH a refusé la connexion de deploy@server._, avec la commande qui autorise la clé de Homeport. Il vous attend plutôt que de réessayer.
+Tant que la clé n’est pas autorisée, l’hôte affiche **Accès refusé** : _Le serveur SSH a refusé la connexion de deploy@server._, avec la commande qui autorise la clé de Homeport. Il vous attend plutôt que de réessayer. Une fois l’hôte connecté, les commandes se replient ; **Afficher les commandes** les fait réapparaître.
 
 ## Quand la clé du serveur change
 

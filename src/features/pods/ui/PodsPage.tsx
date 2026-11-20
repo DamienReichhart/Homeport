@@ -4,6 +4,7 @@ import {
   ClusterGate,
   DeleteSelected,
   NamespacePicker,
+  podTone,
   stillListed,
   useMetrics,
   useNamespace,
@@ -15,6 +16,22 @@ import { ErrorMessage, PageHeader, SearchInput, Spinner } from '@/shared/ui';
 import { podQueries } from '../api/queries';
 import { PodsTable } from './PodsTable';
 import { t } from '@/shared/i18n';
+
+/** How many Pods are listed, and how many of them are failing, in red. */
+function Summary({ pods }: { pods: PodView[] }) {
+  const failing = pods.filter((p) => podTone(p.health) === 'danger').length;
+  return (
+    <>
+      {t('pods.summary', { count: pods.length })}
+      {failing > 0 && (
+        <>
+          {' · '}
+          <span className="text-destructive">{t('pods.failing', { count: failing })}</span>
+        </>
+      )}
+    </>
+  );
+}
 
 function PodsList({ cluster }: { cluster: ClusterView }) {
   const id = cluster.cluster.id;
@@ -30,7 +47,7 @@ function PodsList({ cluster }: { cluster: ClusterView }) {
     <div>
       <PageHeader
         title={t('pods.title')}
-        description={pods.data && t('pods.summary', { count: pods.data.length })}
+        description={pods.data && <Summary pods={pods.data} />}
         actions={<NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />}
       />
       <div className="mb-3 flex flex-wrap items-center gap-3">

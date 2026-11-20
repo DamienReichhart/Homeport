@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { ExternalLinkIcon, SquareIcon } from 'lucide-react';
+import { ArrowRightLeftIcon, CircleStopIcon, ExternalLinkIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { objectPath } from '@/core/cluster';
 import type { PortForward } from '@/shared/api';
@@ -12,6 +12,9 @@ import {
   PageHeader,
   Spinner,
   toastError,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   type ColumnDef,
 } from '@/shared/ui';
 import { useStopForward } from '../api/mutations';
@@ -57,23 +60,42 @@ function columns(stop: (id: number) => void): ColumnDef<PortForward, unknown>[] 
       id: 'connections',
       header: t('portforwards.column.connections'),
       accessorFn: (f) => f.connections,
+      cell: ({ row }) => <span className="tabular-nums">{row.original.connections}</span>,
     },
     {
       id: 'actions',
       header: '',
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => openUrl(`http://127.0.0.1:${row.original.localPort}`).catch(toastError)}
-          >
-            <ExternalLinkIcon /> {t('portforwards.open')}
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => stop(row.original.id)}>
-            <SquareIcon /> {t('portforwards.stop')}
-          </Button>
+        <div className="flex justify-end gap-0.5">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('portforwards.open')}
+                onClick={() =>
+                  openUrl(`http://127.0.0.1:${row.original.localPort}`).catch(toastError)
+                }
+              >
+                <ExternalLinkIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('portforwards.open')}</TooltipContent>
+          </Tooltip>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('portforwards.stop')}
+                onClick={() => stop(row.original.id)}
+              >
+                <CircleStopIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t('portforwards.stop')}</TooltipContent>
+          </Tooltip>
         </div>
       ),
     },
@@ -88,7 +110,9 @@ export function PortForwardsPage() {
     <div>
       <PageHeader
         title={t('portforwards.title')}
-        description={list.data && t('portforwards.summary', { count: list.data.length })}
+        description={
+          list.data?.length ? t('portforwards.summary', { count: list.data.length }) : undefined
+        }
       />
       {list.isPending ? (
         <Spinner />
@@ -96,8 +120,14 @@ export function PortForwardsPage() {
         <ErrorMessage error={list.error} onRetry={() => void list.refetch()} />
       ) : list.data.length === 0 ? (
         <EmptyState
+          icon={ArrowRightLeftIcon}
           title={t('portforwards.empty.title')}
           description={t('portforwards.empty.description')}
+          action={
+            <Button variant="outline" asChild>
+              <Link to="/services">{t('portforwards.empty.action')}</Link>
+            </Button>
+          }
         />
       ) : (
         <DataTable

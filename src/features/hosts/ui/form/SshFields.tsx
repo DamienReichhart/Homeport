@@ -10,20 +10,10 @@ import { t } from '@/shared/i18n';
 /** The PEM header of an OpenSSH key, shown as it appears in the file. */
 const PEM_OPENSSH_KEY = '-----BEGIN OPENSSH PRIVATE KEY-----';
 
-/** The server, user, socket and authentication of an SSH Host. */
-export function SshFields({
-  form,
-  set,
-  editing,
-  keychain,
-  keepHint,
-}: {
-  form: HostFormState;
-  set: <K extends keyof HostFormState>(key: K, value: HostFormState[K]) => void;
-  editing: boolean;
-  keychain: boolean;
-  keepHint?: string;
-}) {
+type Set = <K extends keyof HostFormState>(key: K, value: HostFormState[K]) => void;
+
+/** Where an SSH Host is: its server, port and user. */
+export function SshServerFields({ form, set }: { form: HostFormState; set: Set }) {
   return (
     <>
       <div className="grid grid-cols-[1fr_6rem] gap-3">
@@ -49,6 +39,26 @@ export function SshFields({
           placeholder="deploy"
         />
       </Field>
+    </>
+  );
+}
+
+/** How Homeport reaches the Engine of an SSH Host: its socket, the login and the bastions. */
+export function SshAccessFields({
+  form,
+  set,
+  editing,
+  keychain,
+  keepHint,
+}: {
+  form: HostFormState;
+  set: Set;
+  editing: boolean;
+  keychain: boolean;
+  keepHint?: string;
+}) {
+  return (
+    <>
       <Field
         label={t('hosts.ssh.socketPath')}
         hint={t('hosts.ssh.socketPathHint', { path: '/run/user/<uid>/docker.sock' })}

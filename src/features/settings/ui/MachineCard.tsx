@@ -33,8 +33,11 @@ export function MachineCard() {
             items={[
               [
                 t('settings.machine.keychain'),
-                <span className="inline-flex items-center gap-1.5">
-                  <StatusDot tone={capabilities.data.keychain ? 'success' : 'danger'} />
+                // Prose, so it wraps between words, beside its dot.
+                <span className="inline-flex items-start gap-1.5 break-normal">
+                  <span className="inline-flex h-5 items-center">
+                    <StatusDot tone={capabilities.data.keychain ? 'success' : 'danger'} />
+                  </span>
                   {capabilities.data.keychain
                     ? t('settings.machine.keychainAvailable')
                     : capabilities.data.keychainEntryMissing

@@ -9,7 +9,7 @@ export function UpdateBadge({ newer }: { newer: ServiceFreshness[] }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge variant="secondary" tabIndex={0} onClick={(e) => e.stopPropagation()}>
+        <Badge variant="warning" tabIndex={0} onClick={(e) => e.stopPropagation()}>
           <CircleArrowUpIcon /> {t('stacks.update.available')}
           <span className="sr-only">: {label}</span>
         </Badge>

@@ -1,5 +1,5 @@
 import { PlusIcon, ShipWheelIcon } from 'lucide-react';
-import { defineFeature } from '@/core/feature';
+import { defineFeature, splitRoutes } from '@/core/feature';
 import { AddClusterPage } from './ui/add/AddClusterPage';
 import { ClustersPage } from './ui/ClustersPage';
 import { ClusterDetailPage } from './ui/detail/ClusterDetailPage';
@@ -7,9 +7,8 @@ import { ClusterDetailPage } from './ui/detail/ClusterDetailPage';
 // No sidebar entry: the switcher leads here, as for Hosts.
 export const clustersFeature = defineFeature({
   routes: [
-    { path: 'clusters', Component: ClustersPage },
+    splitRoutes('clusters', ClustersPage, [{ path: ':clusterId', Component: ClusterDetailPage }]),
     { path: 'clusters/new', Component: AddClusterPage },
-    { path: 'clusters/:clusterId', Component: ClusterDetailPage },
   ],
   commands: [
     {

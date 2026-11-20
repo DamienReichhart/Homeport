@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': 'YAML लागू और संपादित करना',
   'docs/clusters/helm': 'Helm रिलीज़',
   'docs/clusters/nomad': 'Nomad क्लस्टर',
-  'docs/guides/overview': 'अवलोकन और इवेंट',
+  'docs/guides/overview': 'बोर्ड, अवलोकन और इवेंट',
   'docs/guides/containers': 'कंटेनर',
   'docs/guides/images': 'इमेज',
   'docs/guides/volumes-networks': 'वॉल्यूम और नेटवर्क',

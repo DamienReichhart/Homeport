@@ -20,9 +20,9 @@ Um sich stattdessen mit einer entfernten Engine zu verbinden, wählen Sie **Weit
 
 1. Wählen Sie, wie die Verbindung hergestellt wird: **SSH**, **TLS**, **TCP** oder **Lokaler Socket**. Für einen Server ist SSH die übliche Wahl.
 
-2. Geben Sie dem Host unter **Name** einen Namen, den Sie wiedererkennen, etwa `production`.
+2. Füllen Sie die Verbindungsdetails aus. Für SSH sind das **Server**, **Port**, **Benutzer** und, falls Docker nicht am Standardort liegt, **Entfernter Socket-Pfad**.
 
-3. Füllen Sie die Verbindungsdetails aus. Für SSH sind das **Server**, **Port**, **Benutzer** und, falls Docker nicht am Standardort liegt, **Entfernter Socket-Pfad**.
+3. Geben Sie dem Host unter **Name** einen Namen, den Sie wiedererkennen, etwa `production`. Bleibt er leer, wird der Host nach seinem Server benannt.
 
 4. Wählen Sie **Host hinzufügen**. Homeport öffnet die Seite des Hosts und beginnt mit dem Verbinden.
 
@@ -43,19 +43,19 @@ Sobald der Status zu **Verbunden** wechselt, sind Sie fertig.
 
 ## 2. Sich umsehen
 
-Die Seitenleiste hat eine Seite für jede Art von Ressource, und alle zeigen den Host, der im **Host-Umschalter** oben in der Seitenleiste gewählt ist:
+Die Seitenleiste beginnt mit **Suchen**, das die [Befehlspalette](/docs/guides/keyboard/#befehlspalette) öffnet, und dem **Board**. Darunter listet sie jeden Host mit seinem Status auf: Wählen Sie einen aus, und seine Seiten öffnen sich darunter, jede für diesen Host. **Einstellungen** steht ganz unten.
 
-| Seite             | Was sie zeigt                                                                          |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| **Übersicht**     | Eine Karte für jeden Host, Engine, Speicherbelegung und Ereignisse des gewählten Hosts |
-| **Board**         | Die Container aller verbundenen Hosts in einer Tabelle                                 |
-| **Container**     | Alle Container, nach Stack gruppiert, mit CPU und Arbeitsspeicher live                 |
-| **Images**        | Lokale Images, was sie verwendet, Pullen und Aufräumen                                 |
-| **Volumes**       | Volumes und die Container, die sie verwenden                                           |
-| **Netzwerke**     | Netzwerke, ihre Subnetze und angeschlossene Container                                  |
-| **Stacks**        | Compose-Projekte: verwaltete, verknüpfte, synchronisierte und externe                  |
-| **Ereignisse**    | Was die Engine gemeldet hat, 30 Tage lang aufbewahrt                                   |
-| **Einstellungen** | Design und Sprache, Registry-Anmeldungen, Sicherungen und was dieser Rechner hat       |
+| Seite             | Was sie zeigt                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------- |
+| **Board**         | Alle Hosts und Cluster auf einen Blick, was Sie braucht, und alle Container in einer Tabelle         |
+| **Übersicht**     | Der gewählte Host: Engine, Container, CPU, Arbeitsspeicher, Speicherbelegung und aktuelle Ereignisse |
+| **Container**     | Alle Container, nach Stack gruppiert, mit CPU und Arbeitsspeicher live                               |
+| **Images**        | Lokale Images, was sie verwendet, Pullen und Aufräumen                                               |
+| **Volumes**       | Volumes und die Container, die sie verwenden                                                         |
+| **Netzwerke**     | Netzwerke, ihre Subnetze und angeschlossene Container                                                |
+| **Stacks**        | Compose-Projekte: verwaltete, verknüpfte, synchronisierte und externe                                |
+| **Ereignisse**    | Was die Engine gemeldet hat, 30 Tage lang aufbewahrt                                                 |
+| **Einstellungen** | Design und Sprache, Registry-Anmeldungen, Sicherungen und was dieser Rechner hat                     |
 
 Homeport aktualisiert sich, sobald die Engine Änderungen meldet, sodass Sie nie eine Schaltfläche zum Aktualisieren brauchen – starten Sie einen Container in einem Terminal, und er erscheint sofort.
 
@@ -79,7 +79,7 @@ Zurück auf der Seite „Container“ ist der Port `8080:80/tcp` ein Link: Wähl
 
 ## 4. Weitere Hosts hinzufügen
 
-Fügen Sie mit **Host hinzufügen…** im Host-Umschalter so viele Hosts hinzu, wie Sie möchten. Die Übersicht zeigt sie alle zusammen; wählen Sie eine Karte aus, um zu diesem Host zu wechseln.
+Fügen Sie mit **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste so viele Hosts hinzu, wie Sie möchten. Das Board zeigt sie alle zusammen; wählen Sie einen Host in der Seitenleiste oder seine Kachel auf dem Board aus, um zu ihm zu wechseln.
 
 <Aside type="tip">
   Homeport merkt sich den Host, den Sie ausgewählt hatten, und verbindet sich beim Start wieder mit

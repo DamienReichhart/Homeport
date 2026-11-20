@@ -27,4 +27,5 @@ export default {
   'portforwards.dialog.loopback':
     'Only this computer can connect: the forward listens on 127.0.0.1 (and ::1).',
   'portforwards.dialog.submit': 'Forward',
+  'portforwards.empty.action': 'Go to Services',
 } as const;

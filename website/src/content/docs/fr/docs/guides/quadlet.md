@@ -41,7 +41,7 @@ Sur la page **Conteneurs**, un conteneur créé par une unité affiche le servic
 
 ## La page d’une unité
 
-- L’en-tête propose **Démarrer**, **Arrêter** et **Redémarrer**, **Modifier** et **Supprimer**.
+- L’en-tête a les actions du service de l’unité : **Démarrer**, **Arrêter** et **Redémarrer**. Celle qui ne peut pas servir dit pourquoi dans son infobulle.
 - **Service** montre l’unité systemd, s’il s’agit d’une unité système ou d’une unité utilisateur (`systemctl --user`), l’emplacement de son fichier sur l’hôte, et son application et son pod quand elle en a.
 - **Fichier de l’unité** montre le fichier tel que Podman le lit, avec coloration syntaxique.
 - **Conteneurs** liste les conteneurs qu’elle a créés, chacun ouvrant sa page de conteneur.
@@ -58,9 +58,9 @@ Podman écrit les fichiers là où vont les unités de son utilisateur et rechar
 
 ## Modifier et supprimer
 
-**Modifier** ouvre le fichier de l’unité. **Enregistrer** l’écrit sur place et recharge systemd ; les fichiers installés à côté restent. Un service en cours d’exécution garde ses anciens réglages jusqu’à ce que vous le **Redémarriez**. Si le fichier a changé sur l’hôte depuis que vous l’avez ouvert, **Enregistrer** est refusé et le dit, plutôt que d’écraser cette modification : rouvrez l’unité pour la voir, ou choisissez **Écraser**.
+**Modifier**, sur la carte **Fichier de l’unité**, ouvre le fichier de l’unité. **Enregistrer** l’écrit sur place et recharge systemd ; les fichiers installés à côté restent. Un service en cours d’exécution garde ses anciens réglages jusqu’à ce que vous le **Redémarriez**. Si le fichier a changé sur l’hôte depuis que vous l’avez ouvert, **Enregistrer** est refusé et le dit, plutôt que d’écraser cette modification : rouvrez l’unité pour la voir, ou choisissez **Écraser**.
 
-**Supprimer** efface le fichier de l’unité et recharge systemd. **Arrêter d’abord son service en cours d’exécution** est activé par défaut ; sans cela, Podman refuse de supprimer une unité en cours d’exécution. Les conteneurs, volumes et images créés par l’unité sont conservés.
+**Supprimer**, dans **Supprimer cette unité** au pied de la page de l’unité, efface le fichier de l’unité et recharge systemd. **Arrêter son service s’il est en cours d’exécution** est activé par défaut ; sans cela, Podman refuse de supprimer une unité en cours d’exécution. Les conteneurs, volumes et images créés par l’unité sont conservés.
 
 ## Ce que Homeport exécute sur l’hôte
 

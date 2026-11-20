@@ -20,16 +20,16 @@ Homeport has its own SSH client. It logs in to the server and forwards a channel
 
 <Steps>
 
-1. Choose **Add host…** in the Host switcher and keep **SSH** selected.
+1. Choose **Add host or cluster**, under the list of Hosts in the sidebar, then **Add host…**, and keep **SSH** selected.
 
 2. Fill in the connection:
 
    | Field                  | What to enter                                                                                                                                                          |
    | ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | **Name**               | A name you'll recognise, such as `production`.                                                                                                                         |
    | **Server**             | The server's host name or IP address.                                                                                                                                  |
    | **Port**               | The SSH port; `22` by default.                                                                                                                                         |
    | **User**               | The account to log in as. It needs access to the Docker socket, usually through the `docker` group.                                                                    |
+   | **Name**               | A name you'll recognise, such as `production`. Left empty, the Host is named after its server: `prod` for `prod.example.com`.                                          |
    | **Remote socket path** | Where the Engine listens on the server: `/var/run/docker.sock` by default, `/run/user/<uid>/docker.sock` for rootless Docker, or `/run/podman/podman.sock` for Podman. |
 
 3. Choose how to sign in under **Authentication** (see below).
@@ -122,7 +122,7 @@ For a key created by Homeport, or one you imported, the card **Authorize Homepor
 
 </Steps>
 
-Until the key is authorised, the Host shows **Access refused**: _The SSH server refused to let deploy@server log in._, with the command that authorises Homeport's key. It waits for you rather than retrying.
+Until the key is authorised, the Host shows **Access refused**: _The SSH server refused to let deploy@server log in._, with the command that authorises Homeport's key. It waits for you rather than retrying. Once the Host connects, the commands fold away; **Show commands** brings them back.
 
 ## When the server's key changes
 

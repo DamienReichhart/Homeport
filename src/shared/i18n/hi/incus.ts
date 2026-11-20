@@ -114,7 +114,6 @@ export default {
   'incus.images.cached': 'कैश की गई',
   'incus.images.cachedHint':
     'इंस्टेंस बनाने के लिए डाउनलोड की गई; जब कुछ समय तक कोई इसका इस्तेमाल नहीं करता, तो Incus इसे हटा देता है।',
-  'incus.images.aliasAdd': '{name} में alias जोड़ें',
   'incus.images.aliasRemove': 'alias {name} हटाएँ',
   'incus.images.aliasRemoved': 'alias {name} हटाया गया',
   'incus.images.alias.title': '{name} में alias जोड़ें',
@@ -122,7 +121,6 @@ export default {
   'incus.images.alias.add': 'Alias जोड़ें',
   'incus.images.refreshOne': '{name} को उसके सर्वर से रीफ़्रेश करें',
   'incus.images.refreshed': '{name} रीफ़्रेश की गई',
-  'incus.images.deleteOne': '{name} हटाएँ',
   'incus.images.deleted': '{name} हटाई गई',
   'incus.images.delete.title': 'इमेज {name} हटाएँ?',
   'incus.images.delete.description':
@@ -153,9 +151,14 @@ export default {
   'incus.profiles.delete.title': 'प्रोफ़ाइल {name} हटाएँ?',
   'incus.profiles.delete.description':
     'यह प्रोजेक्ट {project} से हटा दी जाती है। कोई इंस्टेंस इसका इस्तेमाल नहीं करता।',
+  'incus.profiles.delete.zone': 'यह प्रोफ़ाइल हटाएँ',
   'incus.profiles.backToList': 'प्रोफ़ाइल पर वापस जाएँ',
   'incus.profiles.noDescription': 'कोई विवरण नहीं',
   'incus.profiles.reload': 'फिर से लोड करें',
+  'incus.profiles.unsaved': 'बिना सहेजे बदलाव',
+  'incus.profiles.discard.title': 'अपने बदलाव छोड़ दें?',
+  'incus.profiles.discard.description':
+    'फिर से लोड करने पर {name} वैसा दिखेगा जैसा Incus में अभी है; यहाँ किए गए बदलाव खो जाएँगे।',
   'incus.profiles.saved': 'प्रोफ़ाइल {name} सहेजी गई',
   'incus.profiles.usedBy': 'इस्तेमालकर्ता',
   'incus.profiles.editHint':
@@ -222,6 +225,7 @@ export default {
   'incus.snapshots.column.size': 'आकार',
   'incus.snapshots.stateful': 'stateful',
   'incus.snapshots.restore': 'रीस्टोर करें',
+  'incus.snapshots.restoreOne': '{snapshot} रीस्टोर करें',
   'incus.snapshots.restore.title': '{name} को {snapshot} पर रीस्टोर करें?',
   'incus.snapshots.restore.description':
     '{time} के बाद से, जब {snapshot} लिया गया था, इसकी डिस्क पर जो कुछ बदला वह खो जाता है। चल रहा इंस्टेंस फिर से शुरू होता है।',
@@ -292,6 +296,7 @@ export default {
   'incus.networks.delete.title': 'नेटवर्क {name} हटाएँ?',
   'incus.networks.delete.description':
     'Incus ब्रिज और उसका DHCP व DNS हटा देता है। कोई इसका इस्तेमाल नहीं करता।',
+  'incus.networks.delete.zone': 'यह नेटवर्क हटाएँ',
   'incus.networks.deleted': 'नेटवर्क {name} हटाया गया',
   'incus.networks.gone': 'अब {name} नाम का कोई नेटवर्क नहीं है।',
   'incus.networks.backToList': 'नेटवर्क पर वापस जाएँ',

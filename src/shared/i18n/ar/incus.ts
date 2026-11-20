@@ -114,7 +114,6 @@ export default {
   'incus.images.column.uploaded': 'تاريخ الإضافة',
   'incus.images.cached': 'مخزّنة مؤقتًا',
   'incus.images.cachedHint': 'نُزّلت لإنشاء مثيل؛ يحذفها Incus بعد أن لا يستخدمها شيء لفترة.',
-  'incus.images.aliasAdd': 'إضافة اسم مستعار إلى {name}',
   'incus.images.aliasRemove': 'إزالة الاسم المستعار {name}',
   'incus.images.aliasRemoved': 'تمت إزالة الاسم المستعار {name}',
   'incus.images.alias.title': 'إضافة اسم مستعار إلى {name}',
@@ -122,7 +121,6 @@ export default {
   'incus.images.alias.add': 'إضافة اسم مستعار',
   'incus.images.refreshOne': 'تحديث {name} من خادمها',
   'incus.images.refreshed': 'تم تحديث {name}',
-  'incus.images.deleteOne': 'حذف {name}',
   'incus.images.deleted': 'تم حذف {name}',
   'incus.images.delete.title': 'هل تريد حذف الصورة {name}؟',
   'incus.images.delete.description':
@@ -152,9 +150,14 @@ export default {
   'incus.profiles.deleted': 'تم حذف ملف التعريف {name}',
   'incus.profiles.delete.title': 'هل تريد حذف ملف التعريف {name}؟',
   'incus.profiles.delete.description': 'يُحذف من المشروع {project}. لا يستخدمه أي مثيل.',
+  'incus.profiles.delete.zone': 'حذف ملف التعريف هذا',
   'incus.profiles.backToList': 'العودة إلى ملفات التعريف',
   'incus.profiles.noDescription': 'لا يوجد وصف',
   'incus.profiles.reload': 'إعادة التحميل',
+  'incus.profiles.unsaved': 'تغييرات غير محفوظة',
+  'incus.profiles.discard.title': 'هل تريد تجاهل تغييراتك؟',
+  'incus.profiles.discard.description':
+    'تعرض إعادة التحميل {name} كما هو في Incus الآن؛ وتضيع التغييرات التي أجريتها هنا.',
   'incus.profiles.saved': 'تم حفظ ملف التعريف {name}',
   'incus.profiles.usedBy': 'يستخدمه',
   'incus.profiles.editHint':
@@ -219,6 +222,7 @@ export default {
   'incus.snapshots.column.size': 'الحجم',
   'incus.snapshots.stateful': 'مع الحالة',
   'incus.snapshots.restore': 'استعادة',
+  'incus.snapshots.restoreOne': 'استعادة {snapshot}',
   'incus.snapshots.restore.title': 'هل تريد استعادة {name} إلى {snapshot}؟',
   'incus.snapshots.restore.description':
     'يُفقد كل ما تغيّر على قرصه منذ {time}، عندما التُقطت {snapshot}. يُعاد تشغيل المثيل إن كان قيد التشغيل.',
@@ -287,6 +291,7 @@ export default {
   'incus.networks.deleteOne': 'حذف {name}',
   'incus.networks.delete.title': 'هل تريد حذف الشبكة {name}؟',
   'incus.networks.delete.description': 'يزيل Incus الجسر وDHCP وDNS الخاصة به. لا يستخدمه شيء.',
+  'incus.networks.delete.zone': 'حذف هذه الشبكة',
   'incus.networks.deleted': 'تم حذف الشبكة {name}',
   'incus.networks.gone': 'لم تعد هناك شبكة باسم {name}.',
   'incus.networks.backToList': 'العودة إلى الشبكات',

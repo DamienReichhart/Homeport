@@ -37,4 +37,26 @@ export default {
   'board.remove.description':
     'Sie werden mit ihren anonymen Volumes gelöscht; benannte Volumes bleiben erhalten. Laufende werden zuerst gestoppt.',
   'board.remove.onHost': 'Auf {host}: {names}',
+  'board.containers': 'Container',
+  'board.needs.title': 'Braucht dich',
+  'board.needs.none':
+    'Nichts braucht dich. Jeder Host ist erreichbar und kein Container schlägt fehl.',
+  'board.needs.all': 'Alle {count} anzeigen',
+  'board.needs.fewer': 'Weniger anzeigen',
+  'board.needs.on': 'auf {name}',
+  'board.needs.hostUnreachable': 'Nicht erreichbar',
+  'board.needs.clusterUnreachable': 'Nicht erreichbar',
+  'board.needs.unhealthy': '{name} ist nicht gesund',
+  'board.needs.dead': '{name} ist tot',
+  'board.needs.restarting': '{name} startet ständig neu',
+  'board.needs.exited': '{name} wurde mit Code {code} beendet',
+  'board.needs.logs': 'Logs',
+  'board.needs.details': 'Details',
+  'board.needs.reconnect': 'Neu verbinden',
+  'board.needs.unready': '{name} ist nicht bereit',
+  'board.needs.podsReady': '{ready} von {desired} Pods bereit',
+  'board.needs.stackUpdates': 'Stack {name} hat neuere Images',
+  'board.needs.newerImages':
+    '{count, plural, one {# Container nutzt ein Image} other {# Container nutzen Images}}, von dem eine neuere Version veröffentlicht ist',
+  'board.needs.open': 'Öffnen',
 } satisfies Translation<typeof en>;

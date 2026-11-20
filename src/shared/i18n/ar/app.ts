@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'واجه Homeport مشكلة غير متوقعة في هذه الصفحة. عادةً ما تساعد إعادة التحميل؛ وإذا تكرر الأمر، فانسخ التقرير من «التفاصيل» إلى بلاغ (issue).',
   'app.crash.reload': 'إعادة التحميل',
-  'app.crash.backToOverview': 'العودة إلى النظرة العامة',
+  'app.crash.backToBoard': 'العودة إلى اللوحة',
   'app.shortcuts.title': 'اختصارات لوحة المفاتيح',
   'app.shortcuts.description':
     'الاختصارات التي تعمل هنا. لا تعمل مفاتيح مثل N و/ أثناء الكتابة في حقل.',
@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'المضيفات',
   'app.palette.actions': 'الإجراءات',
   'app.palette.switchTo': 'التبديل إلى {name}',
+  'app.nav.search': 'بحث',
+  'app.nav.hosts': 'المضيفات',
+  'app.nav.clusters': 'العناقيد',
+  'app.nav.target': '{name}، {status}',
+  'app.nav.running': '{running} من {total} حاويات قيد التشغيل',
+  'app.nav.add': 'إضافة مضيف أو عنقود',
 } satisfies Translation<typeof en>;

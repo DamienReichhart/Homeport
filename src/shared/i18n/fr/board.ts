@@ -37,4 +37,26 @@ export default {
   'board.remove.description':
     'Ils sont supprimés avec leurs volumes anonymes ; les volumes nommés sont conservés. Ceux en cours d’exécution sont d’abord arrêtés.',
   'board.remove.onHost': 'Sur {host} : {names}',
+  'board.containers': 'Conteneurs',
+  'board.needs.title': 'À traiter',
+  'board.needs.none':
+    'Rien à traiter. Tous les hôtes sont joignables et aucun conteneur n’est en échec.',
+  'board.needs.all': 'Tout afficher ({count})',
+  'board.needs.fewer': 'Afficher moins',
+  'board.needs.on': 'sur {name}',
+  'board.needs.hostUnreachable': 'Injoignable',
+  'board.needs.clusterUnreachable': 'Injoignable',
+  'board.needs.unhealthy': '{name} n’est pas en bonne santé',
+  'board.needs.dead': '{name} est mort',
+  'board.needs.restarting': '{name} redémarre sans cesse',
+  'board.needs.exited': '{name} s’est arrêté avec le code {code}',
+  'board.needs.logs': 'Journaux',
+  'board.needs.details': 'Détails',
+  'board.needs.reconnect': 'Reconnecter',
+  'board.needs.unready': '{name} n’est pas prêt',
+  'board.needs.podsReady': '{ready} pods prêts sur {desired}',
+  'board.needs.stackUpdates': 'La stack {name} a des images plus récentes',
+  'board.needs.newerImages':
+    '{count, plural, one {# conteneur utilise une image} other {# conteneurs utilisent des images}} dont une version plus récente est publiée',
+  'board.needs.open': 'Ouvrir',
 } satisfies Translation<typeof en>;

@@ -8,7 +8,6 @@ export default {
   'workloads.summary':
     '{count, plural, one {# рабочая нагрузка} few {# рабочие нагрузки} many {# рабочих нагрузок} other {# рабочей нагрузки}}',
   'workloads.search': 'Поиск рабочих нагрузок',
-  'workloads.empty': 'Здесь ничего нет.',
   'workloads.kind.deployment': 'Deployment',
   'workloads.kind.statefulSet': 'StatefulSet',
   'workloads.kind.daemonSet': 'DaemonSet',
@@ -71,20 +70,15 @@ export default {
   'workloads.scale.done':
     '{name} масштабирован до {replicas, plural, one {# Pod} few {# Pod} many {# Pod} other {# Pod}}',
   'workloads.scale.failed': 'Homeport не удалось масштабировать {name}',
-  'workloads.restart.title': 'Перезапустить {name}?',
-  'workloads.restart.description':
-    'Его Pod в пространстве имён {namespace} в {cluster} заменяются один за другим, как задаёт его стратегия развёртывания, — как kubectl rollout restart.',
-  'workloads.restart.confirm': 'Перезапустить',
   'workloads.restart.done': '{name} перезапускается',
   'workloads.restart.failed': 'Homeport не удалось перезапустить {name}',
-  'workloads.suspend.title': 'Приостановить {name}?',
-  'workloads.suspend.description':
-    'Он не запускает новые Job в пространстве имён {namespace} в {cluster}, пока вы его не возобновите. Уже работающие Job продолжаются.',
-  'workloads.suspend.confirm': 'Приостановить',
   'workloads.suspend.done': '{name} приостановлен',
   'workloads.suspend.failed': 'Homeport не удалось приостановить {name}',
   'workloads.resume.done': '{name} возобновлён',
   'workloads.resume.failed': 'Homeport не удалось возобновить {name}',
   'workloads.trigger.done': 'Запущен Job {job}',
   'workloads.trigger.failed': 'Homeport не удалось запустить Job из {name}',
+  'workloads.kindLabel': 'Тип рабочей нагрузки',
+  'workloads.emptyIn': 'В пространстве имён {namespace} нет {kind}.',
+  'workloads.emptyAll': 'Ни в одном пространстве имён нет {kind}.',
 } satisfies Translation<typeof en>;

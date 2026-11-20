@@ -12,21 +12,30 @@ export function SwarmStacksTab({ swarmId }: { swarmId: string }) {
   const stacks = useQuery(swarmFeatureQueries.stacks(swarmId));
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
+  const newStack = (className?: string) => (
+    <Button asChild className={className}>
+      <Link to={`/stacks/new?swarm=${encodeURIComponent(swarmId)}`}>
+        <PlusIcon /> {t('swarm.stacks.new')}
+      </Link>
+    </Button>
+  );
   if (stacks.isPending) return <Spinner />;
   if (stacks.error)
     return <ErrorMessage error={stacks.error} onRetry={() => void stacks.refetch()} />;
   return (
     <div className="grid gap-3">
-      <div className="flex flex-wrap items-center gap-2">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.stacks.search')} />
-        <Button asChild className="ms-auto">
-          <Link to={`/stacks/new?swarm=${encodeURIComponent(swarmId)}`}>
-            <PlusIcon /> {t('swarm.stacks.new')}
-          </Link>
-        </Button>
-      </div>
+      {stacks.data.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('swarm.stacks.search')} />
+          {newStack('ms-auto')}
+        </div>
+      )}
       {stacks.data.length === 0 ? (
-        <EmptyState title={t('swarm.stacks.empty')} description={t('swarm.stacks.emptyHint')} />
+        <EmptyState
+          title={t('swarm.stacks.empty')}
+          description={t('swarm.stacks.emptyHint')}
+          action={newStack()}
+        />
       ) : (
         <DataTable
           columns={swarmStackColumns()}

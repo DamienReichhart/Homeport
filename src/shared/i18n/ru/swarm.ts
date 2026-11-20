@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarm',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': 'Управляющий узел подключён',
   'swarm.unreachable': 'Нет подключённого управляющего узла',
   'swarm.hostCounts':
     '{managers, plural, one {# управляющий хост} few {# управляющих хоста} many {# управляющих хостов} other {# управляющего хоста}}, {workers, plural, one {# рабочий хост} few {# рабочих хоста} many {# рабочих хостов} other {# рабочего хоста}}',
@@ -56,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': 'Изменить метки',
   'swarm.nodes.action.tasks': 'Показать его задачи',
   'swarm.nodes.updated': '{name} обновлён',
+  'swarm.nodes.drain.title': 'Освободить {name}?',
+  'swarm.nodes.drain.description':
+    'Его задачи останавливаются здесь и переносятся на другие узлы; новые он не получает, пока его снова не активируют.',
+  'swarm.nodes.demote.title': 'Понизить {name} до рабочего?',
+  'swarm.nodes.demote.description':
+    'Он перестаёт управлять Swarm и продолжает выполнять свои задачи. Swarm работает, пока доступно большинство его менеджеров, так что оставьте их достаточно.',
   'swarm.nodes.removed': '{name} удалён из Swarm',
   'swarm.nodes.labels.title': 'Метки {name}',
   'swarm.nodes.labels.description':
@@ -73,22 +78,23 @@ export default {
 
   'swarm.services.search': 'Поиск сервисов',
   'swarm.services.empty': 'В этом Swarm не работает ни один сервис',
+  'swarm.services.emptyHint': 'Создайте сервис из образа или разверните стек в этом Swarm.',
   'swarm.services.column.name': 'Имя',
   'swarm.services.column.image': 'Образ',
-  'swarm.services.column.mode': 'Режим',
   'swarm.services.column.replicas': 'Работает',
   'swarm.services.column.ports': 'Порты',
   'swarm.services.column.stack': 'Стек',
   'swarm.services.column.update': 'Обновление',
   'swarm.services.mode.replicated': 'Реплицируемый',
-  'swarm.services.mode.replicatedCount': 'Реплицируемый ({count})',
   'swarm.services.mode.global': 'Глобальный',
   'swarm.services.mode.replicatedJob': 'Задание',
   'swarm.services.mode.globalJob': 'Глобальное задание',
   'swarm.services.actionsFor': 'Действия для {name}',
+  'swarm.services.logsOf': 'Журналы {name}',
   'swarm.services.action.logs': 'Журналы',
   'swarm.services.action.scale': 'Масштабировать',
   'swarm.services.action.rollback': 'Откатить',
+  'swarm.services.action.remove': 'Удалить сервис',
   'swarm.services.scaled':
     '{name} масштабирован до {count, plural, one {# реплики} few {# реплик} many {# реплик} other {# реплики}}',
   'swarm.services.rolledBack': '{name} откатывается',
@@ -128,6 +134,8 @@ export default {
   'swarm.objects.createConfig': 'Создать конфигурацию',
   'swarm.objects.secretNote':
     'Значение секрета передаётся в Swarm один раз, и прочитать его обратно не может ни Homeport, ни кто-либо ещё: его видят только сервисы, которым он выдан.',
+  'swarm.objects.configNote':
+    'Конфигурация — это файл, который Swarm передаёт сервисам, которым она выдана, например настройки веб-сервера.',
   'swarm.objects.noSecrets': 'Секретов нет',
   'swarm.objects.noConfigs': 'Конфигураций нет',
   'swarm.objects.column.name': 'Имя',
@@ -166,7 +174,6 @@ export default {
 
   'swarm.services.created': '{name} создан',
   'swarm.services.updating': '{name} переходит на новые параметры',
-  'swarm.service.update': 'обновление: {state}',
   'swarm.create.open': 'Создать сервис',
   'swarm.create.title': 'Создать сервис',
   'swarm.create.description':
@@ -237,7 +244,6 @@ export default {
   'swarm.membership.leave.last':
     'Это последний управляющий узел Swarm: Swarm исчезнет вместе с ним, со всеми сервисами, секретами и конфигурациями. Остальные узлы останутся в Swarm без управляющего узла.',
   'swarm.membership.leave.force': 'Принудительно: выйти, хотя это управляющий узел',
-  'swarm.membership.leave.typeName': 'Введите {name} для подтверждения',
   'swarm.membership.leave.submit': 'Выйти',
 
   'swarm.join.title': 'Команды присоединения',
@@ -269,6 +275,9 @@ export default {
   'swarm.stacks.removed': '{name} удалён',
   'swarm.stacks.removedPartly': '{name} удалён, кроме:',
   'swarm.stacks.remove.title': 'Удалить стек {name}?',
+  'swarm.stacks.remove.zone': 'Удалить этот стек',
+  'swarm.stacks.remove.submit': 'Удалить стек',
   'swarm.stacks.remove.description':
     'Удаляются его сервисы, затем сети, секреты и конфигурации, как делает docker stack rm. Его тома сохраняются на каждом узле.',
+  'swarm.nodes.column.host': 'Хост',
 } satisfies Translation<typeof en>;

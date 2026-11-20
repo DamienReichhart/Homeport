@@ -85,7 +85,8 @@ describe('Podman pods', () => {
     const calls: { cmd: string; args: Record<string, unknown> }[] = [];
     const user = setup(calls);
     renderApp('/podman-pods');
-    await user.click(await screen.findByRole('button', { name: 'Remove web' }));
+    await user.click(await screen.findByRole('button', { name: 'Actions for web' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Remove' }));
     const dialog = await screen.findByRole('alertdialog');
     expect(within(dialog).getByText(/its 2 containers are stopped/)).toBeInTheDocument();
     await user.click(within(dialog).getByRole('button', { name: 'Stop and remove' }));

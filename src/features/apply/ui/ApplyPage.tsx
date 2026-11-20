@@ -15,27 +15,28 @@ function ApplyYaml({ cluster }: { cluster: ClusterView }) {
       <PageHeader
         title={t('apply.title')}
         description={t('apply.description', { cluster: cluster.cluster.name })}
-        actions={<NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />}
+        actions={
+          <>
+            <NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />
+            <Button
+              variant="outline"
+              onClick={() =>
+                void openManifest()
+                  .then((text) => text !== null && setYaml(text))
+                  .catch((e: unknown) => toastError(e, t('apply.openFailed')))
+              }
+            >
+              <FileUpIcon /> {t('apply.open')}
+            </Button>
+          </>
+        }
       />
-      <div className="flex flex-wrap items-center gap-2">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() =>
-            void openManifest()
-              .then((text) => text !== null && setYaml(text))
-              .catch((e: unknown) => toastError(e, t('apply.openFailed')))
-          }
-        >
-          <FileUpIcon /> {t('apply.open')}
-        </Button>
-        <span className="text-muted-foreground text-sm">
-          {namespace
-            ? t('apply.defaultNamespace', { namespace })
-            : t('apply.defaultNamespaceCluster')}
-        </span>
-      </div>
       <YamlEditor value={yaml} onChange={setYaml} label={t('apply.editor')} height="24rem" />
+      <p className="text-muted-foreground text-sm">
+        {namespace
+          ? t('apply.defaultNamespace', { namespace })
+          : t('apply.defaultNamespaceCluster')}
+      </p>
       <ApplyFlow
         clusterId={id}
         clusterName={cluster.cluster.name}

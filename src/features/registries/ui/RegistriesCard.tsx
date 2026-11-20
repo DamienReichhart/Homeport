@@ -15,6 +15,9 @@ import {
   CardTitle,
   ErrorMessage,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirm,
 } from '@/shared/ui';
 import { useRemoveRegistry } from '../api/mutations';
@@ -68,31 +71,45 @@ export function RegistriesCard() {
                   <p className="truncate font-medium">{registryLabel(r.address)}</p>
                   <p className="text-muted-foreground truncate text-xs">{r.username}</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('registries.editOne', { registry: r.address })}
-                  disabled={!keychain}
-                  onClick={() => setEditing(r)}
-                >
-                  <PencilIcon />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('registries.removeOne', { registry: r.address })}
-                  onClick={() =>
-                    confirm({
-                      title: t('registries.remove.title', { registry: r.address }),
-                      description: t('registries.remove.description', { registry: r.address }),
-                      confirmLabel: t('common.remove'),
-                      destructive: true,
-                      onConfirm: () => remove.mutateAsync(r),
-                    })
-                  }
-                >
-                  <Trash2Icon />
-                </Button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={t('registries.editOne', { registry: r.address })}
+                      disabled={!keychain}
+                      onClick={() => setEditing(r)}
+                    >
+                      <PencilIcon />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t('registries.editOne', { registry: r.address })}
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={t('registries.removeOne', { registry: r.address })}
+                      onClick={() =>
+                        confirm({
+                          title: t('registries.remove.title', { registry: r.address }),
+                          description: t('registries.remove.description', { registry: r.address }),
+                          confirmLabel: t('common.remove'),
+                          destructive: true,
+                          onConfirm: () => remove.mutateAsync(r),
+                        })
+                      }
+                    >
+                      <Trash2Icon />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {t('registries.removeOne', { registry: r.address })}
+                  </TooltipContent>
+                </Tooltip>
               </li>
             ))}
           </ul>

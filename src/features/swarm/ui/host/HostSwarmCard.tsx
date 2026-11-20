@@ -62,7 +62,9 @@ export function HostSwarmCard({ view }: { view: HostView }) {
               <Button variant="outline" onClick={() => setOpen('join')}>
                 <LogInIcon /> {t('swarm.membership.join.open')}
               </Button>
-              <Button onClick={() => setOpen('init')}>{t('swarm.membership.init.open')}</Button>
+              <Button variant="outline" onClick={() => setOpen('init')}>
+                {t('swarm.membership.init.open')}
+              </Button>
             </>
           )}
         </CardAction>

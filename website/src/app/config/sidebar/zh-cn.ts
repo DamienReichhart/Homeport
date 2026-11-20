@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': '应用与编辑 YAML',
   'docs/clusters/helm': 'Helm Release',
   'docs/clusters/nomad': 'Nomad 集群',
-  'docs/guides/overview': '概览与事件',
+  'docs/guides/overview': '看板、概览与事件',
   'docs/guides/containers': '容器',
   'docs/guides/images': '镜像',
   'docs/guides/volumes-networks': '卷与网络',

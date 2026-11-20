@@ -89,6 +89,7 @@ export function PushDialog({
                 value={target}
                 onChange={(e) => setTarget(e.target.value)}
                 placeholder="registry.example.com/team/app:v2"
+                className="font-mono"
                 autoFocus
                 disabled={busy}
                 spellCheck={false}

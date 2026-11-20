@@ -30,7 +30,7 @@ export function CrashPage() {
           <Button variant="outline" onClick={() => window.location.reload()}>
             <RotateCwIcon /> {t('app.crash.reload')}
           </Button>
-          <Button onClick={() => navigate('/')}>{t('app.crash.backToOverview')}</Button>
+          <Button onClick={() => navigate('/')}>{t('app.crash.backToBoard')}</Button>
         </div>
       }
     />

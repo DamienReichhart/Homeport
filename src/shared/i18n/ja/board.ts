@@ -37,4 +37,26 @@ export default {
   'board.remove.description':
     '匿名ボリュームと一緒に削除されます。名前付きボリュームは残ります。実行中のものは先に停止されます。',
   'board.remove.onHost': '{host}: {names}',
+  'board.containers': 'コンテナ',
+  'board.needs.title': '要対応',
+  'board.needs.none':
+    '対応が必要なものはありません。すべてのホストに到達でき、失敗しているコンテナもありません。',
+  'board.needs.all': 'すべて表示（{count}）',
+  'board.needs.fewer': '表示を減らす',
+  'board.needs.on': '（{name}）',
+  'board.needs.hostUnreachable': '到達不能',
+  'board.needs.clusterUnreachable': '到達不能',
+  'board.needs.unhealthy': '{name} が異常です',
+  'board.needs.dead': '{name} が停止不能（dead）です',
+  'board.needs.restarting': '{name} が再起動を繰り返しています',
+  'board.needs.exited': '{name} がコード {code} で終了しました',
+  'board.needs.logs': 'ログ',
+  'board.needs.details': '詳細',
+  'board.needs.reconnect': '再接続',
+  'board.needs.unready': '{name} の準備ができていません',
+  'board.needs.podsReady': '{desired} 個中 {ready} 個の Pod が準備完了',
+  'board.needs.stackUpdates': 'スタック {name} に新しいイメージがあります',
+  'board.needs.newerImages':
+    '{count} 個のコンテナが、新しいバージョンが公開されたイメージを使っています',
+  'board.needs.open': '開く',
 } satisfies Translation<typeof en>;

@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { LinkedFiles, Stack } from '@/shared/api';
 import { baseCommands } from '@/test/fixtures';
@@ -53,6 +53,17 @@ describe('a Linked Stack’s definition', () => {
     expect(await screen.findByRole('tab', { name: 'compose.yaml' })).toBeInTheDocument();
     expect(screen.getByText(/Compose reads the folder’s .env/)).toBeInTheDocument();
     expect(screen.queryByLabelText('Environment')).toBeNull();
+  });
+
+  it('deploys like a Managed Stack, with saving one step away and forgetting set apart', async () => {
+    mock();
+    renderApp('/stacks/site');
+    await screen.findByRole('tab', { name: 'compose.yaml' });
+    expect(screen.getByRole('button', { name: 'Deploy' })).toBeInTheDocument();
+    // Nothing is edited yet, so there's nothing to save without deploying.
+    expect(screen.getByRole('button', { name: 'More ways to save' })).toBeDisabled();
+    const forget = screen.getByRole('region', { name: 'Forget this Stack' });
+    expect(within(forget).getByRole('button', { name: 'Forget' })).toBeInTheDocument();
   });
 
   it('says when the files changed outside Homeport', async () => {

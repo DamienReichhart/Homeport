@@ -66,7 +66,7 @@ Il certificato di Incus è autofirmato, quindi non c’è una CA con cui verific
 
 ## Progetti
 
-Incus conserva istanze, immagini, profili, volumi personalizzati e reti nei **progetti**. Le pagine mostrano un progetto alla volta, scelto sotto il selettore degli host, che elenca ciascuno con quante istanze e immagini contiene. Homeport ricorda la scelta per ogni host tra un avvio e l’altro. Finché non ne scegli uno, un host mostra `default`, o il suo unico progetto sul socket limitato. I pool di archiviazione appartengono all’intero server; i loro volumi vengono mostrati per il progetto selezionato.
+Incus conserva istanze, immagini, profili, volumi personalizzati e reti nei **progetti**. Le pagine mostrano un progetto alla volta, scelto sotto l’host selezionato nella barra laterale, che elenca ciascuno con quante istanze e immagini contiene. Homeport ricorda la scelta per ogni host tra un avvio e l’altro. Finché non ne scegli uno, un host mostra `default`, o il suo unico progetto sul socket limitato. I pool di archiviazione appartengono all’intero server; i loro volumi vengono mostrati per il progetto selezionato.
 
 ## Eventi
 

@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarm',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': '已连接一个管理节点',
   'swarm.unreachable': '未连接管理节点',
   'swarm.hostCounts':
     '{managers, plural, other {# 个管理节点主机}}，{workers, plural, other {# 个工作节点主机}}',
@@ -56,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': '编辑标签',
   'swarm.nodes.action.tasks': '显示其任务',
   'swarm.nodes.updated': '{name} 已更新',
+  'swarm.nodes.drain.title': '腾空 {name}？',
+  'swarm.nodes.drain.description':
+    '它上面的任务会在此停止并移到其他节点，在重新激活之前它不会接收新任务。',
+  'swarm.nodes.demote.title': '将 {name} 降级为工作节点？',
+  'swarm.nodes.demote.description':
+    '它不再管理此 Swarm，但会继续运行自己的任务。Swarm 需要大多数管理节点在线才能工作，请保留足够的管理节点。',
   'swarm.nodes.removed': '已将 {name} 从 Swarm 中删除',
   'swarm.nodes.labels.title': '{name} 的标签',
   'swarm.nodes.labels.description': 'node.labels.zone==a 这样的放置约束会按这些标签选择节点。',
@@ -71,22 +76,23 @@ export default {
 
   'swarm.services.search': '搜索服务',
   'swarm.services.empty': '此 Swarm 上没有运行任何服务',
+  'swarm.services.emptyHint': '从镜像创建一个服务，或向此 Swarm 部署一个堆栈。',
   'swarm.services.column.name': '名称',
   'swarm.services.column.image': '镜像',
-  'swarm.services.column.mode': '模式',
   'swarm.services.column.replicas': '运行中',
   'swarm.services.column.ports': '端口',
   'swarm.services.column.stack': '堆栈',
   'swarm.services.column.update': '更新',
   'swarm.services.mode.replicated': '副本',
-  'swarm.services.mode.replicatedCount': '副本 ({count})',
   'swarm.services.mode.global': '全局',
   'swarm.services.mode.replicatedJob': 'Job',
   'swarm.services.mode.globalJob': '全局 Job',
   'swarm.services.actionsFor': '{name} 的操作',
+  'swarm.services.logsOf': '{name} 的日志',
   'swarm.services.action.logs': '日志',
   'swarm.services.action.scale': '扩缩',
   'swarm.services.action.rollback': '回滚',
+  'swarm.services.action.remove': '删除服务',
   'swarm.services.scaled': '{name} 已扩缩到 {count, plural, other {# 个副本}}',
   'swarm.services.rolledBack': '{name} 正在回滚',
   'swarm.services.removed': '{name} 已删除',
@@ -125,6 +131,7 @@ export default {
   'swarm.objects.createConfig': '创建配置',
   'swarm.objects.secretNote':
     '机密的值只发送给 Swarm 一次，之后任何人（包括 Homeport）都无法读回：只有被授予它的服务才能看到。',
+  'swarm.objects.configNote': '配置是 Swarm 交给被授予它的服务的文件，例如 Web 服务器的设置。',
   'swarm.objects.noSecrets': '没有机密',
   'swarm.objects.noConfigs': '没有配置',
   'swarm.objects.column.name': '名称',
@@ -161,7 +168,6 @@ export default {
 
   'swarm.services.created': '{name} 已创建',
   'swarm.services.updating': '{name} 正在逐步切换到新设置',
-  'swarm.service.update': '更新 {state}',
   'swarm.create.open': '创建服务',
   'swarm.create.title': '创建服务',
   'swarm.create.description':
@@ -230,7 +236,6 @@ export default {
   'swarm.membership.leave.last':
     '这是该 Swarm 的最后一个管理节点：Swarm 及其所有服务、机密和配置都会随之消失。其他节点将留在一个没有管理节点的 Swarm 中。',
   'swarm.membership.leave.force': '强制：即使它是管理节点也退出',
-  'swarm.membership.leave.typeName': '输入 {name} 以确认',
   'swarm.membership.leave.submit': '退出',
 
   'swarm.join.title': '加入命令',
@@ -261,6 +266,9 @@ export default {
   'swarm.stacks.removed': '{name} 已删除',
   'swarm.stacks.removedPartly': '{name} 已删除，但以下内容除外：',
   'swarm.stacks.remove.title': '删除堆栈 {name}？',
+  'swarm.stacks.remove.zone': '删除此堆栈',
+  'swarm.stacks.remove.submit': '删除堆栈',
   'swarm.stacks.remove.description':
     '先删除其服务，再删除其网络、机密和配置，与 docker stack rm 相同。其卷会保留在各节点上。',
+  'swarm.nodes.column.host': '主机',
 } satisfies Translation<typeof en>;

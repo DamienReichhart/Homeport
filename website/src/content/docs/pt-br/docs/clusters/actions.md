@@ -5,11 +5,11 @@ description: Escale Deployments e StatefulSets, reinicie um rollout, suspenda e 
 
 As alterações do dia a dia em um cluster estão a um clique nas páginas dele, cada uma enviada à API do Kubernetes com as próprias credenciais do cluster, como o `kubectl` faria. As listas acompanham a alteração em tempo real pelo watch delas.
 
-Toda ação que remove ou substitui algo pede confirmação antes, e a confirmação indica o cluster, o namespace, o kind e o nome, para que uma alteração nunca caia no cluster ou no namespace errado por acidente.
+Toda ação que remove ou substitui algo pede confirmação antes, e a confirmação indica o cluster, o namespace, o kind e o nome, para que uma alteração nunca caia no cluster ou no namespace errado por acidente. Reiniciar e suspender não perguntam: fazem um rollout tranquilo e podem ser desfeitos, e um aviso diz o que aconteceu.
 
 ## Cargas de trabalho
 
-A página de uma carga de trabalho tem as ações no cabeçalho; em **Cargas de trabalho**, cada linha as tem no menu **⋯**.
+A página de uma carga de trabalho mantém **Escalar** e **Reiniciar** (ou **Executar agora** e **Suspender** num CronJob) no cabeçalho, e **Excluir** no menu **Mais ações**; em **Cargas de trabalho**, cada linha tem essas ações no menu **⋯**.
 
 | Ação               | Em                                    | Faz, como                                                          |
 | ------------------ | ------------------------------------- | ------------------------------------------------------------------ |
@@ -34,7 +34,7 @@ A página de uma carga de trabalho tem as ações no cabeçalho; em **Cargas de 
 
 ## Excluir
 
-A página de qualquer objeto — uma carga de trabalho, um Pod, um Service, um Ingress, um ConfigMap, um Secret, um Node ou qualquer objeto em **Recursos da API** — tem **Excluir** no cabeçalho. Em uma lista, marque linhas e **Excluir N** remove todas elas depois de uma única confirmação que as lista.
+Toda página de um objeto — uma carga de trabalho, um Pod, um Service, um Ingress, um ConfigMap, um Secret, um Node ou qualquer objeto em **Recursos da API** — tem **Excluir** no menu **Mais ações**. Numa lista, marque linhas e **Excluir N** remove todas depois de uma única confirmação que as lista.
 
 Os objetos são excluídos com propagação `Background`, como o `kubectl delete` faz: o objeto sai na hora e o coletor de lixo remove o que pertence a ele (os ReplicaSets e Pods de um Deployment, os Jobs de um CronJob).
 

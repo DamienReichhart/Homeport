@@ -1,4 +1,6 @@
 import {
+  CirclePlayIcon,
+  CircleStopIcon,
   CopyIcon,
   EllipsisVerticalIcon,
   FileArchiveIcon,
@@ -10,7 +12,6 @@ import {
   ScrollTextIcon,
   SlidersHorizontalIcon,
   SkullIcon,
-  SquareIcon,
   SquareTerminalIcon,
   Trash2Icon,
 } from 'lucide-react';
@@ -31,6 +32,7 @@ import type { ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../api/mutations';
 import type { ContainerDialogRequest } from './dialogs/ContainerDialogs';
 import { removeConfirmation } from './removeConfirmation';
+import { useHostName } from './useHostName';
 import { t } from '@/shared/i18n';
 
 /** Start/stop toggle plus the overflow menu of a container row. */
@@ -46,6 +48,7 @@ export function ContainerMenu({
   confirm: (options: ConfirmOptions) => void;
 }) {
   const navigate = useNavigate();
+  const host = useHostName(hostId);
   const { act, remove } = useContainerMutations(hostId);
   const ids = [container.id];
   const running = container.state === 'running';
@@ -53,6 +56,22 @@ export function ContainerMenu({
 
   return (
     <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
+      {(running || paused) && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t('containers.action.restart')}
+              disabled={act.isPending}
+              onClick={() => act.mutate({ ids, action: 'restart' })}
+            >
+              <RotateCwIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('containers.action.restart')}</TooltipContent>
+        </Tooltip>
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -64,7 +83,7 @@ export function ContainerMenu({
             disabled={act.isPending}
             onClick={() => act.mutate({ ids, action: running || paused ? 'stop' : 'start' })}
           >
-            {running || paused ? <SquareIcon /> : <PlayIcon />}
+            {running || paused ? <CircleStopIcon /> : <CirclePlayIcon />}
           </Button>
         </TooltipTrigger>
         <TooltipContent>
@@ -140,7 +159,9 @@ export function ContainerMenu({
             variant="destructive"
             onSelect={() =>
               confirm(
-                removeConfirmation([container], () => remove.mutateAsync({ ids, volumes: true })),
+                removeConfirmation([container], host, () =>
+                  remove.mutateAsync({ ids, volumes: true }),
+                ),
               )
             }
           >

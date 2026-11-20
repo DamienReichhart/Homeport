@@ -27,21 +27,25 @@ export default {
   'images.column.status': 'Состояние',
   'images.moreTags':
     '{count, plural, one {ещё # тег} few {ещё # тега} many {ещё # тегов} other {ещё # тега}}',
-  'images.inUse': 'Используется · {count}',
+  'images.inUse':
+    'Используется {count, plural, one {# контейнером} few {# контейнерами} many {# контейнерами} other {# контейнера}}',
   'images.unused': 'Не используется',
+  'images.newer': 'Новая версия',
   'images.runOne': 'Запустить {name}',
+  'images.moreActionsFor': 'Другие действия для {name}',
   'images.action.inspect': 'Просмотреть',
   'images.action.tag': 'Добавить тег',
   'images.action.push': 'Отправить',
   'images.action.save': 'Сохранить…',
+  'images.action.pullNewer': 'Скачать новую версию {reference}',
 
-  'images.remove.title': 'Удалить {name}?',
+  'images.remove.title': 'Удалить {name} с {host}?',
   'images.remove.everyName':
     'Будут удалены все имена образа ({names}) и его слои, которые больше ничем не используются.',
   'images.remove.description':
     'Образ и слои, которые не использует ни один другой образ, будут удалены. Позже его можно скачать снова.',
-  'images.prune.allTitle': 'Удалить все неиспользуемые образы?',
-  'images.prune.danglingTitle': 'Удалить висячие образы?',
+  'images.prune.allTitle': 'Удалить все неиспользуемые образы на {host}?',
+  'images.prune.danglingTitle': 'Удалить висячие образы на {host}?',
   'images.prune.allDescription':
     'Удаляются все образы, которые не использует ни один контейнер, включая образы с тегами.',
   'images.prune.danglingDescription':
@@ -110,6 +114,7 @@ export default {
 
   'images.inspect.layers': 'Слои',
   'images.inspect.raw': 'Исходный JSON',
+  'images.inspect.names': 'Имена',
   'images.inspect.created': 'Создан',
   'images.inspect.instruction': 'Инструкция',
   'images.inspect.size': 'Размер',

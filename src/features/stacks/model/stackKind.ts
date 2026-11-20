@@ -9,10 +9,21 @@ export const KIND_LABEL: Record<StackKind, MessageKey> = {
   external: 'stacks.kind.external',
 };
 
-/** The badge of each kind: Homeport holds Managed definitions, points at Linked and Synced ones. */
+/** What each kind means, for the badge's tooltip. */
+export const KIND_HINT: Record<StackKind, MessageKey> = {
+  managed: 'stacks.kind.managedHint',
+  linked: 'stacks.kind.linkedHint',
+  synced: 'stacks.kind.syncedHint',
+  external: 'stacks.kind.externalHint',
+};
+
+/**
+ * The badge of each kind. A kind is a fact, not a state that needs anyone,
+ * so every badge is quiet (DESIGN.md): outline, and muted for External.
+ */
 export const KIND_BADGE: Record<StackKind, 'default' | 'secondary' | 'outline'> = {
-  managed: 'default',
-  linked: 'secondary',
-  synced: 'secondary',
-  external: 'outline',
+  managed: 'outline',
+  linked: 'outline',
+  synced: 'outline',
+  external: 'secondary',
 };

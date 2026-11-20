@@ -3,20 +3,20 @@ title: Instancias
 description: Ejecuta contenedores de sistema y máquinas virtuales de Incus; abre su consola y un terminal en ellos; crea y restaura instantáneas; gestiona imágenes, perfiles, pools de almacenamiento y redes.
 ---
 
-Una **instancia** es lo que ejecuta un [host Incus](/docs/hosts/incus/): un **contenedor de sistema**, que arranca una distribución Linux completa compartiendo el kernel del host, o una **máquina virtual**, con un kernel propio. Cada página de esta sección muestra el proyecto elegido bajo el selector de hosts.
+Una **instancia** es lo que ejecuta un [host Incus](/docs/hosts/incus/): un **contenedor de sistema**, que arranca una distribución Linux completa compartiendo el kernel del host, o una **máquina virtual**, con un kernel propio. Cada página de esta sección muestra el proyecto elegido bajo el host seleccionado en la barra lateral.
 
 ## La página Instancias
 
 **Instancias** lista las instancias del proyecto con su tipo, estado, imagen, direcciones globales (IPv4 primero), memoria y antigüedad. Fíltralas por nombre, o muestra solo los contenedores o las máquinas virtuales.
 
-| Acción               | Qué hace Incus                                                                                                                                  |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Iniciar**          | La arranca.                                                                                                                                     |
-| **Detener**          | Pide a su sistema que se apague y le da 30 segundos; si no lo hace, se informa, con **Forzar detención** como salida.                           |
-| **Forzar detención** | La corta al instante, como desenchufarla.                                                                                                       |
-| **Reiniciar**        | La apaga de forma ordenada y la vuelve a arrancar.                                                                                              |
-| **Congelar**         | Pone en pausa todos sus procesos; **Descongelar** los reanuda.                                                                                  |
-| **Eliminar**         | Pide confirmación, nombrando las instantáneas que se eliminan con ella. Una instancia en ejecución solo se elimina si marcas **Detenla antes**. |
+| Acción               | Qué hace Incus                                                                                                                                                                           |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Iniciar**          | La arranca.                                                                                                                                                                              |
+| **Detener**          | Pide a su sistema que se apague y le da 30 segundos; si no lo hace, se informa, con **Forzar detención** como salida.                                                                    |
+| **Forzar detención** | La corta al instante, como desenchufarla.                                                                                                                                                |
+| **Reiniciar**        | La apaga de forma ordenada y la vuelve a arrancar.                                                                                                                                       |
+| **Congelar**         | Pone en pausa todos sus procesos; **Descongelar** los reanuda.                                                                                                                           |
+| **Eliminar**         | Primero pide que escribas el nombre de la instancia, y nombra las instantáneas que se eliminan con ella. Una instancia en ejecución solo se elimina cuando marcas **Detenerla primero**. |
 
 La lista se actualiza a partir de los eventos de Incus en un momento, sea quien sea quien hizo el cambio.
 
@@ -44,7 +44,7 @@ Un nombre ya en uso, una imagen que el servidor no tiene, un pool de almacenamie
 **Instantáneas** lista las instantáneas de la instancia con cuándo se creó cada una, cuándo caduca y si guarda el estado de ejecución.
 
 - **Crear instantánea** le pone un nombre (o deja que Incus la llame `snap0`, `snap1`…) y la conserva hasta que se elimine o durante un día, una semana o 30 días. Mientras la instancia está en ejecución, y cuando su ajuste `migration.stateful` lo permite, la instantánea puede incluir su memoria, de modo que una restauración continúa donde estaba.
-- **Restaurar** devuelve la instancia a como estaba cuando se creó la instantánea. Se pierde todo lo que cambió desde entonces, y una instancia en ejecución se reinicia, así que Homeport pide confirmación.
+- **Restaurar** devuelve la instancia al estado en que estaba cuando se tomó la instantánea. Se pierde todo lo que cambió desde entonces, y una instancia en ejecución se reinicia, así que Homeport te pide antes que escribas el nombre de la instancia.
 - **Eliminar** borra una instantánea, tras pedir confirmación; la instancia se queda como está.
 
 ## Imágenes
@@ -60,13 +60,13 @@ Un nombre ya en uso, una imagen que el servidor no tiene, un pool de almacenamie
 
 **Perfiles** lista los perfiles del proyecto con cuántas claves y dispositivos establece cada uno y las instancias que lo usan. La página de un perfil edita su descripción, su configuración y sus dispositivos como YAML, como hace `incus profile edit`, y enlaza las instancias que lo usan. **Guardar** aplica los cambios a esas instancias, como hace Incus. Si alguien cambió el perfil desde que la página lo cargó, el guardado se rechaza en lugar de sobrescribir sus cambios: elige **Volver a cargar** y vuelve a hacer tus cambios.
 
-**Nuevo perfil** crea uno vacío y lo abre. `default`, y los perfiles que usan las instancias, no se pueden eliminar.
+**Nuevo perfil** crea uno vacío y lo abre. `default`, y los perfiles que usan las instancias, no se pueden eliminar. La página de un perfil tiene **Eliminar** en una sección al pie, desactivado con el motivo mientras algo usa el perfil.
 
 ## Almacenamiento
 
 **Almacenamiento** muestra cada pool de almacenamiento con su driver y cuánto está lleno, y los volúmenes del pool seleccionado en el proyecto: los propios de las instancias y de las imágenes, y los personalizados, con su contenido, su tamaño y qué los usa.
 
-**Nuevo volumen** crea un volumen personalizado, un sistema de archivos o un dispositivo de bloques, de un tamaño dado o del tamaño por defecto del pool, para conectarlo a instancias y guardar datos que las sobrevivan (`incus storage volume attach`). Un volumen personalizado se puede eliminar cuando nada lo usa. Los pools en sí se crean con `incus storage create`.
+**Nuevo volumen** crea un volumen personalizado, un sistema de archivos o un dispositivo de bloques, de un tamaño dado o del tamaño por defecto del pool, para conectarlo a instancias y guardar datos que las sobrevivan (`incus storage volume attach`). Un volumen personalizado se puede eliminar cuando nada lo usa. Los pools en sí se crean con `incus storage create`. Eliminar uno pide antes que escribas su nombre.
 
 ## Redes
 

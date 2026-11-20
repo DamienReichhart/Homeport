@@ -53,16 +53,16 @@ describe('app', () => {
         return { images: line, containers: line, volumes: line, buildCache: line, partial: false };
       },
       hosts_events: () => [],
+      containers_list: () => [],
       usage_subscribe: () => 1,
       stream_cancel: () => null,
     }),
   );
 
-  it('shows each host with its live numbers on the overview', async () => {
+  it('shows each host with its live numbers on the Board', async () => {
     renderApp('/');
     expect(await screen.findByText('2')).toBeInTheDocument();
     expect(screen.getByText(/of 8 CPUs/)).toBeInTheDocument();
-    expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);
   });
 
   it.each([

@@ -5,7 +5,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { SwarmGate } from '@/core/swarm';
 import {
   ComposeRunDialog,
-  KIND_BADGE,
   KIND_LABEL,
   RegistryAuthSwitch,
   STATE_LABEL,
@@ -23,6 +22,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  DangerZone,
   ErrorMessage,
   KeyValue,
   PageHeader,
@@ -36,6 +36,7 @@ import {
 } from '@/shared/ui';
 import { useLinkSwarmStack, useRemoveSwarmStack } from '../../api/mutations';
 import { swarmFeatureQueries } from '../../api/queries';
+import { kindBadge } from './swarmStackColumns';
 import { t } from '@/shared/i18n';
 
 function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
@@ -81,14 +82,19 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
               <ArrowLeftIcon className="rtl:-scale-x-100" />
             </Button>
             {stack.name}
-            <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>
+            <Badge variant={kindBadge(stack.kind)}>{t(KIND_LABEL[stack.kind])}</Badge>
             <Badge variant="outline">{t('swarm.badge')}</Badge>
           </span>
         }
         description={
           <span className="flex items-center gap-1.5">
-            <StatusDot tone={STATE_TONE[stack.state]} /> {t(STATE_LABEL[stack.state])}
-            {stack.total > 0 &&
+            <StatusDot tone={STATE_TONE[stack.state]} />
+            {/* Running says itself in the count; other states name themselves first. */}
+            {stack.state === 'running' && stack.total > 0
+              ? t('stacks.detail.running', { running: stack.running, total: stack.total })
+              : t(STATE_LABEL[stack.state])}
+            {stack.state !== 'running' &&
+              stack.total > 0 &&
               ` · ${t('stacks.detail.running', { running: stack.running, total: stack.total })}`}
           </span>
         }
@@ -122,22 +128,6 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
                 >
                   {t('swarm.stacks.adopt')}
                 </Link>
-              </Button>
-            )}
-            {stack.state !== 'notDeployed' && (
-              <Button
-                variant="outline"
-                onClick={() =>
-                  confirm({
-                    title: t('swarm.stacks.remove.title', { name: stack.name }),
-                    description: t('swarm.stacks.remove.description'),
-                    confirmLabel: t('common.remove'),
-                    destructive: true,
-                    action: () => remove.mutateAsync(stack.name),
-                  })
-                }
-              >
-                <Trash2Icon /> {t('common.remove')}
               </Button>
             )}
           </>
@@ -221,6 +211,28 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
           </TabsContent>
         )}
       </Tabs>
+      {stack.state !== 'notDeployed' && (
+        <DangerZone
+          title={t('swarm.stacks.remove.zone')}
+          description={t('swarm.stacks.remove.description')}
+          action={
+            <Button
+              variant="destructive"
+              onClick={() =>
+                confirm({
+                  title: t('swarm.stacks.remove.title', { name: stack.name }),
+                  description: t('swarm.stacks.remove.description'),
+                  confirmLabel: t('swarm.stacks.remove.submit'),
+                  destructive: true,
+                  action: () => remove.mutateAsync(stack.name),
+                })
+              }
+            >
+              <Trash2Icon /> {t('swarm.stacks.remove.submit')}
+            </Button>
+          }
+        />
+      )}
       <ComposeRunDialog owner={owner} job={job} onClose={() => setJob(null)} />
       {dialog}
     </div>

@@ -3,10 +3,10 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { age, ClusterGate, kindPath, ResourceList, useNamespace } from '@/core/cluster';
 import type { ClusterView, EventView } from '@/shared/api';
-import { Badge, ToggleGroup, ToggleGroupItem, type ColumnDef } from '@/shared/ui';
+import { Badge, Tabs, TabsList, TabsTrigger, type ColumnDef } from '@/shared/ui';
 import { clusterEventQueries } from '../api/queries';
 import { byType, type EventType } from '../model/filter';
-import { t } from '@/shared/i18n';
+import { t, type MessageKey } from '@/shared/i18n';
 
 function columns(showNamespace: boolean): ColumnDef<EventView, unknown>[] {
   return [
@@ -14,13 +14,24 @@ function columns(showNamespace: boolean): ColumnDef<EventView, unknown>[] {
       id: 'type',
       header: t('clusterevents.column.type'),
       accessorFn: (e) => e.type,
+      // A warning is worth a look; a normal Event is the Cluster doing its job.
+      cell: ({ row }) =>
+        row.original.type === 'Warning' ? (
+          <Badge variant="warning">{row.original.type}</Badge>
+        ) : (
+          <span className="text-muted-foreground text-xs">{row.original.type}</span>
+        ),
+    },
+    {
+      id: 'reason',
+      header: t('clusterevents.column.reason'),
+      accessorFn: (e) => e.reason,
       cell: ({ row }) => (
-        <Badge variant={row.original.type === 'Warning' ? 'destructive' : 'secondary'}>
-          {row.original.type}
-        </Badge>
+        <span className="inline-block max-w-48 truncate align-bottom" title={row.original.reason}>
+          {row.original.reason}
+        </span>
       ),
     },
-    { id: 'reason', header: t('clusterevents.column.reason'), accessorFn: (e) => e.reason },
     {
       id: 'object',
       header: t('clusterevents.column.object'),
@@ -29,7 +40,11 @@ function columns(showNamespace: boolean): ColumnDef<EventView, unknown>[] {
         const o = row.original.object;
         const to = kindPath(o.kind, o.namespace, o.name);
         const label = `${o.kind}/${o.name}`;
-        return to ? <Link to={to}>{label}</Link> : label;
+        return (
+          <span className="inline-block max-w-52 truncate align-bottom" title={label}>
+            {to ? <Link to={to}>{label}</Link> : label}
+          </span>
+        );
       },
     },
     ...(showNamespace
@@ -45,9 +60,18 @@ function columns(showNamespace: boolean): ColumnDef<EventView, unknown>[] {
       id: 'message',
       header: t('clusterevents.column.message'),
       accessorFn: (e) => e.message,
-      cell: ({ row }) => <span className="text-sm break-words">{row.original.message}</span>,
+      cell: ({ row }) => (
+        <span className="inline-block max-w-sm truncate align-bottom" title={row.original.message}>
+          {row.original.message}
+        </span>
+      ),
     },
-    { id: 'count', header: t('clusterevents.column.count'), accessorFn: (e) => e.count },
+    {
+      id: 'count',
+      header: t('clusterevents.column.count'),
+      accessorFn: (e) => e.count,
+      cell: ({ row }) => <span className="tabular-nums">{row.original.count}</span>,
+    },
     {
       id: 'last',
       header: t('clusterevents.column.lastSeen'),
@@ -56,6 +80,12 @@ function columns(showNamespace: boolean): ColumnDef<EventView, unknown>[] {
     },
   ];
 }
+
+const LABELS: Record<EventType, MessageKey> = {
+  all: 'clusterevents.all',
+  Warning: 'clusterevents.warnings',
+  Normal: 'clusterevents.normal',
+};
 
 function ClusterEvents({ cluster }: { cluster: ClusterView }) {
   const [namespace, setNamespace] = useNamespace(cluster);
@@ -76,17 +106,20 @@ function ClusterEvents({ cluster }: { cluster: ClusterView }) {
       search={t('clusterevents.search')}
       empty={t('clusterevents.empty')}
       toolbar={
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={type}
-          onValueChange={(v) => v && setType(v as EventType)}
-          aria-label={t('clusterevents.filter')}
-        >
-          <ToggleGroupItem value="all">{t('clusterevents.all')}</ToggleGroupItem>
-          <ToggleGroupItem value="Warning">{t('clusterevents.warnings')}</ToggleGroupItem>
-          <ToggleGroupItem value="Normal">{t('clusterevents.normal')}</ToggleGroupItem>
-        </ToggleGroup>
+        <Tabs value={type} onValueChange={(v) => setType(v as EventType)}>
+          <TabsList variant="default" aria-label={t('clusterevents.filter')}>
+            {(['all', 'Warning', 'Normal'] as const).map((value) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                // A tab that switches what one view shows, without a panel of its own.
+                aria-controls={undefined}
+              >
+                {t(LABELS[value])}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </Tabs>
       }
     />
   );

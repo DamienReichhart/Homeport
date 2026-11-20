@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'Хосты',
   'hosts.description': 'Docker Engine, к которым подключается Homeport.',
   'hosts.add': 'Добавить хост',
-  'hosts.empty': 'Хостов пока нет.',
+  'hosts.empty': 'Хостов пока нет',
+  'hosts.emptyDescription':
+    'Добавьте движок Docker, Podman, containerd или Incus: на этом компьютере или на сервере по SSH или TLS.',
   'hosts.column.name': 'Имя',
   'hosts.column.type': 'Тип',
   'hosts.column.address': 'Адрес',
@@ -14,19 +16,19 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'Хост сохранён',
   'hosts.notFound': 'Этого хоста больше не существует.',
-  'hosts.addPage.description': 'Подключите Homeport к Docker Engine.',
-  'hosts.switcher.label': 'Хост',
-  'hosts.switcher.placeholder': 'Нет хоста',
+  'hosts.addPage.description':
+    'Добавьте движок, найденный на этом компьютере, импортируйте его или введите подключение ниже.',
+  'hosts.addPage.manual': 'Ввести подключение',
   'hosts.switcher.add': 'Добавить хост…',
   'hosts.switcher.manage': 'Управление хостами',
-  'hosts.switcher.hosts': 'Хосты',
-  'hosts.switcher.clusters': 'Кластеры',
   'hosts.switcher.addCluster': 'Добавить кластер…',
   'hosts.switcher.manageClusters': 'Управление кластерами',
   'hosts.switcher.whyUnusable': 'Почему {name} нельзя использовать',
   'hosts.detail.enabled': 'Включён',
   'hosts.detail.reconnect': 'Переподключиться',
   'hosts.connection.title': 'Подключение',
+  'hosts.connection.save': 'Сохранить изменения',
+  'hosts.connection.discard': 'Отменить изменения',
   'hosts.remove.title': 'Удалить хост',
   'hosts.remove.description':
     'Homeport забудет этот хост, его учётные данные и определения его управляемых стеков. Ничего из работающего на хосте не затрагивается.',
@@ -34,6 +36,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Удаляются сохранённое подключение, SSH-ключ или сертификаты и определения compose его управляемых стеков. Контейнеры, образы и тома на хосте остаются как есть.',
   'hosts.sshSetup.title': 'Авторизуйте Homeport на сервере',
+  'hosts.sshSetup.show': 'Показать команды',
+  'hosts.sshSetup.hide': 'Скрыть команды',
   'hosts.sshSetup.description':
     'Выполните эти команды на <mono>{server}</mono> от имени пользователя SSH, затем переподключитесь.',
   'hosts.sshSetup.descriptionBastions':
@@ -68,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'Локальный сокет',
   'hosts.form.keepHint': 'Оставьте пустым, чтобы сохранить текущее значение.',
+  'hosts.form.connectOver': 'Способ подключения',
   'hosts.form.name': 'Имя',
+  'hosts.form.nameHint': 'Оставьте пустым, чтобы назвать его {name}.',
   'hosts.form.engine': 'Движок',
   'hosts.form.engineHint':
-    'Совместимый с Docker — это Docker и Podman; Homeport различает их при подключении. К containerd подключаются через его сокет, здесь или по SSH; к Incus — также по HTTPS (TLS).',
+    'Совместимый с Docker — это Docker и Podman. К containerd подключаются через его сокет, здесь или по SSH; к Incus — также по HTTPS (TLS).',
   'hosts.form.socketOnly':
     '{engine} отвечает только на своём сокете: подключайтесь локально или по SSH.',
   'hosts.form.noPlainTcp':
@@ -113,7 +119,7 @@ export default {
   'hosts.ssh.auth.generated': 'Новый ключ для этого хоста',
   'hosts.ssh.auth.imported': 'Существующий ключ',
   'hosts.ssh.generated.editing':
-    'У этого хоста сохраняется его ключ. Создать ключ заново можно на странице хоста.',
+    'У этого хоста сохраняется его ключ. Заменить его можно кнопкой «Создать ключ заново» рядом с командами выше.',
   'hosts.ssh.generated.new':
     'Homeport создаст ключ Ed25519 для этого хоста и покажет команду, которая авторизует его на сервере.',
   'hosts.ssh.privateKey': 'Закрытый ключ',
@@ -179,7 +185,7 @@ export default {
   'hosts.bundle.confirmation': 'Парольная фраза ещё раз',
   'hosts.bundle.problem.short': 'Используйте не менее {min} символов.',
   'hosts.bundle.problem.mismatch': 'Парольные фразы не совпадают.',
-  'hosts.bundle.export.button': 'Экспортировать',
+  'hosts.bundle.export.button': 'Экспортировать хосты в файл…',
   'hosts.bundle.export.title': 'Экспорт хостов',
   'hosts.bundle.export.description':
     'Записывает выбранные хосты с их ключами, сертификатами и доверенными ключами серверов в один файл, зашифрованный парольной фразой. Импортируйте его на другом компьютере, чтобы пользоваться ими там.',
@@ -191,7 +197,7 @@ export default {
     '{count, plural, one {Экспортирован # хост} few {Экспортировано # хоста} many {Экспортировано # хостов} other {Экспортировано # хоста}}',
   'hosts.bundle.export.withoutSecrets':
     'Эти хосты экспортированы без учётных данных, которые на этом компьютере не удаётся открыть:',
-  'hosts.bundle.import.button': 'Импортировать',
+  'hosts.bundle.import.button': 'Импортировать хосты из файла…',
   'hosts.bundle.import.title': 'Импорт хостов из экспорта',
   'hosts.bundle.import.description':
     'Откройте файл, экспортированный из Homeport, с его парольной фразой, затем выберите хосты для добавления. Их учётные данные хранятся на этом компьютере в зашифрованном виде.',

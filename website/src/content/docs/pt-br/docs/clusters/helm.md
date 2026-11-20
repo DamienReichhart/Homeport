@@ -58,13 +58,13 @@ Valores, Notas, Manifesto e Recursos mostram a revisão atual; escolha uma anter
 
 ## Reverter
 
-Em **Histórico**, **Reverter para a revisão N** em qualquer revisão anterior pede confirmação antes, indicando as versões do chart e do app agora e depois, e então executa `helm rollback`: o helm restaura o chart e os valores dessa revisão como uma nova revisão, então uma reversão pode ela mesma ser revertida. Marque **Aguardar até que os recursos dela estejam prontos** para que o helm aguarde por eles.
+Em **Histórico**, **Reverter para a revisão N** em qualquer revisão anterior pede confirmação antes, indicando as versões do chart e do app agora e depois, e então executa `helm rollback`: o helm restaura o chart e os valores dessa revisão como uma nova revisão, então uma reversão pode ela mesma ser revertida. Marque **Aguardar até que os recursos dela estejam prontos** para que o helm aguarde por eles. Cada revisão anterior tem isso como um botão de ícone, e o histórico diz há quanto tempo cada uma foi feita, com a data ao passar o ponteiro.
 
 Uma release presa em **pendente** depois de uma instalação, atualização ou reversão interrompida fica bloqueada: o helm se recusa a alterá-la até que a operação termine. Revertê-la para a última revisão implantada a desbloqueia.
 
 ## Desinstalar
 
-**Desinstalar**, na página de uma release, indica a release, o Namespace e o cluster dela e lista os objetos que serão excluídos com ela, antes de o `helm uninstall` ser executado. Os objetos que um chart marca para manter (`helm.sh/resource-policy: keep`) e os PersistentVolumeClaims dos StatefulSets ficam no cluster. **Manter o histórico dela** deixa a release listada como `uninstalled`, para que possa ser revertida; sem isso, a release some da lista. **Aguardar até que os objetos dela sejam excluídos** faz o helm aguardar por eles.
+**Desinstalar**, no menu **Mais ações** de uma release, cita a release, o Namespace e o cluster dela e lista os objetos que serão excluídos com ela, e pede que você digite o nome da release antes de `helm uninstall` rodar. Os objetos que um chart marca para manter (`helm.sh/resource-policy: keep`) e os PersistentVolumeClaims dos StatefulSets ficam no cluster. **Manter o histórico dela** deixa a release listada como `uninstalled`, para que possa ser revertida; sem isso, a release some da lista. **Aguardar até que os objetos dela sejam excluídos** faz o helm aguardar por eles.
 
 ## Repositórios de charts
 

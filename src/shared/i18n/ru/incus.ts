@@ -115,7 +115,6 @@ export default {
   'incus.images.cached': 'в кеше',
   'incus.images.cachedHint':
     'Скачан для создания экземпляра; Incus удалит его, когда его какое-то время ничто не будет использовать.',
-  'incus.images.aliasAdd': 'Добавить псевдоним для {name}',
   'incus.images.aliasRemove': 'Удалить псевдоним {name}',
   'incus.images.aliasRemoved': 'Псевдоним {name} удалён',
   'incus.images.alias.title': 'Добавить псевдоним для {name}',
@@ -123,7 +122,6 @@ export default {
   'incus.images.alias.add': 'Добавить псевдоним',
   'incus.images.refreshOne': 'Обновить {name} с его сервера',
   'incus.images.refreshed': '{name} обновлён',
-  'incus.images.deleteOne': 'Удалить {name}',
   'incus.images.deleted': '{name} удалён',
   'incus.images.delete.title': 'Удалить образ {name}?',
   'incus.images.delete.description':
@@ -154,9 +152,14 @@ export default {
   'incus.profiles.delete.title': 'Удалить профиль {name}?',
   'incus.profiles.delete.description':
     'Он будет удалён из проекта {project}. Ни один экземпляр его не использует.',
+  'incus.profiles.delete.zone': 'Удалить этот профиль',
   'incus.profiles.backToList': 'Назад к профилям',
   'incus.profiles.noDescription': 'Без описания',
   'incus.profiles.reload': 'Перезагрузить',
+  'incus.profiles.unsaved': 'Несохранённые изменения',
+  'incus.profiles.discard.title': 'Отменить ваши изменения?',
+  'incus.profiles.discard.description':
+    'После перезагрузки {name} будет показан таким, какой он сейчас в Incus; ваши изменения здесь будут потеряны.',
   'incus.profiles.saved': 'Профиль {name} сохранён',
   'incus.profiles.usedBy': 'Используется',
   'incus.profiles.editHint':
@@ -224,6 +227,7 @@ export default {
   'incus.snapshots.column.size': 'Размер',
   'incus.snapshots.stateful': 'с состоянием',
   'incus.snapshots.restore': 'Восстановить',
+  'incus.snapshots.restoreOne': 'Восстановить {snapshot}',
   'incus.snapshots.restore.title': 'Восстановить {name} из {snapshot}?',
   'incus.snapshots.restore.description':
     'Всё, что изменилось на его диске с {time}, когда был сделан {snapshot}, будет потеряно. Работающий экземпляр перезапустится.',
@@ -295,6 +299,7 @@ export default {
   'incus.networks.delete.title': 'Удалить сеть {name}?',
   'incus.networks.delete.description':
     'Incus удалит мост вместе с его DHCP и DNS. Ничто его не использует.',
+  'incus.networks.delete.zone': 'Удалить эту сеть',
   'incus.networks.deleted': 'Сеть {name} удалена',
   'incus.networks.gone': 'Сети {name} больше нет.',
   'incus.networks.backToList': 'Назад к сетям',

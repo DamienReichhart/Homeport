@@ -34,11 +34,11 @@ Un host que pertenece a un Docker Swarm muestra **Manager de** o **Worker de** s
 
 ## Añadir, editar y quitar hosts
 
-- **Añade** un host con **Añadir host…** en el selector de hosts, en la parte superior de la barra lateral, o con **Añadir host** en el Resumen.
-- **Gestionar hosts**, en el selector de hosts, lista todos los hosts con su tipo, dirección y estado. Selecciona uno para abrir su página.
-- En la página de un host puedes cambiar sus datos de conexión y elegir **Guardar**; Homeport vuelve a conectarse con los nuevos ajustes. El tipo de conexión de un host no se puede cambiar: quítalo y vuelve a añadirlo.
+- **Añade** un host con **Añadir host o clúster**, bajo la lista de hosts de la barra lateral, y después **Añadir host…**.
+- **Gestionar hosts**, el icono de ajustes junto a **Hosts** en la barra lateral, abre la página Hosts: todos los hosts con su tipo, dirección y estado. Selecciona uno para abrir su página.
+- En la página de un host puedes cambiar sus datos de conexión y elegir **Guardar cambios**; Homeport vuelve a conectarse con los nuevos ajustes. El tipo de conexión de un host no se puede cambiar: quítalo y vuelve a añadirlo.
 - El interruptor **Activado** desconecta un host sin olvidarlo. Un host desactivado no vuelve a intentarlo hasta que lo reactivas.
-- **Quitar host** olvida el host, sus credenciales guardadas, las definiciones compose de sus stacks gestionados, sus stacks vinculados y el historial de despliegues de sus stacks. No se toca nada de lo que se ejecuta en el host: los contenedores, las imágenes y los volúmenes siguen como estaban, y las carpetas de los stacks vinculados también. Los stacks de un Swarm que gestiona el host pertenecen al Swarm y se conservan.
+- **Quitar host** olvida el host, sus credenciales guardadas, las definiciones compose de sus stacks gestionados, sus stacks vinculados y el historial de despliegues de sus stacks. No se toca nada de lo que se ejecuta en el host: los contenedores, las imágenes y los volúmenes siguen como estaban, y las carpetas de los stacks vinculados también. Los stacks de un Swarm que gestiona el host pertenecen al Swarm y se conservan. Como las definiciones se eliminan para siempre, Homeport te pide antes que escribas el nombre del host.
 
 Los nombres de host deben ser únicos, sin distinguir mayúsculas de minúsculas.
 
@@ -73,11 +73,11 @@ Un contexto cuyo nombre ya es el de un host se ofrece como `name (2)`.
 
 ## Pasar a otro equipo
 
-**Exportar**, en la página Hosts, guarda los hosts que elijas en un archivo protegido con una frase de contraseña; **Importar**, en la página Hosts del otro equipo, lo abre y añade los hosts que elijas, listos para conectarse. Un host cuyo nombre ya está en uso allí se propone como `name (2)`, y puedes cambiarle el nombre u omitirlo. Consulta [pasar a otro equipo](/docs/reference/security/#pasar-a-otro-equipo) para ver cómo se protege el archivo. Para moverlo todo a la vez, con clústeres, stacks, inicios de sesión de registros, repositorios y ajustes incluidos, usa en su lugar una [copia de seguridad](/docs/reference/data-and-backups/#hacer-una-copia-de-seguridad-en-homeport).
+**Exportar hosts a un archivo…**, en el menú **Más acciones** de la página Hosts, guarda los hosts que elijas en un archivo protegido con una frase de contraseña; **Importar hosts desde un archivo…**, en el mismo menú del otro equipo, lo abre y añade los hosts que elijas, listos para conectarse. Un host cuyo nombre ya está en uso allí se propone como `name (2)`, y puedes cambiarle el nombre u omitirlo. Consulta [pasar a otro equipo](/docs/reference/security/#pasar-a-otro-equipo) para ver cómo se protege el archivo. Para moverlo todo a la vez, con clústeres, stacks, inicios de sesión de registros, repositorios y ajustes incluidos, usa en su lugar una [copia de seguridad](/docs/reference/data-and-backups/#hacer-una-copia-de-seguridad-en-homeport).
 
 ## Seleccionar un host
 
-Cada página de recursos —Contenedores, Imágenes, Volúmenes, Redes, Stacks y Eventos— muestra el host seleccionado en el **selector de hosts**. Las páginas de un host de containerd también muestran un namespace a la vez, elegido [bajo el selector](/docs/hosts/containerd/#namespaces), y las de un host de Incus, un [proyecto](/docs/hosts/incus/#proyectos). Cambia de host ahí, o selecciona la tarjeta de un host en el [Resumen](/docs/guides/overview/). Homeport recuerda tu elección entre sesiones.
+Cada página de recursos —Contenedores, Imágenes, Volúmenes, Redes, Stacks y Eventos— muestra el host seleccionado en la barra lateral, donde sus páginas aparecen bajo su nombre. Las páginas de un host de containerd también muestran un namespace a la vez, elegido [bajo el host](/docs/hosts/containerd/#namespaces) en la barra lateral, y las de un host de Incus, un [proyecto](/docs/hosts/incus/#proyectos). Selecciona otro host en la barra lateral para cambiar, manteniendo el mismo tipo de página cuando la tiene, o selecciona su mosaico en el [Tablero](/docs/guides/overview/#tablero). Un host que no se puede usar tiene a su lado un botón **Por qué no se puede usar …** que muestra el error. Homeport recuerda tu elección entre sesiones.
 
 ## Estados
 

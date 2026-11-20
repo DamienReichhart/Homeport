@@ -34,11 +34,11 @@ A host that belongs to a Docker Swarm shows **Manager of** or **Worker of** its 
 
 ## Adding, editing and removing Hosts
 
-- **Add** a Host with **Add host…** in the Host switcher at the top of the sidebar, or **Add host** on the Overview.
-- **Manage hosts** in the Host switcher lists every Host with its type, address and status. Select one to open its page.
-- On a Host's page you can change its connection details and choose **Save**; Homeport reconnects with the new settings. A Host's connection type can't be changed — remove it and add it again instead.
+- **Add** a Host with **Add host or cluster**, under the list of Hosts in the sidebar, then **Add host…**.
+- **Manage hosts**, the settings icon beside **Hosts** in the sidebar, opens the Hosts page: every Host with its type, address and status. Select one to open its page.
+- On a Host's page you can change its connection details and choose **Save changes**; Homeport reconnects with the new settings. A Host's connection type can't be changed — remove it and add it again instead.
 - The **Enabled** switch disconnects a Host without forgetting it. A disabled Host doesn't retry until you turn it back on.
-- **Remove host** forgets the Host, its stored credentials, the compose definitions of its Managed Stacks, its Linked Stacks and its Stacks' deploy history. Nothing running on the Host is touched: containers, images and volumes stay as they are, and Linked Stacks' folders too. The Stacks of a Swarm the Host manages belong to the Swarm, and are kept.
+- **Remove host** forgets the Host, its stored credentials, the compose definitions of its Managed Stacks, its Linked Stacks and its Stacks' deploy history. Nothing running on the Host is touched: containers, images and volumes stay as they are, and Linked Stacks' folders too. The Stacks of a Swarm the Host manages belong to the Swarm, and are kept. Since the definitions are deleted for good, Homeport asks you to type the Host's name first.
 
 Host names must be unique, ignoring case.
 
@@ -73,11 +73,11 @@ A context whose name is already a Host's is offered as `name (2)`.
 
 ## Moving to another computer
 
-**Export** on the Hosts page saves the Hosts you pick to a file protected by a passphrase; **Import** on the other computer's Hosts page opens it and adds the Hosts you pick, ready to connect. A Host whose name is taken there is proposed as `name (2)`, and you can rename or skip it. See [moving to another computer](/docs/reference/security/#moving-to-another-computer) for how the file is protected. To move everything at once, Clusters, Stacks, registry logins, repositories and settings included, use a [backup](/docs/reference/data-and-backups/#backing-up-in-homeport) instead.
+**Export hosts to a file…**, in the Hosts page's **More actions** menu, saves the Hosts you pick to a file protected by a passphrase; **Import hosts from a file…**, in the same menu on the other computer, opens it and adds the Hosts you pick, ready to connect. A Host whose name is taken there is proposed as `name (2)`, and you can rename or skip it. See [moving to another computer](/docs/reference/security/#moving-to-another-computer) for how the file is protected. To move everything at once, Clusters, Stacks, registry logins, repositories and settings included, use a [backup](/docs/reference/data-and-backups/#backing-up-in-homeport) instead.
 
 ## Selecting a Host
 
-Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the **Host switcher**. A containerd Host's pages also show one namespace at a time, picked [under the switcher](/docs/hosts/containerd/#namespaces), and an Incus Host's one [project](/docs/hosts/incus/#projects). Switch Host there, or select a Host's card on the [Overview](/docs/guides/overview/). Homeport remembers your choice between launches.
+Every resource page — Containers, Images, Volumes, Networks, Stacks and Events — shows the Host selected in the sidebar, where its pages are listed under its name. A containerd Host's pages also show one namespace at a time, picked [under the Host](/docs/hosts/containerd/#namespaces) in the sidebar, and an Incus Host's one [project](/docs/hosts/incus/#projects). Select another Host in the sidebar to switch, staying on the same kind of page when it has one, or select its tile on the [Board](/docs/guides/overview/#board). A Host that can't be used has a **Why … can't be used** button beside it, which shows the error. Homeport remembers your choice between launches.
 
 ## Statuses
 

@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 Un cluster peut être un cluster **Nomad** aussi bien qu’un cluster Kubernetes. Homeport communique avec l’API HTTP que sert déjà un agent Nomad, serveur ou client, depuis votre ordinateur : rien n’est installé sur le cluster, et aucun CLI `nomad` n’est nécessaire sur cette machine. Tout ce qu’il fait passe par l’API, avec les droits du jeton ACL que vous lui donnez.
 
-Les clusters Nomad figurent à côté de vos hôtes et de vos clusters Kubernetes dans le sélecteur. En sélectionner un affiche sa version, sa région et son adresse sur la Vue d’ensemble, et ses propres pages dans la barre latérale : **[Jobs](#jobs)**, où vous [exécutez des jobs](#exécuter-un-job) et ouvrez les [journaux et les shells](#journaux-et-shell) de leurs allocations, et **[Nœuds](#nœuds)**. Les pages Kubernetes sont masquées tant qu’il est sélectionné.
+Les clusters Nomad sont listés dans la barre latérale avec vos clusters Kubernetes, chacun avec son état. En sélectionner un affiche sa version, sa région et son adresse sur la Vue d’ensemble, et ses propres pages dans la barre latérale : **[Jobs](#jobs)**, où vous [exécutez des jobs](#exécuter-un-job) et ouvrez les [journaux et les shells](#journaux-et-shell) de leurs allocations, et **[Nœuds](#nœuds)**. Les pages Kubernetes sont masquées tant qu’il est sélectionné.
 
 Ce que vous pouvez faire, dans l’ordre où cette page l’explique :
 
@@ -20,9 +20,9 @@ Ce que vous pouvez faire, dans l’ordre où cette page l’explique :
 
 ## Ajouter un cluster Nomad
 
-Choisissez **Ajouter un cluster…** dans le sélecteur, puis l’onglet **Nomad**, et remplissez :
+Choisissez **Ajouter un hôte ou un cluster**, sous la liste des hôtes dans la barre latérale, puis **Ajouter un cluster…** et l’onglet **Nomad**, et remplissez :
 
-- **Nom** : ce qu’affichent le sélecteur et la Vue d’ensemble, comme `nomad-prod`.
+- **Nom** : ce qu’affichent la barre latérale, le Tableau et la Vue d’ensemble, comme `nomad-prod`.
 - **Adresse** : l’API HTTP de l’agent, telle que `NOMAD_ADDR` la donne au CLI `nomad`. `nomad.example.com` devient `http://nomad.example.com:4646` : le port 4646 est ajouté quand aucun n’est indiqué, et `https://` est utilisé quand vous donnez des éléments TLS.
 - **Région** : laissez-la vide pour utiliser la région propre à l’agent. Indiquez-la pour gérer une autre région par un agent fédéré, comme le fait `NOMAD_REGION`.
 - **Jeton ACL** : l’identifiant secret (secret ID) du jeton, quand le cluster a les ACL activées. Voir [le jeton](#le-jeton-acl) plus bas.
@@ -58,7 +58,7 @@ Un jeton qui ne peut pas lire l’agent (`agent:read`) se connecte quand même 
 
 Ouvrez un job pour voir ses paramètres (priorité, datacenters, pool de nœuds, version), ses **groupes de tâches** avec leurs tâches et leurs pilotes, et ses **allocations**, les plus récentes d’abord, avec le nœud sur lequel chacune s’exécute.
 
-- **Arrêter** demande d’abord confirmation, en nommant le job et son namespace. Nomad arrête chaque allocation et conserve la définition du job jusqu’au passage de son ramasse-miettes ; cochez **Le purger** pour supprimer immédiatement le job et son historique, comme le fait `nomad job stop -purge`. La purge est désactivée par défaut.
+- **Arrêter** demande d’abord confirmation, en nommant le job et son namespace. Nomad arrête chaque allocation et conserve la définition du job jusqu’au passage de son ramasse-miettes ; cochez **Le purger** pour supprimer immédiatement le job et son historique, comme le fait `nomad job stop -purge`. La purge est désactivée par défaut. Quand **Le purger** est coché, Homeport vous demande d’abord de saisir le nom du job.
 - **Mettre à l’échelle**, sur un groupe de tâches d’un job `service` ou `batch`, définit combien d’allocations il exécute, comme le fait `nomad job scale`. Quand le groupe a un bloc `scaling`, le nombre doit rester entre son `min` et son `max` ; Homeport refuse un nombre hors de ces bornes avant de le demander à Nomad, et affiche la raison propre à Nomad quand il refuse, comme un déploiement en cours. Un autoscaler agissant selon la politique peut changer à nouveau le nombre.
 
 Lister les jobs demande les capabilities `list-jobs` et `read-job` ; en arrêter un demande `submit-job`, et mettre à l’échelle `scale-job` (ou `submit-job`), sur le namespace du job.

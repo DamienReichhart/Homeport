@@ -52,7 +52,7 @@ function Found({
       {local.added ? (
         <Badge variant="secondary">{t('core.localClusters.added')}</Badge>
       ) : running ? (
-        <Button size="sm" disabled={pending} onClick={onAdd}>
+        <Button variant="outline" size="sm" disabled={pending} onClick={onAdd}>
           <PlusIcon /> {t('core.localClusters.add')}
         </Button>
       ) : (

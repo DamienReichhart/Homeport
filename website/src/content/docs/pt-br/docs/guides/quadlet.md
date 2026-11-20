@@ -41,7 +41,7 @@ Na página **Contêineres**, um contêiner criado por uma unidade mostra o servi
 
 ## A página de uma unidade
 
-- O cabeçalho tem **Iniciar**, **Parar** e **Reiniciar**, **Editar** e **Remover**.
+- O cabeçalho tem as ações do serviço da unidade: **Iniciar**, **Parar** e **Reiniciar**. A que não pode ser usada diz por quê na dica.
 - **Serviço** mostra a unidade systemd, se ela é uma unidade de sistema ou de usuário (`systemctl --user`), onde o arquivo dela está no host, e a sua aplicação e o seu pod, quando os tem.
 - **Arquivo da unidade** mostra o arquivo como o Podman o lê, com destaque de sintaxe.
 - **Contêineres** lista os contêineres que ela criou, e cada um abre a página dele.
@@ -58,9 +58,9 @@ O Podman grava os arquivos onde ficam as unidades do seu usuário e recarrega o 
 
 ## Editando e removendo
 
-**Editar** abre o arquivo da unidade. **Salvar** o grava no lugar e recarrega o systemd; os arquivos instalados ao lado dele permanecem. Um serviço em execução mantém as configurações antigas até você o **Reiniciar**. Se o arquivo mudou no host desde que você o abriu, **Salvar** é recusado e avisa, em vez de sobrescrever essa mudança: abra a unidade de novo para vê-la, ou escolha **Sobrescrever**.
+**Editar**, no cartão **Arquivo da unidade**, abre o arquivo da unidade. **Salvar** o grava no lugar e recarrega o systemd; os arquivos instalados ao lado dele permanecem. Um serviço em execução mantém as configurações antigas até você o **Reiniciar**. Se o arquivo mudou no host desde que você o abriu, **Salvar** é recusado e avisa, em vez de sobrescrever essa mudança: abra a unidade de novo para vê-la, ou escolha **Sobrescrever**.
 
-**Remover** exclui o arquivo da unidade e recarrega o systemd. **Parar o serviço em execução dela antes** vem ativado por padrão; sem isso, o Podman se recusa a remover uma unidade em execução. Os contêineres, volumes e imagens que a unidade criou são mantidos.
+**Remover**, em **Remover esta unidade** no rodapé da página da unidade, exclui o arquivo da unidade e recarrega o systemd. **Parar o serviço dela se estiver em execução** vem ativado por padrão; sem isso, o Podman se recusa a remover uma unidade em execução. Os contêineres, volumes e imagens que a unidade criou são mantidos.
 
 ## O que o Homeport executa no host
 

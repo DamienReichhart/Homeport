@@ -5,10 +5,11 @@ export type Tone = 'success' | 'warning' | 'danger' | 'muted' | 'info';
 
 /*
  * A status is a shape as well as a colour, so it reads in greyscale and for
- * colour-blind eyes (docs/BRAND.md). Healthy is a plain ink disc: only what
- * needs attention is coloured, and only what needs you is red.
+ * colour-blind eyes (docs/BRAND.md). Running is a filled disc in a muted
+ * green, stopped a hollow grey ring: the two read apart at a glance down a
+ * long list. Only what needs you is red.
  *
- *   success  ● ink disc          danger   ● Signal red disc
+ *   success  ● muted green disc  danger   ● Signal red disc
  *   muted    ○ grey ring         warning  ◆ amber diamond
  *   info     ○ ink ring
  */

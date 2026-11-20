@@ -54,7 +54,7 @@ describe('containerd namespaces', () => {
     await waitFor(() => expect(picker).toHaveTextContent('k8s.io'));
     expect(within(nav()).getByRole('link', { name: 'Namespaces' })).toBeInTheDocument();
     const row = (await screen.findByText('lab')).closest('tr')!;
-    await user.click(within(row).getByRole('button', { name: 'Show' }));
+    await user.click(within(row).getByRole('button', { name: 'Show lab' }));
     await waitFor(() => expect(saved.at(-1)?.containerdNamespaces).toEqual({ c1: 'lab' }));
     expect(picker).toHaveTextContent('lab');
   });

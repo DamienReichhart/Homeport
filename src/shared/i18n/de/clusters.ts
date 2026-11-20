@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'Cluster',
-  'clusters.summary': '{count, plural, one {# Cluster} other {# Cluster}}',
+  'clusters.description': 'Die Kubernetes- und Nomad-Cluster, mit denen Homeport sich verbindet.',
   'clusters.add': 'Cluster hinzufügen',
   'clusters.notFound': 'Dieser Cluster existiert nicht mehr.',
   'clusters.empty.title': 'Noch keine Cluster',
   'clusters.empty.description':
-    'Fügen Sie die Kubernetes-Cluster hinzu, die Ihre kubeconfig erreicht. Homeport installiert nichts darauf.',
+    'Fügen Sie die Kubernetes-Cluster hinzu, die Ihre kubeconfig erreicht, oder einen Nomad-Agenten über seine Adresse. Homeport installiert nichts darauf.',
   'clusters.column.name': 'Name',
   'clusters.column.status': 'Status',
   'clusters.column.kind': 'Art',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'Meldet sich an mit',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'Cluster hinzufügen',
   'clusters.palette.manage': 'Cluster verwalten',
 
@@ -27,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL-Token',
 
   'clusters.addPage.description':
-    'Jeder Kubernetes-Kontext, den Sie wählen, und jeder Nomad-Agent, den Sie angeben, wird zu einem Cluster. Seine Zugangsdaten werden verschlüsselt gespeichert, nie im Klartext auf der Festplatte.',
+    'Wählen Sie Kontexte aus einer kubeconfig oder geben Sie einen Nomad-Agenten über seine Adresse an.',
   'clusters.addPage.fromMachine': 'Aus der kubeconfig dieses Rechners',
   'clusters.addPage.paste': 'kubeconfig einfügen',
   'clusters.addPage.nomad': 'Nomad',
@@ -56,6 +57,10 @@ export default {
   'clusters.detail.name': 'Name',
   'clusters.detail.rename': 'Umbenennen',
   'clusters.detail.renamed': 'Cluster umbenannt',
+  'clusters.rename.open': 'Umbenennen…',
+  'clusters.rename.title': '{name} umbenennen',
+  'clusters.rename.description':
+    'Nur der Name in Homeport ändert sich; sein kubeconfig-Kontext behält seinen eigenen.',
   'clusters.connection.title': 'Verbindung',
   'clusters.connection.server': 'API-Server',
   'clusters.connection.address': 'Adresse',
@@ -126,6 +131,9 @@ export default {
   'clusters.remove.title': 'Cluster entfernen',
   'clusters.remove.description':
     'Homeport vergisst den Cluster und seine gespeicherten Zugangsdaten. Am Cluster und in Ihrer kubeconfig ändert sich nichts.',
+  'clusters.remove.descriptionNomad':
+    'Homeport vergisst den Cluster und seine gespeicherten Zugangsdaten. Am Cluster ändert sich nichts.',
   'clusters.remove.confirmTitle': '{name} entfernen?',
   'clusters.remove.confirmDescription': 'Sie können ihn aus seiner kubeconfig erneut hinzufügen.',
+  'clusters.remove.confirmDescriptionNomad': 'Sie können ihn über seine Adresse erneut hinzufügen.',
 } satisfies Translation<typeof en>;

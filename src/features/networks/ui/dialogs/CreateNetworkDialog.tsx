@@ -52,16 +52,18 @@ export function CreateNetworkDialog({
               autoFocus
             />
           </div>
+          <div className="grid gap-1.5">
+            <Label htmlFor="net-driver">{t('networks.createDialog.driver')}</Label>
+            <Input
+              id="net-driver"
+              placeholder="bridge"
+              value={input.driver ?? ''}
+              onChange={(e) => setInput({ ...input, driver: e.target.value || null })}
+              spellCheck={false}
+            />
+          </div>
+          {/* The address range and its gateway go together. */}
           <div className="grid grid-cols-2 gap-3">
-            <div className="grid gap-1.5">
-              <Label htmlFor="net-driver">{t('networks.createDialog.driver')}</Label>
-              <Input
-                id="net-driver"
-                placeholder="bridge"
-                value={input.driver ?? ''}
-                onChange={(e) => setInput({ ...input, driver: e.target.value || null })}
-              />
-            </div>
             <div className="grid gap-1.5">
               <Label htmlFor="net-subnet">{t('networks.createDialog.subnet')}</Label>
               <Input
@@ -69,17 +71,21 @@ export function CreateNetworkDialog({
                 placeholder={t('networks.createDialog.automatic')}
                 value={input.subnet ?? ''}
                 onChange={(e) => setInput({ ...input, subnet: e.target.value || null })}
+                className="font-mono"
+                spellCheck={false}
               />
             </div>
-          </div>
-          <div className="grid gap-1.5">
-            <Label htmlFor="net-gw">{t('networks.createDialog.gateway')}</Label>
-            <Input
-              id="net-gw"
-              placeholder={t('networks.createDialog.automatic')}
-              value={input.gateway ?? ''}
-              onChange={(e) => setInput({ ...input, gateway: e.target.value || null })}
-            />
+            <div className="grid gap-1.5">
+              <Label htmlFor="net-gw">{t('networks.createDialog.gateway')}</Label>
+              <Input
+                id="net-gw"
+                placeholder={t('networks.createDialog.automatic')}
+                value={input.gateway ?? ''}
+                onChange={(e) => setInput({ ...input, gateway: e.target.value || null })}
+                className="font-mono"
+                spellCheck={false}
+              />
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Switch
@@ -103,7 +109,7 @@ export function CreateNetworkDialog({
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={create.isPending || !canCreateNetwork(input)}>
-              {t('common.create')}
+              {t('networks.create')}
             </Button>
           </DialogFooter>
         </form>

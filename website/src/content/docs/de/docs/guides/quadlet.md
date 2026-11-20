@@ -41,7 +41,7 @@ Auf der Seite **Container** zeigt ein Container, den eine Unit erstellt hat, den
 
 ## Die Seite einer Unit
 
-- Die Kopfzeile hat **Starten**, **Stoppen** und **Neu starten**, **Bearbeiten** und **Entfernen**.
+- Der Kopf hat die Aktionen des Services der Unit: **Starten**, **Stoppen** und **Neu starten**. Eine, die nicht verfügbar ist, sagt im Tooltip, warum.
 - **Service** zeigt die systemd-Unit, ob sie eine System-Unit oder eine Benutzer-Unit (`systemctl --user`) ist, wo ihre Datei auf dem Host liegt und ihre Anwendung und ihren Pod, wenn sie welche hat.
 - **Unit-Datei** zeigt die Datei, wie Podman sie liest, mit Hervorhebung.
 - **Container** listet die Container auf, die sie erstellt hat; jeder öffnet seine Container-Seite.
@@ -58,9 +58,9 @@ Podman schreibt die Dateien dorthin, wo die Units seines Benutzers liegen, und l
 
 ## Bearbeiten und Entfernen
 
-**Bearbeiten** öffnet die Datei der Unit. **Speichern** schreibt sie an Ort und Stelle und lädt systemd neu; die daneben installierten Dateien bleiben. Ein laufender Service behält seine alten Einstellungen, bis Sie ihn mit **Neu starten** neu starten. Wurde die Datei auf dem Host geändert, seit Sie sie geöffnet haben, wird **Speichern** abgelehnt und meldet das, statt diese Änderung zu überschreiben: Öffnen Sie die Unit erneut, um sie zu sehen, oder wählen Sie **Überschreiben**.
+**Bearbeiten** auf der Karte **Unit-Datei** öffnet die Datei der Unit. **Speichern** schreibt sie an Ort und Stelle und lädt systemd neu; die daneben installierten Dateien bleiben. Ein laufender Service behält seine alten Einstellungen, bis Sie ihn mit **Neu starten** neu starten. Wurde die Datei auf dem Host geändert, seit Sie sie geöffnet haben, wird **Speichern** abgelehnt und meldet das, statt diese Änderung zu überschreiben: Öffnen Sie die Unit erneut, um sie zu sehen, oder wählen Sie **Überschreiben**.
 
-**Entfernen** löscht die Datei der Unit und lädt systemd neu. **Zuerst ihren laufenden Service stoppen** ist standardmäßig eingeschaltet; ohne diese Option lehnt Podman es ab, eine laufende Unit zu entfernen. Container, Volumes und Images, die die Unit erstellt hat, bleiben erhalten.
+**Entfernen** in **Diese Unit entfernen** am Fuß der Seite der Unit löscht die Datei der Unit und lädt systemd neu. **Ihren Service stoppen, falls er läuft** ist standardmäßig eingeschaltet; ohne diese Option lehnt Podman es ab, eine laufende Unit zu entfernen. Container, Volumes und Images, die die Unit erstellt hat, bleiben erhalten.
 
 ## Was Homeport auf dem Host ausführt
 

@@ -5,7 +5,7 @@ description: クラスターの Namespace、Deployment、StatefulSet、DaemonSet
 
 import { DocScreenshot } from '@/features/docs';
 
-切り替えメニューでクラスターを選ぶと、サイドバーにそのクラスターのページが表示されます。**ワークロード** と **Pod** には、そこで動作しているものが一覧表示されます。どの一覧も Kubernetes の watch でクラスターをリアルタイムに追従するので、スケールした Deployment やクラッシュした Pod の新しい状態が、更新しなくても数秒以内に表示されます。各ページでは、表示しているものを操作することもできます: [ログとターミナル](/docs/clusters/logs-exec/)、[スケール、再起動、削除](/docs/clusters/actions/)、[YAML の編集](/docs/clusters/yaml/)。
+サイドバーでクラスターを選ぶと、その下にそのクラスターのページが開きます。**ワークロード** と **Pod** には、そこで動作しているものが一覧表示されます。どの一覧も Kubernetes の watch でクラスターをリアルタイムに追従するので、スケールした Deployment やクラッシュした Pod の新しい状態が、更新しなくても数秒以内に表示されます。各ページでは、表示しているものを操作することもできます: [ログとターミナル](/docs/clusters/logs-exec/)、[スケール、再起動、削除](/docs/clusters/actions/)、[YAML の編集](/docs/clusters/yaml/)。
 
 ## Namespace
 
@@ -47,7 +47,7 @@ import { DocScreenshot } from '@/features/docs';
 - Pod の **ログ**: すべてを交互に、または 1 つずつ（CronJob にはありません。その Job にそれぞれのログがあります）。
 - **状態**、**イベント**（警告が先頭。Kubernetes は約 1 時間保持します）、**YAML**（`managedFields` を除き、**編集** 付き）。
 
-ヘッダーには操作があります: 該当する場合は **スケール**、**再起動**、**一時停止** または **再開**、**今すぐ実行**、そして **削除**。[スケール、再起動、削除](/docs/clusters/actions/)を参照してください。
+ヘッダーには日常の操作（**スケール** と **再起動**、CronJob では **今すぐ実行** と **一時停止**、一時停止後は **再開**）があり、**その他の操作** メニューに **削除** があります。[スケール、再起動、削除](/docs/clusters/actions/)を参照してください。
 
 ## Pod
 

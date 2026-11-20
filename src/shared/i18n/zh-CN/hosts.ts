@@ -6,7 +6,9 @@ export default {
   'hosts.title': '主机',
   'hosts.description': 'Homeport 连接的 Docker Engine。',
   'hosts.add': '添加主机',
-  'hosts.empty': '暂无主机。',
+  'hosts.empty': '暂无主机',
+  'hosts.emptyDescription':
+    '添加 Docker、Podman、containerd 或 Incus 引擎：在本机上，或通过 SSH、TLS 连接服务器。',
   'hosts.column.name': '名称',
   'hosts.column.type': '类型',
   'hosts.column.address': '地址',
@@ -14,19 +16,18 @@ export default {
   'hosts.statusTitle': '{label}：{detail}',
   'hosts.saved': '主机已保存',
   'hosts.notFound': '此主机已不存在。',
-  'hosts.addPage.description': '将 Homeport 连接到 Docker Engine。',
-  'hosts.switcher.label': '主机',
-  'hosts.switcher.placeholder': '无主机',
+  'hosts.addPage.description': '添加在本机上找到的引擎、导入一个，或在下方填写连接信息。',
+  'hosts.addPage.manual': '填写连接信息',
   'hosts.switcher.add': '添加主机…',
   'hosts.switcher.manage': '管理主机',
-  'hosts.switcher.hosts': '主机',
-  'hosts.switcher.clusters': '集群',
   'hosts.switcher.addCluster': '添加集群…',
   'hosts.switcher.manageClusters': '管理集群',
   'hosts.switcher.whyUnusable': '为什么无法使用 {name}',
   'hosts.detail.enabled': '已启用',
   'hosts.detail.reconnect': '重新连接',
   'hosts.connection.title': '连接',
+  'hosts.connection.save': '保存更改',
+  'hosts.connection.discard': '放弃更改',
   'hosts.remove.title': '删除主机',
   'hosts.remove.description':
     'Homeport 会忘记此主机、其凭据及其托管堆栈的定义。主机上正在运行的内容不受影响。',
@@ -34,6 +35,8 @@ export default {
   'hosts.remove.confirmDescription':
     '删除已保存的连接、SSH 密钥或证书，以及其托管堆栈的 compose 定义。主机上的容器、镜像和卷保持不变。',
   'hosts.sshSetup.title': '在服务器上授权 Homeport',
+  'hosts.sshSetup.show': '显示命令',
+  'hosts.sshSetup.hide': '隐藏命令',
   'hosts.sshSetup.description':
     '以 SSH 用户身份在 <mono>{server}</mono> 上运行以下命令，然后重新连接。',
   'hosts.sshSetup.descriptionBastions':
@@ -67,10 +70,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': '本地套接字',
   'hosts.form.keepHint': '留空以保留已保存的值。',
+  'hosts.form.connectOver': '连接方式',
   'hosts.form.name': '名称',
+  'hosts.form.nameHint': '留空则命名为 {name}。',
   'hosts.form.engine': '引擎',
   'hosts.form.engineHint':
-    'Docker 兼容包括 Docker 和 Podman；Homeport 会在连接时区分它们。containerd 通过其套接字访问，在本机或通过 SSH；Incus 还可以通过 HTTPS (TLS) 访问。',
+    'Docker 兼容包括 Docker 和 Podman。containerd 通过其套接字访问，在本机或通过 SSH；Incus 还可以通过 HTTPS (TLS) 访问。',
   'hosts.form.socketOnly': '{engine} 只在其套接字上响应：请在本地或通过 SSH 连接。',
   'hosts.form.noPlainTcp': '{engine} 不响应明文 TCP：请使用 TLS、SSH 或其套接字。',
   'hosts.form.socketPath': '套接字路径',
@@ -109,7 +114,7 @@ export default {
   'hosts.ssh.auth': '认证',
   'hosts.ssh.auth.generated': '为此主机生成新密钥',
   'hosts.ssh.auth.imported': '现有密钥',
-  'hosts.ssh.generated.editing': '此主机保留其密钥。可在主机页面上重新生成。',
+  'hosts.ssh.generated.editing': '此主机保留其密钥。如需替换，请使用上方命令旁的“重新生成密钥”。',
   'hosts.ssh.generated.new':
     'Homeport 会为此主机创建一个 Ed25519 密钥，并显示在服务器上授权该密钥的命令。',
   'hosts.ssh.privateKey': '私钥',
@@ -170,7 +175,7 @@ export default {
   'hosts.bundle.confirmation': '再次输入口令',
   'hosts.bundle.problem.short': '请至少使用 {min} 个字符。',
   'hosts.bundle.problem.mismatch': '两次输入的口令不一致。',
-  'hosts.bundle.export.button': '导出',
+  'hosts.bundle.export.button': '将主机导出到文件…',
   'hosts.bundle.export.title': '导出主机',
   'hosts.bundle.export.description':
     '将你选择的主机连同其密钥、证书和受信任的服务器密钥写入一个用口令加密的文件。在另一台计算机上导入即可在那里使用它们。',
@@ -180,7 +185,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, other {已导出 # 个主机}}',
   'hosts.bundle.export.withoutSecrets':
     '以下主机在不含凭据的情况下导出，因为其凭据无法在本机上打开：',
-  'hosts.bundle.import.button': '导入',
+  'hosts.bundle.import.button': '从文件导入主机…',
   'hosts.bundle.import.title': '从导出文件导入主机',
   'hosts.bundle.import.description':
     '使用口令打开从 Homeport 导出的文件，然后选择要添加的主机。其凭据会加密保存在本机上。',

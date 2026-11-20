@@ -114,7 +114,6 @@ export default {
   'incus.images.cached': 'キャッシュ',
   'incus.images.cachedHint':
     'インスタンスを作成するためにダウンロードされたものです。しばらく使われないと Incus が削除します。',
-  'incus.images.aliasAdd': '{name} にエイリアスを追加',
   'incus.images.aliasRemove': 'エイリアス {name} を削除',
   'incus.images.aliasRemoved': 'エイリアス {name} を削除しました',
   'incus.images.alias.title': '{name} にエイリアスを追加',
@@ -122,7 +121,6 @@ export default {
   'incus.images.alias.add': 'エイリアスを追加',
   'incus.images.refreshOne': '{name} をサーバーから更新',
   'incus.images.refreshed': '{name} を更新しました',
-  'incus.images.deleteOne': '{name} を削除',
   'incus.images.deleted': '{name} を削除しました',
   'incus.images.delete.title': 'イメージ {name} を削除しますか？',
   'incus.images.delete.description':
@@ -153,9 +151,14 @@ export default {
   'incus.profiles.delete.title': 'プロファイル {name} を削除しますか？',
   'incus.profiles.delete.description':
     'プロジェクト {project} から削除されます。使用しているインスタンスはありません。',
+  'incus.profiles.delete.zone': 'このプロファイルを削除',
   'incus.profiles.backToList': 'プロファイルに戻る',
   'incus.profiles.noDescription': '説明なし',
   'incus.profiles.reload': '再読み込み',
+  'incus.profiles.unsaved': '未保存の変更があります',
+  'incus.profiles.discard.title': '変更を破棄しますか？',
+  'incus.profiles.discard.description':
+    '再読み込みすると、Incus にある現在の {name} が表示され、ここでの変更は失われます。',
   'incus.profiles.saved': 'プロファイル {name} を保存しました',
   'incus.profiles.usedBy': '使用元',
   'incus.profiles.editHint':
@@ -223,6 +226,7 @@ export default {
   'incus.snapshots.column.size': 'サイズ',
   'incus.snapshots.stateful': 'ステートフル',
   'incus.snapshots.restore': '復元',
+  'incus.snapshots.restoreOne': '{snapshot} を復元',
   'incus.snapshots.restore.title': '{name} を {snapshot} に復元しますか？',
   'incus.snapshots.restore.description':
     '{snapshot} が作成された {time} 以降にディスク上で変更されたものは、すべて失われます。実行中のインスタンスは再起動します。',
@@ -294,6 +298,7 @@ export default {
   'incus.networks.delete.title': 'ネットワーク {name} を削除しますか？',
   'incus.networks.delete.description':
     'Incus はブリッジとその DHCP、DNS を削除します。使用しているものはありません。',
+  'incus.networks.delete.zone': 'このネットワークを削除',
   'incus.networks.deleted': 'ネットワーク {name} を削除しました',
   'incus.networks.gone': 'ネットワーク {name} はもうありません。',
   'incus.networks.backToList': 'ネットワークに戻る',

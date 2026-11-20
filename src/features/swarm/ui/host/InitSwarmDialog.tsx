@@ -39,6 +39,7 @@ export function InitSwarmDialog({ view, onClose }: { view: HostView; onClose: ()
             <Label htmlFor="advertise">{t('swarm.membership.advertise')}</Label>
             <Input
               id="advertise"
+              className="font-mono"
               value={advertise}
               placeholder={t('swarm.membership.advertisePlaceholder')}
               onChange={(e) => setAdvertise(e.target.value)}
@@ -47,7 +48,12 @@ export function InitSwarmDialog({ view, onClose }: { view: HostView; onClose: ()
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="listen">{t('swarm.membership.listen')}</Label>
-            <Input id="listen" value={listen} onChange={(e) => setListen(e.target.value)} />
+            <Input
+              id="listen"
+              className="font-mono"
+              value={listen}
+              onChange={(e) => setListen(e.target.value)}
+            />
           </div>
           {init.error && <ErrorMessage error={init.error} />}
           <DialogFooter>

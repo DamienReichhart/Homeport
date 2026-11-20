@@ -6,7 +6,7 @@ import type { SwarmView } from '@/shared/api';
 import { Card, CardContent, CardHeader, CardTitle, KeyValue, Spinner } from '@/shared/ui';
 import { JoinCommands } from './JoinCommands';
 import { t } from '@/shared/i18n';
-import { formatDateTime } from '@/shared/lib';
+import { formatDateTime, formatRelative } from '@/shared/lib';
 
 function HostLinks({ ids }: { ids: string[] }) {
   const hosts = useHosts();
@@ -43,7 +43,14 @@ export function SummaryTab({ swarm }: { swarm: SwarmView }) {
                 t('swarm.summary.nodeCounts', { nodes: s.nodes, managers: s.managers }),
               ],
               [t('swarm.summary.services'), s.services],
-              [t('swarm.summary.created'), s.created ? formatDateTime(s.created) : null],
+              [
+                t('swarm.summary.created'),
+                s.created ? (
+                  <span key="created" title={formatDateTime(s.created)}>
+                    {formatRelative(Date.parse(s.created) / 1000)}
+                  </span>
+                ) : null,
+              ],
               [
                 t('swarm.summary.id'),
                 <span key="id" className="font-mono text-xs">

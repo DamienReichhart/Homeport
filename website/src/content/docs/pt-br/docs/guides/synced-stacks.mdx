@@ -70,7 +70,7 @@ Remover um repositório exclui a chave ou o token dele e o clone neste computado
 
 5. Confira o **Nome** (ele vem do nome do repositório) e adicione um **Ambiente** para o que não deve ficar no git, como senhas: linhas `KEY=value`, criptografadas neste computador e passadas ao Compose como variáveis quando ele implanta.
 
-6. Escolha **Salvar e implantar** — ou **Salvar** para implantar depois.
+6. Escolha **Salvar e implantar** — ou **Salvar sem implantar**, sob a seta dele, para implantar depois.
 
 </Steps>
 
@@ -124,4 +124,6 @@ O que o Homeport guarda continua editável na mesma aba:
 - os **perfis** dela, se o arquivo compose declarar alguns;
 - se ela **verifica novos commits** e **os implanta automaticamente**.
 
-**Esquecer** faz o Homeport deixar de acompanhar o repositório; os contêineres da stack continuam rodando, e ela se torna externa.
+As mudanças neles são salvas por **Sincronizar**, que depois implanta, ou por **Salvar sem implantar**, sob a seta dele, para a próxima implantação. Os valores do ambiente ficam ocultos até **Mostrar valores**.
+
+**Esquecer**, em **Esquecer este stack** no rodapé da aba, faz o Homeport parar de seguir o repositório; os contêineres da stack continuam rodando, e ela vira externa.

@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': 'Arresta {name}',
   'containerd.containers.actionOne.pause': 'Sospendi {name}',
   'containerd.containers.actionOne.resume': 'Riprendi {name}',
-  'containerd.containers.removeOne': 'Rimuovi {name}',
+  'containerd.containers.actionsFor': 'Azioni per {name}',
   'containerd.containers.done.start': '{name} avviato',
   'containerd.containers.done.stop': '{name} arrestato',
   'containerd.containers.done.pause': '{name} sospeso',
@@ -140,11 +140,18 @@ export default {
   'containerd.snapshots.kind.unknown': 'Sconosciuto',
   'containerd.snapshots.removeOne': 'Rimuovi {key}',
   'containerd.snapshots.removed': 'Snapshot {key} rimosso',
+  'containerd.snapshots.pruned':
+    '{count, plural, one {# snapshot rimosso} other {# snapshot rimossi}}',
   'containerd.snapshots.inUse':
     'Qualcosa lo usa o è costruito su di esso. Prima rimuovi il container o l’immagine.',
   'containerd.snapshots.remove.title': 'Rimuovere lo snapshot {key}?',
   'containerd.snapshots.remove.description':
     'Nulla lo usa. I suoi file, {size}, vengono eliminati dall’host.',
+  'containerd.snapshots.prune.open': 'Rimuovi gli inutilizzati',
+  'containerd.snapshots.prune.title':
+    'Rimuovere {count, plural, one {# snapshot inutilizzato} other {# snapshot inutilizzati}}?',
+  'containerd.snapshots.prune.description':
+    'Nulla li usa né si basa su di loro. I loro file, {size}, vengono eliminati dall’host.',
   'containerd.namespaces.nav': 'Namespace',
   'containerd.namespaces.title': 'Namespace',
   'containerd.namespaces.summary':
@@ -153,7 +160,8 @@ export default {
   'containerd.namespaces.created': 'Namespace {name} creato',
   'containerd.namespaces.removed': 'Namespace {name} rimosso',
   'containerd.namespaces.shown': 'Mostrato',
-  'containerd.namespaces.show': 'Mostra',
+  'containerd.namespaces.show': 'Mostra i suoi container e immagini',
+  'containerd.namespaces.showOne': 'Mostra {name}',
   'containerd.namespaces.removeOne': 'Rimuovi {name}',
   'containerd.namespaces.notEmpty':
     'Solo i namespace vuoti possono essere rimossi. Prima rimuovi i suoi container e le sue immagini.',

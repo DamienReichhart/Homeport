@@ -135,11 +135,12 @@ export function CanIBox({ clusterId, namespace }: { clusterId: string; namespace
           <div className="grid gap-2 text-sm" role="status">
             <div className="flex flex-wrap items-center gap-2">
               {answer.allowed ? (
-                <Badge>
+                <Badge variant="success">
                   <CircleCheckIcon /> {t('rbac.canI.yes')}
                 </Badge>
               ) : (
-                <Badge variant="destructive">
+                // An answer, not a fault: the outline and the cross say no without alarm.
+                <Badge variant="outline">
                   <CircleXIcon /> {t('rbac.canI.no')}
                 </Badge>
               )}

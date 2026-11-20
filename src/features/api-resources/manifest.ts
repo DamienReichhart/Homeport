@@ -17,6 +17,7 @@ export const apiResourcesFeature = defineFeature({
     label: 'apiresources.nav',
     icon: BlocksIcon,
     scope: 'cluster',
+    group: 'tools',
   },
   clusterKind: 'kubernetes',
 });

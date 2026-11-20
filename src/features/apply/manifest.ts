@@ -4,6 +4,12 @@ import { ApplyPage } from './ui/ApplyPage';
 
 export const applyFeature = defineFeature({
   routes: [{ path: 'apply', Component: ApplyPage }],
-  nav: { path: '/apply', label: 'apply.nav', icon: FileCode2Icon, scope: 'cluster' },
+  nav: {
+    path: '/apply',
+    label: 'apply.nav',
+    icon: FileCode2Icon,
+    scope: 'cluster',
+    group: 'tools',
+  },
   clusterKind: 'kubernetes',
 });

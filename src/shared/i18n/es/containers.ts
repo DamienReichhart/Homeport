@@ -57,9 +57,9 @@ export default {
     '{count, plural, one {Se mató el contenedor} other {Se mataron # contenedores}}',
   'containers.done.remove':
     '{count, plural, one {Se eliminó el contenedor} other {Se eliminaron # contenedores}}',
-  'containers.remove.title': '¿Eliminar {name}?',
+  'containers.remove.title': '¿Eliminar {name} de {host}?',
   'containers.remove.titleMany':
-    '¿Eliminar {count, plural, one {# contenedor} other {# contenedores}}?',
+    '¿Eliminar {count, plural, one {# contenedor} other {# contenedores}} de {host}?',
   'containers.remove.deleted':
     '{count, plural, one {Se eliminan el contenedor, su capa de escritura y sus volúmenes anónimos.} other {Se eliminan los contenedores, su capa de escritura y sus volúmenes anónimos.}}',
   'containers.remove.running': 'Los {count} en ejecución se detendrán antes.',
@@ -369,4 +369,7 @@ export default {
   'containers.export.finished': 'Listo. Impórtalo en la página Imágenes o con docker import.',
   'containers.export.done': 'Exportado a {destination}',
   'containers.palette.run': 'Ejecutar un contenedor',
+  'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Abrir el stack {stack}',
+  'containers.logs.show': 'Mostrar',
 } satisfies Translation<typeof en>;

@@ -5,7 +5,7 @@ description: Parcourez en direct les Namespaces, Deployments, StatefulSets, Daem
 
 import { DocScreenshot } from '@/features/docs';
 
-Sélectionnez un cluster dans le sélecteur et la barre latérale affiche ses pages. **Charges de travail** et **Pods** listent ce qui s’exécute dessus ; chaque liste suit le cluster en direct par un watch Kubernetes : un Deployment que vous mettez à l’échelle ou un Pod qui plante affiche son nouvel état en quelques secondes, sans actualiser. Chaque page permet aussi d’agir sur ce qu’elle affiche : [journaux et terminal](/docs/clusters/logs-exec/), [mise à l’échelle, redémarrage et suppression](/docs/clusters/actions/), et [modification du YAML](/docs/clusters/yaml/).
+Sélectionnez un cluster dans la barre latérale et ses pages s’ouvrent en dessous. **Charges de travail** et **Pods** listent ce qui s’exécute dessus ; chaque liste suit le cluster en direct par un watch Kubernetes : un Deployment que vous mettez à l’échelle ou un Pod qui plante affiche son nouvel état en quelques secondes, sans actualiser. Chaque page permet aussi d’agir sur ce qu’elle affiche : [journaux et terminal](/docs/clusters/logs-exec/), [mise à l’échelle, redémarrage et suppression](/docs/clusters/actions/), et [modification du YAML](/docs/clusters/yaml/).
 
 ## Namespaces
 
@@ -47,7 +47,7 @@ La page d’une charge de travail comporte :
 - **Journaux** de ses Pods, tous entremêlés ou un à la fois (pas pour une CronJob ; ses Jobs ont les leurs).
 - **Conditions**, **Événements** (les avertissements d’abord ; Kubernetes les conserve environ une heure) et **YAML**, sans `managedFields`, avec **Modifier**.
 
-Son en-tête porte ses actions : **Mettre à l’échelle**, **Redémarrer**, **Suspendre** ou **Reprendre** et **Exécuter maintenant** quand elles s’appliquent, et **Supprimer** ; voir [Mise à l’échelle, redémarrage et suppression](/docs/clusters/actions/).
+Son en-tête garde ses actions courantes — **Mettre à l’échelle** et **Redémarrer**, ou **Exécuter maintenant** et **Suspendre** (**Reprendre** une fois suspendue) pour une CronJob — et son menu **Plus d’actions** contient **Supprimer** ; voir [Mettre à l’échelle, redémarrer et supprimer](/docs/clusters/actions/).
 
 ## Pods
 

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, ShieldOffIcon } from 'lucide-react';
+import { ShieldOffIcon } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { age, ClusterGate } from '@/core/cluster';
 import { AllocationsTable, nomadKeys, useNomadWatch } from '@/core/nomad';
 import type { ClusterView, NomadNodeDetail } from '@/shared/api';
@@ -36,7 +36,7 @@ function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNo
   const eligibility = useNodeEligibility(id, node.id);
   const running = node.running ?? 0;
   return (
-    <div className="grid gap-4">
+    <div>
       <PageHeader
         title={
           <span className="flex items-center gap-3">
@@ -50,11 +50,6 @@ function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNo
         })}
         actions={
           <>
-            <Button asChild variant="ghost">
-              <Link to="/nomad/nodes">
-                <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('nomad.node.back')}
-              </Link>
-            </Button>
             <div className="flex items-center gap-2">
               <Switch
                 id="node-eligible"
@@ -86,73 +81,73 @@ function NodeDetail({ cluster, detail }: { cluster: ClusterView; detail: NomadNo
           </>
         }
       />
-      {detail.drain && (
+      <div className="grid grid-cols-1 gap-8">
+        {detail.drain && (
+          <Card>
+            <CardHeader>
+              <CardTitle>{t('nomad.drain.progressTitle')}</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-2 text-sm">
+              <p>
+                {running === 0
+                  ? t('nomad.drain.empty')
+                  : t('nomad.drain.remaining', { count: running })}
+              </p>
+              <KeyValue
+                items={[
+                  [t('nomad.drain.started'), age(detail.drain.started)],
+                  [
+                    t('nomad.drain.deadline'),
+                    detail.drain.forced
+                      ? t('nomad.drain.forced')
+                      : detail.drain.deadline
+                        ? formatDateTime(detail.drain.deadline)
+                        : t('nomad.drain.none'),
+                  ],
+                  [
+                    t('nomad.drain.systemJobs'),
+                    detail.drain.ignoreSystemJobs
+                      ? t('nomad.drain.systemJobsKept')
+                      : t('nomad.drain.systemJobsMoved'),
+                  ],
+                ]}
+              />
+            </CardContent>
+          </Card>
+        )}
         <Card>
           <CardHeader>
-            <CardTitle>{t('nomad.drain.progressTitle')}</CardTitle>
+            <CardTitle>{t('nomad.node.settings')}</CardTitle>
           </CardHeader>
-          <CardContent className="grid gap-2 text-sm">
-            <p>
-              {running === 0
-                ? t('nomad.drain.empty')
-                : t('nomad.drain.remaining', { count: running })}
-            </p>
+          <CardContent>
             <KeyValue
               items={[
-                [t('nomad.drain.started'), age(detail.drain.started)],
+                [t('nomad.node.address'), node.address],
+                [t('nomad.node.version'), node.version],
+                [t('nomad.node.class'), node.nodeClass],
+                [t('nomad.node.lastDrain'), detail.lastDrain],
                 [
-                  t('nomad.drain.deadline'),
-                  detail.drain.forced
-                    ? t('nomad.drain.forced')
-                    : detail.drain.deadline
-                      ? formatDateTime(detail.drain.deadline)
-                      : t('nomad.drain.none'),
+                  t('nomad.node.drivers'),
+                  detail.drivers
+                    .filter((d) => d.detected)
+                    .map((d) =>
+                      d.healthy ? d.name : t('nomad.node.unhealthy', { driver: d.name }),
+                    )
+                    .join(', ') || null,
                 ],
-                [
-                  t('nomad.drain.systemJobs'),
-                  detail.drain.ignoreSystemJobs
-                    ? t('nomad.drain.systemJobsKept')
-                    : t('nomad.drain.systemJobsMoved'),
-                ],
+                ...detail.attributes.map(([k, v]): [string, string] => [k, v]),
               ]}
             />
           </CardContent>
         </Card>
-      )}
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nomad.node.settings')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <KeyValue
-            items={[
-              [t('nomad.node.address'), node.address],
-              [t('nomad.node.version'), node.version],
-              [t('nomad.node.class'), node.nodeClass],
-              [t('nomad.node.lastDrain'), detail.lastDrain],
-              [
-                t('nomad.node.drivers'),
-                detail.drivers
-                  .filter((d) => d.detected)
-                  .map((d) => (d.healthy ? d.name : t('nomad.node.unhealthy', { driver: d.name })))
-                  .join(', ') || null,
-              ],
-              ...detail.attributes.map(([k, v]): [string, string] => [k, v]),
-            ]}
-          />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nomad.node.allocations')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold">{t('nomad.node.allocations')}</h2>
           <AllocationsTable
             allocations={detail.allocations}
             onOpen={(a) => void navigate(`/nomad/allocations/${a.id}`)}
           />
-        </CardContent>
-      </Card>
+        </section>
+      </div>
       {draining && <DrainDialog clusterId={id} node={node} onClose={() => setDraining(false)} />}
       {dialog}
     </div>

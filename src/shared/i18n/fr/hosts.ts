@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'Hôtes',
   'hosts.description': 'Les Docker Engines auxquels Homeport se connecte.',
   'hosts.add': 'Ajouter un hôte',
-  'hosts.empty': 'Aucun hôte pour l’instant.',
+  'hosts.empty': 'Aucun hôte pour l’instant',
+  'hosts.emptyDescription':
+    'Ajoutez un moteur Docker, Podman, containerd ou Incus : sur cet ordinateur, ou sur un serveur en SSH ou TLS.',
   'hosts.column.name': 'Nom',
   'hosts.column.type': 'Type',
   'hosts.column.address': 'Adresse',
@@ -14,19 +16,19 @@ export default {
   'hosts.statusTitle': '{label} : {detail}',
   'hosts.saved': 'Hôte enregistré',
   'hosts.notFound': 'Cet hôte n’existe plus.',
-  'hosts.addPage.description': 'Connectez Homeport à un Docker Engine.',
-  'hosts.switcher.label': 'Hôte',
-  'hosts.switcher.placeholder': 'Aucun hôte',
+  'hosts.addPage.description':
+    'Ajoutez un moteur trouvé sur cet ordinateur, importez-en un, ou saisissez sa connexion ci-dessous.',
+  'hosts.addPage.manual': 'Saisir la connexion',
   'hosts.switcher.add': 'Ajouter un hôte…',
   'hosts.switcher.manage': 'Gérer les hôtes',
-  'hosts.switcher.hosts': 'Hôtes',
-  'hosts.switcher.clusters': 'Clusters',
   'hosts.switcher.addCluster': 'Ajouter un cluster…',
   'hosts.switcher.manageClusters': 'Gérer les clusters',
   'hosts.switcher.whyUnusable': 'Pourquoi {name} ne peut pas être utilisé',
   'hosts.detail.enabled': 'Activé',
   'hosts.detail.reconnect': 'Reconnecter',
   'hosts.connection.title': 'Connexion',
+  'hosts.connection.save': 'Enregistrer les modifications',
+  'hosts.connection.discard': 'Annuler les modifications',
   'hosts.remove.title': 'Supprimer l’hôte',
   'hosts.remove.description':
     'Homeport oublie cet hôte, ses identifiants et les définitions de ses stacks gérées. Rien de ce qui s’exécute sur l’hôte n’est touché.',
@@ -34,6 +36,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Supprime la connexion enregistrée, la clé SSH ou les certificats, et les définitions compose de ses stacks gérées. Les conteneurs, images et volumes de l’hôte restent tels quels.',
   'hosts.sshSetup.title': 'Autoriser Homeport sur le serveur',
+  'hosts.sshSetup.show': 'Afficher les commandes',
+  'hosts.sshSetup.hide': 'Masquer les commandes',
   'hosts.sshSetup.description':
     'Exécutez ces commandes sur <mono>{server}</mono> en tant qu’utilisateur SSH, puis reconnectez-vous.',
   'hosts.sshSetup.descriptionBastions':
@@ -69,10 +73,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'Socket local',
   'hosts.form.keepHint': 'Laissez vide pour conserver la valeur enregistrée.',
+  'hosts.form.connectOver': 'Se connecter via',
   'hosts.form.name': 'Nom',
+  'hosts.form.nameHint': 'Laissez vide pour le nommer {name}.',
   'hosts.form.engine': 'Moteur',
   'hosts.form.engineHint':
-    'Compatible Docker couvre Docker et Podman ; Homeport les distingue à la connexion. containerd est joint par son socket, ici ou via SSH ; Incus aussi via HTTPS (TLS).',
+    'Compatible Docker couvre Docker et Podman. containerd est joint par son socket, ici ou via SSH ; Incus aussi via HTTPS (TLS).',
   'hosts.form.socketOnly':
     '{engine} ne répond que sur son socket : connectez-vous localement ou via SSH.',
   'hosts.form.noPlainTcp':
@@ -114,7 +120,8 @@ export default {
   'hosts.ssh.auth': 'Authentification',
   'hosts.ssh.auth.generated': 'Nouvelle clé pour cet hôte',
   'hosts.ssh.auth.imported': 'Clé existante',
-  'hosts.ssh.generated.editing': 'Cet hôte conserve sa clé. Régénérez-la depuis la page de l’hôte.',
+  'hosts.ssh.generated.editing':
+    'Cet hôte conserve sa clé. Pour la remplacer, utilisez Régénérer la clé à côté des commandes plus haut.',
   'hosts.ssh.generated.new':
     'Homeport crée une clé Ed25519 pour cet hôte et vous montre la commande qui l’autorise sur le serveur.',
   'hosts.ssh.privateKey': 'Clé privée',
@@ -179,7 +186,7 @@ export default {
   'hosts.bundle.confirmation': 'Phrase secrète, à nouveau',
   'hosts.bundle.problem.short': 'Utilisez au moins {min} caractères.',
   'hosts.bundle.problem.mismatch': 'Les deux phrases secrètes diffèrent.',
-  'hosts.bundle.export.button': 'Exporter',
+  'hosts.bundle.export.button': 'Exporter des hôtes vers un fichier…',
   'hosts.bundle.export.title': 'Exporter des hôtes',
   'hosts.bundle.export.description':
     'Écrit les hôtes choisis, avec leurs clés, leurs certificats et les clés de serveur approuvées, dans un seul fichier chiffré par une phrase secrète. Importez-le sur un autre ordinateur pour les y utiliser.',
@@ -190,7 +197,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, one {# hôte exporté} other {# hôtes exportés}}',
   'hosts.bundle.export.withoutSecrets':
     'Ceux-ci ont été exportés sans leurs identifiants, qui ne peuvent pas être ouverts sur cet ordinateur :',
-  'hosts.bundle.import.button': 'Importer',
+  'hosts.bundle.import.button': 'Importer des hôtes depuis un fichier…',
   'hosts.bundle.import.title': 'Importer des hôtes depuis un export',
   'hosts.bundle.import.description':
     'Ouvrez un fichier exporté depuis Homeport avec sa phrase secrète, puis choisissez les hôtes à ajouter. Leurs identifiants sont enregistrés chiffrés sur cet ordinateur.',

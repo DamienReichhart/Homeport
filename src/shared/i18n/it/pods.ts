@@ -65,4 +65,5 @@ export default {
   'pods.tab.metrics': 'Metriche',
   'pods.metrics.noSample':
     'metrics-server non ha ancora un campione di questo Pod: potrebbe essere appena partito, o non essere in esecuzione.',
+  'pods.failing': '{count} in errore',
 } satisfies Translation<typeof en>;

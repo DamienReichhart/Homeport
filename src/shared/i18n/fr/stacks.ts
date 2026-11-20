@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Les projets Compose de cet hôte. Les stacks gérées conservent leur définition dans Homeport, les stacks liées dans un dossier de cet ordinateur ; les stacks externes ont été déployées ailleurs.',
+  'stacks.description': 'Les projets Compose de cet hôte.',
   'stacks.new': 'Nouvelle stack',
   'stacks.search': 'Rechercher des stacks',
   'stacks.empty.title': 'Aucune stack',
-  'stacks.empty.description': 'Écrivez une définition compose et déployez-la sur cet hôte.',
+  'stacks.empty.description':
+    'Déployez un projet compose sur cet hôte, depuis un fichier compose, un dossier ou un dépôt git.',
   'stacks.column.name': 'Nom',
   'stacks.column.kind': 'Type',
   'stacks.column.state': 'État',
@@ -91,20 +91,19 @@ export default {
   'stacks.action.adopt': 'Adopter',
   'stacks.action.stop': 'Arrêter',
   'stacks.action.start': 'Démarrer',
-  'stacks.action.more': 'Plus d’actions sur la stack',
   'stacks.action.restart': 'Redémarrer',
   'stacks.action.pull': 'Récupérer les images',
   'stacks.action.rebuild': 'Reconstruire et déployer',
-  'stacks.down.title': 'Retirer {name} ?',
+  'stacks.down.title': 'Retirer {name} de {host} ?',
   'stacks.down.description':
     'Ses conteneurs et réseaux sont supprimés. Les volumes et la définition sont conservés : vous pourrez donc la déployer à nouveau.',
   'stacks.down.confirm': 'Retirer',
-  'stacks.downWithVolumes.title': 'Retirer {name} et supprimer ses volumes ?',
+  'stacks.downWithVolumes.title': 'Retirer {name} de {host} et supprimer ses volumes ?',
   'stacks.downWithVolumes.warning':
     'Les conteneurs, les réseaux et tous les volumes de cette stack sont supprimés, avec toutes leurs données.',
   'stacks.downWithVolumes.confirm': 'Supprimer avec les volumes',
   'stacks.downWithVolumes.action': 'Retirer avec les volumes',
-  'stacks.remove.title': 'Supprimer {name} ?',
+  'stacks.remove.title': 'Supprimer {name} de {host} ?',
   'stacks.remove.description':
     'Ses {count, plural, one {# conteneur} other {# conteneurs}} et réseaux sont supprimés. Les volumes sont conservés. Homeport n’a pas de fichier compose pour cette stack : elle ne pourra donc pas être redéployée d’ici.',
   'stacks.remove.action': 'Supprimer les conteneurs',
@@ -164,7 +163,7 @@ export default {
   'stacks.newPage.useFolder': 'Utiliser un dossier de cet ordinateur',
   'stacks.newPage.useRepository': 'Utiliser un dépôt git',
   'stacks.newSynced.description':
-    'Un fichier compose dans un dépôt git. Homeport le clone sur cet ordinateur, montre ce qui change et en déploie un commit. Il ne modifie jamais le dépôt.',
+    'Un fichier compose dans un dépôt git. Homeport en déploie les commits et ne le modifie jamais.',
   'stacks.newSynced.repository': 'Dépôt',
   'stacks.newSynced.pickRepository': 'Choisir un dépôt',
   'stacks.newSynced.addRepository': 'Ajouter un dépôt',
@@ -233,7 +232,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport cesse de suivre son dépôt et supprime sa copie de travail sur cet ordinateur. Ses conteneurs continuent de s’exécuter, et elle devient une stack externe. Le dépôt reste dans Paramètres → Dépôts.',
   'stacks.newLinked.description':
-    'Un projet compose dans un dossier de cet ordinateur. Homeport travaille sur ses fichiers là où ils sont et déploie depuis ce dossier.',
+    'Un projet compose dans un dossier de cet ordinateur, déployé depuis là où il est.',
   'stacks.newLinked.choose': 'Choisir un dossier…',
   'stacks.newLinked.pickTitle': 'Choisir le dossier d’un projet compose',
   'stacks.newLinked.files': 'Fichiers compose, dans l’ordre',
@@ -255,7 +254,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Aucun trousseau du système n’est disponible : l’environnement d’une stack ne peut donc pas être enregistré.',
   'stacks.editor.problems': 'Problèmes',
-  'stacks.managed.saveAndRedeploy': 'Enregistrer et redéployer',
   'stacks.profiles.title': 'Profils',
   'stacks.profiles.hint':
     'Les services associés à un profil ne s’exécutent que lorsqu’il est activé. Les services sans profil s’exécutent toujours.',
@@ -280,7 +278,6 @@ export default {
   'stacks.linked.reload': 'Recharger',
   'stacks.linked.overwrite': 'Écraser',
   'stacks.linked.saved': 'Fichiers compose enregistrés',
-  'stacks.linked.saveAndRedeploy': 'Enregistrer et redéployer',
   'stacks.linked.envNote':
     'Compose lit le .env du dossier quand il s’exécute. Homeport ne l’affiche ni ne le modifie.',
   'stacks.linked.files': 'Fichiers compose',
@@ -299,4 +296,14 @@ export default {
   'stacks.external.descriptionFrom':
     'Elle a été déployée en dehors de Homeport depuis <mono>{files}</mono> sur cette machine. Vous pouvez la démarrer, l’arrêter et la supprimer ; adoptez-la avec son fichier compose pour la modifier et la redéployer.',
   'stacks.palette.new': 'Nouvelle stack',
+  'stacks.managed.deploy': 'Déployer',
+  'stacks.managed.moreSave': 'Autres façons d’enregistrer',
+  'stacks.managed.saveOnly': 'Enregistrer sans déployer',
+  'stacks.managed.unsaved': 'Modifications non enregistrées',
+  'stacks.forget.sectionTitle': 'Oublier cette stack',
+  'stacks.kind.managedHint': 'Homeport conserve son fichier compose et son environnement.',
+  'stacks.kind.linkedHint': 'Ses fichiers compose sont dans un dossier de cet ordinateur.',
+  'stacks.kind.syncedHint': 'Déployée depuis un dépôt git.',
+  'stacks.kind.externalHint': 'Déployée en dehors de Homeport.',
+  'stacks.services.noContainer': 'Aucun conteneur',
 } satisfies Translation<typeof en>;

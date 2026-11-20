@@ -41,7 +41,7 @@ On the **Containers** page, a container a unit created shows the unit's service 
 
 ## A unit's page
 
-- The header has **Start**, **Stop** and **Restart**, **Edit** and **Remove**.
+- The header has the unit's service actions: **Start**, **Stop** and **Restart**. One that can't be used says why in its tooltip.
 - **Service** shows the systemd unit, whether it's a system unit or a user unit (`systemctl --user`), where its file is on the Host, and its application and pod when it has them.
 - **Unit file** shows the file as Podman reads it, highlighted.
 - **Containers** lists the containers it created, each opening its container page.
@@ -58,9 +58,9 @@ Podman writes the files where its user's units go and reloads systemd, so the se
 
 ## Editing and removing
 
-**Edit** opens the unit's file. **Save** writes it in place and reloads systemd; the files installed beside it stay. A running service keeps its old settings until you **Restart** it. If the file changed on the Host since you opened it, **Save** is refused and says so, rather than overwrite that change: open the unit again to see it, or choose **Overwrite**.
+**Edit**, on the **Unit file** card, opens the unit's file. **Save** writes it in place and reloads systemd; the files installed beside it stay. A running service keeps its old settings until you **Restart** it. If the file changed on the Host since you opened it, **Save** is refused and says so, rather than overwrite that change: open the unit again to see it, or choose **Overwrite**.
 
-**Remove** deletes the unit's file and reloads systemd. **Stop its running service first** is on by default; without it, Podman refuses to remove a running unit. Containers, volumes and images the unit created are kept.
+**Remove**, in **Remove this unit** at the foot of the unit's page, deletes the unit's file and reloads systemd. **Stop its service if it’s running** is on by default; without it, Podman refuses to remove a running unit. Containers, volumes and images the unit created are kept.
 
 ## What Homeport runs on the Host
 

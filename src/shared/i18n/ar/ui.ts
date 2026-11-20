@@ -33,4 +33,7 @@ export default {
   'ui.errorDetails.rawDetailNote': 'كما كتبها النظام أو المحرك أو المكتبة، لذا لم تُترجم.',
   'ui.errorDetails.openLogFolder': 'فتح مجلد السجلات',
   'ui.errorDetails.copyReport': 'نسخ التقرير',
+  'ui.env.show': 'إظهار القيم',
+  'ui.env.hide': 'إخفاء القيم',
+  'ui.confirm.typeName': 'اكتب {name} للتأكيد',
 } satisfies Translation<typeof en>;

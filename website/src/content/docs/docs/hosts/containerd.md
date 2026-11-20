@@ -54,7 +54,7 @@ A containerd too old to connect leaves the Host **Misconfigured**, naming its ve
 
 ## Namespaces
 
-Every containerd object lives in a **namespace**: nerdctl uses `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. The pages show one namespace at a time, picked under the Host switcher, which lists each one with how many containers and images it holds. Homeport remembers the pick for each Host between launches. Until you pick one, a Host shows `default`, or the only namespace holding something when `default` is empty, so a k3s Host opens on `k8s.io`.
+Every containerd object lives in a **namespace**: nerdctl uses `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. The pages show one namespace at a time, picked under the selected Host in the sidebar, which lists each one with how many containers and images it holds. Homeport remembers the pick for each Host between launches. Until you pick one, a Host shows `default`, or the only namespace holding something when `default` is empty, so a k3s Host opens on `k8s.io`.
 
 The **Namespaces** page creates empty namespaces and removes empty ones. containerd refuses to remove a namespace that still holds anything, and Homeport says what it still holds: remove its containers, images and snapshots first.
 
@@ -70,7 +70,7 @@ In containerd, a **container** is only metadata: its image, its spec, its snapsh
 | **Send signal** | Sends any signal, by name (`SIGHUP`) or number, to the task's main process.                                                                                                                                                                         |
 | **Remove**      | Asks first; kills a running task, removes the task and the container, and its snapshot with the files it changed, unless you untick **Also remove**: a kept snapshot is marked `containerd.io/gc.root`, so containerd's garbage collector keeps it. |
 
-A container's page shows its runtime, snapshot, labels and OCI spec. Homeport doesn't create containers on containerd: containerd has no networking of its own, which nerdctl and CNI add.
+Each row, and a container's page, has its main action at hand (**Stop**, **Start** or **Resume**) and the rest, **Remove** included, in its **⋯** menu. A container's page shows its runtime, snapshot, labels and OCI spec. Homeport doesn't create containers on containerd: containerd has no networking of its own, which nerdctl and CNI add.
 
 The **kubelet** manages Kubernetes' containers: it starts them again after a stop and makes them again after a removal. Their pages say so; change the Pod on its Cluster instead. Removing a nerdctl container from here leaves nerdctl's own records of it (its name and network), as `ctr` would; `nerdctl rm` is the cleaner way for those.
 
@@ -104,7 +104,7 @@ An image a container of the namespace was made from can't be removed; remove the
 
 Snapshots are where containerd's disk goes: the layers of unpacked images, and each container's writable layer. The **Snapshots** page shows one snapshotter's (`overlayfs` first, or any other the Host loaded) as a tree by parent, largest first, with their usage as `ctr snapshot usage` counts it and the total at the top.
 
-Each says what uses it: a container, by its snapshot, or an image, by its layers. Snapshots nothing uses and nothing is built on — such as one kept when its container was removed here — can be shown alone with **Only unused**, and removed. The others can't be removed from here. A snapshot nothing references and nothing marks as a root, such as one `ctr containers rm --keep-snapshot` leaves, doesn't last: containerd's garbage collector removes it on its next run.
+Each says what uses it: a container, by its snapshot, or an image, by its layers. Snapshots nothing uses and nothing is built on — such as one kept when its container was removed here — can be shown alone with **Only unused**, and removed. The others can't be removed from here. A snapshot nothing references and nothing marks as a root, such as one `ctr containers rm --keep-snapshot` leaves, doesn't last: containerd's garbage collector removes it on its next run. **Remove unused** removes every snapshot nothing uses at once, whole unused chains children first, after one confirmation that says how much space it frees.
 
 ## What runs on the Host
 

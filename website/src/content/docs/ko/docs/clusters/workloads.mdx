@@ -5,7 +5,7 @@ description: 클러스터의 Namespace, Deployment, StatefulSet, DaemonSet, Job,
 
 import { DocScreenshot } from '@/features/docs';
 
-전환기에서 클러스터를 선택하면 사이드바에 그 클러스터의 페이지가 표시됩니다. **워크로드** 페이지와 **Pod** 페이지에는 클러스터에서 실행 중인 것이 나열됩니다. 모든 목록은 Kubernetes watch로 클러스터를 실시간으로 따라가므로, 스케일한 Deployment나 크래시한 Pod의 새 상태가 새로 고침 없이 몇 초 안에 표시됩니다. 각 페이지에서는 표시된 대상에 대해 [로그와 터미널](/docs/clusters/logs-exec/), [스케일, 다시 시작, 삭제](/docs/clusters/actions/), [YAML 편집](/docs/clusters/yaml/) 작업도 할 수 있습니다.
+사이드바에서 클러스터를 선택하면 그 아래에 클러스터의 페이지가 열립니다. **워크로드** 페이지와 **Pod** 페이지에는 클러스터에서 실행 중인 것이 나열됩니다. 모든 목록은 Kubernetes watch로 클러스터를 실시간으로 따라가므로, 스케일한 Deployment나 크래시한 Pod의 새 상태가 새로 고침 없이 몇 초 안에 표시됩니다. 각 페이지에서는 표시된 대상에 대해 [로그와 터미널](/docs/clusters/logs-exec/), [스케일, 다시 시작, 삭제](/docs/clusters/actions/), [YAML 편집](/docs/clusters/yaml/) 작업도 할 수 있습니다.
 
 ## Namespace
 
@@ -47,7 +47,7 @@ import { DocScreenshot } from '@/features/docs';
 - **로그**: Pod의 로그를 모두 섞어서 보거나 하나씩 봅니다(CronJob에는 없으며, 그 Job에 각자의 로그가 있습니다).
 - **조건**, **이벤트**(경고가 먼저 표시되며, Kubernetes는 약 1시간 동안 보관), **YAML**(`managedFields` 제외, **편집** 버튼 포함).
 
-헤더에는 워크로드의 작업이 있습니다. 해당하는 경우 **스케일**, **다시 시작**, **일시 중단** 또는 **재개**, **지금 실행**, 그리고 **삭제** 버튼이 있습니다. [스케일, 다시 시작, 삭제](/docs/clusters/actions/)를 참고하세요.
+헤더에는 일상적인 작업, 즉 **스케일**와 **다시 시작**, CronJob이라면 **지금 실행**와 **일시 중단**(일시 중단된 뒤에는 **재개**)가 있고, **추가 작업** 메뉴에 **삭제**가 있습니다. [스케일, 다시 시작, 삭제](/docs/clusters/actions/)를 참고하세요.
 
 ## Pod
 

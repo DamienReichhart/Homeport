@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 Ein Cluster kann neben einem Kubernetes-Cluster auch ein **Nomad**-Cluster sein. Homeport spricht von Ihrem Rechner aus mit der HTTP-API, die ein Nomad-Agent, ob Server oder Client, bereits bereitstellt: Auf dem Cluster wird nichts installiert, und auf diesem Rechner ist keine `nomad`-CLI nötig. Alles, was es tut, geht über die API, mit den Rechten des ACL-Tokens, das Sie ihm geben.
 
-Nomad-Cluster stehen neben Ihren Hosts und Kubernetes-Clustern im Umschalter. Wenn Sie einen auswählen, zeigt die Übersicht seine Version, Region und Adresse, und die Seitenleiste seine eigenen Seiten: **[Jobs](#jobs)**, wo Sie [Jobs ausführen](#einen-job-ausführen) und die [Logs und Shells](#logs-und-shell) ihrer Allocations öffnen, und **[Nodes](#nodes)**. Die Kubernetes-Seiten sind ausgeblendet, solange er ausgewählt ist.
+Nomad-Cluster stehen in der Seitenleiste bei Ihren Kubernetes-Clustern, jeder mit seinem Status. Wenn Sie einen auswählen, zeigt die Übersicht seine Version, Region und Adresse, und die Seitenleiste seine eigenen Seiten: **[Jobs](#jobs)**, wo Sie [Jobs ausführen](#einen-job-ausführen) und die [Logs und Shells](#logs-und-shell) ihrer Allocations öffnen, und **[Nodes](#nodes)**. Die Kubernetes-Seiten sind ausgeblendet, solange er ausgewählt ist.
 
 Was Sie tun können, in der Reihenfolge, in der diese Seite es erklärt:
 
@@ -20,9 +20,9 @@ Was Sie tun können, in der Reihenfolge, in der diese Seite es erklärt:
 
 ## Einen Nomad-Cluster hinzufügen
 
-Wählen Sie **Cluster hinzufügen…** im Umschalter, dann den Tab **Nomad**, und füllen Sie aus:
+Wählen Sie **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste, dann **Cluster hinzufügen…** und den Tab **Nomad**, und füllen Sie aus:
 
-- **Name**: was der Umschalter und die Übersicht anzeigen, etwa `nomad-prod`.
+- **Name**: was die Seitenleiste, das Board und die Übersicht anzeigen, etwa `nomad-prod`.
 - **Adresse**: die HTTP-API des Agenten, wie `NOMAD_ADDR` sie der `nomad`-CLI angibt. `nomad.example.com` wird zu `http://nomad.example.com:4646`: Port 4646 wird ergänzt, wenn keiner angegeben ist, und `https://` wird verwendet, wenn Sie TLS-Material angeben.
 - **Region**: Lassen Sie sie leer, um die eigene Region des Agenten zu verwenden. Setzen Sie sie, um über einen föderierten Agenten eine andere Region zu verwalten, wie `NOMAD_REGION` es tut.
 - **ACL-Token**: die Secret-ID des Tokens, wenn der Cluster ACLs aktiviert hat. Siehe [das Token](#das-acl-token) unten.
@@ -58,7 +58,7 @@ Ein Token, das den Agenten nicht lesen kann (`agent:read`), verbindet sich trotz
 
 Öffnen Sie einen Job für seine Einstellungen (Priorität, Rechenzentren, Node-Pool, Version), seine **Task Groups** mit ihren Tasks und Treibern und seine **Allocations**, die neuesten zuerst, mit dem Node, auf dem jede läuft.
 
-- **Stoppen** fragt zuerst nach und nennt dabei den Job und seinen Namespace. Nomad stoppt jede Allocation und behält die Definition des Jobs, bis seine Garbage Collection läuft; haken Sie **Endgültig entfernen (purge)** an, um den Job und seinen Verlauf sofort zu entfernen, wie `nomad job stop -purge` es tut. Endgültiges Entfernen ist standardmäßig aus.
+- **Stoppen** fragt zuerst nach und nennt dabei den Job und seinen Namespace. Nomad stoppt jede Allocation und behält die Definition des Jobs, bis seine Garbage Collection läuft; haken Sie **Endgültig entfernen (purge)** an, um den Job und seinen Verlauf sofort zu entfernen, wie `nomad job stop -purge` es tut. Endgültiges Entfernen ist standardmäßig aus. Ist **Endgültig entfernen (purge)** angekreuzt, fragt Homeport zuerst nach dem Namen des Jobs.
 - **Skalieren** bei einer Task Group eines `service`- oder `batch`-Jobs legt fest, wie viele Allocations sie ausführt, wie `nomad job scale` es tut. Wenn die Gruppe einen `scaling`-Block hat, muss die Anzahl innerhalb von dessen `min` und `max` bleiben; Homeport lehnt eine Anzahl außerhalb ab, bevor es Nomad fragt, und zeigt den eigenen Grund von Nomad, wenn dieses ablehnt, etwa ein laufendes Deployment. Ein Autoscaler, der nach der Policy handelt, kann die Anzahl wieder ändern.
 
 Jobs aufzulisten braucht die Capabilities `list-jobs` und `read-job`; einen zu stoppen braucht `submit-job` und zu skalieren `scale-job` (oder `submit-job`), jeweils im Namespace des Jobs.

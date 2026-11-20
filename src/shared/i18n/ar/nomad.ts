@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'تشغيل job',
 
   'nomad.job.description': 'job من نوع {type} في الـ namespace {namespace}، الإصدار {version}',
-  'nomad.job.back': 'Jobs',
   'nomad.job.stop': 'إيقاف',
   'nomad.job.editAndRun': 'تحرير وتشغيل',
   'nomad.job.sourceFailed': 'تعذّر على Homeport قراءة مواصفات الـ job',
@@ -169,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'أُلغي التفريغ',
 
   'nomad.node.description': 'عقدة عميل في {datacenter}، الـ node pool {pool}',
-  'nomad.node.back': 'العقد',
   'nomad.node.eligible': 'مؤهلة لـ allocations جديدة',
   'nomad.node.drain': 'تفريغ',
   'nomad.node.settings': 'العقدة',

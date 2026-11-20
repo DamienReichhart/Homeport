@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': '클러스터',
-  'clusters.summary': '{count, plural, other {클러스터 #개}}',
+  'clusters.description': 'Homeport가 연결하는 Kubernetes 및 Nomad 클러스터입니다.',
   'clusters.add': '클러스터 추가',
   'clusters.notFound': '이 클러스터는 더 이상 존재하지 않습니다.',
   'clusters.empty.title': '아직 클러스터가 없습니다',
   'clusters.empty.description':
-    'kubeconfig로 연결할 수 있는 Kubernetes 클러스터를 추가하세요. Homeport는 클러스터에 아무것도 설치하지 않습니다.',
+    'kubeconfig로 연결할 수 있는 Kubernetes 클러스터나, 주소로 Nomad 에이전트를 추가하세요. Homeport는 클러스터에 아무것도 설치하지 않습니다.',
   'clusters.column.name': '이름',
   'clusters.column.status': '상태',
   'clusters.column.kind': '종류',
   'clusters.column.server': 'API',
   'clusters.column.auth': '로그인 방식',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': '클러스터 추가',
   'clusters.palette.manage': '클러스터 관리',
 
@@ -27,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL 토큰',
 
   'clusters.addPage.description':
-    '선택한 각 Kubernetes 컨텍스트 또는 지정한 각 Nomad 에이전트가 하나의 클러스터가 됩니다. 자격 증명은 암호화되어 저장되며, 디스크에 평문으로 저장되지 않습니다.',
+    'kubeconfig에서 컨텍스트를 고르거나 주소로 Nomad 에이전트를 지정하세요.',
   'clusters.addPage.fromMachine': '이 컴퓨터의 kubeconfig에서',
   'clusters.addPage.paste': 'kubeconfig 붙여 넣기',
   'clusters.addPage.nomad': 'Nomad',
@@ -54,6 +55,10 @@ export default {
   'clusters.detail.name': '이름',
   'clusters.detail.rename': '이름 바꾸기',
   'clusters.detail.renamed': '클러스터 이름을 바꿨습니다',
+  'clusters.rename.open': '이름 바꾸기…',
+  'clusters.rename.title': '{name} 이름 바꾸기',
+  'clusters.rename.description':
+    'Homeport에서의 이름만 바뀌며, kubeconfig 컨텍스트는 원래 이름을 유지합니다.',
   'clusters.connection.title': '연결',
   'clusters.connection.server': 'API 서버',
   'clusters.connection.address': '주소',
@@ -123,6 +128,9 @@ export default {
   'clusters.remove.title': '클러스터 삭제',
   'clusters.remove.description':
     'Homeport가 클러스터와 저장된 자격 증명을 잊습니다. 클러스터나 kubeconfig에는 아무것도 변경되지 않습니다.',
+  'clusters.remove.descriptionNomad':
+    'Homeport가 클러스터와 저장된 자격 증명을 잊습니다. 클러스터에는 아무것도 변경되지 않습니다.',
   'clusters.remove.confirmTitle': '{name} 클러스터를 삭제하시겠습니까?',
   'clusters.remove.confirmDescription': 'kubeconfig에서 다시 추가할 수 있습니다.',
+  'clusters.remove.confirmDescriptionNomad': '주소로 다시 추가할 수 있습니다.',
 } satisfies Translation<typeof en>;

@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'На этой странице в Homeport возникла непредвиденная ошибка. Обычно помогает перезагрузка; если ошибка повторяется, скопируйте отчёт из раздела «Подробности» в issue.',
   'app.crash.reload': 'Перезагрузить',
-  'app.crash.backToOverview': 'Вернуться к обзору',
+  'app.crash.backToBoard': 'Вернуться на Доску',
   'app.shortcuts.title': 'Сочетания клавиш',
   'app.shortcuts.description':
     'Сочетания, которые работают здесь. Клавиши вроде N и / не срабатывают, пока вы печатаете в поле.',
@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'Хосты',
   'app.palette.actions': 'Действия',
   'app.palette.switchTo': 'Переключиться на {name}',
+  'app.nav.search': 'Поиск',
+  'app.nav.hosts': 'Хосты',
+  'app.nav.clusters': 'Кластеры',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': 'Запущено контейнеров: {running} из {total}',
+  'app.nav.add': 'Добавить хост или кластер',
 } satisfies Translation<typeof en>;

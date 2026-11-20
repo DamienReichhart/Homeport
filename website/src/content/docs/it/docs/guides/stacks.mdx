@@ -67,7 +67,7 @@ Una cartella di progetto che non è ancora in esecuzione sull’host può essere
 
 4. Controlla il **Nome**. Deriva dal `name:` di primo livello dei file, oppure dal nome della cartella come lo scrive Compose (`My App` diventa `myapp`).
 
-5. Scegli **Salva e distribuisci**, oppure **Salva** per distribuire più tardi.
+5. Scegli **Salva e distribuisci**, oppure **Salva senza distribuire**, sotto la sua freccia, per distribuire più tardi.
 
 </Steps>
 
@@ -86,7 +86,7 @@ La cartella è mostrata sotto il nome dello stack nell’elenco e nella sua pagi
 
 ### Modificare uno stack collegato
 
-La scheda **Definizione** di uno stack collegato mostra ciascuno dei suoi file compose in una scheda propria, letti dalla cartella, con il percorso della cartella sopra di essi. Modificali e scegli **Salva**: Homeport riscrive ogni file modificato dove si trova, così il tuo editor e il controllo di versione vedono la modifica. Il file viene sostituito in un solo passaggio, mantenendo i suoi permessi, così nulla lo legge mai scritto a metà.
+La scheda **Definizione** di uno stack collegato mostra ciascuno dei suoi file compose in una scheda propria, letti dalla cartella, con il percorso della cartella sopra di essi. Modificali e scegli **Salva senza distribuire**: Homeport riscrive ogni file modificato dove si trova, così il tuo editor e il controllo di versione vedono la modifica. Il file viene sostituito in un solo passaggio, mantenendo i suoi permessi, così nulla lo legge mai scritto a metà.
 
 I controlli sotto l’editor seguono le regole degli stack collegati: `build:`, `env_file:` e i percorsi relativi vanno bene, perché la cartella c’è. Non c’è un editor dell’ambiente: Compose legge il `.env` della cartella quando viene eseguito, e Homeport non lo mostra né lo modifica.
 
@@ -102,9 +102,9 @@ Se la cartella non c’è più, o un file non si può leggere, la scheda indica 
 
 **Distribuisci**, **Ridistribuisci**, **Scarica immagini** e **Smonta** funzionano anche per gli stack collegati. Homeport esegue `docker compose` nella cartella dello stack, con `--project-directory` impostato su di essa e un `--file` per ciascuno dei suoi file compose, in ordine (come se lo eseguissi tu lì), sempre tramite la propria connessione per gli host SSH e TLS. Quindi `build:`, `env_file:`, i percorsi `./relative` e il `.env` della cartella funzionano tutti.
 
-Un servizio con `build:` viene compilato quando non ha ancora un’immagine. Per ricompilarlo dopo aver modificato il suo codice, scegli **Ricompila e distribuisci** nel menu **⋮** dello stack (`up --build`). La build viene eseguita sull’Engine dell’**host**, con il contesto di build inviato da questo computer. I servizi con `build:` non vengono mai scaricati; le loro immagini di base vengono scaricate dalla build stessa, con il tuo `docker login`.
+Un servizio con `build:` viene compilato quando non ha ancora un’immagine. Per ricompilarlo dopo aver modificato il suo codice, scegli **Ricompila e distribuisci** nel menu **Altre azioni** dello stack (`up --build`). La build viene eseguita sull’Engine dell’**host**, con il contesto di build inviato da questo computer. I servizi con `build:` non vengono mai scaricati; le loro immagini di base vengono scaricate dalla build stessa, con il tuo `docker login`.
 
-**Salva e ridistribuisci** nella scheda **Definizione** scrive i file che hai modificato, poi distribuisce.
+**Distribuisci** nella scheda **Definizione** scrive i file che hai modificato, poi distribuisce; **Salva senza distribuire**, sotto la sua freccia, li scrive soltanto.
 
 <Aside type="caution" title="Percorsi relativi su un host remoto">
   Un bind mount come `./data:/data` si risolve nella cartella su **questo** computer, per esempio
@@ -150,7 +150,7 @@ A Compose stesso non viene mai passato un accesso: nessun file che Homeport crea
 
 5. Metti le variabili in **Ambiente**, una `KEY=value` per riga, come in un file `.env`. Compose le sostituisce a `${KEY}` nel file. Compila le password che un modello lascia vuote.
 
-6. Scegli **Salva e distribuisci**, oppure **Salva** per distribuire più tardi.
+6. Scegli **Salva e distribuisci**, oppure **Salva senza distribuire**, sotto la sua freccia, per distribuire più tardi.
 
 </Steps>
 
@@ -207,7 +207,7 @@ services:
 DB_PASSWORD=correct-horse-battery-staple
 ```
 
-Sono ammessi righe vuote, `# commenti` e prefissi `export`. I valori possono essere tra virgolette; tra virgolette doppie, `\n` è un a capo.
+Sono ammessi righe vuote, `# commenti` e prefissi `export`. I valori possono essere tra virgolette; tra virgolette doppie, `\n` è un a capo. I valori appaiono come puntini, mentre chiavi e commenti restano leggibili, finché non scegli **Mostra i valori**; un ambiente vuoto è pronto per la digitazione.
 
 <Aside>
   Per memorizzare un ambiente serve un [portachiavi del sistema
@@ -255,11 +255,11 @@ Contano solo i profili dello stack. Una variabile `COMPOSE_PROFILES` nella tua s
   una distribuzione a metà. Ridistribuisci per completarla.
 </Aside>
 
-Per modificare uno stack gestito, aprilo, modifica la sua **Definizione** e scegli **Salva e ridistribuisci**. Compose ricrea solo i servizi che sono cambiati, e rimuove quelli che hai eliminato dal file.
+Per modificare uno stack gestito, aprilo, modifica la sua **Definizione** e scegli **Distribuisci**: salva la definizione, mostra cosa cambia, poi distribuisce. Compose ricrea solo i servizi che sono cambiati e rimuove quelli che hai eliminato dal file. **Modifiche non salvate**, accanto al pulsante, indica quando c’è qualcosa da salvare; **Salva senza distribuire**, sotto la sua freccia, tiene la modifica per la prossima distribuzione. Uno stack mai distribuito si apre sulla sua scheda **Definizione**, con **Distribuisci** a portata di mano.
 
 ### Rivedere le modifiche prima di una ridistribuzione
 
-Prima che venga eseguita una ridistribuzione (**Ridistribuisci**, **Ricompila e distribuisci**, o **Salva e ridistribuisci** per uno stack in esecuzione), Homeport mostra **Rivedi le modifiche**: la definizione distribuita l’ultima volta (la voce riuscita più recente della sua [cronologia](#cronologia-delle-distribuzioni-e-ripristino)) a confronto con quella che sta per esserlo.
+Prima che venga eseguita una ridistribuzione (**Ridistribuisci**, **Ricompila e distribuisci**, o **Distribuisci** per uno stack in esecuzione), Homeport mostra **Rivedi le modifiche**: la definizione distribuita l’ultima volta (la voce riuscita più recente della sua [cronologia](#cronologia-delle-distribuzioni-e-ripristino)) a confronto con quella che sta per esserlo.
 
 - Ogni file compose mostra le righe modificate in linea: le righe rimosse sopra quelle che le sostituiscono. Un file invariato è compresso; selezionalo per aprirlo. I file aggiunti, rimossi o uniti in un altro ordine vengono indicati.
 - Le variabili d’ambiente mostrano solo il loro nome, contrassegnato come **Aggiunto**, **Rimosso** o **Modificato** (una password modificata appare come **Modificato** senza mostrare né il vecchio né il nuovo valore), e quante altre sono invariate.
@@ -271,7 +271,7 @@ Il confronto riguarda solo le definizioni, non la configurazione effettiva dei c
 
 ## Cronologia delle distribuzioni e ripristino
 
-Ogni distribuzione di uno stack gestito, collegato o sincronizzato da Homeport (**Distribuisci**, **Ridistribuisci**, **Ricompila e distribuisci**, **Salva e ridistribuisci**, una [sincronizzazione](/docs/guides/synced-stacks/#sincronizzare)) viene registrata con i file compose, l’ambiente e i profili usati, quando è stata eseguita e come è terminata; quella di uno stack sincronizzato mostra anche il suo commit, e se è stata avviata dalla distribuzione automatica. La scheda **Cronologia** della pagina dello stack elenca le ultime 20, dalla più recente: **Riuscita**, **Non riuscita** con il suo codice di uscita, o **Non terminata** per un’esecuzione la cui finestra è stata chiusa prima della fine. **Distribuita ora** contrassegna la più recente tra quelle riuscite.
+Ogni distribuzione di uno stack gestito, collegato o sincronizzato da Homeport (**Distribuisci**, **Ridistribuisci**, **Ricompila e distribuisci**, una [sincronizzazione](/docs/guides/synced-stacks/#sincronizzare)) viene registrata con i file compose, l’ambiente e i profili usati, quando è stata eseguita e come è terminata; quella di uno stack sincronizzato mostra anche il suo commit, e se è stata avviata dalla distribuzione automatica. La scheda **Cronologia** della pagina dello stack elenca le ultime 20, dalla più recente: **Riuscita**, **Non riuscita** con il suo codice di uscita, o **Non terminata** per un’esecuzione la cui finestra è stata chiusa prima della fine. **Distribuita ora** contrassegna la più recente tra quelle riuscite.
 
 Seleziona una distribuzione per vederne i file compose, in sola lettura. Il suo ambiente è memorizzato cifrato come quello dello stack stesso, e la scheda mostra solo i nomi delle sue variabili. Senza un portachiavi l’elenco funziona comunque; una distribuzione con un ambiente indica semplicemente che non può essere aperta.
 
@@ -317,11 +317,13 @@ Anche uno stack esterno mostra **Aggiornamento disponibile**, ma il suo **Aggior
 | **Riavvia**                           | Tutti                             | Riavvia ogni container.                                                                                                                               |
 | **Scarica immagini**                  | Gestiti, collegati, sincronizzati | Scarica l’immagine di ogni servizio con gli accessi memorizzati, per ottenere quelle più recenti prima di ridistribuire.                              |
 | **Smonta**                            | Gestiti, collegati, sincronizzati | `docker compose down`: rimuove container e reti, conserva i volumi e la definizione.                                                                  |
-| **Smonta con i volumi**               | Gestiti, collegati, sincronizzati | Elimina anche i volumi dello stack **e i loro dati**.                                                                                                 |
+| **Smonta con i volumi**               | Gestiti, collegati, sincronizzati | Elimina anche i volumi dello stack **e i loro dati**. Chiede prima di digitare il nome dello stack.                                                   |
 | **Rimuovi i container**               | Esterni                           | Rimuove i suoi container e le sue reti. I volumi vengono conservati.                                                                                  |
 | **Adotta**                            | Esterni                           | Fornisce a Homeport il file compose, rendendolo gestito.                                                                                              |
 
-**Dimentica la definizione**, nella scheda **Definizione** di uno stack gestito, elimina il file compose e l’ambiente da Homeport ma lascia i container in esecuzione; lo stack diventa esterno. **Dimentica**, nella scheda **Definizione** di uno stack collegato, elimina la nota di Homeport sulla cartella; la cartella, i suoi file e i container restano intatti.
+Nella pagina Stack, ogni riga mostra due icone: l’azione che aggiorna lo stack (**Aggiorna**, **Sincronizza**, **Distribuisci**, **Ridistribuisci** o **Adotta**) e **Arresta** o **Avvia**. Il suo menu contiene il resto. La pagina di uno stack ha la stessa coppia nell’intestazione e il resto nel menu **Altre azioni**; **Riavvia** e lo smontaggio compaiono solo per uno stack in esecuzione.
+
+Dimenticare è messo da parte in **Dimentica questo stack**, in fondo alla scheda **Definizione**. **Dimentica la definizione**, per uno stack gestito, elimina da Homeport il file compose e l’ambiente ma lascia in esecuzione i container; lo stack diventa esterno. **Dimentica**, per uno stack collegato, elimina la nota di Homeport sulla cartella; la cartella, i suoi file e i container restano come sono.
 
 ## Adottare uno stack esterno
 
@@ -333,7 +335,7 @@ Anche uno stack esterno mostra **Aggiornamento disponibile**, ma il suo **Aggior
 
 3. Aggiungi le sue variabili d’ambiente, se ne usava.
 
-4. Scegli **Salva** per prenderlo in carico senza toccare i container in esecuzione, oppure **Salva e distribuisci** per ridistribuirlo subito.
+4. Scegli **Salva senza distribuire**, sotto la freccia di **Salva e distribuisci**, per prenderlo in carico senza toccare i container in esecuzione, oppure **Salva e distribuisci** per ridistribuirlo subito.
 
 </Steps>
 

@@ -39,16 +39,19 @@ export function PullDialog({
   onOpenChange,
   puller,
   search = true,
+  reference: initialReference = '',
 }: {
   hostId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   puller?: ImagePuller;
   search?: boolean;
+  /** The reference the field starts with. */
+  reference?: string;
 }) {
   const dockerPull = usePullImage(hostId);
   const pull = puller ?? dockerPull;
-  const [reference, setReference] = useState('');
+  const [reference, setReference] = useState(initialReference);
   const [pulling, setPulling] = useState<string | null>(null);
   /** The Docker Hub repository whose tags are listed, once one is chosen. */
   const [repository, setRepository] = useState<string | null>(null);
@@ -102,6 +105,8 @@ export function PullDialog({
               }
             }}
             placeholder={t('images.pullDialog.placeholder')}
+            className="font-mono"
+            spellCheck={false}
             autoFocus
             disabled={busy}
             aria-label={t('images.pullDialog.reference')}

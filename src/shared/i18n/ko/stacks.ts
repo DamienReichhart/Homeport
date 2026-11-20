@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': '스택',
   'stacks.title': '스택',
-  'stacks.description':
-    '이 호스트의 Compose 프로젝트입니다. 관리형 스택은 정의를 Homeport에, 링크된 스택은 이 컴퓨터의 폴더에 보관하며, 외부 스택은 다른 곳에서 배포되었습니다.',
+  'stacks.description': '이 호스트의 Compose 프로젝트입니다.',
   'stacks.new': '새 스택',
   'stacks.search': '스택 검색',
   'stacks.empty.title': '스택 없음',
-  'stacks.empty.description': 'compose 정의를 작성해 이 호스트에 배포하세요.',
+  'stacks.empty.description':
+    'compose 파일, 폴더 또는 git 저장소에서 이 호스트에 compose 프로젝트를 배포하세요.',
   'stacks.column.name': '이름',
   'stacks.column.kind': '종류',
   'stacks.column.state': '상태',
@@ -88,20 +88,19 @@ export default {
   'stacks.action.adopt': '관리형으로 전환',
   'stacks.action.stop': '중지',
   'stacks.action.start': '시작',
-  'stacks.action.more': '추가 스택 작업',
   'stacks.action.restart': '다시 시작',
   'stacks.action.pull': '이미지 풀',
   'stacks.action.rebuild': '다시 빌드 후 배포',
-  'stacks.down.title': '{name} 스택을 내리시겠습니까?',
+  'stacks.down.title': '{host}의 {name} 스택을 내리시겠습니까?',
   'stacks.down.description':
     '컨테이너와 네트워크가 삭제됩니다. 볼륨과 정의는 유지되므로 다시 배포할 수 있습니다.',
   'stacks.down.confirm': '내리기',
-  'stacks.downWithVolumes.title': '{name} 스택을 내리고 볼륨을 삭제하시겠습니까?',
+  'stacks.downWithVolumes.title': '{host}의 {name} 스택을 내리고 볼륨을 삭제하시겠습니까?',
   'stacks.downWithVolumes.warning':
     '이 스택의 컨테이너, 네트워크, 모든 볼륨이 데이터와 함께 삭제됩니다.',
   'stacks.downWithVolumes.confirm': '볼륨과 함께 삭제',
   'stacks.downWithVolumes.action': '볼륨과 함께 내리기',
-  'stacks.remove.title': '{name} 스택을 삭제하시겠습니까?',
+  'stacks.remove.title': '{host}에서 {name} 스택을 삭제하시겠습니까?',
   'stacks.remove.description':
     '{count, plural, other {컨테이너 #개}}와 네트워크가 삭제됩니다. 볼륨은 유지됩니다. Homeport에 이 스택의 compose 파일이 없으므로 여기에서 다시 배포할 수 없습니다.',
   'stacks.remove.action': '컨테이너 삭제',
@@ -157,7 +156,7 @@ export default {
   'stacks.newPage.useFolder': '이 컴퓨터의 폴더 사용',
   'stacks.newPage.useRepository': 'git 저장소 사용',
   'stacks.newSynced.description':
-    'git 저장소의 compose 파일입니다. Homeport가 이 컴퓨터에 저장소를 클론하고, 변경 사항을 보여 주고, 커밋을 배포합니다. 저장소는 절대 편집하지 않습니다.',
+    'git 저장소의 compose 파일입니다. Homeport가 커밋을 배포하며 저장소는 절대 편집하지 않습니다.',
   'stacks.newSynced.repository': '저장소',
   'stacks.newSynced.pickRepository': '저장소 선택',
   'stacks.newSynced.addRepository': '저장소 추가',
@@ -223,7 +222,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport가 저장소 추적을 중단하고 이 컴퓨터의 체크아웃을 삭제합니다. 컨테이너는 계속 실행되며 외부 스택이 됩니다. 저장소는 설정 → 저장소에 남아 있습니다.',
   'stacks.newLinked.description':
-    '이 컴퓨터의 폴더에 있는 compose 프로젝트입니다. Homeport는 파일을 그 자리에서 다루고 그 폴더에서 배포합니다.',
+    '이 컴퓨터의 폴더에 있는 compose 프로젝트를 그 자리에서 배포합니다.',
   'stacks.newLinked.choose': '폴더 선택…',
   'stacks.newLinked.pickTitle': 'compose 프로젝트 폴더 선택',
   'stacks.newLinked.files': 'Compose 파일(순서대로)',
@@ -244,7 +243,6 @@ export default {
     '.env 파일과 같습니다. 암호화되어 저장되며, {variable} 치환을 위해 compose에 전달되고, 디스크에 기록되지 않습니다.',
   'stacks.editor.envHintNoKeychain': 'OS 키체인을 사용할 수 없어 스택 환경을 저장할 수 없습니다.',
   'stacks.editor.problems': '문제',
-  'stacks.managed.saveAndRedeploy': '저장 후 다시 배포',
   'stacks.profiles.title': '프로필',
   'stacks.profiles.hint':
     '프로필이 지정된 서비스는 해당 프로필을 켰을 때만 실행됩니다. 프로필이 없는 서비스는 항상 실행됩니다.',
@@ -269,7 +267,6 @@ export default {
   'stacks.linked.reload': '다시 불러오기',
   'stacks.linked.overwrite': '덮어쓰기',
   'stacks.linked.saved': 'Compose 파일을 저장했습니다',
-  'stacks.linked.saveAndRedeploy': '저장 후 다시 배포',
   'stacks.linked.envNote':
     'Compose는 실행될 때 폴더의 .env를 읽습니다. Homeport는 이 파일을 표시하거나 변경하지 않습니다.',
   'stacks.linked.files': 'Compose 파일',
@@ -287,4 +284,14 @@ export default {
   'stacks.external.descriptionFrom':
     '해당 컴퓨터의 <mono>{files}</mono>에서 Homeport 밖에서 배포되었습니다. 시작, 중지, 삭제할 수 있으며, 편집하고 다시 배포하려면 compose 파일과 함께 관리형으로 전환하세요.',
   'stacks.palette.new': '새 스택',
+  'stacks.managed.deploy': '배포',
+  'stacks.managed.moreSave': '다른 저장 방법',
+  'stacks.managed.saveOnly': '배포하지 않고 저장',
+  'stacks.managed.unsaved': '저장하지 않은 변경 사항',
+  'stacks.forget.sectionTitle': '이 스택 잊기',
+  'stacks.kind.managedHint': 'Homeport가 compose 파일과 환경을 보관합니다.',
+  'stacks.kind.linkedHint': 'compose 파일이 이 컴퓨터의 폴더에 있습니다.',
+  'stacks.kind.syncedHint': 'git 저장소에서 배포됩니다.',
+  'stacks.kind.externalHint': 'Homeport 밖에서 배포되었습니다.',
+  'stacks.services.noContainer': '컨테이너 없음',
 } satisfies Translation<typeof en>;

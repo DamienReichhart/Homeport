@@ -1,11 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, RotateCcwIcon, SaveIcon } from 'lucide-react';
+import { ArrowLeftIcon, RotateCcwIcon, SaveIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { IncusGate } from '@/core/host';
-import { Badge, Button, ErrorMessage, PageHeader, Spinner, YamlEditor } from '@/shared/ui';
-import { useSaveProfile } from '../api/mutations';
+import {
+  Badge,
+  Button,
+  DangerZone,
+  ErrorMessage,
+  PageHeader,
+  Spinner,
+  useConfirmedAction,
+  YamlEditor,
+} from '@/shared/ui';
+import { useDeleteProfile, useSaveProfile } from '../api/mutations';
 import { incusProfileQueries } from '../api/queries';
+import { undeletable } from '../model/profiles';
 import { t } from '@/shared/i18n';
 
 function ProfileEditor({
@@ -21,6 +31,8 @@ function ProfileEditor({
   const back = () => void navigate('/incus/profiles');
   const detail = useQuery(incusProfileQueries.detail(hostId, project, name));
   const save = useSaveProfile(hostId, project, name);
+  const remove = useDeleteProfile(hostId, project);
+  const [dialog, confirm] = useConfirmedAction();
   // The text being edited, and the version of the profile it started from.
   const [draft, setDraft] = useState<{ yaml: string; etag: string | null } | null>(null);
 
@@ -43,6 +55,7 @@ function ProfileEditor({
     save.reset();
     void detail.refetch();
   };
+  const why = undeletable(profile);
   return (
     <div className="flex h-full min-h-0 flex-col gap-3">
       <PageHeader
@@ -57,7 +70,25 @@ function ProfileEditor({
         description={profile.description || t('incus.profiles.noDescription')}
         actions={
           <>
-            <Button variant="outline" onClick={reload}>
+            {changed && (
+              <span className="text-muted-foreground text-sm">{t('incus.profiles.unsaved')}</span>
+            )}
+            <Button
+              variant="outline"
+              onClick={() =>
+                changed
+                  ? confirm({
+                      title: t('incus.profiles.discard.title'),
+                      description: t('incus.profiles.discard.description', {
+                        name: profile.name,
+                      }),
+                      confirmLabel: t('incus.profiles.reload'),
+                      destructive: true,
+                      action: async () => reload(),
+                    })
+                  : reload()
+              }
+            >
               <RotateCcwIcon /> {t('incus.profiles.reload')}
             </Button>
             <Button
@@ -93,6 +124,28 @@ function ProfileEditor({
           height="100%"
         />
       </div>
+      <DangerZone
+        title={t('incus.profiles.delete.zone')}
+        description={why ?? t('incus.profiles.delete.description', { project })}
+        action={
+          <Button
+            variant="destructive"
+            disabled={why !== null || remove.isPending}
+            onClick={() =>
+              confirm({
+                title: t('incus.profiles.delete.title', { name: profile.name }),
+                description: t('incus.profiles.delete.description', { project }),
+                confirmLabel: t('incus.delete'),
+                destructive: true,
+                action: () => remove.mutateAsync(profile.name).then(back),
+              })
+            }
+          >
+            <Trash2Icon /> {t('incus.delete')}
+          </Button>
+        }
+      />
+      {dialog}
     </div>
   );
 }

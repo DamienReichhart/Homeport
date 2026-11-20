@@ -27,7 +27,7 @@ Ce qu’exécute un hôte Incus : un conteneur système, qui démarre une distr
 
 ### Project (Incus’s) (fr. _projet_)
 
-Sur un hôte Incus, l’espace dans lequel vivent ses instances, images, profils, volumes personnalisés et réseaux. Les pages d’un hôte Incus en montrent un à la fois, choisi sous le sélecteur d’hôte. Voir [projets](/docs/hosts/incus/#projets).
+Sur un hôte Incus, l’espace dans lequel vivent ses instances, images, profils, volumes personnalisés et réseaux. Les pages d’un hôte Incus en montrent un à la fois, choisi sous l’hôte dans la barre latérale. Voir [projets](/docs/hosts/incus/#projets).
 
 ### Profile (fr. _profil_)
 
@@ -127,7 +127,15 @@ Un conteneur `busybox` éphémère que Homeport crée sur un hôte pour ouvrir u
 
 ### Board (fr. _Tableau_)
 
-La page qui liste les conteneurs de chaque hôte connecté dans un seul tableau, chacun étiqueté avec son hôte. Voir [Tableau](/docs/guides/overview/#tableau).
+La page d’accueil : une vignette pour chaque hôte, Swarm et cluster, ce qui est à traiter sur chacun d’eux, et les conteneurs de chaque hôte connecté dans un seul tableau, chacun étiqueté avec son hôte. Voir [Tableau](/docs/guides/overview/#tableau).
+
+### Needs you (fr. _À traiter_)
+
+La liste du Tableau de ce qui demande votre attention : un hôte ou un cluster injoignable, un conteneur en mauvaise santé, mort, qui redémarre ou qui s’est terminé avec une erreur, une charge de travail Kubernetes qui n’est pas prête, une stack dont les images ont une version plus récente publiée. Ce qui est en bonne santé n’y figure jamais. Voir [À traiter](/docs/guides/overview/#à-traiter).
+
+### Overview (fr. _Vue d’ensemble_)
+
+La page propre à un hôte ou à un cluster : son état et son adresse, son moteur ou son serveur d’API, son utilisation et ses événements récents. Ce n’est pas le Tableau, qui couvre tous les hôtes et clusters. Voir [Vue d’ensemble](/docs/guides/overview/#vue-densemble).
 
 ### Command palette (fr. _palette de commandes_)
 
@@ -167,6 +175,8 @@ L’application, la documentation et le site web en français emploient ces term
 | External Stack | stack externe            |
 | Adopt          | adopter                  |
 | Board          | Tableau                  |
+| Needs you      | À traiter                |
+| Overview       | Vue d’ensemble (f.)      |
 | Bastion        | bastion (m.)             |
 | Deploy key     | clé de déploiement (f.)  |
 | Port forward   | redirection de port (f.) |

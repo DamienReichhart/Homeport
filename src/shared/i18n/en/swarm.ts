@@ -2,7 +2,6 @@
 export default {
   'swarm.nav': 'Swarms',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': 'A manager is connected',
   'swarm.unreachable': 'No manager connected',
   'swarm.hostCounts':
     '{managers, plural, one {# manager host} other {# manager hosts}}, {workers, plural, one {# worker host} other {# worker hosts}}',
@@ -53,6 +52,12 @@ export default {
   'swarm.nodes.action.labels': 'Edit labels',
   'swarm.nodes.action.tasks': 'Show its tasks',
   'swarm.nodes.updated': '{name} updated',
+  'swarm.nodes.drain.title': 'Drain {name}?',
+  'swarm.nodes.drain.description':
+    'Its tasks are stopped here and moved to the other nodes, and it takes no new ones until it’s made active again.',
+  'swarm.nodes.demote.title': 'Demote {name} to a worker?',
+  'swarm.nodes.demote.description':
+    'It stops managing the Swarm and keeps running its tasks. The Swarm needs most of its managers up to work, so keep enough of them.',
   'swarm.nodes.removed': '{name} removed from the Swarm',
   'swarm.nodes.labels.title': 'Labels of {name}',
   'swarm.nodes.labels.description':
@@ -69,22 +74,23 @@ export default {
 
   'swarm.services.search': 'Search services',
   'swarm.services.empty': 'No services run on this Swarm',
+  'swarm.services.emptyHint': 'Create one from an image, or deploy a Stack to this Swarm.',
   'swarm.services.column.name': 'Name',
   'swarm.services.column.image': 'Image',
-  'swarm.services.column.mode': 'Mode',
   'swarm.services.column.replicas': 'Running',
   'swarm.services.column.ports': 'Ports',
   'swarm.services.column.stack': 'Stack',
   'swarm.services.column.update': 'Update',
   'swarm.services.mode.replicated': 'Replicated',
-  'swarm.services.mode.replicatedCount': 'Replicated ({count})',
   'swarm.services.mode.global': 'Global',
   'swarm.services.mode.replicatedJob': 'Job',
   'swarm.services.mode.globalJob': 'Global job',
   'swarm.services.actionsFor': 'Actions for {name}',
+  'swarm.services.logsOf': 'Logs of {name}',
   'swarm.services.action.logs': 'Logs',
   'swarm.services.action.scale': 'Scale',
   'swarm.services.action.rollback': 'Roll back',
+  'swarm.services.action.remove': 'Remove service',
   'swarm.services.scaled': '{name} scaled to {count, plural, one {# replica} other {# replicas}}',
   'swarm.services.rolledBack': '{name} is rolling back',
   'swarm.services.removed': '{name} removed',
@@ -123,6 +129,8 @@ export default {
   'swarm.objects.createConfig': 'Create config',
   'swarm.objects.secretNote':
     'A secret’s value goes to the Swarm once and can’t be read back, by Homeport or anyone: only the services it’s given to see it.',
+  'swarm.objects.configNote':
+    'A config is a file the Swarm hands to the services given it, such as a web server’s settings.',
   'swarm.objects.noSecrets': 'No secrets',
   'swarm.objects.noConfigs': 'No configs',
   'swarm.objects.column.name': 'Name',
@@ -160,7 +168,6 @@ export default {
 
   'swarm.services.created': '{name} created',
   'swarm.services.updating': '{name} is rolling over to its new settings',
-  'swarm.service.update': 'update {state}',
   'swarm.create.open': 'Create service',
   'swarm.create.title': 'Create a service',
   'swarm.create.description':
@@ -229,7 +236,6 @@ export default {
   'swarm.membership.leave.last':
     'This is the Swarm’s last manager: the Swarm goes with it, with every service, secret and config. Other nodes are left in a Swarm with no manager.',
   'swarm.membership.leave.force': 'Force: leave although it’s a manager',
-  'swarm.membership.leave.typeName': 'Type {name} to confirm',
   'swarm.membership.leave.submit': 'Leave',
 
   'swarm.join.title': 'Join commands',
@@ -261,6 +267,9 @@ export default {
   'swarm.stacks.removed': '{name} removed',
   'swarm.stacks.removedPartly': '{name} removed, except for:',
   'swarm.stacks.remove.title': 'Remove the Stack {name}?',
+  'swarm.stacks.remove.zone': 'Remove this Stack',
+  'swarm.stacks.remove.submit': 'Remove Stack',
   'swarm.stacks.remove.description':
     'Its services are removed, then its networks, secrets and configs, as docker stack rm does. Its volumes are kept on each node.',
+  'swarm.nodes.column.host': 'Host',
 };

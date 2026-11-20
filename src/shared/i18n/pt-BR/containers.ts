@@ -60,9 +60,9 @@ export default {
     '{count, plural, one {Contêiner encerrado à força} other {# contêineres encerrados à força}}',
   'containers.done.remove':
     '{count, plural, one {Contêiner removido} other {# contêineres removidos}}',
-  'containers.remove.title': 'Remover {name}?',
+  'containers.remove.title': 'Remover {name} de {host}?',
   'containers.remove.titleMany':
-    'Remover {count, plural, one {# contêiner} other {# contêineres}}?',
+    'Remover {count, plural, one {# contêiner} other {# contêineres}} de {host}?',
   'containers.remove.deleted':
     '{count, plural, one {O contêiner, a camada gravável e os volumes anônimos dele são excluídos.} other {Os contêineres, a camada gravável e os volumes anônimos deles são excluídos.}}',
   'containers.remove.running': '{count} em execução serão parados antes.',
@@ -392,4 +392,7 @@ export default {
   'containers.export.finished': 'Concluído. Importe-o na página Imagens ou com docker import.',
   'containers.export.done': 'Exportado para {destination}',
   'containers.palette.run': 'Executar um contêiner',
+  'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Abrir a stack {stack}',
+  'containers.logs.show': 'Exibir',
 } satisfies Translation<typeof en>;

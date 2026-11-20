@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'المكدسات',
   'stacks.title': 'المكدسات',
-  'stacks.description':
-    'مشاريع Compose على هذا المضيف. تحتفظ المكدسات المُدارة بتعريفها في Homeport، والمرتبطة في مجلد على هذا الكمبيوتر؛ أما الخارجية فقد نُشرت في مكان آخر.',
+  'stacks.description': 'مشاريع Compose على هذا المضيف.',
   'stacks.new': 'مكدس جديد',
   'stacks.search': 'البحث في المكدسات',
   'stacks.empty.title': 'لا توجد مكدسات',
-  'stacks.empty.description': 'اكتب تعريف compose وانشره على هذا المضيف.',
+  'stacks.empty.description':
+    'انشر مشروع compose على هذا المضيف، من ملف compose أو مجلد أو مستودع git.',
   'stacks.column.name': 'الاسم',
   'stacks.column.kind': 'النوع',
   'stacks.column.state': 'الحالة',
@@ -90,20 +90,19 @@ export default {
   'stacks.action.adopt': 'تبنّي',
   'stacks.action.stop': 'إيقاف',
   'stacks.action.start': 'تشغيل',
-  'stacks.action.more': 'مزيد من إجراءات المكدس',
   'stacks.action.restart': 'إعادة التشغيل',
   'stacks.action.pull': 'سحب الصور',
   'stacks.action.rebuild': 'إعادة البناء والنشر',
-  'stacks.down.title': 'هل تريد إنزال {name}؟',
+  'stacks.down.title': 'هل تريد إنزال {name} على {host}؟',
   'stacks.down.description':
     'تُزال حاوياته وشبكاته. يُحتفظ بوحدات التخزين والتعريف، لذا يمكنك النشر مجددًا.',
   'stacks.down.confirm': 'إنزال',
-  'stacks.downWithVolumes.title': 'هل تريد إنزال {name} وحذف وحدات التخزين الخاصة به؟',
+  'stacks.downWithVolumes.title': 'هل تريد إنزال {name} على {host} وحذف وحدات التخزين الخاصة به؟',
   'stacks.downWithVolumes.warning':
     'تُحذف الحاويات والشبكات وكل وحدة تخزين لهذا المكدس، مع كل بياناتها.',
   'stacks.downWithVolumes.confirm': 'حذف مع وحدات التخزين',
   'stacks.downWithVolumes.action': 'إنزال مع وحدات التخزين',
-  'stacks.remove.title': 'هل تريد إزالة {name}؟',
+  'stacks.remove.title': 'هل تريد إزالة {name} من {host}؟',
   'stacks.remove.description':
     'تُزال {count, plural, zero {حاوياته} one {حاويته الوحيدة} two {حاويتاه} few {حاوياته الـ #} many {حاوياته الـ #} other {حاوياته الـ #}} وشبكاته. يُحتفظ بوحدات التخزين. لا يملك Homeport ملف compose لهذا المكدس، لذا لا يمكن إعادة نشره من هنا.',
   'stacks.remove.action': 'إزالة الحاويات',
@@ -158,7 +157,7 @@ export default {
   'stacks.newPage.useFolder': 'استخدام مجلد على هذا الكمبيوتر',
   'stacks.newPage.useRepository': 'استخدام مستودع git',
   'stacks.newSynced.description':
-    'ملف compose في مستودع git. ينسخه Homeport على هذا الكمبيوتر، ويعرض ما يتغير، وينشر إيداعًا منه. لا يحرر المستودع أبدًا.',
+    'ملف compose في مستودع git. ينشر Homeport إيداعاته ولا يحرره أبدًا.',
   'stacks.newSynced.repository': 'المستودع',
   'stacks.newSynced.pickRepository': 'اختر مستودعًا',
   'stacks.newSynced.addRepository': 'إضافة مستودع',
@@ -220,8 +219,7 @@ export default {
   'stacks.synced.forgetTitle': 'هل تريد نسيان {name}؟',
   'stacks.synced.forgetDescription':
     'يتوقف Homeport عن تتبّع مستودعه ويحذف نسخته المستخرجة على هذا الكمبيوتر. تستمر حاوياته في العمل، ويصبح مكدسًا خارجيًا. يبقى المستودع في الإعدادات ← المستودعات.',
-  'stacks.newLinked.description':
-    'مشروع compose في مجلد على هذا الكمبيوتر. يعمل Homeport على ملفاته في مكانها وينشر من ذلك المجلد.',
+  'stacks.newLinked.description': 'مشروع compose في مجلد على هذا الكمبيوتر، يُنشر من مكانه.',
   'stacks.newLinked.choose': 'اختيار مجلد…',
   'stacks.newLinked.pickTitle': 'اختر مجلد مشروع compose',
   'stacks.newLinked.files': 'ملفات compose، بالترتيب',
@@ -243,7 +241,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'لا تتوفر سلسلة مفاتيح في نظام التشغيل، لذا لا يمكن تخزين بيئة مكدس.',
   'stacks.editor.problems': 'المشكلات',
-  'stacks.managed.saveAndRedeploy': 'حفظ وإعادة النشر',
   'stacks.profiles.title': 'ملفات التعريف',
   'stacks.profiles.hint':
     'لا تعمل الخدمات المرتبطة بملف تعريف إلا عند تفعيله. أما الخدمات التي لا ترتبط بأي ملف تعريف فتعمل دائمًا.',
@@ -268,7 +265,6 @@ export default {
   'stacks.linked.reload': 'إعادة التحميل',
   'stacks.linked.overwrite': 'الكتابة فوقها',
   'stacks.linked.saved': 'تم حفظ ملفات compose',
-  'stacks.linked.saveAndRedeploy': 'حفظ وإعادة النشر',
   'stacks.linked.envNote':
     'يقرأ Compose ملف .env الخاص بالمجلد عند تشغيله. لا يعرضه Homeport ولا يغيّره.',
   'stacks.linked.files': 'ملفات compose',
@@ -286,4 +282,14 @@ export default {
   'stacks.external.descriptionFrom':
     'نُشر خارج Homeport من <mono>{files}</mono> على ذلك الجهاز. يمكنك تشغيله وإيقافه وإزالته؛ تبنَّه مع ملف compose الخاص به لتحريره وإعادة نشره.',
   'stacks.palette.new': 'مكدس جديد',
+  'stacks.managed.deploy': 'نشر',
+  'stacks.managed.moreSave': 'طرق أخرى للحفظ',
+  'stacks.managed.saveOnly': 'حفظ دون نشر',
+  'stacks.managed.unsaved': 'تغييرات غير محفوظة',
+  'stacks.forget.sectionTitle': 'نسيان هذا المكدس',
+  'stacks.kind.managedHint': 'يحتفظ Homeport بملف compose الخاص به وبيئته.',
+  'stacks.kind.linkedHint': 'ملفات compose الخاصة به في مجلد على هذا الكمبيوتر.',
+  'stacks.kind.syncedHint': 'نُشر من مستودع git.',
+  'stacks.kind.externalHint': 'نُشر خارج Homeport.',
+  'stacks.services.noContainer': 'لا توجد حاوية',
 } satisfies Translation<typeof en>;

@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': '개요',
-  'overview.title': '개요',
-  'overview.addHost': '호스트 추가',
-  'overview.addCluster': '클러스터 추가',
   'overview.cluster.nodes': 'Node {total}개 중 {ready}개 준비됨',
   'overview.cluster.nodesNotAllowed': 'Node: 허용되지 않음',
   'overview.cluster.pods': 'Pod {total}개 중 {running}개 실행 중',
@@ -35,7 +32,6 @@ export default {
   'overview.cluster.noWarnings': '경고 이벤트가 없습니다.',
   'overview.cluster.allEvents': '모든 이벤트',
   'overview.host.running': '<strong>{running}</strong> / {total} 실행 중',
-  'overview.host.images': '{count, plural, other {이미지 #개}}',
   'overview.host.containerdContainers':
     '{namespaces, plural, other {네임스페이스 #개}}에 {count, plural, other {컨테이너 #개}}',
   'overview.host.incusInstances':
@@ -112,5 +108,12 @@ export default {
   'overview.pruned':
     '{containers, plural, other {컨테이너 #개}}, {images, plural, other {이미지 #개}}, {networks, plural, other {네트워크 #개}}, {volumes, plural, other {볼륨 #개}}를 삭제하고 공간 {space}를 확보했습니다.',
   'overview.palette.prune': '선택한 호스트 정리',
-  'overview.host.onBoard': '보드에서 이 호스트의 컨테이너 보기',
+  'overview.hostSettings': '호스트 설정',
+  'overview.clusterSettings': '클러스터 설정',
+  'overview.vitals.title': '한눈에 보기',
+  'overview.vitals.containers': '컨테이너',
+  'overview.vitals.running': '{total}개 중 {running}개 실행 중',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': '메모리',
+  'overview.vitals.images': '이미지',
 } satisfies Translation<typeof en>;

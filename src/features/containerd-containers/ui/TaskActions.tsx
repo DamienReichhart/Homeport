@@ -1,19 +1,36 @@
-import { PauseIcon, PlayIcon, SquareIcon, Trash2Icon, ZapIcon } from 'lucide-react';
+import {
+  CirclePlayIcon,
+  CircleStopIcon,
+  EllipsisVerticalIcon,
+  PauseIcon,
+  Trash2Icon,
+  ZapIcon,
+} from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ContainerdContainer, TaskAction } from '@/shared/api';
-import { Button } from '@/shared/ui';
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/shared/ui';
 import { useTaskAction } from '../api/mutations';
 import { taskActions } from '../model/containers';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const ACTIONS: Record<TaskAction, { icon: LucideIcon; label: MessageKey; one: MessageKey }> = {
   start: {
-    icon: PlayIcon,
+    icon: CirclePlayIcon,
     label: 'containerd.containers.action.start',
     one: 'containerd.containers.actionOne.start',
   },
   stop: {
-    icon: SquareIcon,
+    icon: CircleStopIcon,
     label: 'containerd.containers.action.stop',
     one: 'containerd.containers.actionOne.stop',
   },
@@ -23,15 +40,16 @@ const ACTIONS: Record<TaskAction, { icon: LucideIcon; label: MessageKey; one: Me
     one: 'containerd.containers.actionOne.pause',
   },
   resume: {
-    icon: PlayIcon,
+    icon: CirclePlayIcon,
     label: 'containerd.containers.action.resume',
     one: 'containerd.containers.actionOne.resume',
   },
 };
 
 /**
- * A container's task buttons, Kill and Remove: labelled on its page, the
- * main action alone as an icon in a list row.
+ * A container's task actions. The main one (stop, start or resume) is at
+ * hand, an outline button on its page or an icon in a list row; the other
+ * task action, Kill and Remove are in its menu.
  */
 export function TaskActions({
   hostId,
@@ -49,39 +67,76 @@ export function TaskActions({
   onRemove: () => void;
 }) {
   const act = useTaskAction(hostId, namespace);
-  const actions = taskActions(container.state);
+  const [main, ...others] = taskActions(container.state);
+  const mainAction = main ? ACTIONS[main] : null;
   return (
-    <>
-      {(compact ? actions.slice(0, 1) : actions).map((action) => {
-        const { icon: Icon, label, one } = ACTIONS[action];
-        return (
+    <div className="flex items-center justify-end gap-2" onClick={(e) => e.stopPropagation()}>
+      {main &&
+        mainAction &&
+        (compact ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t(mainAction.one, { name: container.name })}
+                disabled={act.isPending}
+                onClick={() => act.mutate({ container, action: main })}
+              >
+                <mainAction.icon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t(mainAction.label)}</TooltipContent>
+          </Tooltip>
+        ) : (
           <Button
-            key={action}
-            variant={compact ? 'ghost' : 'outline'}
-            size={compact ? 'icon-sm' : 'default'}
-            aria-label={compact ? t(one, { name: container.name }) : undefined}
+            variant="outline"
             disabled={act.isPending}
-            onClick={() => act.mutate({ container, action })}
+            onClick={() => act.mutate({ container, action: main })}
           >
-            <Icon /> {!compact && t(label)}
+            <mainAction.icon /> {t(mainAction.label)}
           </Button>
-        );
-      })}
-      {!compact && onKill && container.state === 'running' && (
-        <Button variant="outline" onClick={onKill}>
-          <ZapIcon /> {t('containerd.containers.action.kill')}
-        </Button>
-      )}
-      <Button
-        variant={compact ? 'ghost' : 'outline'}
-        size={compact ? 'icon-sm' : 'default'}
-        aria-label={
-          compact ? t('containerd.containers.removeOne', { name: container.name }) : undefined
-        }
-        onClick={onRemove}
-      >
-        <Trash2Icon /> {!compact && t('common.remove')}
-      </Button>
-    </>
+        ))}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant={compact ? 'ghost' : 'outline'}
+            size={compact ? 'icon-sm' : 'icon'}
+            aria-label={
+              compact
+                ? t('containerd.containers.actionsFor', { name: container.name })
+                : t('common.moreActions')
+            }
+          >
+            <EllipsisVerticalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {others.map((action) => {
+            const { icon: Icon, label } = ACTIONS[action];
+            return (
+              <DropdownMenuItem
+                key={action}
+                disabled={act.isPending}
+                onSelect={() => act.mutate({ container, action })}
+              >
+                <Icon /> {t(label)}
+              </DropdownMenuItem>
+            );
+          })}
+          {onKill && container.state === 'running' && (
+            <DropdownMenuItem onSelect={onKill}>
+              <ZapIcon /> {t('containerd.containers.action.kill')}
+            </DropdownMenuItem>
+          )}
+          {(others.length > 0 || (onKill && container.state === 'running')) && (
+            <DropdownMenuSeparator />
+          )}
+          <DropdownMenuItem variant="destructive" onSelect={onRemove}>
+            <Trash2Icon /> {t('common.remove')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   );
 }

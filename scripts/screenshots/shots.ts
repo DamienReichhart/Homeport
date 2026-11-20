@@ -27,10 +27,10 @@ export interface Shot {
 const container = (name: string) => hexId(`${PROD}/${name}`);
 
 export const SHOTS: Shot[] = [
-  { name: 'overview-light', route: '/' },
-  { name: 'overview-dark', route: '/', theme: 'dark' },
-  { name: 'board-light', route: '/board' },
-  { name: 'board-dark', route: '/board', theme: 'dark' },
+  { name: 'overview-light', route: '/overview' },
+  { name: 'overview-dark', route: '/overview', theme: 'dark' },
+  { name: 'board-light', route: '/' },
+  { name: 'board-dark', route: '/', theme: 'dark' },
   { name: 'containers-light', route: '/containers' },
   { name: 'containers-dark', route: '/containers', theme: 'dark' },
   { name: 'container-logs', route: `/containers/${container('shop-api-1')}/logs`, theme: 'dark' },
@@ -105,8 +105,8 @@ export const SHOTS: Shot[] = [
   { name: 'swarm-stacks', route: `/swarms/${SWARM_ID}/stacks` },
   { name: 'swarm-secrets', route: `/swarms/${SWARM_ID}/secrets` },
   { name: 'swarm-service', route: `/swarms/${SWARM_ID}/services/${swarmServices[1]!.id}` },
-  { name: 'cluster-overview', route: '/', demo: 'clusters' },
-  { name: 'cluster-overview-dark', route: '/', theme: 'dark', demo: 'clusters' },
+  { name: 'cluster-overview', route: '/overview', demo: 'clusters' },
+  { name: 'cluster-overview-dark', route: '/overview', theme: 'dark', demo: 'clusters' },
   { name: 'add-cluster', route: '/clusters/new', demo: 'clusters' },
   { name: 'cluster-workloads', route: '/workloads', demo: 'clusters' },
   { name: 'cluster-workload', route: '/workloads/deployments/shop/api', demo: 'clusters' },

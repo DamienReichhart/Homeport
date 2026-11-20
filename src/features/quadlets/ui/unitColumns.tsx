@@ -20,7 +20,7 @@ export function unitColumns({
       cell: ({ row }) => (
         <span className="flex items-center gap-2 font-medium">
           <StatusDot tone={unitTone(row.original.status)} />
-          <span className="font-mono">{row.original.name ?? row.original.unitName}</span>
+          <span className="truncate font-mono">{row.original.name ?? row.original.unitName}</span>
           {row.original.app && <Badge variant="outline">{row.original.app}</Badge>}
         </span>
       ),
@@ -29,14 +29,19 @@ export function unitColumns({
       id: 'kind',
       header: t('quadlets.column.kind'),
       accessorFn: kindOf,
-      cell: ({ row }) => <Badge variant="secondary">{kindOf(row.original)}</Badge>,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground font-mono text-xs">{kindOf(row.original)}</span>
+      ),
     },
     {
       id: 'service',
       header: t('quadlets.column.service'),
       accessorFn: (u) => u.unitName ?? '',
       cell: ({ row }) => (
-        <span className="text-muted-foreground font-mono text-xs">
+        <span
+          className="text-muted-foreground block max-w-64 truncate font-mono text-xs"
+          title={row.original.unitName ?? undefined}
+        >
           {row.original.unitName ?? t('quadlets.notGenerated')}
         </span>
       ),
@@ -45,12 +50,16 @@ export function unitColumns({
       id: 'status',
       header: t('quadlets.column.status'),
       accessorFn: (u) => u.status,
+      meta: { compact: true },
       cell: ({ row }) => t(unitStatusLabel(row.original.status)),
     },
     {
       id: 'containers',
       header: t('quadlets.column.containers'),
       accessorFn: (u) => u.containers.length,
+      cell: ({ row }) => (
+        <div className="text-end tabular-nums">{row.original.containers.length}</div>
+      ),
     },
     {
       id: 'actions',

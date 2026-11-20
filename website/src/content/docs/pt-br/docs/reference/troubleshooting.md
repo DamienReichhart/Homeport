@@ -335,7 +335,7 @@ O exec em uma máquina virtual passa pelo `incus-agent` dentro dela, que as pró
 
 ### "Algo deu errado"
 
-Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar à visão geral** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/homeport/issues/new/choose), com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug).
+Uma página do Homeport encontrou um problema inesperado e mostra isto no lugar do conteúdo dela; a barra lateral continua funcionando. **Recarregar** normalmente traz a página de volta, e **Voltar ao Quadro** sai dela. Se continuar acontecendo, copie o relatório de **Detalhes** para [uma issue](https://github.com/DamienReichhart/homeport/issues/new/choose), com o [pacote de diagnóstico](#exportando-o-diagnóstico-para-um-relatório-de-bug).
 
 ### "… não está conectado"
 

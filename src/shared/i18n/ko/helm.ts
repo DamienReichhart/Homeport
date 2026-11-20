@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Helm 릴리스',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, other {릴리스 #개}}',
   'helm.section.releases': '릴리스',
   'helm.search': '릴리스 검색',
@@ -53,13 +53,13 @@ export default {
   'helm.run.done': '완료되었습니다.',
   'helm.run.failed': 'helm이 종료되었습니다(코드 {code}).',
   'helm.repos.description':
-    '이 컴퓨터의 helm이 알고 있는 차트 저장소로, 터미널의 helm과 공유됩니다. 로그인이 필요한 저장소는 터미널에서 helm repo add --username으로 추가하면 여기에 표시됩니다.',
+    '이 컴퓨터의 helm이 알고 있는 차트 저장소로, 터미널의 helm과 공유됩니다.',
   'helm.repos.name': '이름',
   'helm.repos.url': 'URL',
   'helm.repos.add': '저장소 추가',
   'helm.repos.addTitle': '차트 저장소 추가',
   'helm.repos.addDescription':
-    'helm이 지금 인덱스를 다운로드합니다. 여기서는 공개 저장소만 추가할 수 있습니다.',
+    'helm이 지금 인덱스를 다운로드합니다. 여기서는 공개 저장소만 추가할 수 있습니다. 로그인이 필요한 저장소는 터미널에서 helm repo add --username으로 추가하면 여기에 표시됩니다.',
   'helm.repos.added': '{name} 차트 저장소를 추가했습니다',
   'helm.repos.update': '업데이트',
   'helm.repos.updateAll': '모두 업데이트',
@@ -172,4 +172,6 @@ export default {
   'helm.uninstall.confirm': '{name} 제거',
   'helm.uninstall.running': '{cluster} 클러스터에서 {name} 제거하는 중',
   'helm.uninstall.backToReleases': '릴리스로 돌아가기',
+  'helm.emptyHint': '여기서 또는 터미널의 helm으로 설치한 릴리스가 이 페이지에 표시됩니다.',
+  'helm.repos.updateNamed': '{name} 업데이트',
 } satisfies Translation<typeof en>;

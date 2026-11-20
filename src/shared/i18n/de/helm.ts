@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Helm-Releases',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, one {# Release} other {# Releases}}',
   'helm.section.releases': 'Releases',
   'helm.search': 'Releases durchsuchen',
@@ -54,13 +54,13 @@ export default {
   'helm.run.done': 'Fertig.',
   'helm.run.failed': 'helm wurde mit Code {code} beendet.',
   'helm.repos.description':
-    'Die Chart-Repositorys, die helm auf diesem Computer kennt, gemeinsam mit helm im Terminal. Repositorys, die eine Anmeldung erfordern, werden dort mit helm repo add --username hinzugefügt und erscheinen dann hier.',
+    'Die Chart-Repositorys, die helm auf diesem Computer kennt, gemeinsam mit helm im Terminal.',
   'helm.repos.name': 'Name',
   'helm.repos.url': 'URL',
   'helm.repos.add': 'Repository hinzufügen',
   'helm.repos.addTitle': 'Chart-Repository hinzufügen',
   'helm.repos.addDescription':
-    'helm lädt jetzt seinen Index herunter. Hier können nur öffentliche Repositorys hinzugefügt werden.',
+    'helm lädt jetzt seinen Index herunter. Hier können nur öffentliche Repositorys hinzugefügt werden; eines, das eine Anmeldung erfordert, wird im Terminal mit helm repo add --username hinzugefügt und erscheint dann hier.',
   'helm.repos.added': 'Chart-Repository {name} hinzugefügt',
   'helm.repos.update': 'Aktualisieren',
   'helm.repos.updateAll': 'Alle aktualisieren',
@@ -176,4 +176,7 @@ export default {
   'helm.uninstall.confirm': '{name} deinstallieren',
   'helm.uninstall.running': '{name} wird von {cluster} deinstalliert',
   'helm.uninstall.backToReleases': 'Zurück zu den Releases',
+  'helm.emptyHint':
+    'Releases, die hier oder mit helm in einem Terminal installiert wurden, werden auf dieser Seite aufgeführt.',
+  'helm.repos.updateNamed': '{name} aktualisieren',
 } satisfies Translation<typeof en>;

@@ -24,21 +24,24 @@ export default {
   'images.column.size': 'Größe',
   'images.column.status': 'Status',
   'images.moreTags': '{count, plural, one {+# weiteres Tag} other {+# weitere Tags}}',
-  'images.inUse': 'In Verwendung · {count}',
+  'images.inUse': 'Von {count, plural, one {# Container} other {# Containern}} verwendet',
   'images.unused': 'Unbenutzt',
+  'images.newer': 'Neuere Version',
   'images.runOne': '{name} ausführen',
+  'images.moreActionsFor': 'Weitere Aktionen für {name}',
   'images.action.inspect': 'Untersuchen',
   'images.action.tag': 'Taggen',
   'images.action.push': 'Pushen',
   'images.action.save': 'Speichern…',
+  'images.action.pullNewer': 'Neuere Version von {reference} pullen',
 
-  'images.remove.title': '{name} entfernen?',
+  'images.remove.title': '{name} von {host} entfernen?',
   'images.remove.everyName':
     'Dadurch werden alle Namen des Images ({names}) und seine Layer entfernt, die nichts anderes verwendet.',
   'images.remove.description':
     'Das Image und die Layer, die kein anderes Image verwendet, werden gelöscht. Es kann später erneut gepullt werden.',
-  'images.prune.allTitle': 'Alle unbenutzten Images entfernen?',
-  'images.prune.danglingTitle': 'Verwaiste Images entfernen?',
+  'images.prune.allTitle': 'Alle unbenutzten Images auf {host} entfernen?',
+  'images.prune.danglingTitle': 'Verwaiste Images auf {host} entfernen?',
   'images.prune.allDescription':
     'Alle Images, die kein Container verwendet, werden gelöscht, getaggte eingeschlossen.',
   'images.prune.danglingDescription':
@@ -105,6 +108,7 @@ export default {
 
   'images.inspect.layers': 'Layer',
   'images.inspect.raw': 'Rohes JSON',
+  'images.inspect.names': 'Namen',
   'images.inspect.created': 'Erstellt',
   'images.inspect.instruction': 'Anweisung',
   'images.inspect.size': 'Größe',

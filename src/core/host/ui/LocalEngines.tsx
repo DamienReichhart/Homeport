@@ -70,6 +70,7 @@ export function LocalEngines({
                 </div>
               </div>
               <Button
+                variant="outline"
                 size="sm"
                 disabled={pending}
                 onClick={() =>

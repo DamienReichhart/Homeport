@@ -3,7 +3,7 @@ import type { ReleaseRevision } from '@/shared/api';
 import { DataTable } from '@/shared/ui';
 import { ReleaseStatus } from '../ReleaseStatus';
 import { t } from '@/shared/i18n';
-import { formatDateTime } from '@/shared/lib';
+import { formatDateTime, formatRelative } from '@/shared/lib';
 
 /** Every revision of a release, newest first, each with what `action` offers. */
 export function ReleaseHistory({
@@ -17,12 +17,26 @@ export function ReleaseHistory({
   return (
     <DataTable<ReleaseRevision>
       columns={[
-        { id: 'revision', header: t('helm.column.revision'), accessorFn: (r) => r.revision },
+        {
+          id: 'revision',
+          header: t('helm.column.revision'),
+          accessorFn: (r) => r.revision,
+          cell: ({ row }) => <span className="tabular-nums">{row.original.revision}</span>,
+        },
         {
           id: 'updated',
           header: t('helm.column.updated'),
           accessorFn: (r) => r.updated ?? '',
-          cell: ({ row }) => (row.original.updated ? formatDateTime(row.original.updated) : '—'),
+          cell: ({ row }) => {
+            const updated = row.original.updated;
+            return updated ? (
+              <span title={formatDateTime(updated)}>
+                {formatRelative(Date.parse(updated) / 1000)}
+              </span>
+            ) : (
+              '—'
+            );
+          },
         },
         {
           id: 'status',
@@ -34,19 +48,31 @@ export function ReleaseHistory({
           id: 'chart',
           header: t('helm.column.chart'),
           accessorFn: (r) => r.chart,
-          cell: ({ row }) => <span className="font-mono text-xs">{row.original.chart}</span>,
-        },
-        {
-          id: 'app',
-          header: t('helm.column.appVersion'),
-          accessorFn: (r) => r.appVersion || '—',
+          // The app version a revision ran is on hover, so the table fits beside the list.
+          cell: ({ row }) => (
+            <span
+              className="font-mono text-xs"
+              title={
+                row.original.appVersion
+                  ? `${t('helm.column.appVersion')} ${row.original.appVersion}`
+                  : undefined
+              }
+            >
+              {row.original.chart}
+            </span>
+          ),
         },
         {
           id: 'description',
           header: t('helm.column.description'),
           accessorFn: (r) => r.description,
           cell: ({ row }) => (
-            <span className="line-clamp-2 max-w-md text-xs">{row.original.description}</span>
+            <span
+              className="text-muted-foreground inline-block max-w-40 truncate align-bottom"
+              title={row.original.description}
+            >
+              {row.original.description}
+            </span>
           ),
         },
         ...(action

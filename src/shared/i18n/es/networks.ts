@@ -10,6 +10,7 @@ export default {
   'networks.create': 'Crear red',
   'networks.search': 'Buscar redes',
   'networks.empty': 'No hay redes',
+  'networks.empty.description': 'Los contenedores de una misma red se comunican por su nombre.',
   'networks.column.name': 'Nombre',
   'networks.column.stack': 'Stack',
   'networks.column.driver': 'Driver',
@@ -17,14 +18,14 @@ export default {
   'networks.column.containers': 'Contenedores',
   'networks.builtIn': 'integrada',
   'networks.internal': 'interna',
-  'networks.inspectOne': 'Inspeccionar {name}',
-  'networks.removeOne': 'Eliminar {name}',
-  'networks.remove.title': '¿Eliminar la red {name}?',
+  'networks.moreActions': 'Más acciones para {name}',
+  'networks.action.inspect': 'Inspeccionar',
+  'networks.remove.title': '¿Eliminar la red {name} de {host}?',
   'networks.remove.attached':
     'Todavía tiene {count, plural, one {# contenedor conectado} other {# contenedores conectados}}; desconéctalos primero.',
   'networks.remove.unused':
     'Ningún contenedor la usa. Los contenedores que la mencionan por su nombre no podrán iniciarse.',
-  'networks.prune.title': '¿Eliminar las redes sin usar?',
+  'networks.prune.title': '¿Eliminar las redes sin usar de {host}?',
   'networks.prune.description':
     'Se elimina toda red personalizada a la que no esté conectado ningún contenedor.',
   'networks.connected': 'Conectado',

@@ -5,13 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Compose-Projekte auf diesem Host. Verwaltete Stacks bewahren ihre Definition in Homeport auf, verknüpfte in einem Ordner auf diesem Computer; externe wurden anderswo bereitgestellt.',
+  'stacks.description': 'Compose-Projekte auf diesem Host.',
   'stacks.new': 'Neuer Stack',
   'stacks.search': 'Stacks durchsuchen',
   'stacks.empty.title': 'Keine Stacks',
   'stacks.empty.description':
-    'Schreiben Sie eine Compose-Definition und stellen Sie sie auf diesem Host bereit.',
+    'Stellen Sie ein Compose-Projekt auf diesem Host bereit, aus einer Compose-Datei, einem Ordner oder einem Git-Repository.',
   'stacks.column.name': 'Name',
   'stacks.column.kind': 'Art',
   'stacks.column.state': 'Zustand',
@@ -93,20 +92,19 @@ export default {
   'stacks.action.adopt': 'Übernehmen',
   'stacks.action.stop': 'Stoppen',
   'stacks.action.start': 'Starten',
-  'stacks.action.more': 'Weitere Stack-Aktionen',
   'stacks.action.restart': 'Neu starten',
   'stacks.action.pull': 'Images pullen',
   'stacks.action.rebuild': 'Neu bauen und bereitstellen',
-  'stacks.down.title': '{name} herunterfahren?',
+  'stacks.down.title': '{name} auf {host} herunterfahren?',
   'stacks.down.description':
     'Seine Container und Netzwerke werden entfernt. Volumes und die Definition bleiben erhalten, sodass Sie erneut bereitstellen können.',
   'stacks.down.confirm': 'Herunterfahren',
-  'stacks.downWithVolumes.title': '{name} herunterfahren und seine Volumes löschen?',
+  'stacks.downWithVolumes.title': '{name} auf {host} herunterfahren und seine Volumes löschen?',
   'stacks.downWithVolumes.warning':
     'Container, Netzwerke und alle Volumes dieses Stacks werden mit allen ihren Daten gelöscht.',
   'stacks.downWithVolumes.confirm': 'Mit Volumes löschen',
   'stacks.downWithVolumes.action': 'Mit Volumes herunterfahren',
-  'stacks.remove.title': '{name} entfernen?',
+  'stacks.remove.title': '{name} von {host} entfernen?',
   'stacks.remove.description':
     'Seine {count, plural, one {# Container} other {# Container}} und Netzwerke werden entfernt. Volumes bleiben erhalten. Homeport hat keine Compose-Datei für diesen Stack, daher kann er von hier nicht neu bereitgestellt werden.',
   'stacks.remove.action': 'Container entfernen',
@@ -166,7 +164,7 @@ export default {
   'stacks.newPage.useFolder': 'Ordner auf diesem Computer verwenden',
   'stacks.newPage.useRepository': 'Git-Repository verwenden',
   'stacks.newSynced.description':
-    'Eine Compose-Datei in einem Git-Repository. Homeport klont es auf diesem Computer, zeigt, was sich ändert, und stellt daraus einen Commit bereit. Das Repository wird nie bearbeitet.',
+    'Eine Compose-Datei in einem Git-Repository. Homeport stellt seine Commits bereit und bearbeitet es nie.',
   'stacks.newSynced.repository': 'Repository',
   'stacks.newSynced.pickRepository': 'Repository wählen',
   'stacks.newSynced.addRepository': 'Repository hinzufügen',
@@ -234,7 +232,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport folgt seinem Repository nicht mehr und löscht seinen Checkout auf diesem Computer. Seine Container laufen weiter, und er wird zu einem externen Stack. Das Repository bleibt unter Einstellungen → Repositorys.',
   'stacks.newLinked.description':
-    'Ein Compose-Projekt in einem Ordner auf diesem Computer. Homeport arbeitet mit seinen Dateien an Ort und Stelle und stellt aus diesem Ordner bereit.',
+    'Ein Compose-Projekt in einem Ordner auf diesem Computer, bereitgestellt von dort, wo es liegt.',
   'stacks.newLinked.choose': 'Ordner wählen…',
   'stacks.newLinked.pickTitle': 'Ordner eines Compose-Projekts wählen',
   'stacks.newLinked.files': 'Compose-Dateien, der Reihe nach',
@@ -256,7 +254,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Es ist kein Schlüsselbund des Betriebssystems verfügbar, daher kann keine Stack-Umgebung gespeichert werden.',
   'stacks.editor.problems': 'Probleme',
-  'stacks.managed.saveAndRedeploy': 'Speichern und neu bereitstellen',
   'stacks.profiles.title': 'Profile',
   'stacks.profiles.hint':
     'Services hinter einem Profil laufen nur, wenn es eingeschaltet ist. Services ohne Profil laufen immer.',
@@ -281,7 +278,6 @@ export default {
   'stacks.linked.reload': 'Neu laden',
   'stacks.linked.overwrite': 'Überschreiben',
   'stacks.linked.saved': 'Compose-Dateien gespeichert',
-  'stacks.linked.saveAndRedeploy': 'Speichern und neu bereitstellen',
   'stacks.linked.envNote':
     'Compose liest die .env des Ordners, wenn es läuft. Homeport zeigt oder ändert sie nicht.',
   'stacks.linked.files': 'Compose-Dateien',
@@ -300,4 +296,14 @@ export default {
   'stacks.external.descriptionFrom':
     'Er wurde außerhalb von Homeport aus <mono>{files}</mono> auf jenem Rechner bereitgestellt. Sie können ihn starten, stoppen und entfernen; übernehmen Sie ihn mit seiner Compose-Datei, um ihn zu bearbeiten und neu bereitzustellen.',
   'stacks.palette.new': 'Neuer Stack',
+  'stacks.managed.deploy': 'Bereitstellen',
+  'stacks.managed.moreSave': 'Weitere Speicheroptionen',
+  'stacks.managed.saveOnly': 'Speichern, ohne bereitzustellen',
+  'stacks.managed.unsaved': 'Ungespeicherte Änderungen',
+  'stacks.forget.sectionTitle': 'Diesen Stack vergessen',
+  'stacks.kind.managedHint': 'Homeport bewahrt seine Compose-Datei und Umgebung auf.',
+  'stacks.kind.linkedHint': 'Seine Compose-Dateien liegen in einem Ordner auf diesem Computer.',
+  'stacks.kind.syncedHint': 'Aus einem Git-Repository bereitgestellt.',
+  'stacks.kind.externalHint': 'Außerhalb von Homeport bereitgestellt.',
+  'stacks.services.noContainer': 'Kein Container',
 } satisfies Translation<typeof en>;

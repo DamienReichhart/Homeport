@@ -67,7 +67,7 @@ Un dossier de projet qui ne tourne pas encore sur l’hôte peut être lié depu
 
 4. Vérifiez le **Nom**. Il vient du `name:` de premier niveau des fichiers, ou du nom du dossier tel que Compose l’écrit (`My App` devient `myapp`).
 
-5. Choisissez **Enregistrer et déployer** — ou **Enregistrer** pour déployer plus tard.
+5. Choisissez **Enregistrer et déployer** — ou **Enregistrer sans déployer**, sous sa flèche, pour déployer plus tard.
 
 </Steps>
 
@@ -86,7 +86,7 @@ Le dossier s’affiche sous le nom de la stack dans la liste et sur sa page.
 
 ### Modifier une stack liée
 
-L’onglet **Définition** d’une stack liée affiche chacun de ses fichiers compose dans un onglet à part, lu depuis le dossier, avec le chemin du dossier au-dessus. Modifiez-les et choisissez **Enregistrer** : Homeport réécrit chaque fichier modifié là où il se trouve, si bien que votre propre éditeur et votre contrôle de version voient le changement. Le fichier est remplacé en une seule étape, en gardant ses permissions, si bien que rien ne le lit jamais à moitié écrit.
+L’onglet **Définition** d’une stack liée affiche chacun de ses fichiers compose dans un onglet à part, lu depuis le dossier, avec le chemin du dossier au-dessus. Modifiez-les et choisissez **Enregistrer sans déployer** : Homeport réécrit chaque fichier modifié là où il se trouve, si bien que votre propre éditeur et votre contrôle de version voient le changement. Le fichier est remplacé en une seule étape, en gardant ses permissions, si bien que rien ne le lit jamais à moitié écrit.
 
 Les vérifications sous l’éditeur suivent les règles des stacks liées : `build:`, `env_file:` et les chemins relatifs sont acceptés, puisque le dossier est là. Il n’y a pas d’éditeur d’environnement : Compose lit le `.env` du dossier quand il s’exécute, et Homeport ne l’affiche ni ne le modifie.
 
@@ -102,9 +102,9 @@ Si le dossier a disparu, ou si un fichier ne peut pas être lu, l’onglet indiq
 
 **Déployer**, **Redéployer**, **Récupérer les images** et **Retirer** fonctionnent aussi pour les stacks liées. Homeport exécute `docker compose` dans le dossier de la stack, avec `--project-directory` réglé sur lui et un `--file` pour chacun de ses fichiers compose, dans l’ordre — comme si vous l’exécutiez vous-même sur place —, toujours par sa propre connexion pour les hôtes SSH et TLS. Ainsi, `build:`, `env_file:`, les chemins `./relative` et le `.env` du dossier fonctionnent tous.
 
-Un service avec `build:` est construit quand il n’a pas encore d’image. Pour le reconstruire après avoir modifié son code, choisissez **Reconstruire et déployer** dans le menu **⋮** de la stack (`up --build`). Le build s’exécute sur le moteur de **l’hôte**, avec le contexte de build envoyé depuis cet ordinateur. Les services avec `build:` ne sont jamais récupérés ; leurs images de base sont récupérées par le build lui-même, avec votre propre `docker login`.
+Un service avec `build:` est construit quand il n’a pas encore d’image. Pour le reconstruire après avoir modifié son code, choisissez **Reconstruire et déployer** dans le menu **Plus d’actions** de la stack (`up --build`). Le build s’exécute sur le moteur de **l’hôte**, avec le contexte de build envoyé depuis cet ordinateur. Les services avec `build:` ne sont jamais récupérés ; leurs images de base sont récupérées par le build lui-même, avec votre propre `docker login`.
 
-**Enregistrer et redéployer**, dans l’onglet **Définition**, écrit les fichiers que vous avez modifiés, puis déploie.
+**Déployer**, dans l’onglet **Définition**, écrit les fichiers que vous avez modifiés, puis déploie ; **Enregistrer sans déployer**, sous sa flèche, ne fait que les écrire.
 
 <Aside type="caution" title="Chemins relatifs sur un hôte distant">
   Un montage bind comme `./data:/data` se résout vers le dossier sur **cet** ordinateur, par exemple
@@ -150,7 +150,7 @@ Compose lui-même ne reçoit jamais d’identifiants : aucun fichier que Homepo
 
 5. Mettez des variables dans **Environnement**, un `KEY=value` par ligne, comme dans un fichier `.env`. Compose les substitue à `${KEY}` dans le fichier. Remplissez les mots de passe qu’un modèle laisse vides.
 
-6. Choisissez **Enregistrer et déployer** — ou **Enregistrer** pour déployer plus tard.
+6. Choisissez **Enregistrer et déployer** — ou **Enregistrer sans déployer**, sous sa flèche, pour déployer plus tard.
 
 </Steps>
 
@@ -207,7 +207,7 @@ services:
 DB_PASSWORD=correct-horse-battery-staple
 ```
 
-Les lignes vides, les `# comments` et les préfixes `export` sont autorisés. Les valeurs peuvent être entre guillemets ; entre guillemets doubles, `\n` est un saut de ligne.
+Les lignes vides, les `# comments` et les préfixes `export` sont autorisés. Les valeurs peuvent être entre guillemets ; entre guillemets doubles, `\n` est un saut de ligne. Les valeurs s’affichent sous forme de points, les clés et les commentaires restant lisibles, jusqu’à ce que vous choisissiez **Afficher les valeurs** ; un environnement vide est prêt à être saisi.
 
 <Aside>
   Enregistrer un environnement demande un [trousseau du
@@ -255,11 +255,11 @@ Seuls les profils de la stack comptent. Une variable `COMPOSE_PROFILES` dans vot
   déploiement à moitié fait. Redéployez pour le terminer.
 </Aside>
 
-Pour modifier une stack gérée, ouvrez-la, modifiez sa **Définition** et choisissez **Enregistrer et redéployer**. Compose ne recrée que les services qui ont changé, et supprime les services que vous avez retirés du fichier.
+Pour modifier une stack gérée, ouvrez-la, modifiez sa **Définition** et choisissez **Déployer** : la définition est enregistrée, ce qui change est affiché, puis la stack est déployée. Compose ne recrée que les services qui ont changé, et supprime les services que vous avez retirés du fichier. **Modifications non enregistrées**, à côté du bouton, indique quand il y a quelque chose à enregistrer ; **Enregistrer sans déployer**, sous sa flèche, garde la modification pour le prochain déploiement. Une stack jamais déployée s’ouvre sur son onglet **Définition**, avec **Déployer** à portée de main.
 
 ### Vérifier les changements avant un redéploiement
 
-Avant qu’un redéploiement ne s’exécute — **Redéployer**, **Reconstruire et déployer**, ou **Enregistrer et redéployer** pour une stack en cours d’exécution —, Homeport affiche **Vérifier les changements de …** : la définition déployée la dernière fois (l’entrée réussie la plus récente de son [historique](#historique-des-déploiements-et-retour-arrière)) face à celle qui est sur le point de l’être.
+Avant qu’un redéploiement ne s’exécute — **Redéployer**, **Reconstruire et déployer**, ou **Déployer** pour une stack en cours d’exécution —, Homeport affiche **Vérifier les changements de …** : la définition déployée la dernière fois (l’entrée réussie la plus récente de son [historique](#historique-des-déploiements-et-retour-arrière)) face à celle qui est sur le point de l’être.
 
 - Chaque fichier compose montre ses lignes modifiées en ligne : les lignes supprimées au-dessus des lignes qui les remplacent. Un fichier inchangé est replié ; sélectionnez-le pour l’ouvrir. Les fichiers ajoutés, supprimés ou fusionnés dans un autre ordre sont nommés.
 - Les variables d’environnement ne montrent que leur nom, marqué **Ajouté**, **Supprimé** ou **Modifié** — un mot de passe changé indique **Modifié** sans montrer aucune des deux valeurs —, et combien d’autres sont inchangées.
@@ -271,7 +271,7 @@ La comparaison porte uniquement sur les définitions, pas sur la configuration r
 
 ## Historique des déploiements et retour arrière
 
-Chaque déploiement d’une stack gérée, liée ou synchronisée depuis Homeport — **Déployer**, **Redéployer**, **Reconstruire et déployer**, **Enregistrer et redéployer**, une [synchronisation](/docs/guides/synced-stacks/#synchronisation) — est enregistré avec les fichiers compose, l’environnement et les profils qu’il a utilisés, le moment où il a eu lieu et la façon dont il s’est terminé ; celui d’une stack synchronisée indique aussi son commit, et si c’est le déploiement automatique qui l’a lancé. L’onglet **Historique** de la page de la stack liste les 20 derniers, du plus récent au plus ancien : **Réussi**, **Échoué** avec son code de sortie, ou **Non terminé** pour une exécution dont la fenêtre a été fermée avant la fin. **Déployé actuellement** marque le plus récent qui a réussi.
+Chaque déploiement d’une stack gérée, liée ou synchronisée depuis Homeport — **Déployer**, **Redéployer**, **Reconstruire et déployer**, une [synchronisation](/docs/guides/synced-stacks/#synchronisation) — est enregistré avec les fichiers compose, l’environnement et les profils qu’il a utilisés, le moment où il a eu lieu et la façon dont il s’est terminé ; celui d’une stack synchronisée indique aussi son commit, et si c’est le déploiement automatique qui l’a lancé. L’onglet **Historique** de la page de la stack liste les 20 derniers, du plus récent au plus ancien : **Réussi**, **Échoué** avec son code de sortie, ou **Non terminé** pour une exécution dont la fenêtre a été fermée avant la fin. **Déployé actuellement** marque le plus récent qui a réussi.
 
 Sélectionnez un déploiement pour voir ses fichiers compose, en lecture seule. Son environnement est enregistré chiffré comme celui de la stack, et l’onglet ne montre que le nom de ses variables. Sans trousseau, la liste fonctionne quand même ; un déploiement avec un environnement indique simplement qu’il ne peut pas être ouvert.
 
@@ -317,11 +317,13 @@ Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre �
 | **Redémarrer**                | Toutes                    | Redémarre chaque conteneur.                                                                                                                             |
 | **Récupérer les images**      | Gérée, liée, synchronisée | Récupère l’image de chaque service avec les identifiants enregistrés, pour obtenir les plus récentes avant de redéployer.                               |
 | **Retirer**                   | Gérée, liée, synchronisée | `docker compose down` : supprime les conteneurs et les réseaux, garde les volumes et la définition.                                                     |
-| **Retirer avec les volumes**  | Gérée, liée, synchronisée | Supprime aussi les volumes de la stack **et leurs données**.                                                                                            |
+| **Retirer avec les volumes**  | Gérée, liée, synchronisée | Supprime aussi les volumes de la stack **et leurs données**. Demande d’abord de saisir le nom de la stack.                                              |
 | **Supprimer les conteneurs**  | Externe                   | Supprime ses conteneurs et ses réseaux. Les volumes sont conservés.                                                                                     |
 | **Adopter**                   | Externe                   | Donne à Homeport le fichier compose, ce qui en fait une stack gérée.                                                                                    |
 
-**Oublier la définition**, dans l’onglet **Définition** d’une stack gérée, supprime le fichier compose et l’environnement de Homeport mais laisse les conteneurs tourner ; la stack devient externe. **Oublier**, dans l’onglet **Définition** d’une stack liée, efface la note que Homeport a prise du dossier ; le dossier, ses fichiers et les conteneurs sont laissés tels quels.
+Sur la page Stacks, chaque ligne montre deux icônes : l’action qui met la stack à jour (**Mettre à jour**, **Synchroniser**, **Déployer**, **Redéployer** ou **Adopter**) et **Arrêter** ou **Démarrer**. Son menu contient le reste. La page d’une stack a la même paire dans son en-tête et le reste dans son menu **Plus d’actions** ; **Redémarrer** et le retrait ne s’affichent que pour une stack qui tourne.
+
+L’oubli est mis à part dans **Oublier cette stack**, au pied de l’onglet **Définition**. **Oublier la définition**, pour une stack gérée, supprime le fichier compose et l’environnement de Homeport mais laisse les conteneurs tourner ; la stack devient externe. **Oublier**, pour une stack liée, efface la note que Homeport a prise du dossier ; le dossier, ses fichiers et les conteneurs sont laissés tels quels.
 
 ## Adopter une stack externe
 
@@ -333,7 +335,7 @@ Une stack externe affiche aussi **Mise à jour disponible**, mais son **Mettre �
 
 3. Ajoutez ses variables d’environnement, si elle en utilisait.
 
-4. Choisissez **Enregistrer** pour la reprendre sans toucher aux conteneurs en cours d’exécution, ou **Enregistrer et déployer** pour la redéployer maintenant.
+4. Choisissez **Enregistrer sans déployer**, sous la flèche de **Enregistrer et déployer**, pour la reprendre sans toucher aux conteneurs en cours d’exécution, ou **Enregistrer et déployer** pour la redéployer maintenant.
 
 </Steps>
 

@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarm',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': 'يوجد مدير متصل',
   'swarm.unreachable': 'لا يوجد مدير متصل',
   'swarm.hostCounts':
     '{managers, plural, zero {لا مضيفات مديرة} one {مضيف مدير واحد} two {مضيفان مديران} few {# مضيفات مديرة} many {# مضيفًا مديرًا} other {# مضيف مدير}}، {workers, plural, zero {لا مضيفات عاملة} one {مضيف عامل واحد} two {مضيفان عاملان} few {# مضيفات عاملة} many {# مضيفًا عاملًا} other {# مضيف عامل}}',
@@ -56,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': 'تحرير التسميات',
   'swarm.nodes.action.tasks': 'عرض مهامها',
   'swarm.nodes.updated': 'تم تحديث {name}',
+  'swarm.nodes.drain.title': 'هل تريد تفريغ {name}؟',
+  'swarm.nodes.drain.description':
+    'تتوقف مهامه هنا وتُنقل إلى العقد الأخرى، ولا يستقبل مهام جديدة حتى يُعاد تنشيطه.',
+  'swarm.nodes.demote.title': 'هل تريد خفض {name} إلى عامل؟',
+  'swarm.nodes.demote.description':
+    'يتوقف عن إدارة الـ Swarm ويواصل تشغيل مهامه. يحتاج الـ Swarm إلى أغلب مديريه ليعمل، فأبقِ عددًا كافيًا منهم.',
   'swarm.nodes.removed': 'تمت إزالة {name} من الـ Swarm',
   'swarm.nodes.labels.title': 'تسميات {name}',
   'swarm.nodes.labels.description':
@@ -72,22 +77,23 @@ export default {
 
   'swarm.services.search': 'البحث في الخدمات',
   'swarm.services.empty': 'لا تعمل أي خدمات على هذا الـ Swarm',
+  'swarm.services.emptyHint': 'أنشئ خدمة من صورة، أو انشر مكدسًا على هذا الـ Swarm.',
   'swarm.services.column.name': 'الاسم',
   'swarm.services.column.image': 'الصورة',
-  'swarm.services.column.mode': 'الوضع',
   'swarm.services.column.replicas': 'قيد التشغيل',
   'swarm.services.column.ports': 'المنافذ',
   'swarm.services.column.stack': 'المكدس',
   'swarm.services.column.update': 'التحديث',
   'swarm.services.mode.replicated': 'منسوخة',
-  'swarm.services.mode.replicatedCount': 'منسوخة ({count})',
   'swarm.services.mode.global': 'عامة',
   'swarm.services.mode.replicatedJob': 'مهمة دفعية',
   'swarm.services.mode.globalJob': 'مهمة دفعية عامة',
   'swarm.services.actionsFor': 'إجراءات {name}',
+  'swarm.services.logsOf': 'سجلات {name}',
   'swarm.services.action.logs': 'السجلات',
   'swarm.services.action.scale': 'تغيير عدد النسخ',
   'swarm.services.action.rollback': 'تراجع',
+  'swarm.services.action.remove': 'إزالة الخدمة',
   'swarm.services.scaled':
     'تم تغيير عدد نسخ {name} إلى {count, plural, zero {0 نسخة} one {نسخة واحدة} two {نسختين} few {# نسخ} many {# نسخة} other {# نسخة}}',
   'swarm.services.rolledBack': 'جارٍ التراجع في {name}',
@@ -127,6 +133,8 @@ export default {
   'swarm.objects.createConfig': 'إنشاء تكوين',
   'swarm.objects.secretNote':
     'تُرسل قيمة السر إلى الـ Swarm مرة واحدة ولا يمكن قراءتها مجددًا، لا من Homeport ولا من أي أحد: لا تراها إلا الخدمات التي تُمنح لها.',
+  'swarm.objects.configNote':
+    'التكوين ملف يسلّمه الـ Swarm إلى الخدمات المُعطاة له، مثل إعدادات خادم ويب.',
   'swarm.objects.noSecrets': 'لا توجد أسرار',
   'swarm.objects.noConfigs': 'لا توجد تكوينات',
   'swarm.objects.column.name': 'الاسم',
@@ -164,7 +172,6 @@ export default {
 
   'swarm.services.created': 'تم إنشاء {name}',
   'swarm.services.updating': 'تنتقل {name} إلى إعداداتها الجديدة',
-  'swarm.service.update': 'التحديث {state}',
   'swarm.create.open': 'إنشاء خدمة',
   'swarm.create.title': 'إنشاء خدمة',
   'swarm.create.description':
@@ -233,7 +240,6 @@ export default {
   'swarm.membership.leave.last':
     'هذا آخر مدير في الـ Swarm: يذهب الـ Swarm معه، بكل خدمة وسر وتكوين. تُترك العقد الأخرى في Swarm بلا مدير.',
   'swarm.membership.leave.force': 'قسرًا: المغادرة رغم أنه مدير',
-  'swarm.membership.leave.typeName': 'اكتب {name} للتأكيد',
   'swarm.membership.leave.submit': 'مغادرة',
 
   'swarm.join.title': 'أوامر الانضمام',
@@ -265,6 +271,9 @@ export default {
   'swarm.stacks.removed': 'تمت إزالة {name}',
   'swarm.stacks.removedPartly': 'تمت إزالة {name}، باستثناء:',
   'swarm.stacks.remove.title': 'هل تريد إزالة المكدس {name}؟',
+  'swarm.stacks.remove.zone': 'إزالة هذا المكدس',
+  'swarm.stacks.remove.submit': 'إزالة المكدس',
   'swarm.stacks.remove.description':
     'تُزال خدماته، ثم شبكاته وأسراره وتكويناته، كما يفعل docker stack rm. يُحتفظ بوحدات التخزين الخاصة به على كل عقدة.',
+  'swarm.nodes.column.host': 'المضيف',
 } satisfies Translation<typeof en>;

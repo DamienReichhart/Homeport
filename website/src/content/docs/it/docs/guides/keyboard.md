@@ -35,7 +35,7 @@ Homeport carica gli elenchi solo dopo che hai digitato due caratteri, e da lì l
 | Tasti                                      | Azione                                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostra le scorciatoie da tastiera                                                     |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Apre le pagine della barra laterale nell’ordine: Panoramica, Bacheca, Container…      |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Apre le pagine della barra laterale nell’ordine: Bacheca, Panoramica, Container…      |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Apre le Impostazioni                                                                  |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Seleziona l’host precedente o successivo, nell’ordine in cui li elenca la pagina Host |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Aggiorna gli elenchi dell’host selezionato: container, immagini, volumi, reti, stack… |
@@ -44,10 +44,11 @@ Passa il puntatore su una pagina della barra laterale per vederne i tasti.
 
 ### In una pagina
 
-| Tasti        | Azione                                                                                                                                                                                                                                              |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Porta il cursore nel campo di ricerca della pagina. <kbd>Esc</kbd> in un campo vuoto lo abbandona.                                                                                                                                                  |
-| <kbd>N</kbd> | Avvia l’azione principale della pagina: **Esegui container**, **Scarica**, **Crea volume**, **Crea rete**, **Nuovo stack** o **Aggiungi host**; e nelle pagine di Podman, containerd, Incus e Helm, la loro, come **Nuovo pod** o **Nuova istanza** |
+| Tasti                       | Azione                                                                                                                                                                                                                                              |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd>                | Porta il cursore nel campo di ricerca della pagina. <kbd>Esc</kbd> in un campo vuoto lo abbandona.                                                                                                                                                  |
+| <kbd>N</kbd>                | Avvia l’azione principale della pagina: **Esegui container**, **Scarica**, **Crea volume**, **Crea rete**, **Nuovo stack** o **Aggiungi host**; e nelle pagine di Podman, containerd, Incus e Helm, la loro, come **Nuovo pod** o **Nuova istanza** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | In un elenco con un elemento aperto accanto, aprire l’elemento sopra o sotto                                                                                                                                                                        |
 
 Il pulsante dell’azione principale di una pagina mostra <kbd>N</kbd> quando ci passi sopra il puntatore.
 

@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Projetos Compose neste host. As stacks gerenciadas guardam a definição no Homeport, as vinculadas em uma pasta neste computador; as externas foram implantadas em outro lugar.',
+  'stacks.description': 'Projetos Compose neste host.',
   'stacks.new': 'Nova stack',
   'stacks.search': 'Pesquisar stacks',
   'stacks.empty.title': 'Nenhuma stack',
-  'stacks.empty.description': 'Escreva uma definição compose e implante-a neste host.',
+  'stacks.empty.description':
+    'Implante um projeto compose neste host, a partir de um arquivo compose, uma pasta ou um repositório git.',
   'stacks.column.name': 'Nome',
   'stacks.column.kind': 'Tipo',
   'stacks.column.state': 'Estado',
@@ -91,20 +91,19 @@ export default {
   'stacks.action.adopt': 'Adotar',
   'stacks.action.stop': 'Parar',
   'stacks.action.start': 'Iniciar',
-  'stacks.action.more': 'Mais ações da stack',
   'stacks.action.restart': 'Reiniciar',
   'stacks.action.pull': 'Baixar imagens',
   'stacks.action.rebuild': 'Refazer a build e implantar',
-  'stacks.down.title': 'Desativar {name}?',
+  'stacks.down.title': 'Desativar {name} em {host}?',
   'stacks.down.description':
     'Os contêineres e as redes dela são removidos. Os volumes e a definição são mantidos, para que você possa implantar de novo.',
   'stacks.down.confirm': 'Desativar',
-  'stacks.downWithVolumes.title': 'Desativar {name} e excluir os volumes dela?',
+  'stacks.downWithVolumes.title': 'Desativar {name} em {host} e excluir os volumes dela?',
   'stacks.downWithVolumes.warning':
     'Os contêineres, as redes e todos os volumes desta stack são excluídos, com todos os dados deles.',
   'stacks.downWithVolumes.confirm': 'Excluir com os volumes',
   'stacks.downWithVolumes.action': 'Desativar com os volumes',
-  'stacks.remove.title': 'Remover {name}?',
+  'stacks.remove.title': 'Remover {name} de {host}?',
   'stacks.remove.description':
     '{count, plural, one {O # contêiner} other {Os # contêineres}} e as redes dela são removidos. Os volumes são mantidos. O Homeport não tem nenhum arquivo compose para esta stack, então ela não pode ser reimplantada daqui.',
   'stacks.remove.action': 'Remover contêineres',
@@ -161,7 +160,7 @@ export default {
   'stacks.newPage.useFolder': 'Usar uma pasta neste computador',
   'stacks.newPage.useRepository': 'Usar um repositório git',
   'stacks.newSynced.description':
-    'Um arquivo compose em um repositório git. O Homeport o clona neste computador, mostra o que muda e implanta um commit dele. Ele nunca edita o repositório.',
+    'Um arquivo compose em um repositório git. O Homeport implanta os commits dele e nunca o edita.',
   'stacks.newSynced.repository': 'Repositório',
   'stacks.newSynced.pickRepository': 'Escolha um repositório',
   'stacks.newSynced.addRepository': 'Adicionar repositório',
@@ -228,7 +227,7 @@ export default {
   'stacks.synced.forgetDescription':
     'O Homeport deixa de acompanhar o repositório dela e exclui o checkout neste computador. Os contêineres dela continuam em execução, e ela se torna uma stack externa. O repositório permanece em Configurações → Repositórios.',
   'stacks.newLinked.description':
-    'Um projeto compose em uma pasta neste computador. O Homeport trabalha nos arquivos dele onde estão e implanta a partir dessa pasta.',
+    'Um projeto compose em uma pasta neste computador, implantado a partir de onde está.',
   'stacks.newLinked.choose': 'Escolher uma pasta…',
   'stacks.newLinked.pickTitle': 'Escolha a pasta de um projeto compose',
   'stacks.newLinked.files': 'Arquivos compose, em ordem',
@@ -250,7 +249,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Nenhum chaveiro do sistema está disponível, então um ambiente de stack não pode ser armazenado.',
   'stacks.editor.problems': 'Problemas',
-  'stacks.managed.saveAndRedeploy': 'Salvar e reimplantar',
   'stacks.profiles.title': 'Perfis',
   'stacks.profiles.hint':
     'Os serviços atrás de um perfil só são executados quando ele está ativado. Os serviços sem perfil sempre são executados.',
@@ -275,7 +273,6 @@ export default {
   'stacks.linked.reload': 'Recarregar',
   'stacks.linked.overwrite': 'Sobrescrever',
   'stacks.linked.saved': 'Arquivos compose salvos',
-  'stacks.linked.saveAndRedeploy': 'Salvar e reimplantar',
   'stacks.linked.envNote':
     'O Compose lê o .env da pasta quando é executado. O Homeport não o mostra nem o altera.',
   'stacks.linked.files': 'Arquivos compose',
@@ -293,4 +290,14 @@ export default {
   'stacks.external.descriptionFrom':
     'Ela foi implantada fora do Homeport a partir de <mono>{files}</mono> naquela máquina. Você pode iniciá-la, pará-la e removê-la; adote-a com o arquivo compose dela para editá-la e reimplantá-la.',
   'stacks.palette.new': 'Nova stack',
+  'stacks.managed.deploy': 'Implantar',
+  'stacks.managed.moreSave': 'Outras formas de salvar',
+  'stacks.managed.saveOnly': 'Salvar sem implantar',
+  'stacks.managed.unsaved': 'Alterações não salvas',
+  'stacks.forget.sectionTitle': 'Esquecer este stack',
+  'stacks.kind.managedHint': 'O Homeport guarda o arquivo compose e o ambiente dela.',
+  'stacks.kind.linkedHint': 'Os arquivos compose dela estão em uma pasta neste computador.',
+  'stacks.kind.syncedHint': 'Implantada a partir de um repositório git.',
+  'stacks.kind.externalHint': 'Implantada fora do Homeport.',
+  'stacks.services.noContainer': 'Nenhum contêiner',
 } satisfies Translation<typeof en>;

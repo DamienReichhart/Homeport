@@ -59,9 +59,9 @@ export default {
     '{count, plural, zero {لم تُنهَ أي حاوية} one {تم إنهاء الحاوية قسريًا} two {تم إنهاء حاويتين قسريًا} few {تم إنهاء # حاويات قسريًا} many {تم إنهاء # حاوية قسريًا} other {تم إنهاء # حاوية قسريًا}}',
   'containers.done.remove':
     '{count, plural, zero {لم تُزل أي حاوية} one {تمت إزالة الحاوية} two {تمت إزالة حاويتين} few {تمت إزالة # حاويات} many {تمت إزالة # حاوية} other {تمت إزالة # حاوية}}',
-  'containers.remove.title': 'هل تريد إزالة {name}؟',
+  'containers.remove.title': 'هل تريد إزالة {name} من {host}؟',
   'containers.remove.titleMany':
-    'هل تريد إزالة {count, plural, zero {0 حاوية} one {حاوية واحدة} two {حاويتين} few {# حاويات} many {# حاوية} other {# حاوية}}؟',
+    'هل تريد إزالة {count, plural, zero {0 حاوية} one {حاوية واحدة} two {حاويتين} few {# حاويات} many {# حاوية} other {# حاوية}} من {host}؟',
   'containers.remove.deleted':
     '{count, plural, zero {تُحذف الحاويات وطبقاتها القابلة للكتابة ووحدات التخزين المجهولة الخاصة بها.} one {تُحذف الحاوية وطبقتها القابلة للكتابة ووحدات التخزين المجهولة الخاصة بها.} two {تُحذف الحاويتان وطبقتاهما القابلتان للكتابة ووحدات التخزين المجهولة الخاصة بهما.} few {تُحذف الحاويات وطبقاتها القابلة للكتابة ووحدات التخزين المجهولة الخاصة بها.} many {تُحذف الحاويات وطبقاتها القابلة للكتابة ووحدات التخزين المجهولة الخاصة بها.} other {تُحذف الحاويات وطبقاتها القابلة للكتابة ووحدات التخزين المجهولة الخاصة بها.}}',
   'containers.remove.running': 'ستُوقف أولًا الحاويات قيد التشغيل ({count}).',
@@ -376,4 +376,7 @@ export default {
   'containers.export.finished': 'تم. استورده في صفحة «الصور»، أو باستخدام docker import.',
   'containers.export.done': 'تم التصدير إلى {destination}',
   'containers.palette.run': 'تشغيل حاوية',
+  'containers.idTitle': 'المعرّف {id}',
+  'containers.detail.openStack': 'فتح المكدس {stack}',
+  'containers.logs.show': 'عرض',
 } satisfies Translation<typeof en>;

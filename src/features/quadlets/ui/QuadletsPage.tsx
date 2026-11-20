@@ -65,14 +65,23 @@ function QuadletsList({ hostId }: { hostId: string }) {
           </AlertDescription>
         </Alert>
       )}
-      <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('quadlets.search')} />
-      </div>
+      {data.units.length > 0 && (
+        <div className="mb-3">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('quadlets.search')} />
+        </div>
+      )}
       {data.units.length === 0 ? (
         <EmptyState
           icon={ScrollTextIcon}
           title={t('quadlets.empty')}
           description={t('quadlets.emptyDescription')}
+          action={
+            blocked ? undefined : (
+              <Button onClick={create}>
+                <PlusIcon /> {t('quadlets.new')}
+              </Button>
+            )
+          }
         />
       ) : (
         <DataTable

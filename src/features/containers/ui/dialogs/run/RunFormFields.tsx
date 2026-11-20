@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
   Switch,
-  Textarea,
+  EnvTextarea,
 } from '@/shared/ui';
 import type { RunForm, RunFormErrors } from '../../../model/runForm';
 import { AdvancedOptions } from './AdvancedOptions';
@@ -69,6 +69,7 @@ export function RunFormFields({
             value={form.image}
             onChange={(e) => set('image', e.target.value)}
             placeholder="nginx:latest"
+            className="font-mono"
             autoFocus
           />
           <datalist id="run-images">
@@ -90,23 +91,13 @@ export function RunFormFields({
             onChange={(e) => set('name', e.target.value)}
             placeholder={t('containers.run.namePlaceholder')}
             disabled={lockName}
+            className="font-mono placeholder:font-sans"
           />
           {lockName && (
             <p className="text-muted-foreground text-xs">{t('containers.run.nameKept')}</p>
           )}
         </div>
       </div>
-      <div className="grid gap-1.5">
-        <Label htmlFor="run-cmd">{t('containers.run.command')}</Label>
-        <Input
-          id="run-cmd"
-          value={form.command}
-          onChange={(e) => set('command', e.target.value)}
-          placeholder={t('containers.run.commandPlaceholder')}
-          className="font-mono"
-        />
-      </div>
-
       {pods && (
         <div className="grid gap-1.5">
           <Label>{t('containers.run.pod')}</Label>
@@ -139,14 +130,24 @@ export function RunFormFields({
 
       <div className="grid gap-1.5">
         <Label htmlFor="run-env">{t('containers.run.environment')}</Label>
-        <Textarea
+        {/* Hidden until asked for when filled in from another container (DESIGN.md). */}
+        <EnvTextarea
           id="run-env"
           value={form.env}
-          onChange={(e) => set('env', e.target.value)}
+          onChange={(env) => set('env', env)}
           // eslint-disable-next-line homeport/no-literal-ui-string -- sample variables
           placeholder={'KEY=value\nOTHER=value'}
-          className="h-20 font-mono text-xs"
-          spellCheck={false}
+          className="h-20"
+        />
+      </div>
+      <div className="grid gap-1.5">
+        <Label htmlFor="run-cmd">{t('containers.run.command')}</Label>
+        <Input
+          id="run-cmd"
+          value={form.command}
+          onChange={(e) => set('command', e.target.value)}
+          placeholder={t('containers.run.commandPlaceholder')}
+          className="font-mono"
         />
       </div>
 

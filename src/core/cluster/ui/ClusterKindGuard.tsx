@@ -28,7 +28,7 @@ export function ClusterKindGuard({ kind, children }: { kind: ClusterKind; childr
       action={
         <div className="flex gap-2">
           <Button asChild variant="outline">
-            <Link to="/">{t('core.unsupported.overview')}</Link>
+            <Link to="/overview">{t('core.unsupported.overview')}</Link>
           </Button>
           <Button asChild>
             <Link to={`/clusters/${cluster.cluster.id}`}>

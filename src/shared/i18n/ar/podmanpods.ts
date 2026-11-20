@@ -34,7 +34,7 @@ export default {
   'podmanpods.actionOne.restart': 'إعادة تشغيل {name}',
   'podmanpods.actionOne.pause': 'إيقاف {name} مؤقتًا',
   'podmanpods.actionOne.unpause': 'استئناف {name}',
-  'podmanpods.removeOne': 'إزالة {name}',
+  'podmanpods.actionsFor': 'إجراءات {name}',
   'podmanpods.done.start': 'تم تشغيل {name}',
   'podmanpods.done.stop': 'تم إيقاف {name}',
   'podmanpods.done.restart': 'تمت إعادة تشغيل {name}',

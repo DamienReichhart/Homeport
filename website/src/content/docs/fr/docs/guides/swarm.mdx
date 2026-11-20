@@ -14,7 +14,7 @@ Cette page suit un Swarm depuis sa découverte ou sa création jusqu’à ses n�
 Ajoutez un manager du Swarm comme hôte, de la même façon que n’importe quel autre hôte (voir [Hôtes et connexions](/docs/hosts/)). Dès qu’il est connecté, le Swarm apparaît :
 
 - dans la barre latérale, sous **Swarms**,
-- sur la **Vue d’ensemble**, sous forme de carte à part,
+- sur le **Tableau**, sous forme de vignette à part,
 - sur chacun de ses hôtes, comme **Manager de** ou **Worker de** le Swarm.
 
 Docker donne le même nom à tous les Swarms, si bien que Homeport en appelle un **Swarm de** son premier hôte manager, avec le début de son ID de swarm. Ajouter un second manager du même Swarm ne l’affiche pas deux fois : les Swarms se distinguent par leur ID de swarm. Un hôte worker indique à quel Swarm il appartient dès que l’un des managers de ce Swarm est aussi un hôte.
@@ -74,7 +74,7 @@ Le menu de chaque nœud permet de le modifier :
 | **Modifier les labels**   | Définit les labels d’après lesquels les contraintes de placement choisissent les nœuds, comme `node.labels.zone==a`. |
 | **Supprimer**             | Le retire du Swarm.                                                                                                  |
 
-Homeport refuse, avant même d’interroger le moteur, de rétrograder le dernier manager joignable du Swarm (un Swarm sans manager ne peut plus du tout être géré) et de drainer son dernier nœud actif (ses tâches n’auraient nulle part où aller). Supprimer un nœud encore actif demande **Forcer** ; un manager doit d’abord être rétrogradé. Si quelqu’un d’autre a modifié un nœud depuis la lecture de la liste, la modification est refusée avec **Cet élément a été modifié ailleurs depuis que Homeport l’a lu.** Actualisez et réessayez, pour que rien ne soit écrasé.
+**Drainer** et **Rétrograder en worker** disent ce qu’ils déplacent dans le Swarm et demandent d’abord ; les autres agissent tout de suite. Homeport refuse, avant même d’interroger le moteur, de rétrograder le dernier manager joignable du Swarm (un Swarm sans manager ne peut plus du tout être géré) et de drainer son dernier nœud actif (ses tâches n’auraient nulle part où aller). Supprimer un nœud encore actif demande **Forcer** ; un manager doit d’abord être rétrogradé. Si quelqu’un d’autre a modifié un nœud depuis la lecture de la liste, la modification est refusée avec **Cet élément a été modifié ailleurs depuis que Homeport l’a lu.** Actualisez et réessayez, pour que rien ne soit écrasé.
 
 ## Services
 
@@ -83,16 +83,16 @@ Homeport refuse, avant même d’interroger le moteur, de rétrograder le dernie
   alt="L’onglet Services d’un Swarm, qui liste chaque service avec son image, son mode, ses tâches en cours d’exécution et voulues, ses ports et sa stack."
 />
 
-L’onglet **Services** liste ce que le Swarm exécute : pour chaque service, son nom, son image, son mode (répliqué avec son nombre de réplicas, ou global : une tâche sur chaque nœud), combien de ses tâches tournent par rapport à combien le devraient (en couleur d’avertissement tant qu’il en tourne moins), ses ports publiés, la stack swarm à laquelle il appartient, et l’état de sa dernière mise à jour. La liste s’actualise d’elle-même quand les services changent.
+L’onglet **Services** liste ce que fait tourner le Swarm : le nom de chaque service, son image, combien de ses tâches tournent par rapport à combien devraient, ses ports publiés et la stack swarm à laquelle il appartient. Le nombre en cours d’exécution est en ambre tant qu’il manque des tâches et en rouge quand aucune ne tourne ; un service global ou un job l’indique à côté. Une mise à jour en cours apparaît sous forme de badge ambre et une mise à jour bloquée de badge rouge, tandis qu’une mise à jour terminée reste discrète. La liste se rafraîchit d’elle-même quand les services changent.
 
-Le menu de chaque service :
+La ligne de chaque service a **Journaux** à portée de main, et son menu :
 
 - **Journaux** ouvre ses journaux, fusionnés depuis toutes ses tâches, chaque ligne étiquetée avec sa tâche et son nœud, comme `web.2@node-b`. Pendant le suivi, les tâches que le Swarm démarre ensuite s’y ajoutent.
 - **Mettre à l’échelle** fixe le nombre de réplicas qu’exécute un service répliqué ; 0 l’arrête sans le supprimer. Les services globaux ne se mettent pas à l’échelle : ils exécutent une tâche par nœud.
 - **Revenir en arrière** remet les réglages que le service avait avant sa dernière mise à jour (image, environnement, réplicas…), comme le fait `docker service rollback`. Un service qui n’a jamais été mis à jour n’a rien vers quoi revenir, et le signale.
 - **Supprimer** arrête et supprime ses tâches. Ses volumes sont conservés.
 
-Sélectionnez un service pour l’ouvrir. Sa page s’ouvre sur ses **Tâches**, si bien qu’un déploiement progressif en cours ou un réplica qui refuse de démarrer se voit tout de suite, avec **Modifier**, **Mettre à l’échelle**, **Revenir en arrière** et **Supprimer** en haut.
+Sélectionnez un service pour l’ouvrir. Sa page s’ouvre sur ses **Tâches**, si bien qu’un déploiement en cours ou un réplica qui ne démarre pas se voit aussitôt, avec **Modifier** et **Mettre à l’échelle** en haut, et **Revenir en arrière** et **Supprimer le service** dans son menu **Plus d’actions**.
 
 <DocScreenshot
   name="swarm-service"
@@ -104,7 +104,7 @@ L’onglet **Journaux** suit ses journaux, et **Inspecter** montre sa définitio
 
 ### Créer et mettre à jour un service
 
-**Créer un service**, dans l’onglet Services, démarre un service à partir d’une image : son nom, s’il est répliqué (et avec combien de réplicas) ou global, quand ses tâches redémarrent, une commande pour remplacer celle de l’image, des variables d’environnement (un `KEY=value` par ligne), des ports publiés, des volumes et des montages bind, les réseaux overlay qu’il rejoint, et les secrets et les configs qui lui sont fournis, chacun monté là où vous l’indiquez (`/run/secrets/<name>` par défaut pour un secret). Les ports passent par le maillage de routage du Swarm, joignables sur chaque nœud, sauf si vous choisissez de les publier uniquement sur le nœud qui exécute chaque tâche. Les montages bind sont des chemins sur chaque nœud, pas sur cet ordinateur. Homeport vérifie le formulaire avant de l’envoyer : un nom valide, des entrées `KEY=value`, un port publié deux fois. Le nouveau service s’ouvre sur son onglet **Tâches**, où vous voyez ses réplicas démarrer.
+**Créer un service**, dans l’onglet Services, démarre un service à partir d’une image : son nom, s’il est répliqué (et avec combien de réplicas) ou global, quand ses tâches redémarrent, une commande pour remplacer celle de l’image, des variables d’environnement (un `KEY=value` par ligne), des ports publiés, des volumes et des montages bind, les réseaux overlay qu’il rejoint, et les secrets et les configs qui lui sont fournis, chacun monté là où vous l’indiquez (`/run/secrets/<name>` par défaut pour un secret). Les ports passent par le maillage de routage du Swarm, joignables sur chaque nœud, sauf si vous choisissez de les publier uniquement sur le nœud qui exécute chaque tâche. Les montages bind sont des chemins sur chaque nœud, pas sur cet ordinateur. Homeport vérifie le formulaire avant de l’envoyer : un nom valide, des entrées `KEY=value`, un port publié deux fois. Le nouveau service s’ouvre sur son onglet **Tâches**, où vous voyez ses réplicas démarrer. Les valeurs d’environnement restent masquées pendant la saisie, comme lors de la modification.
 
 **Modifier**, sur la page d’un service, change son image, son environnement et ses réplicas, et rien d’autre : ses ports, ses montages, ses réseaux et tout le reste sont renvoyés tels quels. Le Swarm fait alors passer ses tâches aux nouveaux réglages quelques-unes à la fois, et la page montre la progression de la mise à jour. **Redéployer toutes les tâches** les redémarre même quand rien n’a changé, en récupérant à nouveau l’image, ce qui permet de déployer un nouveau push du même tag. Si quelqu’un d’autre a mis à jour le service depuis que vous l’avez ouvert, Homeport le signale au lieu d’écraser sa modification : actualisez et modifiez à nouveau.
 
@@ -153,7 +153,7 @@ Les secrets et les configs ne peuvent pas être modifiés une fois créés. Pour
 
 Une **stack swarm** est une stack déployée sur un Swarm : un fichier compose transformé en services, réseaux, secrets et configs qui partagent un espace de noms. Homeport les trouve toutes, quelle que soit la façon dont elles ont été déployées, grâce au label `com.docker.stack.namespace` que `docker stack deploy` leur pose. L’onglet **Stacks** du Swarm les liste, comme la page **Stacks** liste celles d’un hôte : leur type, leur état (en cours d’exécution quand chaque tâche de chaque service tourne, arrêtée quand chaque service est mis à l’échelle 0) et leurs services.
 
-Une stack déployée depuis un terminal avec `docker stack deploy` est **Externe** : Homeport n’a pas de fichier compose pour elle. Sélectionnez-la pour voir ses services, chacun avec un lien vers sa page, ainsi que ses réseaux, ses secrets et ses configs. **Supprimer** fait ce que fait `docker stack rm` : il supprime les services, attend l’arrêt de leurs tâches, puis supprime les réseaux, les secrets et les configs de l’espace de noms. Tout ce que le Swarm a refusé de supprimer est listé. Les volumes sont conservés sur chaque nœud.
+Une stack déployée depuis un terminal avec `docker stack deploy` est **Externe** : Homeport n’a pas de fichier compose pour elle. Sélectionnez-la pour voir ses services, chacun avec un lien vers sa page, ainsi que ses réseaux, ses secrets et ses configs. **Supprimer**, au pied de la page de la stack, fait ce que fait `docker stack rm` : il supprime les services, attend l’arrêt de leurs tâches, puis supprime les réseaux, les secrets et les configs de l’espace de noms. Tout ce que le Swarm a refusé de supprimer est listé. Les volumes sont conservés sur chaque nœud.
 
 <DocScreenshot
   name="swarm-stacks"

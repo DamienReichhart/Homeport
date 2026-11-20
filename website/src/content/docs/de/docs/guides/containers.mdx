@@ -19,7 +19,7 @@ Container, die zu einem [Stack](/docs/guides/stacks/) gehören, sind unter ihm g
 
 | Spalte              | Zeigt                                                                                                                      |
 | ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| **Name**            | Einen Statuspunkt, den Namen (den Service-Namen innerhalb eines Stacks) und die kurze ID.                                  |
+| **Name**            | Einen Statuspunkt und den Namen (den Service-Namen innerhalb eines Stacks); die kurze ID erscheint beim Darüberfahren.     |
 | **Image**           | Das Image, aus dem er erstellt wurde, mit einer Markierung ⬆, wenn ein [neueres Image](#neuere-images) veröffentlicht ist. |
 | **Status**          | Wie die Engine ihn meldet, z. B. _Up 3 hours (healthy)_, mit einem Health-Abzeichen, wenn es einen Healthcheck gibt.       |
 | **Ports**           | Bis zu drei Ports, veröffentlichte zuerst. Ein veröffentlichter Port ist ein Link, der ihn in Ihrem Browser öffnet.        |
@@ -29,7 +29,7 @@ Container, die zu einem [Stack](/docs/guides/stacks/) gehören, sind unter ihm g
 
 CPU und Arbeitsspeicher werden alle zwei Sekunden aktualisiert. **Container durchsuchen** vergleicht Namen, Images, Stacks, Services und ID-Präfixe; **Nur laufende** blendet den Rest aus.
 
-Wählen Sie einen Container aus, um ihn zu öffnen.
+Wählen Sie einen Container aus, um ihn zu öffnen. In einem Fenster ab 1280 px Breite öffnet er sich neben der Liste, die auf die Namen schrumpft, nach Stack gruppiert; <kbd>↑</kbd> und <kbd>↓</kbd> öffnen dann den Container darüber oder darunter. Listen von Images, Volumes, Stacks, Pods, Workloads, Jobs und dergleichen tun dasselbe.
 
 ### Neuere Images
 
@@ -39,7 +39,7 @@ Homeport fragt die Registry über die Engine des Hosts, die Digests vergleicht, 
 
 ### Aktionen
 
-Die Schaltfläche am Ende jeder Zeile startet oder stoppt den Container. Das Menü **⋮** enthält den Rest: **Logs**, **Terminal öffnen**, **Neu starten**, **Pausieren** oder **Fortsetzen**, **Beenden erzwingen**, **Umbenennen**, [**Bearbeiten**](#einen-container-bearbeiten), [**Duplizieren**](#einen-container-duplizieren), [**Als Image committen…**](#einen-container-committen), [**Dateisystem exportieren…**](#das-dateisystem-eines-containers-exportieren) und **Entfernen**.
+Am Ende jeder Zeile wirken **Neu starten** (solange er läuft) und **Stoppen** oder **Starten** sofort. Das Menü **⋮** enthält den Rest: **Logs**, **Terminal öffnen**, **Neu starten**, **Pausieren** oder **Fortsetzen**, **Beenden erzwingen**, **Umbenennen**, [**Bearbeiten**](#einen-container-bearbeiten), [**Duplizieren**](#einen-container-duplizieren), [**Als Image committen…**](#einen-container-committen), [**Dateisystem exportieren…**](#das-dateisystem-eines-containers-exportieren) und **Entfernen**.
 
 Kreuzen Sie Container an, um mit **Starten**, **Stoppen**, **Neu starten** oder **Entfernen** auf mehrere gleichzeitig zu wirken. Das Kästchen in der Zeile eines Stacks wählt alle seine Container aus.
 
@@ -53,7 +53,7 @@ Kreuzen Sie Container an, um mit **Starten**, **Stoppen**, **Neu starten** oder 
 
 ## Die Seite eines Containers
 
-Die Kopfzeile zeigt Image und Status, mit **Starten** oder **Stoppen**, **Neu starten**, **Pausieren** oder **Fortsetzen** und **Entfernen**; ihr Menü **⋮** enthält **Umbenennen**, **Bearbeiten**, **Duplizieren**, **Als Image committen…** und **Dateisystem exportieren…**. Die Tabs darunter enthalten alles andere.
+Der Kopf zeigt das Image und den Status, mit **Neu starten** und **Stoppen**, oder nur **Starten** bei einem gestoppten Container. Sein Menü **⋮** enthält **Pausieren** oder **Fortsetzen**, **Beenden erzwingen**, **Umbenennen**, **Bearbeiten**, **Duplizieren**, **Als Image committen…**, **Dateisystem exportieren…** und, zuletzt und abgesetzt, **Entfernen**, das einmal nachfragt und den Host nennt. Die Tabs darunter enthalten alles andere.
 
 <Aside>
   Das Verlassen eines Tabs beendet, was er gerade tat: Terminals schließen sich, wenn Sie **Exec**
@@ -72,8 +72,7 @@ Logs werden gestreamt, während der Container sie schreibt. Die Werkzeugleiste s
 
 - **Verlauf** – wie viele vergangene Zeilen geladen werden: die letzten 100, 1 000 (Standard) oder 10 000 oder alles.
 - **Seit** – beliebiger Zeitraum oder die letzten 5 Minuten, die letzte Stunde oder die letzten 24 Stunden.
-- **Zeitstempel** – zeigt den Zeitstempel der Engine vor jeder Zeile.
-- **stdout** und **stderr** – zeigt oder verbirgt einen der beiden Streams.
+- **Anzeigen** – ein Menü, um **Zeitstempel** einzuschalten und **stdout** und **stderr** ein- oder auszublenden. Seine Schaltfläche zählt die ausgeblendeten Streams, damit eine gefilterte Ansicht nicht übersehen wird.
 - **Mitverfolgen** – scrollt weiter bis zur neuesten Zeile. Neue Zeilen kommen weiterhin an, auch wenn es ausgeschaltet ist.
 - **In Logs suchen** – hebt Treffer hervor. Drücken Sie <kbd>Enter</kbd> für den nächsten Treffer und <kbd>Shift</kbd>+<kbd>Enter</kbd> für den vorherigen.
 - **Leeren** leert die Ansicht; **Logs herunterladen** speichert, was Sie geladen haben, als Textdatei, bis zu den letzten 100 000 Zeilen.
@@ -85,8 +84,8 @@ Wenn der Container stoppt, endet das Log mit _— Ende der Logs —_.
 **Details** fasst den Container in Karten zusammen: Zustand und Exit-Code, Befehl, Neustart-Richtlinie, Healthchecks, Umgebung, Mounts, Ports, Netzwerke und Labels. **Rohes JSON** zeigt das vollständige Inspect-Dokument der Engine.
 
 <Aside type="caution">
-  Umgebungsvariablen werden im Klartext angezeigt, so wie die Engine sie speichert. Denken Sie
-  daran, bevor Sie Ihren Bildschirm teilen.
+  Umgebungswerte erscheinen als Punkte, bis Sie **Werte anzeigen** wählen. **Rohes JSON** zeigt sie
+  im Klartext, so wie die Engine sie speichert: Denken Sie daran, bevor Sie Ihren Bildschirm teilen.
 </Aside>
 
 ### Zustand
@@ -134,17 +133,17 @@ Die im Container laufenden Prozesse, so wie `ps aux` sie zeigt, alle fünf Sekun
 
 **Container ausführen** auf der Seite Container – oder die Schaltfläche ▶ neben einem Image – öffnet **Container ausführen**:
 
-| Feld                                 | Hinweise                                                                                                                                                                                |
-| ------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Image**                            | Erforderlich. Schlägt die Images des Hosts vor. Wird zuerst gepullt, wenn der Host es nicht hat, mit der gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registrys).          |
-| **Name**                             | Optional; die Engine erzeugt einen, wenn er leer ist.                                                                                                                                   |
-| **Befehl**                           | Ersetzt den Standardbefehl des Images (nicht seinen Entrypoint). Setzen Sie Argumente wie in einer Shell in Anführungszeichen.                                                          |
-| **Ports**                            | **Host-Port** → **Container-Port**, `tcp` oder `udp`. Lassen Sie den Host-Port leer, damit die Engine einen freien wählt. Ports werden auf jeder Schnittstelle veröffentlicht.          |
-| **Volumes**                          | Ein Volume-Name oder ein absoluter `/host/path`, eingehängt unter einem absoluten Container-Pfad, optional **schreibgeschützt**. Ein noch nicht existierender Name erstellt ein Volume. |
-| **Umgebung**                         | Ein `KEY=value` pro Zeile. Leere Zeilen und Zeilen, die mit `#` beginnen, werden ignoriert.                                                                                             |
-| **Netzwerk**                         | **Standard (bridge)** oder ein beliebiges Netzwerk auf dem Host.                                                                                                                        |
-| **Neustart**                         | **Nie**, **Bei Fehler**, **Außer wenn gestoppt** oder **Immer**.                                                                                                                        |
-| **Container beim Beenden entfernen** | Wie `docker run --rm`. Ein beim Beenden entfernter Container kann nicht zusätzlich neu starten.                                                                                         |
+| Feld                                 | Hinweise                                                                                                                                                                                                            |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Image**                            | Erforderlich. Schlägt die Images des Hosts vor. Wird zuerst gepullt, wenn der Host es nicht hat, mit der gespeicherten [Registry-Anmeldung](/docs/guides/settings/#registrys).                                      |
+| **Name**                             | Optional; die Engine erzeugt einen, wenn er leer ist.                                                                                                                                                               |
+| **Ports**                            | **Host-Port** → **Container-Port**, `tcp` oder `udp`. Lassen Sie den Host-Port leer, damit die Engine einen freien wählt. Ports werden auf jeder Schnittstelle veröffentlicht.                                      |
+| **Volumes**                          | Ein Volume-Name oder ein absoluter `/host/path`, eingehängt unter einem absoluten Container-Pfad, optional **schreibgeschützt**. Ein noch nicht existierender Name erstellt ein Volume.                             |
+| **Umgebung**                         | Ein `KEY=value` pro Zeile. Leere Zeilen und Zeilen, die mit `#` beginnen, werden ignoriert. Wenn **Duplizieren** oder **Bearbeiten** es ausfüllt, bleiben seine Werte verborgen, bis Sie **Werte anzeigen** wählen. |
+| **Befehl**                           | Ersetzt den Standardbefehl des Images (nicht seinen Entrypoint). Setzen Sie Argumente wie in einer Shell in Anführungszeichen.                                                                                      |
+| **Netzwerk**                         | **Standard (bridge)** oder ein beliebiges Netzwerk auf dem Host.                                                                                                                                                    |
+| **Neustart**                         | **Nie**, **Bei Fehler**, **Außer wenn gestoppt** oder **Immer**.                                                                                                                                                    |
+| **Container beim Beenden entfernen** | Wie `docker run --rm`. Ein beim Beenden entfernter Container kann nicht zusätzlich neu starten.                                                                                                                     |
 
 Wählen Sie **Ausführen**: Homeport erstellt und startet den Container und öffnet dann seine Logs.
 

@@ -66,7 +66,7 @@ Das Zertifikat von Incus ist selbstsigniert, daher gibt es keine CA, gegen die e
 
 ## Projekte
 
-Incus bewahrt Instanzen, Images, Profile, benutzerdefinierte Volumes und Netzwerke in **Projekten** auf. Die Seiten zeigen jeweils ein Projekt, gewählt unter dem Host-Umschalter, der jedes mit der Anzahl seiner Instanzen und Images auflistet. Homeport merkt sich die Wahl für jeden Host zwischen den Starts. Bis Sie eines wählen, zeigt ein Host `default` oder auf dem eingeschränkten Socket sein einziges Projekt. Speicherpools gehören dem ganzen Server; ihre Volumes werden für das ausgewählte Projekt angezeigt.
+Incus bewahrt Instanzen, Images, Profile, benutzerdefinierte Volumes und Netzwerke in **Projekten** auf. Die Seiten zeigen jeweils ein Projekt, gewählt unter dem ausgewählten Host in der Seitenleiste, die jedes mit der Anzahl seiner Instanzen und Images auflistet. Homeport merkt sich die Wahl für jeden Host zwischen den Starts. Bis Sie eines wählen, zeigt ein Host `default` oder auf dem eingeschränkten Socket sein einziges Projekt. Speicherpools gehören dem ganzen Server; ihre Volumes werden für das ausgewählte Projekt angezeigt.
 
 ## Ereignisse
 

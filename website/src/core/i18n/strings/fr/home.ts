@@ -85,7 +85,7 @@ export default {
     'Voyez quels conteneurs utilisent quoi. Créez, connectez et déconnectez, avec une suppression qui vous dit exactement ce que vous allez perdre.',
   'home.features.board.title': 'Un seul tableau pour tous les hôtes',
   'home.features.board.body':
-    'Chaque conteneur de chaque hôte dans un seul tableau, filtré et géré en lot. Chaque hôte a aussi sa page : les détails du moteur, l’espace disque utilisé avec un nettoyage en une seule boîte de dialogue, et un flux en direct de ce que fait le moteur.',
+    'Une vignette pour chaque hôte, Swarm et cluster, et d’abord ce qui est à traiter sur chacun d’eux. Chaque conteneur de chaque hôte dans un seul tableau, filtré et géré en lot. Chaque hôte a aussi sa page : les détails du moteur, l’espace disque utilisé avec un nettoyage en une seule boîte de dialogue, et un flux en direct de ce que fait le moteur.',
   'home.features.keyboard.title': 'Le clavier d’abord',
   'home.features.keyboard.body':
     'Une palette de commandes pour aller n’importe où, changer d’hôte ou lancer une commande, et pour trouver n’importe quel conteneur, image ou volume sur l’hôte qui l’a. Des raccourcis pour chaque page, listés avec ?.',
@@ -135,7 +135,7 @@ export default {
     'Gardez un fichier compose et son environnement dans Homeport et déployez-le sur n’importe quel hôte — partez d’un modèle, combinez plusieurs fichiers, choisissez des profils ; les variables sont stockées chiffrées, jamais écrites sur le disque. Ou liez un dossier de projet de cet ordinateur : Homeport modifie ses fichiers sur place et déploie à partir de lui, builds compris. Ou suivez une branche d’un dépôt git, avec une clé de déploiement ou un jeton : chaque synchronisation montre les nouveaux commits et ce qu’ils changent avant de déployer, et tant que Homeport est ouvert, il les recherche et déploie de lui-même si vous le demandez. Chaque redéploiement montre d’abord ce qui change, chaque déploiement est conservé pour que vous puissiez revenir en arrière, et Mettre à jour récupère les images plus récentes et redéploie en une étape. Les stacks que quelqu’un a déployées à la main apparaissent aussi : démarrez-les, arrêtez-les ou supprimez-les, ou adoptez-les.',
   'home.stacks.link': 'Gérer les stacks',
   'home.stacks.screenshot':
-    'La définition d’une stack gérée : l’éditeur de compose.yaml, son environnement et le bouton Enregistrer et redéployer.',
+    'La définition d’une stack gérée : l’éditeur de compose.yaml, son environnement et le bouton Déployer.',
 
   // Home: security.
   'home.security.eyebrow': 'Sécurité',

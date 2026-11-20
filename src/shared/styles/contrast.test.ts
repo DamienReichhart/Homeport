@@ -80,6 +80,8 @@ const APP_PAIRS: Pair[] = [
   ['accent-foreground', 'accent', TEXT],
   ['destructive', 'background', TEXT],
   ['destructive', 'card', TEXT],
+  ['success', 'background', TEXT],
+  ['success', 'card', TEXT],
   ['warning', 'background', TEXT],
   ['warning', 'card', TEXT],
   ['sidebar-foreground', 'sidebar', TEXT],

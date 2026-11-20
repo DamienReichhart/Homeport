@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'ホスト',
   'hosts.description': 'Homeport が接続する Docker エンジンです。',
   'hosts.add': 'ホストを追加',
-  'hosts.empty': 'まだホストはありません。',
+  'hosts.empty': 'まだホストはありません',
+  'hosts.emptyDescription':
+    'Docker、Podman、containerd、Incus のエンジンを追加します。このコンピューター上のものでも、SSH や TLS で接続するサーバー上のものでも構いません。',
   'hosts.column.name': '名前',
   'hosts.column.type': 'タイプ',
   'hosts.column.address': 'アドレス',
@@ -14,19 +16,19 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'ホストを保存しました',
   'hosts.notFound': 'このホストはもう存在しません。',
-  'hosts.addPage.description': 'Homeport を Docker エンジンに接続します。',
-  'hosts.switcher.label': 'ホスト',
-  'hosts.switcher.placeholder': 'ホストなし',
+  'hosts.addPage.description':
+    'このコンピューターで見つかったエンジンを追加するか、インポートするか、下で接続情報を入力します。',
+  'hosts.addPage.manual': '接続情報を入力',
   'hosts.switcher.add': 'ホストを追加…',
   'hosts.switcher.manage': 'ホストを管理',
-  'hosts.switcher.hosts': 'ホスト',
-  'hosts.switcher.clusters': 'クラスター',
   'hosts.switcher.addCluster': 'クラスターを追加…',
   'hosts.switcher.manageClusters': 'クラスターを管理',
   'hosts.switcher.whyUnusable': '{name} を使えない理由',
   'hosts.detail.enabled': '有効',
   'hosts.detail.reconnect': '再接続',
   'hosts.connection.title': '接続',
+  'hosts.connection.save': '変更を保存',
+  'hosts.connection.discard': '変更を破棄',
   'hosts.remove.title': 'ホストを削除',
   'hosts.remove.description':
     'Homeport はこのホスト、その認証情報、管理スタックの定義を破棄します。ホストで動作しているものには手を加えません。',
@@ -34,6 +36,8 @@ export default {
   'hosts.remove.confirmDescription':
     '保存されている接続、SSH キーまたは証明書、管理スタックの compose 定義が削除されます。ホスト上のコンテナ、イメージ、ボリュームはそのまま残ります。',
   'hosts.sshSetup.title': 'サーバーで Homeport を許可',
+  'hosts.sshSetup.show': 'コマンドを表示',
+  'hosts.sshSetup.hide': 'コマンドを隠す',
   'hosts.sshSetup.description':
     '<mono>{server}</mono> で SSH ユーザーとして次のコマンドを実行してから、再接続してください。',
   'hosts.sshSetup.descriptionBastions':
@@ -69,10 +73,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'ローカルソケット',
   'hosts.form.keepHint': '保存済みの値を使い続ける場合は空欄のままにします。',
+  'hosts.form.connectOver': '接続方法',
   'hosts.form.name': '名前',
+  'hosts.form.nameHint': '空欄のままにすると {name} という名前になります。',
   'hosts.form.engine': 'エンジン',
   'hosts.form.engineHint':
-    'Docker 互換には Docker と Podman が含まれ、Homeport は接続時に両者を区別します。containerd にはそのソケット経由で、ローカルまたは SSH 経由で接続します。Incus には HTTPS（TLS）経由でも接続できます。',
+    'Docker 互換には Docker と Podman が含まれます。containerd にはそのソケット経由で、ローカルまたは SSH 経由で接続します。Incus には HTTPS（TLS）経由でも接続できます。',
   'hosts.form.socketOnly':
     '{engine} はソケットでしか応答しません。ローカルまたは SSH 経由で接続してください。',
   'hosts.form.noPlainTcp':
@@ -116,7 +122,7 @@ export default {
   'hosts.ssh.auth.generated': 'このホスト用の新しいキー',
   'hosts.ssh.auth.imported': '既存のキー',
   'hosts.ssh.generated.editing':
-    'このホストは現在のキーを使い続けます。再生成はホストのページから行ってください。',
+    'このホストは現在のキーを使い続けます。置き換えるには、上のコマンドの横にある「キーを再生成」を使います。',
   'hosts.ssh.generated.new':
     'Homeport はこのホスト用に Ed25519 キーを作成し、サーバーでそれを許可するためのコマンドを表示します。',
   'hosts.ssh.privateKey': '秘密鍵',
@@ -181,7 +187,7 @@ export default {
   'hosts.bundle.confirmation': 'パスフレーズ（確認）',
   'hosts.bundle.problem.short': '{min} 文字以上にしてください。',
   'hosts.bundle.problem.mismatch': '2 つのパスフレーズが一致しません。',
-  'hosts.bundle.export.button': 'エクスポート',
+  'hosts.bundle.export.button': 'ホストをファイルにエクスポート…',
   'hosts.bundle.export.title': 'ホストをエクスポート',
   'hosts.bundle.export.description':
     '選んだホストを、キー、証明書、信頼済みサーバーキーとともに、パスフレーズで暗号化した 1 つのファイルに書き出します。別のコンピューターでインポートすると、そこで使えます。',
@@ -192,7 +198,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, other {# 台のホストをエクスポートしました}}',
   'hosts.bundle.export.withoutSecrets':
     '次のものは、このコンピューターで認証情報を開けないため、認証情報なしでエクスポートされました:',
-  'hosts.bundle.import.button': 'インポート',
+  'hosts.bundle.import.button': 'ファイルからホストをインポート…',
   'hosts.bundle.import.title': 'エクスポートからホストをインポート',
   'hosts.bundle.import.description':
     'Homeport からエクスポートしたファイルをパスフレーズで開き、追加するホストを選んでください。認証情報はこのコンピューター上で暗号化して保存されます。',

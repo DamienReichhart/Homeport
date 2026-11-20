@@ -16,3 +16,18 @@ export function useRemoveSnapshot(hostId: string, namespace: string) {
     onSettled: () => client.invalidateQueries({ queryKey: hostKeys.containerdSnapshots(hostId) }),
   });
 }
+
+/** Removes snapshots one after the other, in the order given (children first). */
+export function usePruneSnapshots(hostId: string, namespace: string) {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ snapshotter, keys }: { snapshotter: string; keys: string[] }) => {
+      for (const key of keys)
+        await commands.containerdSnapshotRemove(hostId, namespace, snapshotter, key);
+    },
+    onSuccess: (_, { keys }) =>
+      toast.success(t('containerd.snapshots.pruned', { count: keys.length })),
+    onError: (e) => toastError(e),
+    onSettled: () => client.invalidateQueries({ queryKey: hostKeys.containerdSnapshots(hostId) }),
+  });
+}

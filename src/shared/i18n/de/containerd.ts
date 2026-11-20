@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': '{name} stoppen',
   'containerd.containers.actionOne.pause': '{name} pausieren',
   'containerd.containers.actionOne.resume': '{name} fortsetzen',
-  'containerd.containers.removeOne': '{name} entfernen',
+  'containerd.containers.actionsFor': 'Aktionen für {name}',
   'containerd.containers.done.start': '{name} gestartet',
   'containerd.containers.done.stop': '{name} gestoppt',
   'containerd.containers.done.pause': '{name} pausiert',
@@ -139,11 +139,18 @@ export default {
   'containerd.snapshots.kind.unknown': 'Unbekannt',
   'containerd.snapshots.removeOne': '{key} entfernen',
   'containerd.snapshots.removed': 'Snapshot {key} entfernt',
+  'containerd.snapshots.pruned':
+    '{count, plural, one {# Snapshot entfernt} other {# Snapshots entfernt}}',
   'containerd.snapshots.inUse':
     'Etwas verwendet ihn oder baut auf ihm auf. Entfernen Sie zuerst den Container oder das Image.',
   'containerd.snapshots.remove.title': 'Snapshot {key} entfernen?',
   'containerd.snapshots.remove.description':
     'Nichts verwendet ihn. Seine Dateien, {size}, werden vom Host gelöscht.',
+  'containerd.snapshots.prune.open': 'Unbenutzte entfernen',
+  'containerd.snapshots.prune.title':
+    '{count, plural, one {# unbenutzten Snapshot} other {# unbenutzte Snapshots}} entfernen?',
+  'containerd.snapshots.prune.description':
+    'Nichts verwendet sie oder baut auf ihnen auf. Ihre Dateien, {size}, werden vom Host gelöscht.',
   'containerd.namespaces.nav': 'Namespaces',
   'containerd.namespaces.title': 'Namespaces',
   'containerd.namespaces.summary':
@@ -152,7 +159,8 @@ export default {
   'containerd.namespaces.created': 'Namespace {name} erstellt',
   'containerd.namespaces.removed': 'Namespace {name} entfernt',
   'containerd.namespaces.shown': 'Angezeigt',
-  'containerd.namespaces.show': 'Anzeigen',
+  'containerd.namespaces.show': 'Seine Container und Images anzeigen',
+  'containerd.namespaces.showOne': '{name} anzeigen',
   'containerd.namespaces.removeOne': '{name} entfernen',
   'containerd.namespaces.notEmpty':
     'Nur leere Namespaces können entfernt werden. Entfernen Sie zuerst seine Container und Images.',

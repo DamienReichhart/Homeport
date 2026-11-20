@@ -7,7 +7,7 @@ export function KeyValue({ items }: { items: [string, ReactNode][] }) {
       {items.map(([k, v]) => (
         <div key={k} className="contents">
           <dt className="text-muted-foreground">{k}</dt>
-          <dd className="min-w-0 break-all">{v ?? '—'}</dd>
+          <dd className="min-w-0 [overflow-wrap:anywhere]">{v ?? '—'}</dd>
         </div>
       ))}
     </dl>

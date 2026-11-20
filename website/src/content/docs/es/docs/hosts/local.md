@@ -31,7 +31,7 @@ Si Homeport no puede ejecutar `podman` —no está en su PATH ni en `/opt/homebr
 
 Si tu Engine no se detecta —un perfil de Colima distinto de `default`, una máquina de Podman en Windows con un nombre distinto del predeterminado o una ruta personalizada—, añádelo tú mismo:
 
-1. Elige **Añadir host…** en el selector de hosts.
+1. Elige **Añadir host o clúster**, bajo la lista de hosts de la barra lateral, y después **Añadir host…**.
 2. Selecciona **Socket local**.
 3. Introduce un **Nombre** y la **Ruta del socket**: un socket Unix como `/run/user/1000/docker.sock`, o una tubería con nombre como `//./pipe/docker_engine` en Windows.
 4. Elige **Añadir host**.

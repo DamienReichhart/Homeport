@@ -18,7 +18,7 @@ const ghcr = { id: 'r1', address: 'ghcr.io', username: 'alice', createdAt: '', u
 async function openPush() {
   const user = userEvent.setup();
   renderApp('/images');
-  await user.click(await screen.findByRole('button', { name: 'More actions' }));
+  await user.click(await screen.findByRole('button', { name: /^More actions for / }));
   await user.click(await screen.findByRole('menuitem', { name: 'Push' }));
   return { user, dialog: await screen.findByRole('dialog') };
 }

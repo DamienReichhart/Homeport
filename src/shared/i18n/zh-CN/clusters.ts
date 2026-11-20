@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': '集群',
-  'clusters.summary': '{count, plural, other {# 个集群}}',
+  'clusters.description': 'Homeport 连接的 Kubernetes 和 Nomad 集群。',
   'clusters.add': '添加集群',
   'clusters.notFound': '此集群已不存在。',
   'clusters.empty.title': '暂无集群',
   'clusters.empty.description':
-    '添加你的 kubeconfig 可访问的 Kubernetes 集群。Homeport 不会在集群上安装任何内容。',
+    '添加你的 kubeconfig 可访问的 Kubernetes 集群，或按地址添加 Nomad agent。Homeport 不会在集群上安装任何内容。',
   'clusters.column.name': '名称',
   'clusters.column.status': '状态',
   'clusters.column.kind': '类型',
   'clusters.column.server': 'API',
   'clusters.column.auth': '登录方式',
+  'clusters.statusTitle': '{label}：{detail}',
   'clusters.palette.add': '添加集群',
   'clusters.palette.manage': '管理集群',
 
@@ -26,8 +27,7 @@ export default {
   'clusters.auth.oidc': 'OpenID Connect',
   'clusters.auth.aclToken': 'ACL 令牌',
 
-  'clusters.addPage.description':
-    '你选择的每个 Kubernetes 上下文或你指定的每个 Nomad agent 都会成为一个集群。其凭据加密保存，绝不会以明文写入磁盘。',
+  'clusters.addPage.description': '从 kubeconfig 中选择上下文，或按地址指定一个 Nomad agent。',
   'clusters.addPage.fromMachine': '来自本机的 kubeconfig',
   'clusters.addPage.paste': '粘贴 kubeconfig',
   'clusters.addPage.nomad': 'Nomad',
@@ -54,6 +54,9 @@ export default {
   'clusters.detail.name': '名称',
   'clusters.detail.rename': '重命名',
   'clusters.detail.renamed': '集群已重命名',
+  'clusters.rename.open': '重命名…',
+  'clusters.rename.title': '重命名 {name}',
+  'clusters.rename.description': '只更改它在 Homeport 中的名称；其 kubeconfig 上下文保留原名。',
   'clusters.connection.title': '连接',
   'clusters.connection.server': 'API 服务器',
   'clusters.connection.address': '地址',
@@ -122,6 +125,8 @@ export default {
   'clusters.remove.title': '删除集群',
   'clusters.remove.description':
     'Homeport 会忘记该集群及其保存的凭据。集群和你的 kubeconfig 都不会有任何更改。',
+  'clusters.remove.descriptionNomad': 'Homeport 会忘记该集群及其保存的凭据。集群不会有任何更改。',
   'clusters.remove.confirmTitle': '删除 {name}？',
   'clusters.remove.confirmDescription': '你可以从其 kubeconfig 重新添加它。',
+  'clusters.remove.confirmDescriptionNomad': '你可以按其地址重新添加它。',
 } satisfies Translation<typeof en>;

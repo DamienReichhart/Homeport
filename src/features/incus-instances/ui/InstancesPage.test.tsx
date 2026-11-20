@@ -89,6 +89,9 @@ describe('incus instances', () => {
     const confirm = within(dialog).getByRole('button', { name: 'Stop and delete' });
     expect(confirm).toBeDisabled();
     await user.click(within(dialog).getByRole('checkbox'));
+    // Its disk goes with it, so the name is typed first.
+    expect(confirm).toBeDisabled();
+    await user.type(within(dialog).getByLabelText('Type web to confirm'), 'web');
     await user.click(confirm);
     await waitFor(() =>
       expect(calls).toContainEqual({

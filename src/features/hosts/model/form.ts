@@ -120,11 +120,27 @@ export function formFromHost(host: Host): HostFormState {
 }
 
 /**
- * The request for creating or updating a Host. When editing, credentials
- * left blank mean "keep the stored ones".
+ * The name a Host gets when none is typed: the first label of its server's
+ * name (`prod` for prod.example.com), or the whole address when it's an IP.
+ * A local socket has none to offer.
+ */
+export function defaultName(form: HostFormState): string {
+  const server = form.kind === 'ssh' ? form.sshHost : form.kind === 'local' ? '' : form.address;
+  const trimmed = server.trim();
+  const ipv6 = /^\[([^\]]*)\](:\d+)?$/.exec(trimmed);
+  if (ipv6) return ipv6[1] ?? '';
+  const host = trimmed.replace(/:\d+$/, '');
+  if (/^\d+(\.\d+){3}$/.test(host)) return host;
+  return host.split('.')[0] ?? '';
+}
+
+/**
+ * The request for creating or updating a Host; a blank name becomes
+ * {@link defaultName}. When editing, credentials left blank mean "keep the
+ * stored ones".
  */
 export function toHostInput(form: HostFormState, editing: boolean): HostInput {
-  const name = form.name.trim();
+  const name = form.name.trim() || defaultName(form);
   switch (form.kind) {
     case 'local':
       return {

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands, connectedHost } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
@@ -52,17 +52,22 @@ function setup(calls: { cmd: string; args: unknown }[]) {
 }
 
 describe('the Nodes tab', () => {
-  it('drains a node from its menu, sending the version it was read at', async () => {
+  it('drains a node from its menu once confirmed, sending the version it was read at', async () => {
     const calls: { cmd: string; args: unknown }[] = [];
     const user = setup(calls);
     renderApp('/swarms/s1/nodes');
     const row = (await screen.findByText('alpha')).closest('tr')!;
-    expect(within(row).getByRole('link', { name: 'host local' })).toHaveAttribute(
+    expect(within(row).getByRole('link', { name: 'local' })).toHaveAttribute(
       'href',
       `/hosts/${connectedHost.host.id}`,
     );
     await user.click(within(row).getByRole('button', { name: 'Actions for alpha' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Drain' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(within(dialog).getByText(/moved to the other nodes/)).toBeInTheDocument();
+    expect(calls).toEqual([]);
+    await user.click(within(dialog).getByRole('button', { name: 'Drain' }));
+    await waitFor(() => expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument());
     expect(calls).toEqual([
       {
         cmd: 'update',
@@ -74,6 +79,17 @@ describe('the Nodes tab', () => {
         },
       },
     ]);
+  });
+
+  it('pauses a node without asking', async () => {
+    const calls: { cmd: string; args: unknown }[] = [];
+    const user = setup(calls);
+    renderApp('/swarms/s1/nodes');
+    const row = (await screen.findByText('alpha')).closest('tr')!;
+    await user.click(within(row).getByRole('button', { name: 'Actions for alpha' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Pause' }));
+    await waitFor(() => expect(calls).toHaveLength(1));
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
 
   it('removes a down node without asking for Force', async () => {

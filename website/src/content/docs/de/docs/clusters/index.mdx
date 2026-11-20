@@ -9,11 +9,11 @@ Ein **Cluster** ist ein Kubernetes-Cluster oder ein [Nomad-Cluster](/docs/cluste
 
 <DocScreenshot
   name="cluster-overview"
-  alt="Die Übersicht mit Karten für Hosts und Cluster und darunter die Zusammenfassung des Clusters eks-prod."
-  caption="Cluster stehen in der Übersicht neben Ihren Hosts; der ausgewählte zeigt seine Zusammenfassung."
+  alt="Die Übersicht des Clusters eks-prod: Version, Nodes, Pods nach Phase, nicht bereite Workloads und aktuelle Warnungen."
+  caption="Die Übersicht eines Clusters, die erste seiner Seiten."
 />
 
-Cluster stehen neben Ihren Hosts im Umschalter oben in der Seitenleiste. Wenn Sie einen auswählen, erscheinen die Seiten dazu – **Workloads**, **Pods**, **Netzwerk**, **Konfiguration**, **Nodes**, **Events**, **API-Ressourcen**, **YAML anwenden**, **Helm** und **Portweiterleitungen** – und seine Zusammenfassung in der [Übersicht](/docs/guides/overview/#der-ausgewählte-cluster); wenn Sie einen Host auswählen, erscheinen wieder die Seiten des Hosts.
+Cluster stehen in der Seitenleiste unter Ihren Hosts, jeder mit seinem Status. Wenn Sie einen auswählen, öffnen sich darunter seine Seiten, nach seiner [Übersicht](/docs/guides/overview/#die-übersicht-eines-clusters), in drei Gruppen: seine Ressourcen (**Workloads**, **Pods**, **Netzwerk**, **Konfiguration**), der Cluster selbst (**Nodes**, **Events**) und Werkzeuge (**API-Ressourcen**, **RBAC**, **YAML anwenden**, **Helm**, **Portweiterleitungen**). Wenn Sie einen Host auswählen, erscheinen wieder die Seiten des Hosts. Auf dem [Board](/docs/guides/overview/#board) hat jeder Cluster eine Kachel neben denen Ihrer Hosts.
 
 ## Was Sie tun können
 
@@ -34,7 +34,7 @@ Jede Änderung geht mit den Rechten Ihrer Zugangsdaten an die Kubernetes-API, un
   alt="Die Seite Cluster hinzufügen: oben die auf diesem Rechner gefundenen lokalen Cluster, dann die Kontexte von ~/.kube/config mit ihrem API-Server, ihrer Anmeldeart und welche bereits hinzugefügt sind."
 />
 
-Wählen Sie **Cluster hinzufügen…** im Umschalter oder **Cluster hinzufügen** auf der Seite Cluster. [Lokale Cluster](/docs/clusters/local/) – Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube – werden oben angeboten, jeder mit einem Klick. Jeder Kontext, den Sie wählen, wird zu einem Cluster, benannt nach dem Kontext; Sie können ihn vor oder nach dem Import umbenennen.
+Wählen Sie **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste und dann **Cluster hinzufügen…**, oder **Cluster hinzufügen** auf der Seite Cluster. [Lokale Cluster](/docs/clusters/local/) – Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube – werden oben angeboten, jeder mit einem Klick. Jeder Kontext, den Sie wählen, wird zu einem Cluster, benannt nach dem Kontext; Sie können ihn vor oder nach dem Import umbenennen.
 
 - **Aus der kubeconfig dieses Rechners** liest die in `KUBECONFIG` aufgeführten Dateien, zusammengeführt wie bei `kubectl`, oder `~/.kube/config`, wenn `KUBECONFIG` nicht gesetzt ist. Der aktuelle Kontext ist vorausgewählt.
 - **kubeconfig einfügen** liest Text, den Sie einfügen, nur im Arbeitsspeicher: Er wird nie als Datei gespeichert. Dateien, auf die er verweist (`certificate-authority: /…`), müssen vollständige Pfade sein; am einfachsten fügen Sie eine ein, in der alles eingebettet ist:
@@ -43,7 +43,7 @@ Wählen Sie **Cluster hinzufügen…** im Umschalter oder **Cluster hinzufügen*
   kubectl config view --raw --flatten --minify
   ```
 
-Jeder Kontext zeigt seinen API-Server, seinen Namespace und wie sein Benutzer sich anmeldet – **Client-Zertifikat**, **Token**, **OpenID Connect** oder **Exec-Plugin (aws)** für einen Cloud-Cluster –, sodass Sie einen lokalen Cluster vor dem Import von einem Produktionscluster unterscheiden können. Haken Sie die gewünschten an; jeder erhält ein Namensfeld, vorausgefüllt mit dem Namen des Kontexts. Lange ARNs wie `arn:aws:eks:…:cluster/prod` sollten Sie in etwas Kurzes wie `eks-prod` umbenennen: Der Name ist das, was der Umschalter und die Übersicht anzeigen.
+Jeder Kontext zeigt seinen API-Server, seinen Namespace und wie sein Benutzer sich anmeldet – **Client-Zertifikat**, **Token**, **OpenID Connect** oder **Exec-Plugin (aws)** für einen Cloud-Cluster –, sodass Sie einen lokalen Cluster vor dem Import von einem Produktionscluster unterscheiden können. Haken Sie die gewünschten an; jeder erhält ein Namensfeld, vorausgefüllt mit dem Namen des Kontexts. Lange ARNs wie `arn:aws:eks:…:cluster/prod` sollten Sie in etwas Kurzes wie `eks-prod` umbenennen: Der Name ist das, was die Seitenleiste, das Board und die Übersicht anzeigen.
 
 Ein Kontext, der bereits ein Cluster ist, kann nicht zweimal importiert werden: Homeport bietet stattdessen **Aktualisieren** an. Ein Kontext, der nicht verwendet werden kann, sagt warum, zum Beispiel ein Benutzer, dessen `auth-provider` `gcp` oder `azure` ist, was Kubernetes entfernt hat (stellen Sie ihn auf `gke-gcloud-auth-plugin` oder `kubelogin` um, wie `kubectl` es inzwischen verlangt).
 
@@ -64,9 +64,9 @@ kind, k3d und minikube geben einem Cluster bei jeder Neuerstellung neue Zertifik
 
 ## Cluster verwalten
 
-- **Cluster verwalten** im Umschalter listet jeden Cluster mit seinem Status, seinem API-Server und seiner Anmeldeart auf.
-- Auf der Seite eines Clusters trennt der Schalter **Aktiviert** die Verbindung, ohne ihn zu vergessen, **Neu verbinden** versucht es sofort erneut, und **Umbenennen** ändert seinen Namen nur in Homeport.
-- **Cluster entfernen** vergisst den Cluster und seine gespeicherten Zugangsdaten. Auf dem Cluster und in Ihrer kubeconfig ändert sich nichts.
+- **Cluster verwalten**, das Einstellungssymbol neben **Cluster** in der Seitenleiste, listet jeden Cluster mit seinem Status, seinem API-Server und seiner Anmeldeart auf.
+- Auf der Seite eines Clusters trennt der Schalter **Aktiviert** die Verbindung, ohne ihn zu vergessen, **Neu verbinden** versucht es sofort erneut, und **Umbenennen…** (im Menü **Weitere Aktionen**) ändert seinen Namen nur in Homeport.
+- **Cluster entfernen** (am Fuß der Seite eines Clusters) vergisst den Cluster und seine gespeicherten Zugangsdaten. Auf dem Cluster und in Ihrer kubeconfig ändert sich nichts.
 
 Clusternamen müssen eindeutig sein, ohne Beachtung der Groß- und Kleinschreibung.
 

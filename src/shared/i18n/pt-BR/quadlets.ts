@@ -95,6 +95,7 @@ export default {
   'quadlets.form.extraInvalid':
     'Cada arquivo ao lado da unidade precisa de um nome simples próprio, sem pastas.',
   'quadlets.remove.title': 'Remover {name}?',
+  'quadlets.remove.zone': 'Remover esta unidade',
   'quadlets.remove.description':
     'O Podman exclui o arquivo da unidade e recarrega o systemd. Contêineres, volumes e imagens que ela criou permanecem.',
   'quadlets.remove.stop': 'Parar o serviço dela se estiver em execução',

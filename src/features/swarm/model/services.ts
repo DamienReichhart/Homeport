@@ -21,3 +21,13 @@ export function portsLabel(s: ServiceView): string {
     )
     .join(', ');
 }
+
+/**
+ * How loud a service's update state is: a paused update (it failed) needs
+ * you, one under way needs a look, and a finished one says nothing.
+ */
+export function updateTone(state: string | null): 'danger' | 'warning' | null {
+  if (state === 'paused' || state === 'rollback_paused') return 'danger';
+  if (state === 'updating' || state === 'rollback_started') return 'warning';
+  return null;
+}

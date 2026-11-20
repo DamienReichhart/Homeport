@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': 'Arrêter {name}',
   'containerd.containers.actionOne.pause': 'Mettre {name} en pause',
   'containerd.containers.actionOne.resume': 'Reprendre {name}',
-  'containerd.containers.removeOne': 'Supprimer {name}',
+  'containerd.containers.actionsFor': 'Actions pour {name}',
   'containerd.containers.done.start': '{name} démarré',
   'containerd.containers.done.stop': '{name} arrêté',
   'containerd.containers.done.pause': '{name} mis en pause',
@@ -140,11 +140,18 @@ export default {
   'containerd.snapshots.kind.unknown': 'Inconnu',
   'containerd.snapshots.removeOne': 'Supprimer {key}',
   'containerd.snapshots.removed': 'Instantané {key} supprimé',
+  'containerd.snapshots.pruned':
+    '{count, plural, one {# instantané supprimé} other {# instantanés supprimés}}',
   'containerd.snapshots.inUse':
     'Quelque chose l’utilise ou est construit dessus. Supprimez d’abord le conteneur ou l’image.',
   'containerd.snapshots.remove.title': 'Supprimer l’instantané {key} ?',
   'containerd.snapshots.remove.description':
     'Rien ne l’utilise. Ses fichiers, {size}, sont supprimés de l’hôte.',
+  'containerd.snapshots.prune.open': 'Supprimer les inutilisés',
+  'containerd.snapshots.prune.title':
+    'Supprimer {count, plural, one {# instantané inutilisé} other {# instantanés inutilisés}} ?',
+  'containerd.snapshots.prune.description':
+    'Rien ne les utilise ni ne repose sur eux. Leurs fichiers, {size}, sont supprimés de l’hôte.',
   'containerd.namespaces.nav': 'Espaces de noms',
   'containerd.namespaces.title': 'Espaces de noms',
   'containerd.namespaces.summary':
@@ -153,7 +160,8 @@ export default {
   'containerd.namespaces.created': 'Espace de noms {name} créé',
   'containerd.namespaces.removed': 'Espace de noms {name} supprimé',
   'containerd.namespaces.shown': 'Affiché',
-  'containerd.namespaces.show': 'Afficher',
+  'containerd.namespaces.show': 'Afficher ses conteneurs et images',
+  'containerd.namespaces.showOne': 'Afficher {name}',
   'containerd.namespaces.removeOne': 'Supprimer {name}',
   'containerd.namespaces.notEmpty':
     'Seuls les espaces de noms vides peuvent être supprimés. Supprimez d’abord ses conteneurs et ses images.',

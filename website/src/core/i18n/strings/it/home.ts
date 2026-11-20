@@ -86,7 +86,7 @@ export default {
     'Vedi quali container usano cosa. Crea, collega e scollega, con un’eliminazione che ti dice esattamente cosa stai per perdere.',
   'home.features.board.title': 'Un’unica bacheca per tutti gli host',
   'home.features.board.body':
-    'Tutti i container di tutti gli host in un’unica tabella, da filtrare e su cui agire insieme. E ogni host anche in una sua pagina: dettagli dell’Engine, uso del disco con una pulizia in un’unica finestra di dialogo, e un flusso in tempo reale di ciò che sta facendo l’Engine.',
+    'Un riquadro per ogni host, Swarm e cluster, e prima di tutto ciò che c’è da gestire su ciascuno. Tutti i container di tutti gli host in un’unica tabella, da filtrare e su cui agire insieme. E ogni host anche in una sua pagina: dettagli dell’Engine, uso del disco con una pulizia in un’unica finestra di dialogo, e un flusso in tempo reale di ciò che sta facendo l’Engine.',
   'home.features.keyboard.title': 'Prima la tastiera',
   'home.features.keyboard.body':
     'Un riquadro comandi per andare ovunque, cambiare host o eseguire un comando, e per trovare qualsiasi container, immagine o volume su qualunque host si trovi. Scorciatoie per ogni pagina, elencate con ?.',
@@ -136,7 +136,7 @@ export default {
     'Conserva un file compose e il suo ambiente in Homeport e distribuiscilo su qualsiasi host — parti da un modello, combina più file, scegli i profili; le variabili sono archiviate cifrate, mai scritte su disco. Oppure collega una cartella di progetto di questo computer: Homeport ne modifica i file sul posto e distribuisce da lì, build comprese. Oppure segui un branch di un repository git, con una chiave di deploy o un token: ogni sincronizzazione mostra i nuovi commit e cosa cambiano prima di distribuire, e mentre Homeport è aperto li cerca, distribuendo da solo se lo chiedi. Ogni ridistribuzione mostra prima cosa cambia, ogni distribuzione viene conservata per poterla ripristinare, e Aggiorna scarica le immagini più recenti e ridistribuisce in un solo passaggio. Compaiono anche gli stack che qualcuno ha distribuito a mano: avviali, arrestali o rimuovili, oppure adottali.',
   'home.stacks.link': 'Gestire gli stack',
   'home.stacks.screenshot':
-    'La definizione di uno stack gestito: l’editor di compose.yaml, il suo ambiente e il pulsante Salva e ridistribuisci.',
+    'La definizione di uno stack gestito: l’editor di compose.yaml, il suo ambiente e il pulsante Distribuisci.',
 
   // Home: security.
   'home.security.eyebrow': 'Sicurezza',

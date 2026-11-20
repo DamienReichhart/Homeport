@@ -13,17 +13,17 @@ Die Seite **Images** listet die auf dem ausgewählten Host gespeicherten Images 
   alt="Die Seite Images, die Images mit ihrer Größe und der Angabe auflistet, ob sie in Verwendung sind."
 />
 
-| Spalte       | Zeigt                                                                                 |
-| ------------ | ------------------------------------------------------------------------------------- |
-| **Name**     | Das erste Tag und wie viele weitere es hat; `<none>` bei ungetaggten Images.          |
-| **ID**       | Die kurze Image-ID.                                                                   |
-| **Erstellt** | Wie lange es her ist, dass das Image gebaut wurde.                                    |
-| **Größe**    | Seine Größe auf der Festplatte.                                                       |
-| **Status**   | **In Verwendung** mit der Anzahl der daraus erstellten Container, oder **Unbenutzt**. |
+| Spalte       | Zeigt                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------ |
+| **Name**     | Das erste Tag und wie viele weitere es hat; `<none>` bei ungetaggten Images.               |
+| **ID**       | Die kurze Image-ID.                                                                        |
+| **Erstellt** | Wie lange es her ist, dass das Image gebaut wurde.                                         |
+| **Größe**    | Seine Größe auf der Festplatte.                                                            |
+| **Status**   | Wie viele Container es verwenden, etwa **Von 3 Containern verwendet**, oder **Unbenutzt**. |
 
 Gestoppte Container zählen als Verwender eines Images. Wählen Sie einen Spaltenkopf aus, um zu sortieren, und suchen Sie mit **Images durchsuchen**.
 
-Ein ⬆ neben dem Namen bedeutet, dass eines der Tags des Images in seiner Registry auf ein neueres Image zeigt; fahren Sie mit dem Mauszeiger darüber, um zu sehen, welches. Pullen Sie das Tag, um es zu holen. **Nach neueren Images suchen** fragt die Registrys erneut, statt die 6 Stunden lang aufbewahrten Antworten zu verwenden. Unter [neuere Images](/docs/guides/containers/#neuere-images) steht, wie die Prüfung funktioniert.
+**Neuere Version**, ein bernsteinfarbenes Abzeichen neben dem Namen, bedeutet, dass eines der Tags des Images in seiner Registry auf ein neueres Image zeigt; fahren Sie mit dem Mauszeiger darüber, um zu sehen, welches. Diese Images stehen oben, und das Menü der Zeile bietet **Neuere Version von … pullen** mit ausgefüllter Referenz an. **Nach neueren Images suchen** im Menü **Weitere Aktionen** der Seite fragt die Registrys erneut, statt die 6 Stunden lang aufbewahrten Antworten zu verwenden. Unter [neuere Images](/docs/guides/containers/#neuere-images) steht, wie die Prüfung funktioniert.
 
 ## Ein Image pullen
 
@@ -86,14 +86,14 @@ Lehnt die Registry ab, sagt die Meldung, ob eine Anmeldung hinzugefügt oder gep
 
 Um Images auf einen Host zu bringen, der keine Registry erreicht – einen Air-Gap-Server, einen Raspberry Pi im Heimnetz –, speichern Sie sie in einer Datei auf diesem Computer und laden die Datei in den anderen Host.
 
-- **Speichern…** im Menü **⋮** eines Images schreibt es mit allen seinen Namen in eine `.tar`-Datei Ihrer Wahl. Um mehrere auf einmal zu speichern, kreuzen Sie sie in der Liste an und wählen oben auf der Seite **N Images speichern…**.
-- **Laden…** oben auf der Seite liest eine mit **Speichern…** oder `docker save` erstellte `.tar` – auch komprimierte `.tar.gz` – in den ausgewählten Host ein. Wenn es fertig ist, nennt der Dialog die geladenen Images mit ihren Tags.
+- **Speichern…** im Menü **⋮** eines Images schreibt es mit allen seinen Namen in eine `.tar`-Datei Ihrer Wahl. Um mehrere auf einmal zu speichern, kreuzen Sie sie in der Liste an und wählen neben der Suche **N Images speichern…**.
+- **Laden…** (im Menü **Weitere Aktionen** der Seite) liest eine mit **Speichern…** oder `docker save` erstellte `.tar` – auch komprimierte `.tar.gz` – in den ausgewählten Host ein. Wenn es fertig ist, nennt der Dialog die geladenen Images mit ihren Tags.
 
 Die Datei wird über die eigene Verbindung des Hosts zwischen diesem Computer und dem Host übertragen, daher funktioniert das auch bei entfernten Hosts. Der Fortschritt zeigt die geschriebenen oder gesendeten Bytes; **Abbrechen** stoppt den Vorgang, und ein abgebrochenes oder fehlgeschlagenes Speichern hinterlässt keine unvollständige Datei. Homeport hält nie das ganze Archiv im Arbeitsspeicher, daher sind Images von mehreren Gigabyte kein Problem.
 
 ### Ein Dateisystem importieren
 
-**Aus tar importieren…** oben auf der Seite macht aus einem tar eines Root-Dateisystems ein Image, wie `docker import`: eines, das mit [**Dateisystem exportieren…**](/docs/guides/containers/#das-dateisystem-eines-containers-exportieren) eines Containers oder `docker export` erstellt wurde, eine Ausgabe von `debootstrap` oder Buildroot oder eine Appliance eines Herstellers. Wählen Sie die Datei (unkomprimiert oder mit gzip, xz oder bzip2 komprimiert), geben Sie dem Image einen **Namen** – er beginnt mit dem Dateinamen – und optional **Änderungen**: Dockerfile-Anweisungen wie `CMD ["/bin/sh"]` oder `ENV LANG=C.UTF-8`, da ein importiertes Image keinen eigenen Befehl hat. Der Fortschritt zeigt die gesendeten Bytes; das Image erscheint dann in der Liste.
+**Aus tar importieren…** (im Menü **Weitere Aktionen** der Seite) macht aus einem tar eines Root-Dateisystems ein Image, wie `docker import`: eines, das mit [**Dateisystem exportieren…**](/docs/guides/containers/#das-dateisystem-eines-containers-exportieren) eines Containers oder `docker export` erstellt wurde, eine Ausgabe von `debootstrap` oder Buildroot oder eine Appliance eines Herstellers. Wählen Sie die Datei (unkomprimiert oder mit gzip, xz oder bzip2 komprimiert), geben Sie dem Image einen **Namen** – er beginnt mit dem Dateinamen – und optional **Änderungen**: Dockerfile-Anweisungen wie `CMD ["/bin/sh"]` oder `ENV LANG=C.UTF-8`, da ein importiertes Image keinen eigenen Befehl hat. Der Fortschritt zeigt die gesendeten Bytes; das Image erscheint dann in der Liste.
 
 ### Speichern und Laden oder Exportieren und Importieren?
 
@@ -113,7 +113,7 @@ Die Datei wird über die eigene Verbindung des Hosts zwischen diesem Computer un
 
 ## Aufräumen
 
-**Aufräumen** bietet zwei Stufen:
+**Aufräumen** (im Menü **Weitere Aktionen** der Seite) bietet zwei Stufen:
 
 - **Verwaiste Images** – ungetaggte Images, die Builds und Pulls hinterlassen haben. Sie können gefahrlos entfernt werden.
 - **Alle unbenutzten Images** – jedes Image, das kein Container verwendet, getaggte eingeschlossen. Sie lassen sich erneut pullen, aber das kostet Zeit und Bandbreite.

@@ -1,4 +1,5 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
@@ -89,5 +90,33 @@ describe('stacks page', () => {
     expect(screen.getByRole('button', { name: /Deploy/ })).toBeEnabled();
     // The running Linked Stack redeploys from its folder.
     expect(screen.getByRole('button', { name: /Redeploy/ })).toBeEnabled();
+  });
+
+  it('names the Host when removing an External Stack’s containers', async () => {
+    mockCommands({
+      ...baseCommands,
+      stacks_list: () => [
+        {
+          name: 'blog',
+          kind: 'external',
+          id: null,
+          state: 'running',
+          services: [{ name: 'app', containerIds: ['a'], running: 1 }],
+          running: 1,
+          total: 1,
+          configFiles: null,
+          workingDir: null,
+          problem: null,
+          updateAvailable: false,
+        },
+      ],
+    });
+    renderApp('/stacks');
+    const row = (await screen.findByText('blog')).closest('tr')!;
+    await userEvent.click(within(row).getByRole('button', { name: 'More actions' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Remove containers' }));
+    expect(
+      await screen.findByRole('alertdialog', { name: 'Remove blog from local?' }),
+    ).toBeInTheDocument();
   });
 });

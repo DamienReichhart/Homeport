@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'Homeport ist auf dieser Seite auf ein unerwartetes Problem gestoßen. Neu laden hilft meistens; wenn es weiterhin auftritt, kopieren Sie den Bericht aus „Details“ in ein Issue.',
   'app.crash.reload': 'Neu laden',
-  'app.crash.backToOverview': 'Zurück zur Übersicht',
+  'app.crash.backToBoard': 'Zurück zum Board',
   'app.shortcuts.title': 'Tastenkürzel',
   'app.shortcuts.description':
     'Die Tastenkürzel, die hier funktionieren. Tasten wie N und / lösen nichts aus, während Sie in einem Feld tippen.',
@@ -42,4 +42,10 @@ export default {
   'app.palette.hosts': 'Hosts',
   'app.palette.actions': 'Aktionen',
   'app.palette.switchTo': 'Zu {name} wechseln',
+  'app.nav.search': 'Suchen',
+  'app.nav.hosts': 'Hosts',
+  'app.nav.clusters': 'Cluster',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '{running} von {total} Containern laufen',
+  'app.nav.add': 'Host oder Cluster hinzufügen',
 } satisfies Translation<typeof en>;

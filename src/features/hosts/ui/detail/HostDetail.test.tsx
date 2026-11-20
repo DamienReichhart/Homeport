@@ -1,7 +1,7 @@
 import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { HostStatus } from '@/shared/api';
-import { baseCommands, hostView } from '@/test/fixtures';
+import { baseCommands, connectedHost, hostView } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
 
@@ -130,6 +130,17 @@ describe('SSH setup card', () => {
   });
 });
 
+describe('SSH setup card once connected', () => {
+  it('folds the commands away, a click from view', async () => {
+    const user = userEvent.setup();
+    renderHost(connectedHost.status);
+    expect(await screen.findByText('Authorize Homeport on the server')).toBeInTheDocument();
+    expect(screen.queryByText('sudo usermod -aG docker deploy')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Show commands' }));
+    expect(await screen.findByText('sudo usermod -aG docker deploy')).toBeInTheDocument();
+  });
+});
+
 describe('SSH setup card behind bastions', () => {
   it('lists every server the key must be added on', async () => {
     renderHost({ state: 'connecting' }, {}, ['me@jump.example.com', 'deploy@prod.example.com']);
@@ -152,10 +163,13 @@ describe('remove host card', () => {
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
     expect(removed).toEqual([]);
 
+    // Its Managed Stacks' definitions go for good: the name is typed first.
     await user.click(screen.getByRole('button', { name: 'Remove host' }));
-    await user.click(
-      within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Remove host' }),
-    );
+    const again = await screen.findByRole('alertdialog');
+    const confirm = within(again).getByRole('button', { name: 'Remove host' });
+    expect(confirm).toBeDisabled();
+    await user.type(within(again).getByRole('textbox'), 'prod');
+    await user.click(confirm);
     await waitFor(() => expect(removed).toEqual(['prod-id']));
   });
 });

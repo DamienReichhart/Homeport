@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Стеки',
   'stacks.title': 'Стеки',
-  'stacks.description':
-    'Проекты Compose на этом хосте. Управляемые стеки хранят своё определение в Homeport, связанные — в папке на этом компьютере; внешние были развёрнуты в другом месте.',
+  'stacks.description': 'Проекты Compose на этом хосте.',
   'stacks.new': 'Новый стек',
   'stacks.search': 'Поиск стеков',
   'stacks.empty.title': 'Стеков нет',
-  'stacks.empty.description': 'Напишите определение compose и разверните его на этом хосте.',
+  'stacks.empty.description':
+    'Разверните проект compose на этом хосте из файла compose, папки или git-репозитория.',
   'stacks.column.name': 'Имя',
   'stacks.column.kind': 'Вид',
   'stacks.column.state': 'Состояние',
@@ -91,20 +91,19 @@ export default {
   'stacks.action.adopt': 'Взять под управление',
   'stacks.action.stop': 'Остановить',
   'stacks.action.start': 'Запустить',
-  'stacks.action.more': 'Другие действия со стеком',
   'stacks.action.restart': 'Перезапустить',
   'stacks.action.pull': 'Скачать образы',
   'stacks.action.rebuild': 'Пересобрать и развернуть',
-  'stacks.down.title': 'Свернуть {name}?',
+  'stacks.down.title': 'Свернуть {name} на {host}?',
   'stacks.down.description':
     'Его контейнеры и сети будут удалены. Тома и определение сохраняются, так что его можно развернуть снова.',
   'stacks.down.confirm': 'Свернуть',
-  'stacks.downWithVolumes.title': 'Свернуть {name} и удалить его тома?',
+  'stacks.downWithVolumes.title': 'Свернуть {name} на {host} и удалить его тома?',
   'stacks.downWithVolumes.warning':
     'Контейнеры, сети и все тома этого стека будут удалены вместе со всеми данными.',
   'stacks.downWithVolumes.confirm': 'Удалить вместе с томами',
   'stacks.downWithVolumes.action': 'Свернуть вместе с томами',
-  'stacks.remove.title': 'Удалить {name}?',
+  'stacks.remove.title': 'Удалить {name} с {host}?',
   'stacks.remove.description':
     'Его {count, plural, one {# контейнер} few {# контейнера} many {# контейнеров} other {# контейнера}} и сети будут удалены. Тома сохраняются. У Homeport нет файла compose для этого стека, поэтому развернуть его заново отсюда нельзя.',
   'stacks.remove.action': 'Удалить контейнеры',
@@ -161,7 +160,7 @@ export default {
   'stacks.newPage.useFolder': 'Использовать папку на этом компьютере',
   'stacks.newPage.useRepository': 'Использовать git-репозиторий',
   'stacks.newSynced.description':
-    'Файл compose в git-репозитории. Homeport клонирует его на этот компьютер, показывает изменения и разворачивает из него коммит. Репозиторий он никогда не изменяет.',
+    'Файл compose в git-репозитории. Homeport разворачивает его коммиты и никогда его не изменяет.',
   'stacks.newSynced.repository': 'Репозиторий',
   'stacks.newSynced.pickRepository': 'Выберите репозиторий',
   'stacks.newSynced.addRepository': 'Добавить репозиторий',
@@ -229,7 +228,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport перестанет следить за его репозиторием и удалит его рабочую копию на этом компьютере. Его контейнеры продолжат работать, и он станет внешним стеком. Репозиторий останется в «Настройки → Репозитории».',
   'stacks.newLinked.description':
-    'Проект compose в папке на этом компьютере. Homeport работает с его файлами там, где они лежат, и разворачивает из этой папки.',
+    'Проект compose в папке на этом компьютере, разворачиваемый оттуда, где он лежит.',
   'stacks.newLinked.choose': 'Выбрать папку…',
   'stacks.newLinked.pickTitle': 'Выберите папку проекта compose',
   'stacks.newLinked.files': 'Файлы compose по порядку',
@@ -251,7 +250,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Связка ключей ОС недоступна, поэтому окружение стека сохранить нельзя.',
   'stacks.editor.problems': 'Проблемы',
-  'stacks.managed.saveAndRedeploy': 'Сохранить и развернуть заново',
   'stacks.profiles.title': 'Профили',
   'stacks.profiles.hint':
     'Сервисы с профилем работают, только когда он включён. Сервисы без профиля работают всегда.',
@@ -276,7 +274,6 @@ export default {
   'stacks.linked.reload': 'Перезагрузить',
   'stacks.linked.overwrite': 'Перезаписать',
   'stacks.linked.saved': 'Файлы compose сохранены',
-  'stacks.linked.saveAndRedeploy': 'Сохранить и развернуть заново',
   'stacks.linked.envNote':
     'Compose читает файл .env из папки при запуске. Homeport его не показывает и не изменяет.',
   'stacks.linked.files': 'Файлы compose',
@@ -294,4 +291,14 @@ export default {
   'stacks.external.descriptionFrom':
     'Он был развёрнут вне Homeport из <mono>{files}</mono> на той машине. Его можно запускать, останавливать и удалять; возьмите его под управление с его файлом compose, чтобы изменять и разворачивать заново.',
   'stacks.palette.new': 'Новый стек',
+  'stacks.managed.deploy': 'Развернуть',
+  'stacks.managed.moreSave': 'Другие способы сохранить',
+  'stacks.managed.saveOnly': 'Сохранить без развёртывания',
+  'stacks.managed.unsaved': 'Несохранённые изменения',
+  'stacks.forget.sectionTitle': 'Забыть этот стек',
+  'stacks.kind.managedHint': 'Homeport хранит его файл compose и окружение.',
+  'stacks.kind.linkedHint': 'Его файлы compose лежат в папке на этом компьютере.',
+  'stacks.kind.syncedHint': 'Развёрнут из git-репозитория.',
+  'stacks.kind.externalHint': 'Развёрнут вне Homeport.',
+  'stacks.services.noContainer': 'Нет контейнера',
 } satisfies Translation<typeof en>;

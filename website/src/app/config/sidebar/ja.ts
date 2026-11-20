@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': 'YAML の適用と編集',
   'docs/clusters/helm': 'Helm リリース',
   'docs/clusters/nomad': 'Nomad クラスター',
-  'docs/guides/overview': '概要とイベント',
+  'docs/guides/overview': 'ボード、概要、イベント',
   'docs/guides/containers': 'コンテナ',
   'docs/guides/images': 'イメージ',
   'docs/guides/volumes-networks': 'ボリュームとネットワーク',

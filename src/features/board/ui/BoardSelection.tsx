@@ -1,4 +1,4 @@
-import { PlayIcon, RotateCwIcon, SquareIcon, Trash2Icon } from 'lucide-react';
+import { PlayIcon, RotateCwIcon, CircleStopIcon, Trash2Icon } from 'lucide-react';
 import { Button, type ConfirmOptions } from '@/shared/ui';
 import { useBoardActions } from '../api/mutations';
 import { idsByHost, type BoardRow } from '../model/board';
@@ -30,7 +30,7 @@ export function BoardSelection({
         <PlayIcon /> {t('containers.action.start')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => run('stop')}>
-        <SquareIcon /> {t('containers.action.stop')}
+        <CircleStopIcon /> {t('containers.action.stop')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => run('restart')}>
         <RotateCwIcon /> {t('containers.action.restart')}

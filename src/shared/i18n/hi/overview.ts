@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': 'अवलोकन',
-  'overview.title': 'अवलोकन',
-  'overview.addHost': 'होस्ट जोड़ें',
-  'overview.addCluster': 'क्लस्टर जोड़ें',
   'overview.cluster.nodes': '{total} में से {ready} Node तैयार',
   'overview.cluster.nodesNotAllowed': 'Nodes: अनुमति नहीं',
   'overview.cluster.pods': '{total} में से {running} Pod चल रहे हैं',
@@ -35,7 +32,6 @@ export default {
   'overview.cluster.noWarnings': 'कोई चेतावनी इवेंट नहीं।',
   'overview.cluster.allEvents': 'सभी इवेंट',
   'overview.host.running': '<strong>{running}</strong> / {total} चल रहे हैं',
-  'overview.host.images': '{count, plural, one {# इमेज} other {# इमेज}}',
   'overview.host.containerdContainers':
     '{namespaces, plural, one {# नेमस्पेस} other {# नेमस्पेस}} में {count, plural, one {# कंटेनर} other {# कंटेनर}}',
   'overview.host.incusInstances':
@@ -113,5 +109,12 @@ export default {
   'overview.pruned':
     '{containers, plural, one {# कंटेनर} other {# कंटेनर}}, {images, plural, one {# इमेज} other {# इमेज}}, {networks, plural, one {# नेटवर्क} other {# नेटवर्क}} और {volumes, plural, one {# वॉल्यूम} other {# वॉल्यूम}} हटाए गए — {space} खाली हुआ।',
   'overview.palette.prune': 'चुना गया होस्ट साफ़ करें',
-  'overview.host.onBoard': 'बोर्ड पर इसके कंटेनर',
+  'overview.hostSettings': 'होस्ट की सेटिंग्स',
+  'overview.clusterSettings': 'क्लस्टर की सेटिंग्स',
+  'overview.vitals.title': 'एक नज़र में',
+  'overview.vitals.containers': 'कंटेनर',
+  'overview.vitals.running': '{total} में से {running} चल रहे हैं',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': 'मेमोरी',
+  'overview.vitals.images': 'इमेज',
 } satisfies Translation<typeof en>;

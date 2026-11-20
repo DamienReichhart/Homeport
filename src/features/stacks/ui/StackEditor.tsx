@@ -3,12 +3,12 @@ import { useEffect, useState } from 'react';
 import type { ComposeCheck, ComposeFile } from '@/shared/api';
 import {
   Button,
+  EnvTextarea,
   Input,
   Label,
   Tabs,
   TabsList,
   TabsTrigger,
-  Textarea,
   YamlEditor,
 } from '@/shared/ui';
 import { useComposeCheck } from '../api/useComposeCheck';
@@ -145,14 +145,13 @@ export function StackEditor({
       <div className="grid content-start gap-4">
         <div className="grid gap-1.5">
           <Label htmlFor="stack-env">{t('stacks.editor.environment')}</Label>
-          <Textarea
+          <EnvTextarea
             id="stack-env"
             value={env}
-            onChange={(e) => onEnvChange(e.target.value)}
+            onChange={onEnvChange}
             disabled={!keychain}
             placeholder={keychain ? ENV_EXAMPLE : t('stacks.editor.envNoKeychain')}
-            className="h-40 font-mono text-xs"
-            spellCheck={false}
+            className="h-40"
           />
           <p className="text-muted-foreground text-xs">
             {keychain

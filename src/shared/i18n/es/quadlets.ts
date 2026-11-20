@@ -95,6 +95,7 @@ export default {
   'quadlets.form.extraInvalid':
     'Cada archivo junto a la unidad necesita su propio nombre simple, sin carpetas.',
   'quadlets.remove.title': '¿Eliminar {name}?',
+  'quadlets.remove.zone': 'Eliminar esta unidad',
   'quadlets.remove.description':
     'Podman borra el archivo de la unidad y recarga systemd. Los contenedores, volúmenes e imágenes que creó se mantienen.',
   'quadlets.remove.stop': 'Detener su servicio si está en ejecución',

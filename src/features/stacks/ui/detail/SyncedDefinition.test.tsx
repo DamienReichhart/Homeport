@@ -159,18 +159,24 @@ describe('a Synced Stack', () => {
     expect(screen.getByText('deploy/Dockerfile')).toBeInTheDocument();
     expect(screen.getByText(/Edit it in git/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open on the forge' })).toBeInTheDocument();
-    for (const name of ['Save and redeploy', 'Forget definition', 'Adopt']) {
+    // It deploys by syncing, with saving the environment alone one step away.
+    expect(screen.getByRole('button', { name: 'More ways to save' })).toBeInTheDocument();
+    for (const name of ['Deploy', 'Forget definition', 'Adopt']) {
       expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
     }
-    expect(screen.getByLabelText('Environment')).toHaveValue('TOKEN=hunter2\n');
-    expect(screen.getByLabelText('Environment')).toBeEnabled();
+    // The environment is Homeport's: hidden until asked for, then editable.
+    const env = screen.getByLabelText('Environment');
+    expect(env).toHaveValue('TOKEN=••••••••\n');
+    await userEvent.click(screen.getByRole('button', { name: 'Show values' }));
+    expect(env).toHaveValue('TOKEN=hunter2\n');
+    expect(env).not.toHaveAttribute('readonly');
   });
 
   it('keeps a Managed Stack’s compose file editable', async () => {
     mock([]);
     renderApp('/stacks/shop');
     await userEvent.click(await screen.findByRole('tab', { name: 'Definition' }));
-    await screen.findByRole('button', { name: 'Save and redeploy' });
+    await screen.findByRole('button', { name: 'Deploy' });
     const editor = screen.getByDisplayValue('services: {}');
     expect(editor).not.toHaveAttribute('readonly');
   });

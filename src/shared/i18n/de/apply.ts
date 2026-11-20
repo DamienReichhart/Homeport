@@ -6,7 +6,7 @@ export default {
   'apply.nav': 'YAML anwenden',
   'apply.title': 'YAML anwenden',
   'apply.description':
-    'Fügen Sie Manifeste ein oder öffnen Sie sie, sehen Sie, was sie auf {cluster} ändern würden, und wenden Sie sie dann an, wie kubectl apply.',
+    'Sehen Sie, was Manifeste auf {cluster} ändern würden, und wenden Sie sie dann an.',
   'apply.open': 'Datei öffnen…',
   'apply.openTitle': 'Manifeste öffnen',
   'apply.openFailed': 'Homeport konnte diese Datei nicht lesen',

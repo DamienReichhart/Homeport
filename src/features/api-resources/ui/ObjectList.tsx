@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { age, clusterKeys, DeleteSelected, NamespacePicker, stillListed } from '@/core/cluster';
+import { age, clusterKeys, DeleteSelected, stillListed } from '@/core/cluster';
 import { usePageQuery } from '@/core/feature';
 import type { ApiResourceInfo, ClusterView, TableRow } from '@/shared/api';
 import {
@@ -25,12 +25,11 @@ export function ObjectList({
   cluster,
   info,
   namespace,
-  onNamespace,
 }: {
   cluster: ClusterView;
   info: ApiResourceInfo;
+  /** The page's Namespace, which its header picks; ignored for a type outside Namespaces. */
   namespace: string | null;
-  onNamespace: (namespace: string | null) => void;
 }) {
   const id = cluster.cluster.id;
   const navigate = useNavigate();
@@ -61,11 +60,6 @@ export function ObjectList({
           targets={picked.map((r) => ({ type: { api }, namespace: r.namespace, name: r.name }))}
         />
       )}
-      {api.namespaced && (
-        <div className="ms-auto">
-          <NamespacePicker clusterId={id} value={namespace} onChange={onNamespace} />
-        </div>
-      )}
     </div>
   );
 
@@ -84,7 +78,14 @@ export function ObjectList({
       id: 'name',
       header: t('apiresources.column.name'),
       accessorFn: (r) => r.name,
-      cell: ({ row }) => <span className="font-medium break-all">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span
+          className="inline-block max-w-72 truncate align-bottom font-medium"
+          title={row.original.name}
+        >
+          {row.original.name}
+        </span>
+      ),
     },
     ...(api.namespaced && namespace === null
       ? [
@@ -102,6 +103,12 @@ export function ObjectList({
         id: `c${i}`,
         header: c.name,
         accessorFn: (r: TableRow) => r.cells[i] ?? '',
+        // Columns a CRD defines can hold anything; long values are cut, whole on hover.
+        cell: ({ getValue }: { getValue: () => unknown }) => (
+          <span className="inline-block max-w-64 truncate align-bottom" title={String(getValue())}>
+            {String(getValue())}
+          </span>
+        ),
       })),
     {
       id: 'age',

@@ -68,7 +68,10 @@ export function RepositoryDialog({
           <>
             <RepositoryAccess repository={repository} />
             <DialogFooter>
-              <Button onClick={onClose}>{t('common.close')}</Button>
+              {/* A token's form holds the dialog's one solid button. */}
+              <Button variant="outline" onClick={onClose}>
+                {t('common.close')}
+              </Button>
             </DialogFooter>
           </>
         ) : (
@@ -115,6 +118,7 @@ function AddRepository({
           onChange={(e) => setForm((f) => withUrl(f, e.target.value))}
           // eslint-disable-next-line homeport/no-literal-ui-string -- example repository URLs
           placeholder="git@github.com:owner/repo.git, https://gitlab.com/owner/repo.git"
+          className="font-mono"
           autoFocus
           spellCheck={false}
         />

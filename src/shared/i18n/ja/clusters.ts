@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'クラスター',
-  'clusters.summary': '{count, plural, other {# 個のクラスター}}',
+  'clusters.description': 'Homeport が接続する Kubernetes と Nomad のクラスターです。',
   'clusters.add': 'クラスターを追加',
   'clusters.notFound': 'このクラスターはもう存在しません。',
   'clusters.empty.title': 'まだクラスターはありません',
   'clusters.empty.description':
-    'kubeconfig から到達できる Kubernetes クラスターを追加してください。Homeport はクラスターに何もインストールしません。',
+    'kubeconfig から到達できる Kubernetes クラスター、またはアドレスを指定して Nomad エージェントを追加してください。Homeport はクラスターに何もインストールしません。',
   'clusters.column.name': '名前',
   'clusters.column.status': 'ステータス',
   'clusters.column.kind': '種類',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'サインイン方法',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'クラスターを追加',
   'clusters.palette.manage': 'クラスターを管理',
 
@@ -27,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL トークン',
 
   'clusters.addPage.description':
-    '選んだ Kubernetes コンテキスト、または指定した Nomad エージェントが、それぞれ 1 つのクラスターになります。認証情報は暗号化して保存され、ディスクに平文で保存されることはありません。',
+    'kubeconfig のコンテキストを選ぶか、アドレスで Nomad エージェントを指定します。',
   'clusters.addPage.fromMachine': 'このマシンの kubeconfig から',
   'clusters.addPage.paste': 'kubeconfig を貼り付け',
   'clusters.addPage.nomad': 'Nomad',
@@ -54,6 +55,10 @@ export default {
   'clusters.detail.name': '名前',
   'clusters.detail.rename': '名前を変更',
   'clusters.detail.renamed': 'クラスターの名前を変更しました',
+  'clusters.rename.open': '名前を変更…',
+  'clusters.rename.title': '{name} の名前を変更',
+  'clusters.rename.description':
+    '変わるのは Homeport での名前だけです。kubeconfig のコンテキスト名はそのままです。',
   'clusters.connection.title': '接続',
   'clusters.connection.server': 'API サーバー',
   'clusters.connection.address': 'アドレス',
@@ -123,6 +128,9 @@ export default {
   'clusters.remove.title': 'クラスターを削除',
   'clusters.remove.description':
     'Homeport はクラスターと、保存されている認証情報を破棄します。クラスターや kubeconfig には何の変更も加えません。',
+  'clusters.remove.descriptionNomad':
+    'Homeport はクラスターと、保存されている認証情報を破棄します。クラスターには何の変更も加えません。',
   'clusters.remove.confirmTitle': '{name} を削除しますか？',
   'clusters.remove.confirmDescription': 'kubeconfig から再び追加できます。',
+  'clusters.remove.confirmDescriptionNomad': 'アドレスを指定して再び追加できます。',
 } satisfies Translation<typeof en>;

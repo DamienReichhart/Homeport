@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 集群既可以是 Kubernetes 集群，也可以是 **Nomad** 集群。Homeport 从你的计算机与 Nomad agent（server 或 client）本就提供的 HTTP API 通信：集群上不会安装任何内容，本机上也不需要 `nomad` CLI。它所做的一切都通过 API 完成，所用权限就是你提供的 ACL 令牌所拥有的权限。
 
-Nomad 集群与你的主机和 Kubernetes 集群一起显示在切换器中。选择一个 Nomad 集群后，概览上会显示其版本、区域和地址，侧边栏中会显示它自己的页面：**[Job](#job)**（你可以在这里[运行 job](#运行-job)，并打开其 allocation 的[日志和 shell](#日志和-shell)）和 **[Node](#node)**。选中它时，Kubernetes 页面会被隐藏。
+Nomad 集群与你的 Kubernetes 集群一起列在侧边栏中，每个都带有其状态。选择一个 Nomad 集群后，概览上会显示其版本、区域和地址，侧边栏中会显示它自己的页面：**[Job](#job)**（你可以在这里[运行 job](#运行-job)，并打开其 allocation 的[日志和 shell](#日志和-shell)）和 **[Node](#node)**。选中它时，Kubernetes 页面会被隐藏。
 
 你可以做的事情，按本页介绍的顺序：
 
@@ -20,9 +20,9 @@ Nomad 集群与你的主机和 Kubernetes 集群一起显示在切换器中。�
 
 ## 添加 Nomad 集群
 
-在切换器中选择**添加集群…**，然后选择 **Nomad** 标签页，并填写：
+在侧边栏主机列表下方选择**添加主机或集群**，再选择**添加集群…**，然后选择 **Nomad** 标签页，并填写：
 
-- **名称**：切换器和概览中显示的名称，例如 `nomad-prod`。
+- **名称**：侧边栏、看板和概览中显示的名称，例如 `nomad-prod`。
 - **地址**：agent 的 HTTP API，与 `NOMAD_ADDR` 提供给 `nomad` CLI 的相同。`nomad.example.com` 会变成 `http://nomad.example.com:4646`：未指定端口时会加上 4646 端口，提供了 TLS 材料时则使用 `https://`。
 - **区域**：留空则使用 agent 自身的区域。设置它可以通过联邦 agent 管理另一个区域，与 `NOMAD_REGION` 的作用相同。
 - **ACL 令牌**：集群启用 ACL 时所用令牌的 Secret ID。参见下文的[令牌](#acl-令牌)。
@@ -58,7 +58,7 @@ Homeport 在每个请求的 `X-Nomad-Token` 请求头中发送令牌，绝不放
 
 打开一个 job 可查看其设置（优先级、datacenter、node pool、版本）、其 **task group** 及其 task 和驱动，以及其 **allocation**（最新的在最前）和每个 allocation 所在的 node。
 
-- **停止**会先询问你，注明该 job 及其 namespace。Nomad 会停止每个 allocation，并保留该 job 的定义，直到其垃圾回收运行；勾选**清除它**会立即删除该 job 及其历史，与 `nomad job stop -purge` 相同。清除默认处于关闭状态。
+- **停止**会先询问你，注明该 job 及其 namespace。Nomad 会停止每个 allocation，并保留该 job 的定义，直到其垃圾回收运行；勾选**清除它**会立即删除该 job 及其历史，与 `nomad job stop -purge` 相同。清除默认处于关闭状态。勾选**清除它**时，Homeport 会先要求你输入 job 的名称。
 - **扩缩**作用于 `service` 或 `batch` job 的某个 task group，设置它运行多少个 allocation，与 `nomad job scale` 相同。当该 group 有 `scaling` 块时，数量必须保持在其 `min` 和 `max` 之间；超出范围的数量 Homeport 会在询问 Nomad 之前就拒绝，而 Nomad 拒绝时（例如有 deployment 正在进行），会显示 Nomad 自己给出的原因。依据该策略工作的自动扩缩器可能会再次更改数量。
 
 列出 job 需要 `list-jobs` 和 `read-job` 能力；停止 job 需要 `submit-job`，扩缩需要 `scale-job`（或 `submit-job`），均针对该 job 的 namespace。

@@ -94,7 +94,7 @@ describe('a Nomad job', () => {
     const calls = setup();
     const user = userEvent.setup();
     renderApp('/nomad/jobs/default/web');
-    await user.click(await screen.findByRole('button', { name: 'Scale' }));
+    await user.click(await screen.findByRole('button', { name: 'Scale api' }));
     const count = await screen.findByLabelText('Count');
     expect(screen.getByText('Its scaling policy allows 1 to 5.')).toBeInTheDocument();
     await user.clear(count);

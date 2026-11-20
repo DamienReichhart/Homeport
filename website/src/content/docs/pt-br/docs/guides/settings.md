@@ -3,7 +3,7 @@ title: Configurações
 description: Tema e idioma, a bandeja do sistema, iniciar ao fazer login, notificações, atualizações, logins de registro, repositórios, a frequência de verificação das stacks sincronizadas, o que esta máquina suporta, versão e licenças.
 ---
 
-**Configurações** é a última página da barra lateral, acima dos links **Documentação** e **GitHub**, que abrem no seu navegador.
+**Configurações** é a última página da barra lateral, acima dos links **Documentação** e **GitHub**, que abrem no seu navegador. Numa janela larga, um índice das seções fica ao lado delas e marca a que você está lendo; numa mais estreita, é uma fileira de links acima delas. **Verificar atualizações**, na paleta de comandos, abre as Configurações em **Atualizações**.
 
 ## Aparência
 

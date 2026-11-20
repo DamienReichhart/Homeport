@@ -1,7 +1,10 @@
-import type { ReactNode } from 'react';
+import { EyeIcon, EyeOffIcon } from 'lucide-react';
+import { useState, type ReactNode } from 'react';
 import {
   Badge,
+  Button,
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
@@ -20,13 +23,22 @@ import {
 } from '@/shared/ui';
 import type { ContainerInspect } from '../../../model/types';
 import { t } from '@/shared/i18n';
-import { formatDateTime, formatTime } from '@/shared/lib';
+import { formatDateTime, formatRelative, formatTime } from '@/shared/lib';
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+function Section({
+  title,
+  action,
+  children,
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+}) {
   return (
     <Card>
       <CardHeader>
         <CardTitle>{title}</CardTitle>
+        {action && <CardAction>{action}</CardAction>}
       </CardHeader>
       <CardContent>{children}</CardContent>
     </Card>
@@ -61,8 +73,14 @@ function SimpleTable({ head, rows }: { head: string[]; rows: ReactNode[][] }) {
 
 const mono = (s: string) => <span className="font-mono text-xs">{s}</span>;
 
+/** When something happened, relative, with the date and time on hover. */
+const when = (iso: string) => (
+  <span title={formatDateTime(iso)}>{formatRelative(Date.parse(iso) / 1000)}</span>
+);
+
 /** The inspect document as readable sections, with the raw JSON one tab away. */
 export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
+  const [showEnv, setShowEnv] = useState(false);
   const env = (inspect.Config.Env ?? []).map((e) => {
     const i = e.indexOf('=');
     return i < 0 ? [e, ''] : [e.slice(0, i), e.slice(i + 1)];
@@ -95,16 +113,14 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
             items={[
               [t('containers.inspect.id'), mono(inspect.Id)],
               [t('containers.inspect.image'), inspect.Config.Image],
-              [t('containers.inspect.created'), formatDateTime(inspect.Created)],
+              [t('containers.inspect.created'), when(inspect.Created)],
               [
                 t('containers.inspect.state'),
                 inspect.State.OOMKilled ? t('containers.inspect.outOfMemory', { state }) : state,
               ],
               [
                 t('containers.inspect.started'),
-                inspect.State.StartedAt.startsWith('0001')
-                  ? '—'
-                  : formatDateTime(inspect.State.StartedAt),
+                inspect.State.StartedAt.startsWith('0001') ? '—' : when(inspect.State.StartedAt),
               ],
               [
                 t('containers.inspect.entrypoint'),
@@ -155,10 +171,24 @@ export function InspectTab({ inspect }: { inspect: ContainerInspect }) {
             <p className="text-muted-foreground text-sm">{t('containers.inspect.noHealthcheck')}</p>
           )}
         </Section>
-        <Section title={t('containers.inspect.environment')}>
+        {/* Values are often secrets: hidden until asked for, like an environment editor. */}
+        <Section
+          title={t('containers.inspect.environment')}
+          action={
+            env.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={() => setShowEnv((v) => !v)}>
+                {showEnv ? <EyeOffIcon /> : <EyeIcon />}
+                {showEnv ? t('ui.env.hide') : t('ui.env.show')}
+              </Button>
+            )
+          }
+        >
           <SimpleTable
             head={[t('containers.inspect.column.variable'), t('containers.inspect.column.value')]}
-            rows={env.map(([k, v]) => [mono(k ?? ''), mono(v ?? '')])}
+            rows={env.map(([k, v]) => [
+              mono(k ?? ''),
+              mono(showEnv || !v ? (v ?? '') : '•'.repeat(8)),
+            ])}
           />
         </Section>
         <Section title={t('containers.inspect.mounts')}>

@@ -55,7 +55,7 @@ describe('workloads', () => {
       await screen.findByText('Your credentials can’t list daemonsets in default.'),
     ).toBeInTheDocument();
     await user.click(screen.getByRole('tab', { name: 'Jobs' }));
-    expect(await screen.findByText('None here.')).toBeInTheDocument();
+    expect(await screen.findByText('No Jobs in the Namespace default.')).toBeInTheDocument();
   });
 
   it('opens a workload with its Pods, conditions and YAML', async () => {
@@ -129,6 +129,39 @@ describe('workloads', () => {
         { id: 'c1', kind: 'deployment', namespace: 'default', name: 'web', replicas: 0 },
       ]),
     );
+  });
+
+  it('restarts a workload from its page at once, with Delete kept in its menu', async () => {
+    const restarted: unknown[] = [];
+    mockCommands({
+      ...baseCommands,
+      ...clusterCommands,
+      clusters_workload_get: () => ({
+        view: workloadView('web'),
+        labels: {},
+        annotations: {},
+        selector: 'app=web',
+        conditions: [],
+        containers: [],
+        strategy: 'RollingUpdate',
+      }),
+      clusters_restart: (args) => {
+        restarted.push(args);
+        return null;
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/workloads/deployments/default/web');
+    await user.click(await screen.findByRole('button', { name: 'Restart' }));
+    await waitFor(() =>
+      expect(restarted).toEqual([
+        { id: 'c1', kind: 'deployment', namespace: 'default', name: 'web' },
+      ]),
+    );
+    expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    expect(await screen.findByRole('menuitem', { name: 'Delete' })).toBeInTheDocument();
   });
 
   it('deletes a workload only once the confirmation names it and the cluster', async () => {

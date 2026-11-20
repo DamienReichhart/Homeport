@@ -13,6 +13,12 @@ export const rbacFeature = defineFeature({
     { path: 'rbac/groups/:name', Component: GroupPage },
     { path: 'rbac/serviceaccounts/:namespace/:name', Component: ServiceAccountPage },
   ],
-  nav: { path: '/rbac', label: 'rbac.nav', icon: ShieldCheckIcon, scope: 'cluster' },
+  nav: {
+    path: '/rbac',
+    label: 'rbac.nav',
+    icon: ShieldCheckIcon,
+    scope: 'cluster',
+    group: 'tools',
+  },
   clusterKind: 'kubernetes',
 });

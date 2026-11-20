@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': 'Обзор',
-  'overview.title': 'Обзор',
-  'overview.addHost': 'Добавить хост',
-  'overview.addCluster': 'Добавить кластер',
   'overview.cluster.nodes': 'Готово Node: {ready} из {total}',
   'overview.cluster.nodesNotAllowed': 'Node: нет доступа',
   'overview.cluster.pods': 'Работает Pod: {running} из {total}',
@@ -35,8 +32,6 @@ export default {
   'overview.cluster.noWarnings': 'Событий-предупреждений нет.',
   'overview.cluster.allEvents': 'Все события',
   'overview.host.running': '<strong>{running}</strong> / {total} работают',
-  'overview.host.images':
-    '{count, plural, one {# образ} few {# образа} many {# образов} other {# образа}}',
   'overview.host.containerdContainers':
     '{count, plural, one {# контейнер} few {# контейнера} many {# контейнеров} other {# контейнера}} в {namespaces, plural, one {# пространстве имён} few {# пространствах имён} many {# пространствах имён} other {# пространства имён}}',
   'overview.host.incusInstances':
@@ -116,5 +111,12 @@ export default {
   'overview.pruned':
     'Удалено: {containers, plural, one {# контейнер} few {# контейнера} many {# контейнеров} other {# контейнера}}, {images, plural, one {# образ} few {# образа} many {# образов} other {# образа}}, {networks, plural, one {# сеть} few {# сети} many {# сетей} other {# сети}} и {volumes, plural, one {# том} few {# тома} many {# томов} other {# тома}} — освобождено {space}.',
   'overview.palette.prune': 'Очистить выбранный хост',
-  'overview.host.onBoard': 'Его контейнеры на доске',
+  'overview.hostSettings': 'Настройки хоста',
+  'overview.clusterSettings': 'Настройки кластера',
+  'overview.vitals.title': 'Кратко',
+  'overview.vitals.containers': 'Контейнеры',
+  'overview.vitals.running': 'Запущено {running} из {total}',
+  'overview.vitals.cpu': 'ЦП',
+  'overview.vitals.memory': 'Память',
+  'overview.vitals.images': 'Образы',
 } satisfies Translation<typeof en>;

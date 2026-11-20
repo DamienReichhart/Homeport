@@ -33,7 +33,7 @@ export default {
   'podmanpods.actionOne.restart': '{name} を再起動',
   'podmanpods.actionOne.pause': '{name} を一時停止',
   'podmanpods.actionOne.unpause': '{name} を再開',
-  'podmanpods.removeOne': '{name} を削除',
+  'podmanpods.actionsFor': '{name} の操作',
   'podmanpods.done.start': '{name} を起動しました',
   'podmanpods.done.stop': '{name} を停止しました',
   'podmanpods.done.restart': '{name} を再起動しました',

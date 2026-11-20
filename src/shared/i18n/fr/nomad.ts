@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'Exécuter un job',
 
   'nomad.job.description': 'Job {type} dans le namespace {namespace}, version {version}',
-  'nomad.job.back': 'Jobs',
   'nomad.job.stop': 'Arrêter',
   'nomad.job.editAndRun': 'Modifier et exécuter',
   'nomad.job.sourceFailed': 'Homeport n’a pas pu lire la spécification du job',
@@ -169,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'Drainage annulé',
 
   'nomad.node.description': 'Nœud client dans {datacenter}, pool de nœuds {pool}',
-  'nomad.node.back': 'Nœuds',
   'nomad.node.eligible': 'Éligible aux nouvelles allocations',
   'nomad.node.drain': 'Drainer',
   'nomad.node.settings': 'Nœud',

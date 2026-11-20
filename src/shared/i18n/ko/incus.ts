@@ -114,7 +114,6 @@ export default {
   'incus.images.cached': '캐시됨',
   'incus.images.cachedHint':
     '인스턴스를 만들기 위해 다운로드되었습니다. 한동안 사용되지 않으면 Incus가 삭제합니다.',
-  'incus.images.aliasAdd': '{name}에 별칭 추가',
   'incus.images.aliasRemove': '별칭 {name} 삭제',
   'incus.images.aliasRemoved': '별칭 {name} 삭제됨',
   'incus.images.alias.title': '{name}에 별칭 추가',
@@ -122,7 +121,6 @@ export default {
   'incus.images.alias.add': '별칭 추가',
   'incus.images.refreshOne': '서버에서 {name} 새로 고침',
   'incus.images.refreshed': '{name} 새로 고침 완료',
-  'incus.images.deleteOne': '{name} 삭제',
   'incus.images.deleted': '{name} 삭제됨',
   'incus.images.delete.title': '{name} 이미지를 삭제하시겠습니까?',
   'incus.images.delete.description':
@@ -152,9 +150,14 @@ export default {
   'incus.profiles.delete.title': '{name} 프로필을 삭제하시겠습니까?',
   'incus.profiles.delete.description':
     '{project} 프로젝트에서 삭제됩니다. 이 프로필을 사용하는 인스턴스는 없습니다.',
+  'incus.profiles.delete.zone': '이 프로필 삭제',
   'incus.profiles.backToList': '프로필로 돌아가기',
   'incus.profiles.noDescription': '설명 없음',
   'incus.profiles.reload': '다시 불러오기',
+  'incus.profiles.unsaved': '저장하지 않은 변경 사항',
+  'incus.profiles.discard.title': '변경 사항을 버리시겠습니까?',
+  'incus.profiles.discard.description':
+    '다시 불러오면 Incus에 있는 지금의 {name}이(가) 표시되고, 여기서 바꾼 내용은 사라집니다.',
   'incus.profiles.saved': '{name} 프로필을 저장했습니다',
   'incus.profiles.usedBy': '사용 중인 항목',
   'incus.profiles.editHint':
@@ -221,6 +224,7 @@ export default {
   'incus.snapshots.column.size': '크기',
   'incus.snapshots.stateful': '상태 포함',
   'incus.snapshots.restore': '복원',
+  'incus.snapshots.restoreOne': '{snapshot} 복원',
   'incus.snapshots.restore.title': '{name} 인스턴스를 {snapshot} 스냅샷으로 복원하시겠습니까?',
   'incus.snapshots.restore.description':
     '{snapshot} 스냅샷을 만든 {time} 이후 디스크에서 변경된 모든 내용이 사라집니다. 실행 중인 인스턴스는 다시 시작됩니다.',
@@ -289,6 +293,7 @@ export default {
   'incus.networks.delete.title': '{name} 네트워크를 삭제하시겠습니까?',
   'incus.networks.delete.description':
     'Incus가 브리지와 DHCP, DNS를 삭제합니다. 이 네트워크를 사용하는 항목은 없습니다.',
+  'incus.networks.delete.zone': '이 네트워크 삭제',
   'incus.networks.deleted': '{name} 네트워크를 삭제했습니다',
   'incus.networks.gone': '{name} 네트워크가 더 이상 없습니다.',
   'incus.networks.backToList': '네트워크로 돌아가기',

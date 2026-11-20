@@ -6,7 +6,7 @@ export default {
   'clusterevents.nav': 'इवेंट',
   'clusterevents.title': 'इवेंट',
   'clusterevents.summary': '{count, plural, one {# इवेंट} other {# इवेंट}}',
-  'clusterevents.search': 'कारण, ऑब्जेक्ट या संदेश से खोजें',
+  'clusterevents.search': 'इवेंट खोजें',
   'clusterevents.empty': 'कोई इवेंट नहीं। Kubernetes उन्हें लगभग एक घंटे तक रखता है।',
   'clusterevents.filter': 'प्रकार',
   'clusterevents.all': 'सभी',

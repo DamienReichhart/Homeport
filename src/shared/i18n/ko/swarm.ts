@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarm',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': '매니저가 연결됨',
   'swarm.unreachable': '연결된 매니저 없음',
   'swarm.hostCounts':
     '{managers, plural, other {매니저 호스트 #개}}, {workers, plural, other {워커 호스트 #개}}',
@@ -56,6 +55,12 @@ export default {
   'swarm.nodes.action.labels': '레이블 편집',
   'swarm.nodes.action.tasks': '태스크 보기',
   'swarm.nodes.updated': '{name} 업데이트됨',
+  'swarm.nodes.drain.title': '{name}을(를) 드레인하시겠습니까?',
+  'swarm.nodes.drain.description':
+    '이 노드의 태스크는 여기서 중지되어 다른 노드로 옮겨지며, 다시 활성화할 때까지 새 태스크를 받지 않습니다.',
+  'swarm.nodes.demote.title': '{name}을(를) 워커로 강등하시겠습니까?',
+  'swarm.nodes.demote.description':
+    'Swarm 관리를 멈추고 태스크는 계속 실행합니다. Swarm이 동작하려면 매니저 대부분이 살아 있어야 하므로 충분한 수를 남겨 두세요.',
   'swarm.nodes.removed': '{name} 노드를 Swarm에서 삭제했습니다',
   'swarm.nodes.labels.title': '{name}의 레이블',
   'swarm.nodes.labels.description':
@@ -72,22 +77,23 @@ export default {
 
   'swarm.services.search': '서비스 검색',
   'swarm.services.empty': '이 Swarm에서 실행 중인 서비스가 없습니다',
+  'swarm.services.emptyHint': '이미지로 서비스를 만들거나 이 Swarm에 스택을 배포하세요.',
   'swarm.services.column.name': '이름',
   'swarm.services.column.image': '이미지',
-  'swarm.services.column.mode': '모드',
   'swarm.services.column.replicas': '실행 중',
   'swarm.services.column.ports': '포트',
   'swarm.services.column.stack': '스택',
   'swarm.services.column.update': '업데이트',
   'swarm.services.mode.replicated': '복제',
-  'swarm.services.mode.replicatedCount': '복제({count})',
   'swarm.services.mode.global': '전역',
   'swarm.services.mode.replicatedJob': 'job',
   'swarm.services.mode.globalJob': '전역 job',
   'swarm.services.actionsFor': '{name} 작업',
+  'swarm.services.logsOf': '{name} 로그',
   'swarm.services.action.logs': '로그',
   'swarm.services.action.scale': '스케일',
   'swarm.services.action.rollback': '롤백',
+  'swarm.services.action.remove': '서비스 삭제',
   'swarm.services.scaled': '{name} 서비스를 {count, plural, other {레플리카 #개}}로 스케일했습니다',
   'swarm.services.rolledBack': '{name} 서비스를 롤백하는 중입니다',
   'swarm.services.removed': '{name} 삭제됨',
@@ -126,6 +132,8 @@ export default {
   'swarm.objects.createConfig': 'config 만들기',
   'swarm.objects.secretNote':
     '시크릿 값은 Swarm으로 한 번 전송되며, Homeport를 포함해 누구도 다시 읽을 수 없습니다. 시크릿이 주어진 서비스만 볼 수 있습니다.',
+  'swarm.objects.configNote':
+    'config는 Swarm이 이를 받은 서비스에 전달하는 파일입니다. 웹 서버 설정 같은 것이 해당됩니다.',
   'swarm.objects.noSecrets': '시크릿 없음',
   'swarm.objects.noConfigs': 'config 없음',
   'swarm.objects.column.name': '이름',
@@ -162,7 +170,6 @@ export default {
 
   'swarm.services.created': '{name} 생성됨',
   'swarm.services.updating': '{name} 서비스를 새 설정으로 전환하는 중입니다',
-  'swarm.service.update': '업데이트 {state}',
   'swarm.create.open': '서비스 만들기',
   'swarm.create.title': '서비스 만들기',
   'swarm.create.description':
@@ -231,7 +238,6 @@ export default {
   'swarm.membership.leave.last':
     'Swarm의 마지막 매니저입니다. 모든 서비스, 시크릿, config와 함께 Swarm이 사라집니다. 다른 노드는 매니저 없는 Swarm에 남게 됩니다.',
   'swarm.membership.leave.force': '강제: 매니저여도 나가기',
-  'swarm.membership.leave.typeName': '확인하려면 {name} 이름을 입력하세요',
   'swarm.membership.leave.submit': '나가기',
 
   'swarm.join.title': '참여 명령',
@@ -263,6 +269,9 @@ export default {
   'swarm.stacks.removed': '{name} 삭제됨',
   'swarm.stacks.removedPartly': '{name} 삭제됨. 다음 항목은 제외:',
   'swarm.stacks.remove.title': '{name} 스택을 삭제하시겠습니까?',
+  'swarm.stacks.remove.zone': '이 스택 삭제',
+  'swarm.stacks.remove.submit': '스택 삭제',
   'swarm.stacks.remove.description':
     'docker stack rm처럼 서비스를 삭제한 다음 네트워크, 시크릿, config를 삭제합니다. 볼륨은 각 노드에 유지됩니다.',
+  'swarm.nodes.column.host': '호스트',
 } satisfies Translation<typeof en>;

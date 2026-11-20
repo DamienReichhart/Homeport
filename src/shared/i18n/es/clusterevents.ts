@@ -6,7 +6,7 @@ export default {
   'clusterevents.nav': 'Eventos',
   'clusterevents.title': 'Eventos',
   'clusterevents.summary': '{count, plural, one {# evento} other {# eventos}}',
-  'clusterevents.search': 'Buscar por motivo, objeto o mensaje',
+  'clusterevents.search': 'Buscar eventos',
   'clusterevents.empty': 'No hay eventos. Kubernetes los conserva aproximadamente una hora.',
   'clusterevents.filter': 'Tipo',
   'clusterevents.all': 'Todos',

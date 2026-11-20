@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'スタック',
   'stacks.title': 'スタック',
-  'stacks.description':
-    'このホスト上の Compose プロジェクトです。管理スタックは定義を Homeport に、リンクスタックはこのコンピューター上のフォルダーに保持します。外部スタックはほかの場所からデプロイされたものです。',
+  'stacks.description': 'このホスト上の Compose プロジェクトです。',
   'stacks.new': '新しいスタック',
   'stacks.search': 'スタックを検索',
   'stacks.empty.title': 'スタックはありません',
-  'stacks.empty.description': 'compose 定義を書いて、このホストにデプロイしてください。',
+  'stacks.empty.description':
+    'compose ファイル、フォルダー、または git リポジトリから、このホストに compose プロジェクトをデプロイします。',
   'stacks.column.name': '名前',
   'stacks.column.kind': '種類',
   'stacks.column.state': '状態',
@@ -88,20 +88,19 @@ export default {
   'stacks.action.adopt': '引き継ぎ',
   'stacks.action.stop': '停止',
   'stacks.action.start': '起動',
-  'stacks.action.more': 'その他のスタック操作',
   'stacks.action.restart': '再起動',
   'stacks.action.pull': 'イメージをプル',
   'stacks.action.rebuild': '再ビルドしてデプロイ',
-  'stacks.down.title': '{name} を停止して削除しますか？',
+  'stacks.down.title': '{host} の {name} を停止して削除しますか？',
   'stacks.down.description':
     'コンテナとネットワークが削除されます。ボリュームと定義は残るため、再びデプロイできます。',
   'stacks.down.confirm': '停止して削除',
-  'stacks.downWithVolumes.title': '{name} を停止して削除し、ボリュームも削除しますか？',
+  'stacks.downWithVolumes.title': '{host} の {name} を停止して削除し、ボリュームも削除しますか？',
   'stacks.downWithVolumes.warning':
     'このスタックのコンテナ、ネットワーク、すべてのボリュームが、そのデータごと削除されます。',
   'stacks.downWithVolumes.confirm': 'ボリュームごと削除',
   'stacks.downWithVolumes.action': 'ボリュームごと停止して削除',
-  'stacks.remove.title': '{name} を削除しますか？',
+  'stacks.remove.title': '{host} から {name} を削除しますか？',
   'stacks.remove.description':
     '{count, plural, other {# 個のコンテナ}}とネットワークが削除されます。ボリュームは残ります。Homeport にはこのスタックの compose ファイルがないため、ここから再デプロイすることはできません。',
   'stacks.remove.action': 'コンテナを削除',
@@ -157,7 +156,7 @@ export default {
   'stacks.newPage.useFolder': 'このコンピューター上のフォルダーを使う',
   'stacks.newPage.useRepository': 'Git リポジトリを使う',
   'stacks.newSynced.description':
-    'Git リポジトリにある compose ファイルです。Homeport はこのコンピューターにクローンし、変更内容を表示して、コミットをデプロイします。リポジトリを編集することはありません。',
+    'Git リポジトリにある compose ファイルです。Homeport はそのコミットをデプロイし、リポジトリを編集することはありません。',
   'stacks.newSynced.repository': 'リポジトリ',
   'stacks.newSynced.pickRepository': 'リポジトリを選択',
   'stacks.newSynced.addRepository': 'リポジトリを追加',
@@ -224,7 +223,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport はリポジトリの追跡をやめ、このコンピューター上のチェックアウトを削除します。コンテナは実行し続け、外部スタックになります。リポジトリは「設定 → リポジトリ」に残ります。',
   'stacks.newLinked.description':
-    'このコンピューター上のフォルダーにある Compose プロジェクトです。Homeport はファイルをその場所で扱い、そのフォルダーからデプロイします。',
+    'このコンピューター上のフォルダーにある Compose プロジェクトを、その場所からデプロイします。',
   'stacks.newLinked.choose': 'フォルダーを選択…',
   'stacks.newLinked.pickTitle': 'Compose プロジェクトのフォルダーを選択',
   'stacks.newLinked.files': 'compose ファイル（順番どおり）',
@@ -246,7 +245,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'OS のキーチェーンを利用できないため、スタックの環境変数を保存できません。',
   'stacks.editor.problems': '問題',
-  'stacks.managed.saveAndRedeploy': '保存して再デプロイ',
   'stacks.profiles.title': 'プロファイル',
   'stacks.profiles.hint':
     'プロファイルに属するサービスは、そのプロファイルがオンのときだけ実行されます。プロファイルのないサービスは常に実行されます。',
@@ -271,7 +269,6 @@ export default {
   'stacks.linked.reload': '再読み込み',
   'stacks.linked.overwrite': '上書き',
   'stacks.linked.saved': 'compose ファイルを保存しました',
-  'stacks.linked.saveAndRedeploy': '保存して再デプロイ',
   'stacks.linked.envNote':
     'Compose は実行時にフォルダーの .env を読み込みます。Homeport はそれを表示も変更もしません。',
   'stacks.linked.files': 'compose ファイル',
@@ -289,4 +286,14 @@ export default {
   'stacks.external.descriptionFrom':
     'そのマシン上の <mono>{files}</mono> から、Homeport の外部でデプロイされたものです。起動、停止、削除はできます。編集や再デプロイをするには、compose ファイルを指定して引き継いでください。',
   'stacks.palette.new': '新しいスタック',
+  'stacks.managed.deploy': 'デプロイ',
+  'stacks.managed.moreSave': 'その他の保存方法',
+  'stacks.managed.saveOnly': 'デプロイせずに保存',
+  'stacks.managed.unsaved': '未保存の変更があります',
+  'stacks.forget.sectionTitle': 'このスタックを破棄',
+  'stacks.kind.managedHint': 'Homeport が compose ファイルと環境を保持します。',
+  'stacks.kind.linkedHint': 'compose ファイルはこのコンピューター上のフォルダーにあります。',
+  'stacks.kind.syncedHint': 'git リポジトリからデプロイされます。',
+  'stacks.kind.externalHint': 'Homeport の外でデプロイされました。',
+  'stacks.services.noContainer': 'コンテナなし',
 } satisfies Translation<typeof en>;

@@ -9,11 +9,11 @@ Um **cluster** é um cluster Kubernetes, ou um [cluster Nomad](/docs/clusters/no
 
 <DocScreenshot
   name="cluster-overview"
-  alt="A Visão geral com os cartões de hosts e clusters e, abaixo deles, o resumo do cluster eks-prod."
-  caption="Os clusters ficam na Visão geral ao lado dos seus hosts; o selecionado mostra o resumo dele."
+  alt="A Visão geral do cluster eks-prod: versão, Nodes, Pods por fase, cargas de trabalho não prontas e avisos recentes."
+  caption="A Visão geral de um cluster, a primeira das suas páginas."
 />
 
-Os clusters ficam ao lado dos seus hosts no seletor no topo da barra lateral. Selecionar um mostra as páginas sobre ele — **Cargas de trabalho**, **Pods**, **Rede**, **Configuração**, **Nodes**, **Eventos**, **Recursos da API**, **Aplicar YAML**, **Helm** e **Encaminhamentos de porta** — e o resumo dele na [Visão geral](/docs/guides/overview/#o-cluster-selecionado); selecionar um host mostra de novo as páginas do host.
+Os clusters aparecem na barra lateral abaixo dos seus hosts, cada um com o seu status. Selecionar um abre as páginas dele logo abaixo, depois da sua [Visão geral](/docs/guides/overview/#a-visão-geral-de-um-cluster), em três grupos: os seus recursos (**Cargas de trabalho**, **Pods**, **Rede**, **Configuração**), o próprio cluster (**Nodes**, **Eventos**) e as ferramentas (**Recursos da API**, **RBAC**, **Aplicar YAML**, **Helm**, **Encaminhamentos de porta**). Selecionar um host mostra de novo as páginas do host. No [Quadro](/docs/guides/overview/#quadro), cada cluster tem um bloco ao lado dos blocos dos seus hosts.
 
 ## O que você pode fazer
 
@@ -34,7 +34,7 @@ Toda alteração vai para a API do Kubernetes com os direitos das suas credencia
   alt="A página Adicionar um cluster: os clusters locais encontrados nesta máquina no topo, depois os contextos de ~/.kube/config com o servidor de API deles, como fazem login e quais já foram adicionados."
 />
 
-Escolha **Adicionar cluster…** no seletor, ou **Adicionar um cluster** na página Clusters. Os [clusters locais](/docs/clusters/local/) — Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube — são oferecidos no topo, com um clique cada. Cada contexto que você escolher vira um cluster, com o nome do contexto; você pode renomeá-lo antes ou depois de importar.
+Escolha **Adicionar host ou cluster**, abaixo da lista de hosts na barra lateral, e depois **Adicionar cluster…**, ou **Adicionar um cluster** na página Clusters. Os [clusters locais](/docs/clusters/local/) — Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube — são oferecidos no topo, com um clique cada. Cada contexto que você escolher vira um cluster, com o nome do contexto; você pode renomeá-lo antes ou depois de importar.
 
 - **Do kubeconfig desta máquina** lê os arquivos listados em `KUBECONFIG`, mesclados como o `kubectl` os mescla, ou `~/.kube/config` quando `KUBECONFIG` não está definido. O contexto atual já vem escolhido.
 - **Colar um kubeconfig** lê o texto que você colar, apenas na memória: ele nunca é salvo como arquivo. Os arquivos aos quais ele se refere (`certificate-authority: /…`) precisam ter caminhos completos; o mais simples é colar um com tudo embutido:
@@ -43,7 +43,7 @@ Escolha **Adicionar cluster…** no seletor, ou **Adicionar um cluster** na pág
   kubectl config view --raw --flatten --minify
   ```
 
-Cada contexto mostra o servidor de API, o namespace e como o usuário dele faz login — **Certificado de cliente**, **Token**, **OpenID Connect** ou **Plugin exec (aws)** para um cluster na nuvem —, para que você distinga um cluster local de um de produção antes de importá-lo. Marque os que você quer; cada um recebe um campo de nome, preenchido com o nome do contexto. Vale a pena renomear ARNs longos como `arn:aws:eks:…:cluster/prod` para algo curto como `eks-prod`: o nome é o que o seletor e a Visão geral mostram.
+Cada contexto mostra o servidor de API, o namespace e como o usuário dele faz login — **Certificado de cliente**, **Token**, **OpenID Connect** ou **Plugin exec (aws)** para um cluster na nuvem —, para que você distinga um cluster local de um de produção antes de importá-lo. Marque os que você quer; cada um recebe um campo de nome, preenchido com o nome do contexto. Vale a pena renomear ARNs longos como `arn:aws:eks:…:cluster/prod` para algo curto como `eks-prod`: o nome é o que a barra lateral, o Quadro e a Visão geral mostram.
 
 Um contexto que já é um cluster não pode ser importado duas vezes: o Homeport oferece **Atualizá-lo** em vez disso. Um contexto que não pode ser usado diz por quê, por exemplo um usuário cujo `auth-provider` é `gcp` ou `azure`, que o Kubernetes removeu (mude-o para `gke-gcloud-auth-plugin` ou `kubelogin`, como o `kubectl` agora exige).
 
@@ -64,9 +64,9 @@ O kind, o k3d e o minikube dão novos certificados a um cluster cada vez que o r
 
 ## Gerenciar clusters
 
-- **Gerenciar clusters**, no seletor, lista todos os clusters com o status, o servidor de API e como fazem login.
-- Na página de um cluster, a chave **Ativado** o desconecta sem esquecê-lo, **Reconectar** tenta de novo na hora e **Renomear** muda o nome dele apenas no Homeport.
-- **Remover cluster** esquece o cluster e as credenciais armazenadas dele. Nada muda no cluster nem no seu kubeconfig.
+- **Gerenciar clusters**, o ícone de configurações ao lado de **Clusters** na barra lateral, lista todos os clusters com o status, o servidor de API e como fazem login.
+- Na página de um cluster, a chave **Ativado** o desconecta sem esquecê-lo, **Reconectar** tenta de novo na hora e **Renomear…** (no menu **Mais ações**) muda o nome dele apenas no Homeport.
+- **Remover cluster** (no rodapé da página de um cluster) esquece o cluster e as credenciais armazenadas dele. Nada muda no cluster nem no seu kubeconfig.
 
 Os nomes dos clusters precisam ser únicos, sem diferenciar maiúsculas de minúsculas.
 

@@ -2,12 +2,12 @@
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Compose projects on this host. Managed Stacks keep their definition in Homeport, Linked ones in a folder on this computer; External ones were deployed elsewhere.',
+  'stacks.description': 'Compose projects on this host.',
   'stacks.new': 'New stack',
   'stacks.search': 'Search stacks',
   'stacks.empty.title': 'No stacks',
-  'stacks.empty.description': 'Write a compose definition and deploy it to this host.',
+  'stacks.empty.description':
+    'Deploy a compose project to this host, from a compose file, a folder or a git repository.',
   'stacks.column.name': 'Name',
   'stacks.column.kind': 'Kind',
   'stacks.column.state': 'State',
@@ -88,20 +88,19 @@ export default {
   'stacks.action.adopt': 'Adopt',
   'stacks.action.stop': 'Stop',
   'stacks.action.start': 'Start',
-  'stacks.action.more': 'More stack actions',
   'stacks.action.restart': 'Restart',
   'stacks.action.pull': 'Pull images',
   'stacks.action.rebuild': 'Rebuild and deploy',
-  'stacks.down.title': 'Take down {name}?',
+  'stacks.down.title': 'Take down {name} on {host}?',
   'stacks.down.description':
     'Its containers and networks are removed. Volumes and the definition are kept, so you can deploy again.',
   'stacks.down.confirm': 'Take down',
-  'stacks.downWithVolumes.title': 'Take down {name} and delete its volumes?',
+  'stacks.downWithVolumes.title': 'Take down {name} on {host} and delete its volumes?',
   'stacks.downWithVolumes.warning':
     'Containers, networks and every volume of this Stack are deleted, with all their data.',
   'stacks.downWithVolumes.confirm': 'Delete with volumes',
   'stacks.downWithVolumes.action': 'Take down with volumes',
-  'stacks.remove.title': 'Remove {name}?',
+  'stacks.remove.title': 'Remove {name} from {host}?',
   'stacks.remove.description':
     "Its {count, plural, one {# container} other {# containers}} and networks are removed. Volumes are kept. Homeport has no compose file for this Stack, so it can't be redeployed from here.",
   'stacks.remove.action': 'Remove containers',
@@ -157,7 +156,7 @@ export default {
   'stacks.newPage.useFolder': 'Use a folder on this computer',
   'stacks.newPage.useRepository': 'Use a git repository',
   'stacks.newSynced.description':
-    'A compose file in a git repository. Homeport clones it on this computer, shows what changes, and deploys a commit from it. It never edits the repository.',
+    'A compose file in a git repository. Homeport deploys its commits and never edits it.',
   'stacks.newSynced.repository': 'Repository',
   'stacks.newSynced.pickRepository': 'Choose a repository',
   'stacks.newSynced.addRepository': 'Add repository',
@@ -223,7 +222,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport stops following its repository and deletes its checkout on this computer. Its containers keep running, and it becomes an External Stack. The repository stays in Settings → Repositories.',
   'stacks.newLinked.description':
-    'A compose project in a folder on this computer. Homeport works on its files where they are and deploys from that folder.',
+    'A compose project in a folder on this computer, deployed from where it is.',
   'stacks.newLinked.choose': 'Choose a folder…',
   'stacks.newLinked.pickTitle': 'Choose the folder of a compose project',
   'stacks.newLinked.files': 'Compose files, in order',
@@ -245,7 +244,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'No OS keychain is available, so a Stack environment can’t be stored.',
   'stacks.editor.problems': 'Problems',
-  'stacks.managed.saveAndRedeploy': 'Save and redeploy',
   'stacks.profiles.title': 'Profiles',
   'stacks.profiles.hint':
     'Services behind a profile run only when it’s turned on. Services without one always run.',
@@ -270,7 +268,6 @@ export default {
   'stacks.linked.reload': 'Reload',
   'stacks.linked.overwrite': 'Overwrite',
   'stacks.linked.saved': 'Compose files saved',
-  'stacks.linked.saveAndRedeploy': 'Save and redeploy',
   'stacks.linked.envNote':
     'Compose reads the folder’s .env when it runs. Homeport doesn’t show or change it.',
   'stacks.linked.files': 'Compose files',
@@ -288,4 +285,14 @@ export default {
   'stacks.external.descriptionFrom':
     'It was deployed outside Homeport from <mono>{files}</mono> on that machine. You can start, stop and remove it; adopt it with its compose file to edit and redeploy.',
   'stacks.palette.new': 'New Stack',
+  'stacks.managed.deploy': 'Deploy',
+  'stacks.managed.moreSave': 'More ways to save',
+  'stacks.managed.saveOnly': 'Save without deploying',
+  'stacks.managed.unsaved': 'Unsaved changes',
+  'stacks.forget.sectionTitle': 'Forget this Stack',
+  'stacks.kind.managedHint': 'Homeport keeps its compose file and environment.',
+  'stacks.kind.linkedHint': 'Its compose files are in a folder on this computer.',
+  'stacks.kind.syncedHint': 'Deployed from a git repository.',
+  'stacks.kind.externalHint': 'Deployed outside Homeport.',
+  'stacks.services.noContainer': 'No container',
 } as const;

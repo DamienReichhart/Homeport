@@ -85,7 +85,7 @@ export default {
     'Sehen Sie, welche Container was verwenden. Erstellen, verbinden und trennen, mit einem Löschen, das Ihnen genau sagt, was Sie gleich verlieren.',
   'home.features.board.title': 'Ein Board für jeden Host',
   'home.features.board.body':
-    'Jeder Container jedes Hosts in einer Tabelle, gemeinsam gefiltert und bearbeitet. Auch jeder Host auf einer eigenen Seite: Details der Engine, Speicherbelegung mit Aufräumen in einem Dialog und ein Live-Stream dessen, was die Engine gerade tut.',
+    'Eine Kachel für jeden Host, Swarm und Cluster, und zuerst, was auf ihnen allen Sie braucht. Jeder Container jedes Hosts in einer Tabelle, gemeinsam gefiltert und bearbeitet. Auch jeder Host auf einer eigenen Seite: Details der Engine, Speicherbelegung mit Aufräumen in einem Dialog und ein Live-Stream dessen, was die Engine gerade tut.',
   'home.features.keyboard.title': 'Tastatur zuerst',
   'home.features.keyboard.body':
     'Eine Befehlspalette, um überallhin zu gelangen, den Host zu wechseln oder einen Befehl auszuführen, und um jeden Container, jedes Image oder Volume auf dem Host zu finden, der es hat. Tastenkürzel für jede Seite, aufgelistet mit ?.',
@@ -135,7 +135,7 @@ export default {
     'Bewahren Sie eine Compose-Datei und ihre Umgebung in Homeport auf und stellen Sie sie auf einem beliebigen Host bereit – beginnen Sie mit einer Vorlage, kombinieren Sie mehrere Dateien, wählen Sie Profile; Variablen werden verschlüsselt gespeichert und nie auf die Festplatte geschrieben. Oder verknüpfen Sie einen Projektordner auf diesem Computer: Homeport bearbeitet seine Dateien direkt und stellt daraus bereit, Builds inklusive. Oder folgen Sie einem Branch eines Git-Repositorys, mit einem Deploy-Key oder einem Token: Jede Synchronisierung zeigt die neuen Commits und was sie ändern, bevor bereitgestellt wird, und solange Homeport geöffnet ist, prüft es auf neue Commits und stellt auf Wunsch selbst bereit. Jede Neubereitstellung zeigt zuerst, was sich ändert, jede Bereitstellung wird aufbewahrt, damit Sie zurücksetzen können, und „Aktualisieren“ pullt neuere Images und stellt in einem Schritt neu bereit. Stacks, die jemand von Hand bereitgestellt hat, erscheinen ebenfalls: Starten, stoppen oder entfernen Sie sie, oder übernehmen Sie sie.',
   'home.stacks.link': 'Stacks verwalten',
   'home.stacks.screenshot':
-    'Die Definition eines verwalteten Stacks: der Editor für compose.yaml, seine Umgebung und die Schaltfläche „Speichern und neu bereitstellen“.',
+    'Die Definition eines verwalteten Stacks: der Editor für compose.yaml, seine Umgebung und die Schaltfläche „Bereitstellen“.',
 
   // Home: security.
   'home.security.eyebrow': 'Sicherheit',

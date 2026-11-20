@@ -35,7 +35,7 @@ O Homeport só carrega as listas depois que você digita dois caracteres e, a pa
 | Teclas                                     | Faz                                                                                    |
 | ------------------------------------------ | -------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostrar os atalhos de teclado                                                          |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir as páginas da barra lateral em ordem: Visão geral, Quadro, Contêineres…          |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir as páginas da barra lateral em ordem: Quadro, Visão geral, Contêineres…          |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Abrir Configurações                                                                    |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Selecionar o host anterior ou o próximo, na ordem em que a página Hosts os lista       |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Atualizar as listas do host selecionado: contêineres, imagens, volumes, redes, stacks… |
@@ -44,10 +44,11 @@ Passe o ponteiro sobre uma página na barra lateral para ver as teclas dela.
 
 ### Em uma página
 
-| Teclas       | Faz                                                                                                                                                                                                                                                          |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| <kbd>/</kbd> | Focar o campo de pesquisa da página. <kbd>Esc</kbd> em um campo vazio sai dele.                                                                                                                                                                              |
-| <kbd>N</kbd> | Iniciar a ação principal da página: **Executar contêiner**, **Baixar**, **Criar volume**, **Criar rede**, **Nova stack** ou **Adicionar host**; e nas páginas do Podman, do containerd, do Incus e do Helm, a delas, como **Novo pod** ou **Nova instância** |
+| Teclas                      | Faz                                                                                                                                                                                                                                                          |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <kbd>/</kbd>                | Focar o campo de pesquisa da página. <kbd>Esc</kbd> em um campo vazio sai dele.                                                                                                                                                                              |
+| <kbd>N</kbd>                | Iniciar a ação principal da página: **Executar contêiner**, **Baixar**, **Criar volume**, **Criar rede**, **Nova stack** ou **Adicionar host**; e nas páginas do Podman, do containerd, do Incus e do Helm, a delas, como **Novo pod** ou **Nova instância** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | Numa lista com um item aberto ao lado, abrir o item de cima ou de baixo                                                                                                                                                                                      |
 
 O botão da ação principal de uma página mostra <kbd>N</kbd> quando você passa o ponteiro sobre ele.
 

@@ -2,9 +2,9 @@
 export default {
   'clusterevents.nav': 'Events',
   'clusterevents.title': 'Events',
-  'clusterevents.summary': '{count, plural, one {# event} other {# events}}',
-  'clusterevents.search': 'Search by reason, object or message',
-  'clusterevents.empty': 'No events. Kubernetes keeps them for about an hour.',
+  'clusterevents.summary': '{count, plural, one {# Event} other {# Events}}',
+  'clusterevents.search': 'Search Events',
+  'clusterevents.empty': 'No Events. Kubernetes keeps them for about an hour.',
   'clusterevents.filter': 'Type',
   'clusterevents.all': 'All',
   'clusterevents.warnings': 'Warnings',

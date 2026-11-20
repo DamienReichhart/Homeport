@@ -6,7 +6,9 @@ export default {
   'hosts.title': '호스트',
   'hosts.description': 'Homeport가 연결하는 Docker Engine입니다.',
   'hosts.add': '호스트 추가',
-  'hosts.empty': '아직 호스트가 없습니다.',
+  'hosts.empty': '아직 호스트가 없습니다',
+  'hosts.emptyDescription':
+    'Docker, Podman, containerd 또는 Incus 엔진을 추가하세요. 이 컴퓨터의 엔진이나 SSH 또는 TLS로 연결하는 서버의 엔진을 추가할 수 있습니다.',
   'hosts.column.name': '이름',
   'hosts.column.type': '유형',
   'hosts.column.address': '주소',
@@ -14,19 +16,19 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': '호스트를 저장했습니다',
   'hosts.notFound': '이 호스트는 더 이상 존재하지 않습니다.',
-  'hosts.addPage.description': 'Homeport를 Docker Engine에 연결합니다.',
-  'hosts.switcher.label': '호스트',
-  'hosts.switcher.placeholder': '호스트 없음',
+  'hosts.addPage.description':
+    '이 컴퓨터에서 찾은 엔진을 추가하거나, 가져오거나, 아래에 연결 정보를 입력하세요.',
+  'hosts.addPage.manual': '연결 정보 입력',
   'hosts.switcher.add': '호스트 추가…',
   'hosts.switcher.manage': '호스트 관리',
-  'hosts.switcher.hosts': '호스트',
-  'hosts.switcher.clusters': '클러스터',
   'hosts.switcher.addCluster': '클러스터 추가…',
   'hosts.switcher.manageClusters': '클러스터 관리',
   'hosts.switcher.whyUnusable': '{name} 호스트를 사용할 수 없는 이유',
   'hosts.detail.enabled': '사용',
   'hosts.detail.reconnect': '다시 연결',
   'hosts.connection.title': '연결',
+  'hosts.connection.save': '변경 사항 저장',
+  'hosts.connection.discard': '변경 사항 취소',
   'hosts.remove.title': '호스트 삭제',
   'hosts.remove.description':
     'Homeport가 이 호스트와 자격 증명, 관리형 스택 정의를 잊습니다. 호스트에서 실행 중인 항목에는 영향을 주지 않습니다.',
@@ -34,6 +36,8 @@ export default {
   'hosts.remove.confirmDescription':
     '저장된 연결, SSH 키 또는 인증서, 관리형 스택의 compose 정의가 삭제됩니다. 호스트의 컨테이너, 이미지, 볼륨은 그대로 유지됩니다.',
   'hosts.sshSetup.title': '서버에서 Homeport 승인',
+  'hosts.sshSetup.show': '명령 보기',
+  'hosts.sshSetup.hide': '명령 숨기기',
   'hosts.sshSetup.description':
     '<mono>{server}</mono>에서 SSH 사용자로 다음 명령을 실행한 다음 다시 연결하세요.',
   'hosts.sshSetup.descriptionBastions':
@@ -68,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': '로컬 소켓',
   'hosts.form.keepHint': '저장된 값을 유지하려면 비워 두세요.',
+  'hosts.form.connectOver': '연결 방식',
   'hosts.form.name': '이름',
+  'hosts.form.nameHint': '비워 두면 {name} 이름을 사용합니다.',
   'hosts.form.engine': '엔진',
   'hosts.form.engineHint':
-    'Docker 호환에는 Docker와 Podman이 포함되며, Homeport가 연결할 때 둘을 구분합니다. containerd는 이 컴퓨터나 SSH를 통해 소켓으로 연결하고, Incus는 HTTPS(TLS)로도 연결할 수 있습니다.',
+    'Docker 호환에는 Docker와 Podman이 포함됩니다. containerd는 이 컴퓨터나 SSH를 통해 소켓으로 연결하고, Incus는 HTTPS(TLS)로도 연결할 수 있습니다.',
   'hosts.form.socketOnly': '{engine} 엔진은 소켓에서만 응답합니다. 로컬 또는 SSH로 연결하세요.',
   'hosts.form.noPlainTcp':
     '{engine} 엔진은 일반 TCP로 응답하지 않습니다. TLS, SSH 또는 소켓을 사용하세요.',
@@ -113,7 +119,7 @@ export default {
   'hosts.ssh.auth.generated': '이 호스트용 새 키',
   'hosts.ssh.auth.imported': '기존 키',
   'hosts.ssh.generated.editing':
-    '이 호스트는 기존 키를 유지합니다. 호스트 페이지에서 키를 다시 생성하세요.',
+    '이 호스트는 기존 키를 유지합니다. 바꾸려면 위 명령 옆의 키 다시 생성을 사용하세요.',
   'hosts.ssh.generated.new':
     'Homeport가 이 호스트용 Ed25519 키를 만들고, 서버에서 키를 승인하는 명령을 보여 줍니다.',
   'hosts.ssh.privateKey': '개인 키',
@@ -175,7 +181,7 @@ export default {
   'hosts.bundle.confirmation': '암호 문구 다시 입력',
   'hosts.bundle.problem.short': '{min}자 이상 사용하세요.',
   'hosts.bundle.problem.mismatch': '두 암호 문구가 다릅니다.',
-  'hosts.bundle.export.button': '내보내기',
+  'hosts.bundle.export.button': '호스트를 파일로 내보내기…',
   'hosts.bundle.export.title': '호스트 내보내기',
   'hosts.bundle.export.description':
     '선택한 호스트를 키, 인증서, 신뢰하는 서버 키와 함께 암호 문구로 암호화된 파일 하나에 씁니다. 다른 컴퓨터에서 가져오면 그곳에서 사용할 수 있습니다.',
@@ -185,7 +191,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, other {호스트 #개}}를 내보냈습니다',
   'hosts.bundle.export.withoutSecrets':
     '다음 항목은 이 컴퓨터에서 자격 증명을 열 수 없어 자격 증명 없이 내보냈습니다.',
-  'hosts.bundle.import.button': '가져오기',
+  'hosts.bundle.import.button': '파일에서 호스트 가져오기…',
   'hosts.bundle.import.title': '내보내기 파일에서 호스트 가져오기',
   'hosts.bundle.import.description':
     'Homeport에서 내보낸 파일을 암호 문구로 연 다음 추가할 호스트를 선택하세요. 자격 증명은 이 컴퓨터에 암호화되어 저장됩니다.',

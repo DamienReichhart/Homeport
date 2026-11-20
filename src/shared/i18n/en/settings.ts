@@ -2,6 +2,7 @@
 export default {
   'settings.nav': 'Settings',
   'settings.title': 'Settings',
+  'settings.index.label': 'Settings sections',
   'settings.appearance.title': 'Appearance',
   'settings.appearance.theme': 'Theme',
   'settings.theme.system': 'Match the system',
@@ -57,6 +58,7 @@ export default {
   'settings.sync.interval': 'Check repositories every',
   'settings.sync.minutes': 'minutes',
   'settings.data.title': 'Data',
+  'settings.about.title': 'About Homeport',
   'settings.data.description': 'What Homeport keeps on this computer.',
   'settings.data.backup': 'Back up…',
   'settings.data.restore': 'Restore…',

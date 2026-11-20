@@ -1,4 +1,5 @@
 import { screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { baseCommands, container } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
 import { renderApp } from '@/test/render';
@@ -65,11 +66,14 @@ describe('newer images on Stacks', () => {
     mock('external');
     renderApp('/stacks');
     expect(await screen.findByText('Update available')).toBeInTheDocument();
-    const update = screen.getByRole('button', { name: 'Update' });
-    expect(update).toBeDisabled();
-    expect(update).toHaveAttribute(
-      'title',
-      'Adopt this Stack first: Homeport needs its compose file to redeploy it.',
-    );
+    // It can't be updated until adopted, so Adopt takes Update's place.
+    expect(screen.queryByRole('button', { name: 'Update' })).toBeNull();
+    const adopt = screen.getByRole('button', { name: 'Adopt' });
+    await userEvent.hover(adopt);
+    expect(
+      await screen.findByRole('tooltip', {
+        name: 'Adopt this Stack first: Homeport needs its compose file to redeploy it.',
+      }),
+    ).toBeInTheDocument();
   });
 });

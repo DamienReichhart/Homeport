@@ -12,23 +12,22 @@ The **Volumes** page lists the selected Host's volumes and how many are unused.
 
 <DocScreenshot
   name="volumes"
-  alt="The Volumes page, showing each volume's Stack, driver and the containers that use it."
+  alt="The Volumes page, showing each volume's Stack, size and the containers that use it."
 />
 
-| Column      | Shows                                                        |
-| ----------- | ------------------------------------------------------------ |
-| **Name**    | The volume's name; a long ID for anonymous volumes.          |
-| **Stack**   | The Stack that created it, if any.                           |
-| **Driver**  | Usually `local`.                                             |
-| **Size**    | How much disk its data takes, as `docker system df -v` says. |
-| **Used by** | The containers that mount it, or **Unused**.                 |
-| **Created** | When it was created.                                         |
+| Column      | Shows                                                                                                            |
+| ----------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Name**    | The volume's name; a long ID for anonymous volumes. An unusual driver, anything but `local`, is named beside it. |
+| **Stack**   | The Stack that created it, if any.                                                                               |
+| **Size**    | How much disk its data takes, as `docker system df -v` says.                                                     |
+| **Used by** | The containers that mount it, or **Unused**.                                                                     |
+| **Created** | When it was created.                                                                                             |
 
-A volume counts as used when any container mounts it, running or stopped. Select a volume to see its size, which containers use it and its full details, including where its data lives on the Host (`Mountpoint`).
+A volume counts as used when any container mounts it, running or stopped. Select a volume to see its size, which containers use it and its full details, including where its data lives on the Host (**Mount point**).
 
 ### Sizes
 
-The Engine measures every volume to give their sizes, which can take a few seconds on a Host with a lot of data, so the list appears at once and the **Size** column fills in after. Sort by **Size** to find the volume that fills a disk. Sizes are measured again when a volume is created or removed, and when you choose **Refresh sizes** — not every time a container writes, so a size can be a little behind.
+The Engine measures every volume to give their sizes, which can take a few seconds on a Host with a lot of data, so the list appears at once and the **Size** column fills in after. Sort by **Size** to find the volume that fills a disk. Sizes are measured again when a volume is created or removed, and when you choose **Refresh sizes** (in the page's **More actions** menu) — not every time a container writes, so a size can be a little behind.
 
 Only volumes of the `local` driver have a size; other drivers (NFS, cloud storage plugins) show **—**.
 
@@ -89,12 +88,12 @@ If the copy fails — the disk is full, say — Homeport removes the incomplete 
 
 <Aside type="danger">Deleting a volume permanently deletes the data in it.</Aside>
 
-The delete button on each row asks for confirmation and names the containers that still mount the volume. The Engine refuses to delete a volume any container uses, even a stopped one — remove those containers first.
+**Delete…**, in a volume's **⋯** menu, names the Host and the containers that still mount the volume, and asks you to type the volume's name before **Delete volume and data** works. The Engine refuses to delete a volume any container uses, even a stopped one — remove those containers first.
 
-**Clean up** removes several at once:
+**Clean up** (in the page's **More actions** menu) removes several at once:
 
 - **Unused anonymous volumes** — unnamed volumes no container uses.
-- **All unused volumes** — every volume no container uses, named ones included.
+- **All unused volumes** — every volume no container uses, named ones included. Homeport asks you to type the Host's name first.
 
 ## Networks
 
@@ -131,6 +130,6 @@ The built-in networks can't be changed here.
 
 ### Removing networks
 
-Built-in networks can't be removed. For other networks, the confirmation says how many containers are still attached; the Engine refuses to remove a network with running containers on it. Containers that refer to a removed network by name won't start until it exists again.
+Each row's **⋯** menu has **Inspect**, and **Remove** for the networks that can be removed; removing names the Host. Built-in networks can't be removed. For other networks, the confirmation says how many containers are still attached; the Engine refuses to remove a network with running containers on it. Containers that refer to a removed network by name won't start until it exists again.
 
 **Clean up** removes every custom network no container is attached to.

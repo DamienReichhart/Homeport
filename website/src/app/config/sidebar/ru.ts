@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': 'Применение и редактирование YAML',
   'docs/clusters/helm': 'Релизы Helm',
   'docs/clusters/nomad': 'Кластеры Nomad',
-  'docs/guides/overview': 'Обзор и события',
+  'docs/guides/overview': 'Доска, Обзор и события',
   'docs/guides/containers': 'Контейнеры',
   'docs/guides/images': 'Образы',
   'docs/guides/volumes-networks': 'Тома и сети',

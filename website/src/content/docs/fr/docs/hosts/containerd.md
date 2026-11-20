@@ -54,7 +54,7 @@ Un containerd trop ancien pour se connecter laisse l’hôte **Mal configuré**,
 
 ## Espaces de noms
 
-Chaque objet containerd vit dans un **espace de noms** : nerdctl utilise `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Les pages montrent un espace de noms à la fois, choisi sous le sélecteur d’hôte, qui liste chacun avec le nombre de conteneurs et d’images qu’il contient. Homeport retient ce choix pour chaque hôte d’un lancement à l’autre. Tant que vous n’en avez pas choisi, un hôte affiche `default`, ou le seul espace de noms qui contient quelque chose quand `default` est vide, donc un hôte k3s s’ouvre sur `k8s.io`.
+Chaque objet containerd vit dans un **espace de noms** : nerdctl utilise `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Les pages montrent un espace de noms à la fois, choisi sous l’hôte sélectionné dans la barre latérale, qui liste chacun avec le nombre de conteneurs et d’images qu’il contient. Homeport retient ce choix pour chaque hôte d’un lancement à l’autre. Tant que vous n’en avez pas choisi, un hôte affiche `default`, ou le seul espace de noms qui contient quelque chose quand `default` est vide, donc un hôte k3s s’ouvre sur `k8s.io`.
 
 La page **Espaces de noms** crée des espaces de noms vides et supprime ceux qui sont vides. containerd refuse de supprimer un espace de noms qui contient encore quelque chose, et Homeport indique ce qu’il contient encore : supprimez d’abord ses conteneurs, ses images et ses instantanés.
 
@@ -70,7 +70,7 @@ Dans containerd, un **conteneur** n’est que des métadonnées : son image, sa
 | **Envoyer un signal** | Envoie n’importe quel signal, par son nom (`SIGHUP`) ou son numéro, au processus principal de la tâche.                                                                                                                                                                                                   |
 | **Supprimer**         | Demande d’abord ; force l’arrêt d’une tâche en cours, supprime la tâche et le conteneur, et son instantané avec les fichiers qu’il a modifiés, sauf si vous décochez **Supprimer aussi** : un instantané conservé est marqué `containerd.io/gc.root`, pour que le ramasse-miettes de containerd le garde. |
 
-La page d’un conteneur montre son environnement d’exécution, son instantané, ses labels et sa spécification OCI. Homeport ne crée pas de conteneurs sur containerd : containerd n’a pas de réseau propre, c’est nerdctl et CNI qui l’ajoutent.
+Chaque ligne, et la page d’un conteneur, a son action principale à portée de main (**Arrêter**, **Démarrer** ou **Reprendre**) et le reste, **Supprimer** compris, dans son menu **⋯**. La page d’un conteneur montre son environnement d’exécution, son instantané, ses labels et sa spécification OCI. Homeport ne crée pas de conteneurs sur containerd : containerd n’a pas de réseau propre, c’est nerdctl et CNI qui l’ajoutent.
 
 Le **kubelet** gère les conteneurs de Kubernetes : il les redémarre après un arrêt et les recrée après une suppression. Leurs pages le signalent ; modifiez plutôt le Pod sur son cluster. Supprimer ici un conteneur nerdctl laisse les enregistrements propres à nerdctl (son nom et son réseau), comme le ferait `ctr` ; `nerdctl rm` est la façon la plus propre pour ceux-là.
 
@@ -104,7 +104,7 @@ Une image à partir de laquelle un conteneur de l’espace de noms a été cré�
 
 Les instantanés sont là où part le disque de containerd : les couches des images décompressées, et la couche modifiable de chaque conteneur. La page **Instantanés** montre ceux d’un snapshotter (`overlayfs` d’abord, ou tout autre que l’hôte a chargé) sous forme d’arbre par parent, les plus gros en premier, avec leur utilisation telle que la compte `ctr snapshot usage` et le total en haut.
 
-Chacun indique ce qui l’utilise : un conteneur, par son instantané, ou une image, par ses couches. Les instantanés que rien n’utilise et sur lesquels rien n’est construit — comme celui conservé quand son conteneur a été supprimé ici — peuvent être affichés seuls avec **Inutilisés seulement**, et supprimés. Les autres ne peuvent pas être supprimés d’ici. Un instantané que rien ne référence et que rien ne marque comme racine, comme celui que laisse `ctr containers rm --keep-snapshot`, ne dure pas : le ramasse-miettes de containerd le supprime à son prochain passage.
+Chacun indique ce qui l’utilise : un conteneur, par son instantané, ou une image, par ses couches. Les instantanés que rien n’utilise et sur lesquels rien n’est construit — comme celui conservé quand son conteneur a été supprimé ici — peuvent être affichés seuls avec **Inutilisés seulement**, et supprimés. Les autres ne peuvent pas être supprimés d’ici. Un instantané que rien ne référence et que rien ne marque comme racine, comme celui que laisse `ctr containers rm --keep-snapshot`, ne dure pas : le ramasse-miettes de containerd le supprime à son prochain passage. **Supprimer les inutilisés** supprime d’un coup tous les instantanés que rien n’utilise, les chaînes inutilisées entières en commençant par les enfants, après une seule confirmation qui indique la place libérée.
 
 ## Ce qui s’exécute sur l’hôte
 

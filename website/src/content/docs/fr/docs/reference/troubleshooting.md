@@ -335,7 +335,7 @@ Exec dans une machine virtuelle passe par l’`incus-agent` qu’elle contient, 
 
 ### « Un problème est survenu »
 
-Une page de Homeport a rencontré un problème inattendu et affiche ceci à la place de son contenu ; la barre latérale fonctionne toujours. **Recharger** ramène en général la page, et **Retour à la vue d’ensemble** la quitte. Si cela se reproduit, copiez le rapport de **Détails** dans [une issue](https://github.com/DamienReichhart/homeport/issues/new/choose), avec l’[archive de diagnostic](#exporter-le-diagnostic-pour-un-rapport-de-bug).
+Une page de Homeport a rencontré un problème inattendu et affiche ceci à la place de son contenu ; la barre latérale fonctionne toujours. **Recharger** ramène en général la page, et **Retour au Tableau** la quitte. Si cela se reproduit, copiez le rapport de **Détails** dans [une issue](https://github.com/DamienReichhart/homeport/issues/new/choose), avec l’[archive de diagnostic](#exporter-le-diagnostic-pour-un-rapport-de-bug).
 
 ### « … n’est pas connecté »
 

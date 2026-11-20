@@ -10,6 +10,7 @@ export default {
   'networks.create': 'Создать сеть',
   'networks.search': 'Поиск сетей',
   'networks.empty': 'Сетей нет',
+  'networks.empty.description': 'Контейнеры в одной сети обращаются друг к другу по имени.',
 
   'networks.column.name': 'Имя',
   'networks.column.stack': 'Стек',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': 'Контейнеры',
   'networks.builtIn': 'встроенная',
   'networks.internal': 'внутренняя',
-  'networks.inspectOne': 'Просмотреть {name}',
-  'networks.removeOne': 'Удалить {name}',
+  'networks.moreActions': 'Другие действия для {name}',
+  'networks.action.inspect': 'Просмотреть',
 
-  'networks.remove.title': 'Удалить сеть {name}?',
+  'networks.remove.title': 'Удалить сеть {name} с {host}?',
   'networks.remove.attached':
     'К ней всё ещё {count, plural, one {подключён # контейнер} few {подключены # контейнера} many {подключено # контейнеров} other {подключено # контейнера}}; сначала отключите их.',
   'networks.remove.unused':
     'Ни один контейнер её не использует. Контейнеры, которые ссылаются на неё по имени, не смогут запуститься.',
-  'networks.prune.title': 'Удалить неиспользуемые сети?',
+  'networks.prune.title': 'Удалить неиспользуемые сети на {host}?',
   'networks.prune.description':
     'Удаляются все пользовательские сети, к которым не подключён ни один контейнер.',
 

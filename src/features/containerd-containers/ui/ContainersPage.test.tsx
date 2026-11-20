@@ -71,7 +71,8 @@ describe('containerd containers', () => {
       ]),
     );
 
-    await user.click(screen.getByRole('button', { name: 'Remove web' }));
+    await user.click(screen.getByRole('button', { name: 'Actions for web' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Remove' }));
     const dialog = await screen.findByRole('dialog');
     expect(within(dialog).getByText(/Homeport kills it/)).toBeInTheDocument();
     await user.click(within(dialog).getByRole('checkbox'));
@@ -95,7 +96,8 @@ describe('containerd containers', () => {
     const calls: { cmd: string; args: Record<string, unknown> }[] = [];
     const user = setup(calls);
     renderApp('/containerd/containers/web');
-    await user.click(await screen.findByRole('button', { name: 'Send signal' }));
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Send signal' }));
     const signal = await screen.findByLabelText('Signal');
     await user.clear(signal);
     await user.type(signal, 'SIGHUP');

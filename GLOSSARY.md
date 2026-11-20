@@ -107,9 +107,19 @@ _Avoid_: Replica (for a single one), job, pod
 _French_: tâche (f.); _avoid_ réplica, job
 
 **Board**:
-The page listing the containers of every connected Host in one table, each row labelled with its Host. The other resource pages show the selected Host only.
-_Avoid_: Dashboard, all hosts view
+The home page: the status of every Host, Swarm and Cluster, what needs you across all of them, and the containers of every connected Host in one table, each row labelled with its Host. The other resource pages show one Host, Swarm or Cluster at a time.
+_Avoid_: Dashboard, all hosts view, home
 _French_: Tableau (m.); _avoid_ tableau de bord
+
+**Needs you**:
+What on the Board asks for the user's attention: a Host or a Cluster that can't be reached, a container that is unhealthy, dead, restarting or exited with an error, a Stack whose images have a newer version published, a Cluster workload that isn't ready. Healthy things never appear in it.
+_Avoid_: Alerts, issues, problems, incidents
+_French_: À traiter; _avoid_ alertes, incidents
+
+**Overview**:
+One Host's or one Cluster's own page: its Engine or API server, its usage and its recent events. Not the Board, which spans every Host and Cluster.
+_Avoid_: Dashboard, summary, home
+_French_: Vue d’ensemble (f.); _avoid_ tableau de bord
 
 **Command palette**:
 The search box opened with Mod+K that goes to a page, switches Host, runs a command, and finds resources on every connected Host.

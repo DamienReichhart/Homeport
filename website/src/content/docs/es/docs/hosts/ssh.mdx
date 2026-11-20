@@ -20,16 +20,16 @@ Homeport tiene su propio cliente SSH. Inicia sesión en el servidor y reenvía u
 
 <Steps>
 
-1. Elige **Añadir host…** en el selector de hosts y deja **SSH** seleccionado.
+1. Elige **Añadir host o clúster**, bajo la lista de hosts de la barra lateral, después **Añadir host…**, y deja **SSH** seleccionado.
 
 2. Rellena la conexión:
 
    | Campo                      | Qué introducir                                                                                                                                                           |
    | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | **Nombre**                 | Un nombre que reconozcas, como `production`.                                                                                                                             |
    | **Servidor**               | El nombre de host o la dirección IP del servidor.                                                                                                                        |
    | **Puerto**                 | El puerto SSH; `22` por defecto.                                                                                                                                         |
    | **Usuario**                | La cuenta con la que iniciar sesión. Necesita acceso al socket de Docker, normalmente a través del grupo `docker`.                                                       |
+   | **Nombre**                 | Un nombre que reconozcas, como `production`. Si lo dejas vacío, el host toma el nombre de su servidor: `prod` para `prod.example.com`.                                   |
    | **Ruta del socket remoto** | Dónde escucha el Engine en el servidor: `/var/run/docker.sock` por defecto, `/run/user/<uid>/docker.sock` para Docker sin root, o `/run/podman/podman.sock` para Podman. |
 
 3. Elige cómo iniciar sesión en **Autenticación** (ver abajo).
@@ -122,7 +122,7 @@ Para una clave creada por Homeport, o una que importaste, la tarjeta **Autorizar
 
 </Steps>
 
-Hasta que la clave esté autorizada, el host muestra **Acceso denegado**: _El servidor SSH no permitió que deploy@server iniciara sesión._, con el comando que autoriza la clave de Homeport. Espera a que actúes en lugar de reintentarlo.
+Hasta que la clave esté autorizada, el host muestra **Acceso denegado**: _El servidor SSH no permitió que deploy@server iniciara sesión._, con el comando que autoriza la clave de Homeport. Espera a que actúes en lugar de reintentarlo. Cuando el host se conecta, los comandos se pliegan; **Mostrar los comandos** los vuelve a mostrar.
 
 ## Cuando cambia la clave del servidor
 

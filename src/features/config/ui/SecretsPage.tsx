@@ -12,7 +12,14 @@ function columns(showNamespace: boolean): ColumnDef<SecretView, unknown>[] {
       id: 'name',
       header: t('config.column.name'),
       accessorFn: (s) => s.name,
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span
+          className="inline-block max-w-72 truncate align-bottom font-medium"
+          title={row.original.name}
+        >
+          {row.original.name}
+        </span>
+      ),
     },
     ...(showNamespace
       ? [
@@ -27,9 +34,18 @@ function columns(showNamespace: boolean): ColumnDef<SecretView, unknown>[] {
       id: 'type',
       header: t('config.column.type'),
       accessorFn: (s) => s.type,
-      cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
+      cell: ({ row }) => (
+        <Badge variant="outline" className="max-w-64 font-mono" title={row.original.type}>
+          <span className="truncate">{row.original.type}</span>
+        </Badge>
+      ),
     },
-    { id: 'keys', header: t('config.column.keys'), accessorFn: (s) => s.keys.length },
+    {
+      id: 'keys',
+      header: t('config.column.keys'),
+      accessorFn: (s) => s.keys.length,
+      cell: ({ getValue }) => <span className="tabular-nums">{getValue<number>()}</span>,
+    },
     {
       id: 'age',
       header: t('config.column.age'),

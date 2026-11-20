@@ -2,9 +2,9 @@
 export default {
   'pods.nav': 'Pods',
   'pods.title': 'Pods',
-  'pods.summary': '{count, plural, one {# pod} other {# pods}}',
+  'pods.summary': '{count, plural, one {# Pod} other {# Pods}}',
   'pods.search': 'Search pods',
-  'pods.empty': 'No pods here.',
+  'pods.empty': 'No Pods here.',
   'pods.column.name': 'Name',
   'pods.column.namespace': 'Namespace',
   'pods.column.status': 'Status',
@@ -62,4 +62,5 @@ export default {
   'pods.tab.metrics': 'Metrics',
   'pods.metrics.noSample':
     'metrics-server has no sample of this Pod yet: it may have just started, or not be running.',
+  'pods.failing': '{count} failing',
 } as const;

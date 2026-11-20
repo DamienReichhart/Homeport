@@ -10,6 +10,7 @@ export default {
   'networks.create': '创建网络',
   'networks.search': '搜索网络',
   'networks.empty': '没有网络',
+  'networks.empty.description': '同一网络中的容器可以通过名称互相访问。',
 
   'networks.column.name': '名称',
   'networks.column.stack': '堆栈',
@@ -18,13 +19,13 @@ export default {
   'networks.column.containers': '容器',
   'networks.builtIn': '内置',
   'networks.internal': '内部',
-  'networks.inspectOne': '检查 {name}',
-  'networks.removeOne': '删除 {name}',
+  'networks.moreActions': '{name} 的更多操作',
+  'networks.action.inspect': '检查',
 
-  'networks.remove.title': '删除网络 {name}？',
+  'networks.remove.title': '从 {host} 删除网络 {name}？',
   'networks.remove.attached': '它仍连接着 {count, plural, other {# 个容器}}；请先断开它们。',
   'networks.remove.unused': '没有容器使用它。按名称引用它的容器将无法启动。',
-  'networks.prune.title': '删除未使用的网络？',
+  'networks.prune.title': '删除 {host} 上未使用的网络？',
   'networks.prune.description': '所有未连接任何容器的自定义网络都会被删除。',
 
   'networks.connected': '已连接',

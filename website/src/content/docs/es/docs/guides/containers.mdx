@@ -17,19 +17,19 @@ La página **Contenedores** lista todos los contenedores del host seleccionado, 
 
 Los contenedores que pertenecen a un [stack](/docs/guides/stacks/) se agrupan bajo él; después vienen los contenedores independientes. La fila de un stack muestra cuántos de sus contenedores están en ejecución y su CPU y su memoria combinadas. Selecciónala para plegar el grupo, o elige **Abrir stack** para ir al stack.
 
-| Columna     | Muestra                                                                                                                     |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------- |
-| **Nombre**  | Un punto de estado, el nombre (el nombre del servicio dentro de un stack) y el ID corto.                                    |
-| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#imágenes-más-recientes). |
-| **Estado**  | Tal como lo indica el Engine, p. ej., _Up 3 hours (healthy)_, con una insignia de salud si hay una comprobación de salud.   |
-| **Puertos** | Hasta tres puertos, primero los publicados. Un puerto publicado es un enlace que lo abre en tu navegador.                   |
-| **CPU**     | En directo, como porcentaje de una CPU: `200%` significa dos CPU totalmente usadas.                                         |
-| **Memoria** | En directo, sin contar la caché de páginas que el kernel puede recuperar.                                                   |
-| **Creado**  | Hace cuánto.                                                                                                                |
+| Columna     | Muestra                                                                                                                         |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| **Nombre**  | Un punto de estado y el nombre (el nombre del servicio dentro de un stack); pasa el puntero por el nombre para ver el ID corto. |
+| **Imagen**  | La imagen a partir de la que se creó, con una marca ⬆ cuando se publica una [imagen más reciente](#imágenes-más-recientes).     |
+| **Estado**  | Tal como lo indica el Engine, p. ej., _Up 3 hours (healthy)_, con una insignia de salud si hay una comprobación de salud.       |
+| **Puertos** | Hasta tres puertos, primero los publicados. Un puerto publicado es un enlace que lo abre en tu navegador.                       |
+| **CPU**     | En directo, como porcentaje de una CPU: `200%` significa dos CPU totalmente usadas.                                             |
+| **Memoria** | En directo, sin contar la caché de páginas que el kernel puede recuperar.                                                       |
+| **Creado**  | Hace cuánto.                                                                                                                    |
 
 La CPU y la memoria se actualizan cada dos segundos. **Buscar contenedores** coincide con nombres, imágenes, stacks, servicios y prefijos de ID; **Solo en ejecución** oculta el resto.
 
-Selecciona un contenedor para abrirlo.
+Selecciona un contenedor para abrirlo. En una ventana de 1280 px de ancho o más, se abre junto a la lista, que se reduce a los nombres, agrupados por stack; <kbd>↑</kbd> y <kbd>↓</kbd> abren entonces el contenedor de arriba o de abajo. Las listas de imágenes, volúmenes, stacks, Pods, cargas de trabajo, jobs y similares hacen lo mismo.
 
 ### Imágenes más recientes
 
@@ -39,7 +39,7 @@ Homeport pregunta al registro a través del Engine del host, que compara los dig
 
 ### Acciones
 
-El botón al final de cada fila inicia o detiene el contenedor. El menú **⋮** tiene el resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** o **Reanudar**, **Matar**, **Cambiar nombre**, [**Editar**](#editar-un-contenedor), [**Duplicar**](#duplicar-un-contenedor), [**Hacer commit en una imagen…**](#hacer-commit-de-un-contenedor), [**Exportar sistema de archivos…**](#exportar-el-sistema-de-archivos-de-un-contenedor) y **Eliminar**.
+Al final de cada fila, **Reiniciar** (mientras se ejecuta) y **Detener** o **Iniciar** actúan al momento. El menú **⋮** tiene el resto: **Logs**, **Abrir terminal**, **Reiniciar**, **Pausar** o **Reanudar**, **Matar**, **Cambiar nombre**, [**Editar**](#editar-un-contenedor), [**Duplicar**](#duplicar-un-contenedor), [**Hacer commit en una imagen…**](#hacer-commit-de-un-contenedor), [**Exportar sistema de archivos…**](#exportar-el-sistema-de-archivos-de-un-contenedor) y **Eliminar**.
 
 Marca contenedores para actuar sobre varios a la vez con **Iniciar**, **Detener**, **Reiniciar** o **Eliminar**. La casilla de la fila de un stack selecciona todos sus contenedores.
 
@@ -53,7 +53,7 @@ Marca contenedores para actuar sobre varios a la vez con **Iniciar**, **Detener*
 
 ## La página de un contenedor
 
-La cabecera muestra la imagen y el estado, con **Iniciar** o **Detener**, **Reiniciar**, **Pausar** o **Reanudar**, y **Eliminar**; su menú **⋮** tiene **Cambiar nombre**, **Editar**, **Duplicar**, **Hacer commit en una imagen…** y **Exportar sistema de archivos…**. Las pestañas de debajo contienen todo lo demás.
+El encabezado muestra la imagen y el estado, con **Reiniciar** y **Detener**, o solo **Iniciar** para un contenedor detenido. Su menú **⋮** tiene **Pausar** o **Reanudar**, **Matar**, **Cambiar nombre**, **Editar**, **Duplicar**, **Hacer commit en una imagen…**, **Exportar sistema de archivos…** y, al final y aparte, **Eliminar**, que pregunta una vez y nombra el host. Las pestañas de abajo tienen todo lo demás.
 
 <Aside>
   Salir de una pestaña cierra lo que estaba haciendo: los terminales se cierran cuando sales de
@@ -72,8 +72,7 @@ Los logs se muestran a medida que el contenedor los escribe. La barra de herrami
 
 - **Historial** — cuántas líneas anteriores cargar: las últimas 100, 1000 (el valor por defecto) o 10 000, o todo.
 - **Desde** — cualquier momento, o los últimos 5 minutos, la última hora o las últimas 24 horas.
-- **Marcas de tiempo** — muestra la marca de tiempo del Engine antes de cada línea.
-- **stdout** y **stderr** — muestran u ocultan cada flujo.
+- **Mostrar** — un menú para activar **Marcas de tiempo** y mostrar u ocultar **stdout** y **stderr**. Su botón cuenta los flujos ocultos, para que una vista filtrada no pase desapercibida.
 - **Seguir** — sigue desplazándose hasta la línea más reciente. Las líneas nuevas siguen llegando aunque esté desactivado.
 - **Buscar en los logs** — resalta las coincidencias. Pulsa <kbd>Enter</kbd> para ir a la siguiente coincidencia y <kbd>Shift</kbd>+<kbd>Enter</kbd> para ir a la anterior.
 - **Borrar** vacía la vista; **Descargar logs** guarda lo que has cargado como archivo de texto, hasta las últimas 100 000 líneas.
@@ -85,8 +84,9 @@ Cuando el contenedor se detiene, el log termina con _— fin de los logs —_.
 **Detalles** resume el contenedor en tarjetas: estado y código de salida, comando, política de reinicio, comprobaciones de salud, entorno, montajes, puertos, redes y etiquetas. **JSON sin procesar** muestra el documento de inspección completo del Engine.
 
 <Aside type="caution">
-  Las variables de entorno se muestran sin cifrar, tal como las guarda el Engine. Tenlo en cuenta
-  antes de compartir tu pantalla.
+  Los valores del entorno aparecen como puntos hasta que eliges **Mostrar valores**. **JSON sin
+  procesar** los muestra sin ocultar, tal como los guarda el Engine: tenlo en cuenta antes de
+  compartir la pantalla.
 </Aside>
 
 ### Salud
@@ -134,17 +134,17 @@ Los procesos que se ejecutan en el contenedor, tal como los muestra `ps aux`, ac
 
 **Ejecutar contenedor**, en la página Contenedores — o el botón ▶ junto a una imagen —, abre **Ejecutar un contenedor**:
 
-| Campo                                     | Notas                                                                                                                                                                              |
-| ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado.         |
-| **Nombre**                                | Opcional; el Engine genera uno si está vacío.                                                                                                                                      |
-| **Comando**                               | Sustituye al comando por defecto de la imagen (no a su entrypoint). Pon los argumentos entre comillas como en un shell.                                                            |
-| **Puertos**                               | **Puerto del host** → **Puerto del contenedor**, `tcp` o `udp`. Deja vacío el puerto del host para que el Engine elija uno libre. Los puertos se publican en todas las interfaces. |
-| **Volúmenes**                             | Un nombre de volumen o una `/host/path` absoluta, montados en una ruta absoluta del contenedor, opcionalmente en **solo lectura**. Un nombre que aún no existe crea un volumen.    |
-| **Entorno**                               | Una `KEY=value` por línea. Las líneas vacías y las que empiezan por `#` se ignoran.                                                                                                |
-| **Red**                                   | **Predeterminada (bridge)**, o cualquier red del host.                                                                                                                             |
-| **Reinicio**                              | **Nunca**, **Si falla**, **Salvo si se detiene** o **Siempre**.                                                                                                                    |
-| **Eliminar el contenedor cuando termine** | Como `docker run --rm`. Un contenedor que se elimina al terminar no puede además reiniciarse.                                                                                      |
+| Campo                                     | Notas                                                                                                                                                                                   |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Imagen**                                | Obligatorio. Sugiere las imágenes del host. Se descarga primero si el host no la tiene, con el [inicio de sesión del registro](/docs/guides/settings/#registros) guardado.              |
+| **Nombre**                                | Opcional; el Engine genera uno si está vacío.                                                                                                                                           |
+| **Puertos**                               | **Puerto del host** → **Puerto del contenedor**, `tcp` o `udp`. Deja vacío el puerto del host para que el Engine elija uno libre. Los puertos se publican en todas las interfaces.      |
+| **Volúmenes**                             | Un nombre de volumen o una `/host/path` absoluta, montados en una ruta absoluta del contenedor, opcionalmente en **solo lectura**. Un nombre que aún no existe crea un volumen.         |
+| **Entorno**                               | Una `KEY=value` por línea. Las líneas vacías y las que empiezan por `#` se ignoran. Cuando **Duplicar** o **Editar** lo rellenan, sus valores siguen ocultos hasta **Mostrar valores**. |
+| **Comando**                               | Sustituye al comando por defecto de la imagen (no a su entrypoint). Pon los argumentos entre comillas como en un shell.                                                                 |
+| **Red**                                   | **Predeterminada (bridge)**, o cualquier red del host.                                                                                                                                  |
+| **Reinicio**                              | **Nunca**, **Si falla**, **Salvo si se detiene** o **Siempre**.                                                                                                                         |
+| **Eliminar el contenedor cuando termine** | Como `docker run --rm`. Un contenedor que se elimina al terminar no puede además reiniciarse.                                                                                           |
 
 Elige **Ejecutar**: Homeport crea e inicia el contenedor y después abre sus logs.
 

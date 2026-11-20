@@ -54,8 +54,9 @@ export default {
   'containers.done.unpause': '{count, plural, =1 {컨테이너} other {컨테이너 #개}}를 재개했습니다',
   'containers.done.kill': '{count, plural, =1 {컨테이너} other {컨테이너 #개}}를 강제 종료했습니다',
   'containers.done.remove': '{count, plural, =1 {컨테이너} other {컨테이너 #개}}를 삭제했습니다',
-  'containers.remove.title': '{name} 컨테이너를 삭제하시겠습니까?',
-  'containers.remove.titleMany': '{count, plural, other {컨테이너 #개}}를 삭제하시겠습니까?',
+  'containers.remove.title': '{host}에서 {name} 컨테이너를 삭제하시겠습니까?',
+  'containers.remove.titleMany':
+    '{host}에서 {count, plural, other {컨테이너 #개}}를 삭제하시겠습니까?',
   'containers.remove.deleted':
     '{count, plural, other {컨테이너와 쓰기 가능한 레이어, 익명 볼륨이 삭제됩니다.}}',
   'containers.remove.running': '실행 중인 {count}개는 먼저 중지됩니다.',
@@ -372,4 +373,7 @@ export default {
     '완료되었습니다. 이미지 페이지에서 또는 docker import로 가져오세요.',
   'containers.export.done': '내보내기 완료: {destination}',
   'containers.palette.run': '컨테이너 실행',
+  'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': '스택 {stack} 열기',
+  'containers.logs.show': '표시',
 } satisfies Translation<typeof en>;

@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     'Somente este computador pode se conectar: o encaminhamento escuta em 127.0.0.1 (e ::1).',
   'portforwards.dialog.submit': 'Encaminhar',
+  'portforwards.empty.action': 'Ir para os Services',
 } satisfies Translation<typeof en>;

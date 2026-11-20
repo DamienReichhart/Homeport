@@ -48,6 +48,10 @@ export function pathOf(kind: WorkloadKind): string {
   return WORKLOAD_KINDS.find((k) => k.kind === kind)?.path ?? 'deployments';
 }
 
+/** The plural name of `kind`, as its tab says it. */
+export const kindLabel = (kind: WorkloadKind): MessageKey =>
+  WORKLOAD_KINDS.find((k) => k.kind === kind)?.label ?? 'workloads.kind.deployment';
+
 /** The page of one workload. */
 export const workloadPath = (kind: WorkloadKind, namespace: string, name: string) =>
   objectPath(kind, namespace, name) ?? `/workloads/${pathOf(kind)}`;

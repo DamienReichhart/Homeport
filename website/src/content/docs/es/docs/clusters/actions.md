@@ -5,11 +5,11 @@ description: Escala Deployments y StatefulSets, reinicia un despliegue, suspende
 
 Los cambios de todos los días en un clúster están a un clic en sus páginas, y cada uno se envía a la API de Kubernetes con las propias credenciales del clúster, como haría `kubectl`. Las listas siguen el cambio en directo mediante su watch.
 
-Toda acción que elimina o sustituye algo pregunta antes, y la confirmación indica el clúster, el namespace, el kind y el nombre, para que un cambio nunca acabe por accidente en el clúster o el namespace equivocado.
+Toda acción que elimina o sustituye algo pregunta antes, y la confirmación indica el clúster, el namespace, el kind y el nombre, para que un cambio nunca acabe por accidente en el clúster o el namespace equivocado. Reiniciar y suspender no preguntan: se despliegan con calma y se pueden deshacer, y un aviso dice qué pasó.
 
 ## Cargas de trabajo
 
-La página de una carga de trabajo tiene sus acciones en la cabecera; en **Cargas de trabajo**, cada fila las tiene en su menú **⋯**.
+La página de una carga de trabajo mantiene **Escalar** y **Reiniciar** (o **Ejecutar ahora** y **Suspender** en una CronJob) en su encabezado, y **Eliminar** en su menú **Más acciones**; en **Cargas de trabajo**, cada fila las tiene en su menú **⋯**.
 
 | Acción             | Sobre                                 | Hace, como                                                              |
 | ------------------ | ------------------------------------- | ----------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ La página de una carga de trabajo tiene sus acciones en la cabecera; en **Carga
 
 ## Eliminar
 
-La página de cualquier objeto (una carga de trabajo, un Pod, un Service, un Ingress, un ConfigMap, un Secret, un Node o cualquier objeto de **Recursos de la API**) tiene **Eliminar** en su cabecera. En una lista, marca filas y **Eliminar N** las elimina todas tras una única confirmación que las enumera.
+Cada página de un objeto —una carga de trabajo, un Pod, un Service, un Ingress, un ConfigMap, un Secret, un Node o cualquier objeto en **Recursos de la API**— tiene **Eliminar** en su menú **Más acciones**. En una lista, marca filas y **Eliminar N** las elimina todas tras una sola confirmación que las lista.
 
 Los objetos se eliminan con la propagación `Background`, como hace `kubectl delete`: el objeto desaparece al instante y el recolector de basura elimina lo que es de su propiedad (los ReplicaSets y Pods de un Deployment, los Jobs de un CronJob).
 

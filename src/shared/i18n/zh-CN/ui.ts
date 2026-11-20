@@ -32,4 +32,7 @@ export default {
   'ui.errorDetails.rawDetailNote': '按系统、引擎或库的原文显示，因此未翻译。',
   'ui.errorDetails.openLogFolder': '打开日志文件夹',
   'ui.errorDetails.copyReport': '复制报告',
+  'ui.env.show': '显示值',
+  'ui.env.hide': '隐藏值',
+  'ui.confirm.typeName': '输入 {name} 以确认',
 } satisfies Translation<typeof en>;

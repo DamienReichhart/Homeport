@@ -25,21 +25,24 @@ export default {
   'images.column.size': 'Taille',
   'images.column.status': 'État',
   'images.moreTags': '{count, plural, one {+# autre tag} other {+# autres tags}}',
-  'images.inUse': 'Utilisée · {count}',
+  'images.inUse': 'Utilisée par {count, plural, one {# conteneur} other {# conteneurs}}',
   'images.unused': 'Inutilisée',
+  'images.newer': 'Version plus récente',
   'images.runOne': 'Exécuter {name}',
+  'images.moreActionsFor': 'Plus d’actions pour {name}',
   'images.action.inspect': 'Inspecter',
   'images.action.tag': 'Taguer',
   'images.action.push': 'Pousser',
   'images.action.save': 'Enregistrer…',
+  'images.action.pullNewer': 'Récupérer la nouvelle version de {reference}',
 
-  'images.remove.title': 'Supprimer {name} ?',
+  'images.remove.title': 'Supprimer {name} de {host} ?',
   'images.remove.everyName':
     'Cela supprime tous les noms de l’image ({names}) et ses couches que rien d’autre n’utilise.',
   'images.remove.description':
     'L’image et les couches qu’aucune autre image n’utilise sont supprimées. Elle pourra être récupérée à nouveau plus tard.',
-  'images.prune.allTitle': 'Supprimer toutes les images inutilisées ?',
-  'images.prune.danglingTitle': 'Supprimer les images orphelines ?',
+  'images.prune.allTitle': 'Supprimer toutes les images inutilisées de {host} ?',
+  'images.prune.danglingTitle': 'Supprimer les images orphelines de {host} ?',
   'images.prune.allDescription':
     'Toutes les images qu’aucun conteneur n’utilise sont supprimées, y compris celles avec un tag.',
   'images.prune.danglingDescription':
@@ -107,6 +110,7 @@ export default {
 
   'images.inspect.layers': 'Couches',
   'images.inspect.raw': 'JSON brut',
+  'images.inspect.names': 'Noms',
   'images.inspect.created': 'Créée',
   'images.inspect.instruction': 'Instruction',
   'images.inspect.size': 'Taille',

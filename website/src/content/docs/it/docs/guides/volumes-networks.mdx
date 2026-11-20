@@ -12,23 +12,22 @@ La pagina **Volumi** elenca i volumi dell’host selezionato e quanti sono inuti
 
 <DocScreenshot
   name="volumes"
-  alt="La pagina Volumi, che mostra per ogni volume lo stack, il driver e i container che lo usano."
+  alt="La pagina Volumi, che mostra per ogni volume lo stack, la dimensione e i container che lo usano."
 />
 
-| Colonna        | Mostra                                                                |
-| -------------- | --------------------------------------------------------------------- |
-| **Nome**       | Il nome del volume; un ID lungo per i volumi anonimi.                 |
-| **Stack**      | Lo stack che lo ha creato, se esiste.                                 |
-| **Driver**     | Di solito `local`.                                                    |
-| **Dimensione** | Quanto disco occupano i suoi dati, come indica `docker system df -v`. |
-| **Usato da**   | I container che lo montano, oppure **Inutilizzato**.                  |
-| **Creato**     | Quando è stato creato.                                                |
+| Colonna        | Mostra                                                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Nome**       | Il nome del volume; un ID lungo per i volumi anonimi. Un driver insolito, diverso da `local`, è indicato accanto. |
+| **Stack**      | Lo stack che lo ha creato, se esiste.                                                                             |
+| **Dimensione** | Quanto disco occupano i suoi dati, come indica `docker system df -v`.                                             |
+| **Usato da**   | I container che lo montano, oppure **Inutilizzato**.                                                              |
+| **Creato**     | Quando è stato creato.                                                                                            |
 
-Un volume conta come usato quando un container qualsiasi lo monta, in esecuzione o arrestato. Seleziona un volume per vederne la dimensione, quali container lo usano e tutti i dettagli, compreso dove si trovano i suoi dati sull’host (`Mountpoint`).
+Un volume conta come usato quando un container qualsiasi lo monta, in esecuzione o arrestato. Seleziona un volume per vederne la dimensione, quali container lo usano e tutti i dettagli, compreso dove si trovano i suoi dati sull’host (**Punto di montaggio**).
 
 ### Dimensioni
 
-L’Engine misura ogni volume per fornirne la dimensione, il che può richiedere qualche secondo su un host con molti dati, quindi l’elenco compare subito e la colonna **Dimensione** si riempie dopo. Ordina per **Dimensione** per trovare il volume che riempie un disco. Le dimensioni vengono misurate di nuovo quando un volume viene creato o rimosso, e quando scegli **Aggiorna le dimensioni**, non ogni volta che un container scrive, quindi una dimensione può essere leggermente in ritardo.
+L’Engine misura ogni volume per fornirne la dimensione, il che può richiedere qualche secondo su un host con molti dati, quindi l’elenco compare subito e la colonna **Dimensione** si riempie dopo. Ordina per **Dimensione** per trovare il volume che riempie un disco. Le dimensioni vengono misurate di nuovo quando un volume viene creato o rimosso, e quando scegli **Aggiorna le dimensioni** (nel menu **Altre azioni** della pagina), non ogni volta che un container scrive, quindi una dimensione può essere leggermente in ritardo.
 
 Solo i volumi del driver `local` hanno una dimensione; gli altri driver (NFS, plugin di archiviazione cloud) mostrano **—**.
 
@@ -90,12 +89,12 @@ Se la copia non riesce (il disco è pieno, per esempio), Homeport rimuove la cop
 
 <Aside type="danger">Eliminare un volume elimina definitivamente i dati che contiene.</Aside>
 
-Il pulsante di eliminazione su ogni riga chiede conferma e indica i container che montano ancora il volume. L’Engine si rifiuta di eliminare un volume usato da un container, anche arrestato: rimuovi prima quei container.
+**Elimina…**, nel menu **⋯** di un volume, nomina l’host e i container che montano ancora il volume, e ti chiede di digitare il nome del volume prima che **Elimina volume e dati** funzioni. L’Engine si rifiuta di eliminare un volume usato da un container, anche arrestato: rimuovi prima quei container.
 
-**Ripulisci** ne rimuove diversi insieme:
+**Ripulisci** (nel menu **Altre azioni** della pagina) ne rimuove diversi insieme:
 
 - **Volumi anonimi inutilizzati**: volumi senza nome che nessun container usa.
-- **Tutti i volumi inutilizzati**: ogni volume che nessun container usa, compresi quelli con nome.
+- **Tutti i volumi inutilizzati**: ogni volume che nessun container usa, compresi quelli con nome. Homeport ti chiede prima di digitare il nome dell’host.
 
 ## Reti
 
@@ -132,6 +131,6 @@ Le reti predefinite non si possono modificare qui.
 
 ### Rimuovere le reti
 
-Le reti predefinite non si possono rimuovere. Per le altre reti, la conferma dice quanti container sono ancora collegati; l’Engine si rifiuta di rimuovere una rete con container in esecuzione. I container che fanno riferimento per nome a una rete rimossa non si avviano finché questa non esiste di nuovo.
+Il menu **⋯** di ogni riga ha **Ispeziona**, e **Rimuovi** per le reti che si possono rimuovere; la rimozione nomina l’host. Le reti predefinite non si possono rimuovere. Per le altre reti, la conferma dice quanti container sono ancora collegati; l’Engine si rifiuta di rimuovere una rete con container in esecuzione. I container che fanno riferimento per nome a una rete rimossa non si avviano finché questa non esiste di nuovo.
 
 **Ripulisci** rimuove ogni rete personalizzata a cui non è collegato alcun container.

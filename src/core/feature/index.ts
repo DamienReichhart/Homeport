@@ -12,3 +12,4 @@ export {
 } from './manifest';
 export { useActionRequest, type ActionRequest } from './useActionRequest';
 export { usePageQuery } from './usePageQuery';
+export { splitRoutes } from './splitRoutes';

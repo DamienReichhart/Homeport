@@ -37,4 +37,26 @@ export default {
   'board.remove.description':
     'Eles são excluídos com seus volumes anônimos; os volumes nomeados são mantidos. Os que estão em execução são parados antes.',
   'board.remove.onHost': 'Em {host}: {names}',
+  'board.containers': 'Contêineres',
+  'board.needs.title': 'Precisa de você',
+  'board.needs.none':
+    'Nada precisa de você. Todos os hosts estão acessíveis e nenhum contêiner está falhando.',
+  'board.needs.all': 'Mostrar todos ({count})',
+  'board.needs.fewer': 'Mostrar menos',
+  'board.needs.on': 'em {name}',
+  'board.needs.hostUnreachable': 'Inacessível',
+  'board.needs.clusterUnreachable': 'Inacessível',
+  'board.needs.unhealthy': '{name} não está saudável',
+  'board.needs.dead': '{name} está morto',
+  'board.needs.restarting': '{name} reinicia sem parar',
+  'board.needs.exited': '{name} saiu com o código {code}',
+  'board.needs.logs': 'Logs',
+  'board.needs.details': 'Detalhes',
+  'board.needs.reconnect': 'Reconectar',
+  'board.needs.unready': '{name} não está pronto',
+  'board.needs.podsReady': '{ready} de {desired} pods prontos',
+  'board.needs.stackUpdates': 'O stack {name} tem imagens mais novas',
+  'board.needs.newerImages':
+    '{count, plural, one {# contêiner usa uma imagem} other {# contêineres usam imagens}} com uma versão mais nova publicada',
+  'board.needs.open': 'Abrir',
 } satisfies Translation<typeof en>;

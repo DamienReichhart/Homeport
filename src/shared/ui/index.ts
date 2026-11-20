@@ -118,12 +118,15 @@ export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './prim
 export { GitHubIcon } from './layout/GitHubIcon';
 export { Logo, LogoMark } from './layout/Logo';
 export { PageHeader } from './layout/PageHeader';
+export { SplitView, useSplitPane, useWideWindow } from './layout/SplitView';
 
 // feedback
 export { ConfirmDialog, useConfirm, type ConfirmOptions } from './feedback/ConfirmDialog';
 export { TransferDialog } from './feedback/TransferDialog';
 export { useConfirmedAction, type ConfirmedAction } from './feedback/useConfirmedAction';
 export { EmptyState } from './feedback/EmptyState';
+export { DangerZone } from './feedback/DangerZone';
+export { TypeToConfirm, typedMatches } from './feedback/TypeToConfirm';
 export { ErrorDetailsHost, showErrorDetails } from './feedback/ErrorDetails';
 export { ErrorMessage } from './feedback/ErrorMessage';
 export { HintView } from './feedback/HintView';
@@ -138,6 +141,7 @@ export { FileBrowser } from './data/FileBrowser';
 export { JsonView } from './data/JsonView';
 export { Keys, WithShortcut } from './data/Keys';
 export { KeyValue } from './data/KeyValue';
+export { EnvTextarea, maskEnv } from './data/EnvTextarea';
 export { SearchInput } from './data/SearchInput';
 
 // chart

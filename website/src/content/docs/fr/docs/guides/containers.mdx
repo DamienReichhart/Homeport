@@ -19,7 +19,7 @@ Les conteneurs qui appartiennent à une [stack](/docs/guides/stacks/) sont regro
 
 | Colonne     | Affiche                                                                                                                          |
 | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| **Nom**     | Une pastille d’état, le nom (le nom du service dans une stack) et l’ID court.                                                    |
+| **Nom**     | Une pastille d’état et le nom (le nom du service dans une stack) ; survolez le nom pour voir l’ID court.                         |
 | **Image**   | L’image à partir de laquelle il a été créé, avec une marque ⬆ quand une [image plus récente](#images-plus-récentes) est publiée. |
 | **État**    | Tel que le moteur l’indique, par exemple _Up 3 hours (healthy)_, avec un badge de santé s’il y a un health check.                |
 | **Ports**   | Jusqu’à trois ports, les ports publiés d’abord. Un port publié est un lien qui l’ouvre dans votre navigateur.                    |
@@ -29,7 +29,7 @@ Les conteneurs qui appartiennent à une [stack](/docs/guides/stacks/) sont regro
 
 Le CPU et la mémoire se mettent à jour toutes les deux secondes. **Rechercher des conteneurs** porte sur les noms, les images, les stacks, les services et les préfixes d’ID ; **En cours d’exécution seulement** masque le reste.
 
-Sélectionnez un conteneur pour l’ouvrir.
+Sélectionnez un conteneur pour l’ouvrir. Sur une fenêtre d’au moins 1280 px de large, il s’ouvre à côté de la liste, qui se réduit aux noms, groupés par stack ; <kbd>↑</kbd> et <kbd>↓</kbd> ouvrent alors le conteneur au-dessus ou en dessous. Les listes d’images, de volumes, de stacks, de Pods, de charges de travail, de jobs et les autres font de même.
 
 ### Images plus récentes
 
@@ -39,7 +39,7 @@ Homeport interroge le registre par l’intermédiaire du moteur de l’hôte, qu
 
 ### Actions
 
-Le bouton au bout de chaque ligne démarre ou arrête le conteneur. Le menu **⋮** contient le reste : **Journaux**, **Ouvrir un terminal**, **Redémarrer**, **Mettre en pause** ou **Reprendre**, **Forcer l’arrêt**, **Renommer**, [**Modifier**](#modifier-un-conteneur), [**Dupliquer**](#dupliquer-un-conteneur), [**Créer une image…**](#créer-une-image-à-partir-dun-conteneur), [**Exporter le système de fichiers…**](#exporter-le-système-de-fichiers-dun-conteneur) et **Supprimer**.
+Au bout de chaque ligne, **Redémarrer** (pendant qu’il tourne) et **Arrêter** ou **Démarrer** agissent tout de suite. Le menu **⋮** contient le reste : **Journaux**, **Ouvrir un terminal**, **Redémarrer**, **Mettre en pause** ou **Reprendre**, **Forcer l’arrêt**, **Renommer**, [**Modifier**](#modifier-un-conteneur), [**Dupliquer**](#dupliquer-un-conteneur), [**Créer une image…**](#créer-une-image-à-partir-dun-conteneur), [**Exporter le système de fichiers…**](#exporter-le-système-de-fichiers-dun-conteneur) et **Supprimer**.
 
 Cochez des conteneurs pour agir sur plusieurs à la fois avec **Démarrer**, **Arrêter**, **Redémarrer** ou **Supprimer**. La case à cocher de la ligne d’une stack sélectionne tous ses conteneurs.
 
@@ -53,7 +53,7 @@ Cochez des conteneurs pour agir sur plusieurs à la fois avec **Démarrer**, **A
 
 ## La page d’un conteneur
 
-L’en-tête montre l’image et l’état, avec **Démarrer** ou **Arrêter**, **Redémarrer**, **Mettre en pause** ou **Reprendre**, et **Supprimer** ; son menu **⋮** contient **Renommer**, **Modifier**, **Dupliquer**, **Créer une image…** et **Exporter le système de fichiers…**. Les onglets en dessous contiennent tout le reste.
+L’en-tête montre l’image et l’état, avec **Redémarrer** et **Arrêter**, ou seulement **Démarrer** pour un conteneur arrêté. Son menu **⋮** contient **Mettre en pause** ou **Reprendre**, **Forcer l’arrêt**, **Renommer**, **Modifier**, **Dupliquer**, **Créer une image…**, **Exporter le système de fichiers…** et, en dernier et à part, **Supprimer**, qui demande une fois en nommant l’hôte. Les onglets en dessous contiennent tout le reste.
 
 <Aside>
   Quitter un onglet met fin à ce qu’il faisait : les terminaux se ferment quand vous quittez
@@ -72,8 +72,7 @@ Les journaux défilent à mesure que le conteneur les écrit. La barre d’outil
 
 - **Historique** — combien de lignes passées charger : les 100, 1 000 (par défaut) ou 10 000 dernières, ou tout.
 - **Depuis** — n’importe quand, ou les 5 dernières minutes, la dernière heure ou les dernières 24 heures.
-- **Horodatage** — afficher l’horodatage du moteur avant chaque ligne.
-- **stdout** et **stderr** — afficher ou masquer l’un ou l’autre flux.
+- **Afficher** — un menu pour activer **Horodatage** et afficher ou masquer **stdout** et **stderr**. Son bouton compte les flux masqués, pour qu’une vue filtrée ne passe pas inaperçue.
 - **Suivre** — continuer à défiler jusqu’à la ligne la plus récente. Les nouvelles lignes continuent d’arriver même quand c’est désactivé.
 - **Rechercher dans les journaux** — met en surbrillance les correspondances. Appuyez sur <kbd>Enter</kbd> pour la suivante et sur <kbd>Shift</kbd>+<kbd>Enter</kbd> pour la précédente.
 - **Effacer** vide l’affichage ; **Télécharger les journaux** enregistre ce que vous avez chargé dans un fichier texte, jusqu’aux 100 000 dernières lignes.
@@ -85,8 +84,9 @@ Quand le conteneur s’arrête, le journal se termine par _— fin des journaux 
 **Détails** résume le conteneur sous forme de cartes : état et code de sortie, commande, politique de redémarrage, health checks, environnement, montages, ports, réseaux et labels. **JSON brut** montre le document d’inspection complet du moteur.
 
 <Aside type="caution">
-  Les variables d’environnement sont affichées en clair, telles que le moteur les enregistre.
-  Pensez-y avant de partager votre écran.
+  Les valeurs d’environnement s’affichent sous forme de points jusqu’à ce que vous choisissiez
+  **Afficher les valeurs**. **JSON brut** les montre en clair, telles que le moteur les enregistre :
+  gardez-le en tête avant de partager votre écran.
 </Aside>
 
 ### Santé
@@ -134,17 +134,17 @@ Les processus qui tournent dans le conteneur, tels que `ps aux` les montre, actu
 
 **Exécuter un conteneur** sur la page Conteneurs — ou le bouton ▶ à côté d’une image — ouvre **Exécuter un conteneur** :
 
-| Champ                                          | Remarques                                                                                                                                                                                |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Image**                                      | Obligatoire. Propose les images de l’hôte. Récupérée d’abord si l’hôte ne l’a pas, avec les [identifiants de registre](/docs/guides/settings/#registres) enregistrés.                    |
-| **Nom**                                        | Facultatif ; le moteur en génère un s’il est vide.                                                                                                                                       |
-| **Commande**                                   | Remplace la commande par défaut de l’image (pas son point d’entrée). Mettez les arguments entre guillemets comme dans un shell.                                                          |
-| **Ports**                                      | **Port de l’hôte** → **Port du conteneur**, `tcp` ou `udp`. Laissez le port de l’hôte vide pour laisser le moteur en choisir un libre. Les ports sont publiés sur toutes les interfaces. |
-| **Volumes**                                    | Un nom de volume ou un `/host/path` absolu, monté sur un chemin absolu du conteneur, éventuellement en **lecture seule**. Un nom qui n’existe pas encore crée un volume.                 |
-| **Environnement**                              | Un `KEY=value` par ligne. Les lignes vides et celles qui commencent par `#` sont ignorées.                                                                                               |
-| **Réseau**                                     | **Par défaut (bridge)**, ou n’importe quel réseau de l’hôte.                                                                                                                             |
-| **Redémarrage**                                | **Jamais**, **En cas d’échec**, **Sauf s’il est arrêté** ou **Toujours**.                                                                                                                |
-| **Supprimer le conteneur quand il se termine** | Comme `docker run --rm`. Un conteneur supprimé à sa sortie ne peut pas aussi redémarrer.                                                                                                 |
+| Champ                                          | Remarques                                                                                                                                                                                                 |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Image**                                      | Obligatoire. Propose les images de l’hôte. Récupérée d’abord si l’hôte ne l’a pas, avec les [identifiants de registre](/docs/guides/settings/#registres) enregistrés.                                     |
+| **Nom**                                        | Facultatif ; le moteur en génère un s’il est vide.                                                                                                                                                        |
+| **Ports**                                      | **Port de l’hôte** → **Port du conteneur**, `tcp` ou `udp`. Laissez le port de l’hôte vide pour laisser le moteur en choisir un libre. Les ports sont publiés sur toutes les interfaces.                  |
+| **Volumes**                                    | Un nom de volume ou un `/host/path` absolu, monté sur un chemin absolu du conteneur, éventuellement en **lecture seule**. Un nom qui n’existe pas encore crée un volume.                                  |
+| **Environnement**                              | Un `KEY=value` par ligne. Les lignes vides et celles qui commencent par `#` sont ignorées. Quand **Dupliquer** ou **Modifier** le remplit, ses valeurs restent masquées jusqu’à **Afficher les valeurs**. |
+| **Commande**                                   | Remplace la commande par défaut de l’image (pas son point d’entrée). Mettez les arguments entre guillemets comme dans un shell.                                                                           |
+| **Réseau**                                     | **Par défaut (bridge)**, ou n’importe quel réseau de l’hôte.                                                                                                                                              |
+| **Redémarrage**                                | **Jamais**, **En cas d’échec**, **Sauf s’il est arrêté** ou **Toujours**.                                                                                                                                 |
+| **Supprimer le conteneur quand il se termine** | Comme `docker run --rm`. Un conteneur supprimé à sa sortie ne peut pas aussi redémarrer.                                                                                                                  |
 
 Choisissez **Exécuter** : Homeport crée et démarre le conteneur, puis ouvre ses journaux.
 

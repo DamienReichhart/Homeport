@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'job 실행',
 
   'nomad.job.description': '{namespace} 네임스페이스의 {type} job, 버전 {version}',
-  'nomad.job.back': 'job',
   'nomad.job.stop': '중지',
   'nomad.job.editAndRun': '편집 후 실행',
   'nomad.job.sourceFailed': 'Homeport가 job 명세를 읽지 못했습니다',
@@ -167,7 +166,6 @@ export default {
   'nomad.nodes.drainCancelled': '드레인을 취소했습니다',
 
   'nomad.node.description': '{datacenter}의 클라이언트 노드, 노드 풀 {pool}',
-  'nomad.node.back': '노드',
   'nomad.node.eligible': '새 allocation 스케줄링 가능',
   'nomad.node.drain': '드레인',
   'nomad.node.settings': '노드',

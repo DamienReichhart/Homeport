@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'स्टैक',
   'stacks.title': 'स्टैक',
-  'stacks.description':
-    'इस होस्ट पर Compose प्रोजेक्ट। प्रबंधित स्टैक अपनी परिभाषा Homeport में रखते हैं, लिंक्ड स्टैक इस कंप्यूटर के किसी फ़ोल्डर में; बाहरी स्टैक कहीं और से डिप्लॉय किए गए थे।',
+  'stacks.description': 'इस होस्ट पर Compose प्रोजेक्ट।',
   'stacks.new': 'नया स्टैक',
   'stacks.search': 'स्टैक खोजें',
   'stacks.empty.title': 'कोई स्टैक नहीं',
-  'stacks.empty.description': 'एक compose परिभाषा लिखें और उसे इस होस्ट पर डिप्लॉय करें।',
+  'stacks.empty.description':
+    'किसी compose फ़ाइल, फ़ोल्डर या git रिपॉज़िटरी से इस होस्ट पर एक compose प्रोजेक्ट डिप्लॉय करें।',
   'stacks.column.name': 'नाम',
   'stacks.column.kind': 'प्रकार',
   'stacks.column.state': 'स्थिति',
@@ -91,20 +91,19 @@ export default {
   'stacks.action.adopt': 'अपनाएँ',
   'stacks.action.stop': 'रोकें',
   'stacks.action.start': 'शुरू करें',
-  'stacks.action.more': 'स्टैक की और कार्रवाइयाँ',
   'stacks.action.restart': 'फिर से शुरू करें',
   'stacks.action.pull': 'इमेज पुल करें',
   'stacks.action.rebuild': 'फिर से बिल्ड करें और डिप्लॉय करें',
-  'stacks.down.title': '{name} को डाउन करें?',
+  'stacks.down.title': '{host} पर {name} को डाउन करें?',
   'stacks.down.description':
     'इसके कंटेनर और नेटवर्क हटाए जाते हैं। वॉल्यूम और परिभाषा रखे जाते हैं, ताकि आप फिर से डिप्लॉय कर सकें।',
   'stacks.down.confirm': 'डाउन करें',
-  'stacks.downWithVolumes.title': '{name} को डाउन करें और इसके वॉल्यूम हटाएँ?',
+  'stacks.downWithVolumes.title': '{host} पर {name} को डाउन करें और इसके वॉल्यूम हटाएँ?',
   'stacks.downWithVolumes.warning':
     'इस स्टैक के कंटेनर, नेटवर्क और हर वॉल्यूम, उनके सारे डेटा के साथ, हटा दिए जाते हैं।',
   'stacks.downWithVolumes.confirm': 'वॉल्यूम सहित हटाएँ',
   'stacks.downWithVolumes.action': 'वॉल्यूम सहित डाउन करें',
-  'stacks.remove.title': '{name} हटाएँ?',
+  'stacks.remove.title': '{host} से {name} हटाएँ?',
   'stacks.remove.description':
     'इसके {count, plural, one {# कंटेनर} other {# कंटेनर}} और नेटवर्क हटाए जाते हैं। वॉल्यूम रखे जाते हैं। Homeport के पास इस स्टैक की कोई compose फ़ाइल नहीं है, इसलिए इसे यहाँ से फिर से डिप्लॉय नहीं किया जा सकता।',
   'stacks.remove.action': 'कंटेनर हटाएँ',
@@ -161,7 +160,7 @@ export default {
   'stacks.newPage.useFolder': 'इस कंप्यूटर का कोई फ़ोल्डर इस्तेमाल करें',
   'stacks.newPage.useRepository': 'कोई git रिपॉज़िटरी इस्तेमाल करें',
   'stacks.newSynced.description':
-    'किसी git रिपॉज़िटरी में एक compose फ़ाइल। Homeport इसे इस कंप्यूटर पर क्लोन करता है, दिखाता है कि क्या बदलता है, और इससे एक commit डिप्लॉय करता है। यह रिपॉज़िटरी को कभी संपादित नहीं करता।',
+    'किसी git रिपॉज़िटरी में एक compose फ़ाइल। Homeport इसके commit डिप्लॉय करता है और इसे कभी संपादित नहीं करता।',
   'stacks.newSynced.repository': 'रिपॉज़िटरी',
   'stacks.newSynced.pickRepository': 'रिपॉज़िटरी चुनें',
   'stacks.newSynced.addRepository': 'रिपॉज़िटरी जोड़ें',
@@ -228,7 +227,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport इसकी रिपॉज़िटरी को फ़ॉलो करना बंद कर देता है और इस कंप्यूटर पर इसका checkout मिटा देता है। इसके कंटेनर चलते रहते हैं, और यह एक बाहरी स्टैक बन जाता है। रिपॉज़िटरी सेटिंग्स → रिपॉज़िटरी में बनी रहती है।',
   'stacks.newLinked.description':
-    'इस कंप्यूटर के किसी फ़ोल्डर में एक compose प्रोजेक्ट। Homeport इसकी फ़ाइलों पर वहीं काम करता है जहाँ वे हैं और उसी फ़ोल्डर से डिप्लॉय करता है।',
+    'इस कंप्यूटर के किसी फ़ोल्डर में एक compose प्रोजेक्ट, जहाँ है वहीं से डिप्लॉय किया जाता है।',
   'stacks.newLinked.choose': 'फ़ोल्डर चुनें…',
   'stacks.newLinked.pickTitle': 'किसी compose प्रोजेक्ट का फ़ोल्डर चुनें',
   'stacks.newLinked.files': 'Compose फ़ाइलें, क्रम से',
@@ -250,7 +249,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'कोई OS कीचेन उपलब्ध नहीं है, इसलिए स्टैक का परिवेश सहेजा नहीं जा सकता।',
   'stacks.editor.problems': 'समस्याएँ',
-  'stacks.managed.saveAndRedeploy': 'सहेजें और फिर से डिप्लॉय करें',
   'stacks.profiles.title': 'Profiles',
   'stacks.profiles.hint':
     'किसी profile के पीछे की सर्विस सिर्फ़ तभी चलती हैं जब वह चालू हो। बिना profile वाली सर्विस हमेशा चलती हैं।',
@@ -275,7 +273,6 @@ export default {
   'stacks.linked.reload': 'फिर से लोड करें',
   'stacks.linked.overwrite': 'ओवरराइट करें',
   'stacks.linked.saved': 'Compose फ़ाइलें सहेजी गईं',
-  'stacks.linked.saveAndRedeploy': 'सहेजें और फिर से डिप्लॉय करें',
   'stacks.linked.envNote':
     'Compose चलते समय फ़ोल्डर की .env पढ़ता है। Homeport इसे न दिखाता है न बदलता है।',
   'stacks.linked.files': 'Compose फ़ाइलें',
@@ -293,4 +290,14 @@ export default {
   'stacks.external.descriptionFrom':
     'इसे Homeport के बाहर उस मशीन पर <mono>{files}</mono> से डिप्लॉय किया गया था। आप इसे शुरू कर सकते हैं, रोक सकते हैं और हटा सकते हैं; संपादित करने और फिर से डिप्लॉय करने के लिए इसे इसकी compose फ़ाइल के साथ अपनाएँ।',
   'stacks.palette.new': 'नया स्टैक',
+  'stacks.managed.deploy': 'डिप्लॉय करें',
+  'stacks.managed.moreSave': 'सहेजने के और तरीके',
+  'stacks.managed.saveOnly': 'डिप्लॉय किए बिना सहेजें',
+  'stacks.managed.unsaved': 'बिना सहेजे बदलाव',
+  'stacks.forget.sectionTitle': 'यह स्टैक भूल जाएँ',
+  'stacks.kind.managedHint': 'Homeport इसकी compose फ़ाइल और एनवायरनमेंट रखता है।',
+  'stacks.kind.linkedHint': 'इसकी compose फ़ाइलें इस कंप्यूटर के किसी फ़ोल्डर में हैं।',
+  'stacks.kind.syncedHint': 'किसी git रिपॉज़िटरी से डिप्लॉय किया गया।',
+  'stacks.kind.externalHint': 'Homeport के बाहर डिप्लॉय किया गया।',
+  'stacks.services.noContainer': 'कोई कंटेनर नहीं',
 } satisfies Translation<typeof en>;

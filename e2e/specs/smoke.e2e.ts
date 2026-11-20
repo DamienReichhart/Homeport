@@ -53,6 +53,8 @@ describe('Homeport', () => {
   it('starts and connects to the local Engine', async () => {
     await shown(text('Found on this machine'), 60_000);
     await press(button('Add'));
+    // A healthy Host is quiet on the Board; its own Overview says it's connected.
+    await goTo('Overview');
     await shown(text('Connected'));
   });
 
@@ -121,18 +123,22 @@ describe('Homeport', () => {
       120_000,
     );
     await press(button('Close'));
-    await shown(text('Running'));
+    // A running Stack's page says how many of its containers run.
+    await shown(text('1 of 1 container running'));
   });
 
   it('keeps its Hosts, Stacks and secrets across a restart', async () => {
     // A new session is a new launch of the app, on the same data folder.
     await browser.reloadSession();
+    // It opens on the Board; the Host's Overview says it's connected again.
+    await shown(link('Overview'), 60_000);
+    await goTo('Overview');
     await shown(text('Connected'), 60_000);
     await goTo('Stacks');
     await shown(text(STACK));
     await shown(text('Running'));
 
-    await press(button('More stack actions'));
+    await press(button('More actions'));
     await press(menuItem('Take down'));
     await press(dialogButton('Take down'));
     await eventually(() => stackEnv() === '', `${STACK} still has a container`, 120_000);

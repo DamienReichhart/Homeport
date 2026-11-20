@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': 'إيقاف {name}',
   'containerd.containers.actionOne.pause': 'إيقاف {name} مؤقتًا',
   'containerd.containers.actionOne.resume': 'استئناف {name}',
-  'containerd.containers.removeOne': 'إزالة {name}',
+  'containerd.containers.actionsFor': 'إجراءات {name}',
   'containerd.containers.done.start': 'تم تشغيل {name}',
   'containerd.containers.done.stop': 'تم إيقاف {name}',
   'containerd.containers.done.pause': 'تم إيقاف {name} مؤقتًا',
@@ -136,9 +136,16 @@ export default {
   'containerd.snapshots.kind.unknown': 'غير معروف',
   'containerd.snapshots.removeOne': 'إزالة {key}',
   'containerd.snapshots.removed': 'تمت إزالة اللقطة {key}',
+  'containerd.snapshots.pruned':
+    '{count, plural, zero {لم تُزل أي لقطة} one {أُزيلت لقطة واحدة} two {أُزيلت لقطتان} few {أُزيلت # لقطات} many {أُزيلت # لقطة} other {أُزيلت # لقطة}}',
   'containerd.snapshots.inUse': 'يستخدمها شيء ما أو مبني عليها. أزل الحاوية أو الصورة أولًا.',
   'containerd.snapshots.remove.title': 'هل تريد إزالة اللقطة {key}؟',
   'containerd.snapshots.remove.description': 'لا يستخدمها شيء. تُحذف ملفاتها، {size}، من المضيف.',
+  'containerd.snapshots.prune.open': 'إزالة غير المستخدمة',
+  'containerd.snapshots.prune.title':
+    'هل تريد إزالة {count, plural, zero {أي لقطة غير مستخدمة} one {لقطة واحدة غير مستخدمة} two {لقطتين غير مستخدمتين} few {# لقطات غير مستخدمة} many {# لقطة غير مستخدمة} other {# لقطة غير مستخدمة}}؟',
+  'containerd.snapshots.prune.description':
+    'لا يستخدمها شيء ولا يُبنى عليها شيء. تُحذف ملفاتها، {size}، من المضيف.',
   'containerd.namespaces.nav': 'مساحات الأسماء',
   'containerd.namespaces.title': 'مساحات الأسماء',
   'containerd.namespaces.summary':
@@ -147,7 +154,8 @@ export default {
   'containerd.namespaces.created': 'تم إنشاء مساحة الأسماء {name}',
   'containerd.namespaces.removed': 'تمت إزالة مساحة الأسماء {name}',
   'containerd.namespaces.shown': 'المعروضة',
-  'containerd.namespaces.show': 'عرض',
+  'containerd.namespaces.show': 'عرض حاوياتها وصورها',
+  'containerd.namespaces.showOne': 'عرض {name}',
   'containerd.namespaces.removeOne': 'إزالة {name}',
   'containerd.namespaces.notEmpty':
     'لا يمكن إزالة سوى مساحات الأسماء الفارغة. أزل حاوياتها وصورها أولًا.',

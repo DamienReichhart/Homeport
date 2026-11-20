@@ -5,11 +5,11 @@ description: Scale Deployments and StatefulSets, restart a rollout, suspend and 
 
 The everyday changes to a Cluster are a click away on its pages, each sent to the Kubernetes API with the Cluster's own credentials, as `kubectl` would. The lists follow the change live through their watch.
 
-Every action that removes or replaces something asks first, and the confirmation names the cluster, the namespace, the kind and the name, so a change never lands on the wrong cluster or namespace by accident.
+Every action that removes or replaces something asks first, and the confirmation names the cluster, the namespace, the kind and the name, so a change never lands on the wrong cluster or namespace by accident. Restarting and suspending don't ask: they roll out calmly and can be undone, and a toast says what happened.
 
 ## Workloads
 
-A workload's page has its actions in the header; on **Workloads**, each row has them in its **⋯** menu.
+A workload's page keeps **Scale** and **Restart** (or **Run now** and **Suspend** for a CronJob) in its header, and **Delete** in its **More actions** menu; on **Workloads**, each row has them in its **⋯** menu.
 
 | Action      | On                                    | Does, like                                                         |
 | ----------- | ------------------------------------- | ------------------------------------------------------------------ |
@@ -34,7 +34,7 @@ A workload's page has its actions in the header; on **Workloads**, each row has 
 
 ## Deleting
 
-Every page of an object — a workload, a Pod, a Service, an Ingress, a ConfigMap, a Secret, a Node, or any object under **API resources** — has **Delete** in its header. On a list, tick rows and **Delete N** removes them all after one confirmation that lists them.
+Every page of an object — a workload, a Pod, a Service, an Ingress, a ConfigMap, a Secret, a Node, or any object under **API resources** — has **Delete** in its **More actions** menu. On a list, tick rows and **Delete N** removes them all after one confirmation that lists them.
 
 Objects are deleted with propagation `Background`, as `kubectl delete` does: the object goes at once and the garbage collector removes what it owns (a Deployment's ReplicaSets and Pods, a CronJob's Jobs).
 

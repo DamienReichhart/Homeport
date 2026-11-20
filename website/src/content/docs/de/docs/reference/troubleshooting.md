@@ -335,7 +335,7 @@ Exec in einer virtuellen Maschine läuft über den `incus-agent` darin, den die 
 
 ### „Etwas ist schiefgelaufen“
 
-Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zur Übersicht** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren).
+Eine Seite von Homeport ist auf ein unerwartetes Problem gestoßen und zeigt dies statt ihres Inhalts; die Seitenleiste funktioniert weiter. **Neu laden** bringt die Seite meist zurück, und **Zurück zum Board** verlässt sie. Wenn es immer wieder passiert, kopieren Sie den Bericht aus **Details** in [ein Issue](https://github.com/DamienReichhart/homeport/issues/new/choose), zusammen mit dem [Diagnosepaket](#diagnose-für-einen-fehlerbericht-exportieren).
 
 ### „… ist nicht verbunden“
 

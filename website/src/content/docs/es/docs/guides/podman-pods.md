@@ -17,13 +17,13 @@ La página **Pods** aparece en la barra lateral solo mientras hay un host Podman
 | **Redes**        | Las redes en las que está el pod.                                                                                                      |
 | **Creado**       | Cuándo se creó.                                                                                                                        |
 
-Cada fila tiene la acción que corresponde a su estado — **Iniciar** para un pod detenido, **Detener** para uno en ejecución — y **Eliminar**. Selecciona un pod para abrir su página. La lista se actualiza sola a medida que los contenedores del pod se inician y se detienen, ya sea desde Homeport o desde un terminal.
+Cada fila tiene a mano la acción que corresponde a su estado — **Iniciar** para un pod detenido, **Detener** para uno en ejecución — y guarda **Reiniciar**, **Pausar** y **Eliminar** en su menú. Selecciona un pod para abrir su página. La lista se actualiza sola a medida que los contenedores del pod se inician y se detienen, ya sea desde Homeport o desde un terminal.
 
 En la página **Contenedores**, un contenedor que se ejecuta en un pod muestra el nombre del pod junto al suyo; selecciona el nombre para abrir el pod.
 
 ## La página de un pod
 
-La cabecera tiene **Ejecutar contenedor** y las acciones del pod: **Iniciar**, **Detener**, **Reiniciar**, **Pausar**, **Reanudar** y **Eliminar**, según lo permita su estado. Cada una actúa a la vez sobre todos los contenedores del pod, como hacen `podman pod start` y similares.
+El encabezado tiene **Ejecutar contenedor**, después **Detener** (o **Iniciar**, o **Reanudar**) y **Reiniciar**; **Pausar** y **Eliminar** están en su menú **⋯**. Cada una actúa a la vez sobre todos los contenedores del pod, como hacen `podman pod start` y similares.
 
 - **Contenedores** lista los contenedores del pod, con su contenedor infra al final. Selecciona uno para abrir su página de contenedor, con sus logs, su terminal y sus archivos.
 - **Ajustes** muestra los puertos que publica el pod, los namespaces que comparten sus contenedores, sus redes, su nombre de host y sus etiquetas, y el comando `podman pod create` con el que se creó, si Podman lo conservó.

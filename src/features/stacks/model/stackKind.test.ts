@@ -9,8 +9,10 @@ describe('Stack kinds', () => {
     expect(t(KIND_LABEL.external)).toBe('External');
   });
 
-  it('badges what Homeport holds, what it points at, and what it only finds', () => {
+  it('keeps every kind quiet, and sets apart what Homeport only finds', () => {
+    expect(Object.values(KIND_BADGE)).not.toContain('default');
+    expect(KIND_BADGE.managed).toBe(KIND_BADGE.linked);
     expect(KIND_BADGE.linked).toBe(KIND_BADGE.synced);
-    expect(new Set([KIND_BADGE.managed, KIND_BADGE.linked, KIND_BADGE.external]).size).toBe(3);
+    expect(KIND_BADGE.external).not.toBe(KIND_BADGE.managed);
   });
 });

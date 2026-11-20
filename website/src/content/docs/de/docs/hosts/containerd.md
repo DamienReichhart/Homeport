@@ -54,7 +54,7 @@ Ein containerd, das zu alt zum Verbinden ist, lässt den Host **Falsch konfiguri
 
 ## Namespaces
 
-Jedes containerd-Objekt lebt in einem **Namespace**: nerdctl verwendet `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Die Seiten zeigen jeweils einen Namespace, gewählt unter dem Host-Umschalter, der jeden mit der Anzahl seiner Container und Images auflistet. Homeport merkt sich die Wahl für jeden Host zwischen den Starts. Bis Sie einen wählen, zeigt ein Host `default` oder, wenn `default` leer ist, den einzigen Namespace, der etwas enthält, sodass ein k3s-Host auf `k8s.io` öffnet.
+Jedes containerd-Objekt lebt in einem **Namespace**: nerdctl verwendet `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Die Seiten zeigen jeweils einen Namespace, gewählt unter dem ausgewählten Host in der Seitenleiste, die jeden mit der Anzahl seiner Container und Images auflistet. Homeport merkt sich die Wahl für jeden Host zwischen den Starts. Bis Sie einen wählen, zeigt ein Host `default` oder, wenn `default` leer ist, den einzigen Namespace, der etwas enthält, sodass ein k3s-Host auf `k8s.io` öffnet.
 
 Die Seite **Namespaces** erstellt leere Namespaces und entfernt leere. containerd weigert sich, einen Namespace zu entfernen, der noch etwas enthält, und Homeport sagt, was er noch enthält: Entfernen Sie zuerst seine Container, Images und Snapshots.
 
@@ -70,7 +70,7 @@ In containerd ist ein **Container** nur Metadaten: sein Image, seine Spezifikati
 | **Signal senden** | Sendet ein beliebiges Signal, per Name (`SIGHUP`) oder Nummer, an den Hauptprozess des Tasks.                                                                                                                                                                                                                                             |
 | **Entfernen**     | Fragt zuerst; beendet einen laufenden Task, entfernt den Task und den Container sowie seinen Snapshot mit den von ihm geänderten Dateien, es sei denn, Sie deaktivieren **Auch seinen Snapshot … entfernen**: Ein behaltener Snapshot wird mit `containerd.io/gc.root` markiert, sodass die Garbage Collection von containerd ihn behält. |
 
-Die Seite eines Containers zeigt seine Runtime, seinen Snapshot, seine Labels und seine OCI-Spezifikation. Homeport erstellt keine Container auf containerd: containerd hat kein eigenes Networking, das fügen nerdctl und CNI hinzu.
+Jede Zeile und die Seite eines Containers haben ihre Hauptaktion zur Hand (**Stoppen**, **Starten** oder **Fortsetzen**) und den Rest, **Entfernen** eingeschlossen, im Menü **⋯**. Die Seite eines Containers zeigt seine Runtime, seinen Snapshot, seine Labels und seine OCI-Spezifikation. Homeport erstellt keine Container auf containerd: containerd hat kein eigenes Networking, das fügen nerdctl und CNI hinzu.
 
 Das **kubelet** verwaltet die Container von Kubernetes: Es startet sie nach einem Stopp wieder und erstellt sie nach einem Entfernen neu. Ihre Seiten weisen darauf hin; ändern Sie stattdessen den Pod auf seinem Cluster. Das Entfernen eines nerdctl-Containers von hier lässt die eigenen Aufzeichnungen von nerdctl darüber zurück (seinen Namen und sein Netzwerk), wie es `ctr` täte; `nerdctl rm` ist dafür der sauberere Weg.
 
@@ -104,7 +104,7 @@ Ein Image, aus dem ein Container des Namespace erstellt wurde, kann nicht entfer
 
 In Snapshots steckt der Speicherplatz von containerd: die Schichten entpackter Images und die beschreibbare Schicht jedes Containers. Die Seite **Snapshots** zeigt die eines Snapshotters (zuerst `overlayfs` oder einen anderen, den der Host geladen hat) als Baum nach Elternteil, die größten zuerst, mit ihrer Belegung, wie `ctr snapshot usage` sie zählt, und der Summe oben.
 
-Jeder nennt, was ihn verwendet: einen Container über seinen Snapshot oder ein Image über seine Schichten. Snapshots, die nichts verwendet und auf denen nichts aufbaut – etwa einer, der beim Entfernen seines Containers hier behalten wurde –, lassen sich mit **Nur unbenutzte** allein anzeigen und entfernen. Die anderen können von hier aus nicht entfernt werden. Ein Snapshot, auf den nichts verweist und den nichts als Root markiert, etwa einer, den `ctr containers rm --keep-snapshot` zurücklässt, bleibt nicht bestehen: Die Garbage Collection von containerd entfernt ihn bei ihrem nächsten Lauf.
+Jeder nennt, was ihn verwendet: einen Container über seinen Snapshot oder ein Image über seine Schichten. Snapshots, die nichts verwendet und auf denen nichts aufbaut – etwa einer, der beim Entfernen seines Containers hier behalten wurde –, lassen sich mit **Nur unbenutzte** allein anzeigen und entfernen. Die anderen können von hier aus nicht entfernt werden. Ein Snapshot, auf den nichts verweist und den nichts als Root markiert, etwa einer, den `ctr containers rm --keep-snapshot` zurücklässt, bleibt nicht bestehen: Die Garbage Collection von containerd entfernt ihn bei ihrem nächsten Lauf. **Unbenutzte entfernen** entfernt auf einmal jeden Snapshot, den nichts verwendet, ganze unbenutzte Ketten mit den Kindern zuerst, nach einer einzigen Bestätigung, die nennt, wie viel Platz frei wird.
 
 ## Was auf dem Host ausgeführt wird
 

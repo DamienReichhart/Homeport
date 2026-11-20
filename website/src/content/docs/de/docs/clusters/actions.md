@@ -5,11 +5,11 @@ description: Deployments und StatefulSets skalieren, einen Rollout neu starten, 
 
 Die alltäglichen Änderungen an einem Cluster sind auf seinen Seiten einen Klick entfernt, jede wird mit den eigenen Zugangsdaten des Clusters an die Kubernetes-API gesendet, wie `kubectl` es tun würde. Die Listen folgen der Änderung live über ihren Watch.
 
-Jede Aktion, die etwas entfernt oder ersetzt, fragt vorher nach, und die Bestätigung nennt den Cluster, den Namespace, die Art und den Namen, sodass eine Änderung nie versehentlich im falschen Cluster oder Namespace landet.
+Jede Aktion, die etwas entfernt oder ersetzt, fragt vorher nach, und die Bestätigung nennt den Cluster, den Namespace, die Art und den Namen, sodass eine Änderung nie versehentlich im falschen Cluster oder Namespace landet. Neu starten und Aussetzen fragen nicht: Sie rollen ruhig aus, lassen sich rückgängig machen, und eine Meldung sagt, was passiert ist.
 
 ## Workloads
 
-Die Seite eines Workloads hat ihre Aktionen in der Kopfzeile; unter **Workloads** hat jede Zeile sie in ihrem Menü **⋯**.
+Die Seite eines Workloads behält **Skalieren** und **Neu starten** (oder **Jetzt ausführen** und **Aussetzen** bei einem CronJob) in ihrem Kopf und **Löschen** im Menü **Weitere Aktionen**; unter **Workloads** hat jede Zeile sie in ihrem Menü **⋯**.
 
 | Aktion              | Für                                   | Bewirkt, wie                                                     |
 | ------------------- | ------------------------------------- | ---------------------------------------------------------------- |
@@ -34,7 +34,7 @@ Die Seite eines Workloads hat ihre Aktionen in der Kopfzeile; unter **Workloads*
 
 ## Löschen
 
-Jede Seite eines Objekts – eines Workloads, eines Pods, eines Services, eines Ingress, einer ConfigMap, eines Secrets, eines Nodes oder jedes Objekts unter **API-Ressourcen** – hat **Löschen** in ihrer Kopfzeile. In einer Liste haken Sie Zeilen an, und **N löschen** entfernt sie alle nach einer einzigen Bestätigung, die sie auflistet.
+Jede Seite eines Objekts – ein Workload, ein Pod, ein Service, ein Ingress, eine ConfigMap, ein Secret, ein Node oder ein beliebiges Objekt unter **API-Ressourcen** – hat **Löschen** in ihrem Menü **Weitere Aktionen**. In einer Liste kreuzen Sie Zeilen an, und **N löschen** entfernt sie alle nach einer einzigen Bestätigung, die sie auflistet.
 
 Objekte werden mit der Propagation `Background` gelöscht, wie bei `kubectl delete`: Das Objekt geht sofort, und der Garbage Collector entfernt, was ihm gehört (die ReplicaSets und Pods eines Deployments, die Jobs eines CronJobs).
 

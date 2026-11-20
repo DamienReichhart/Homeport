@@ -53,9 +53,22 @@ describe('log viewer', () => {
     const user = userEvent.setup();
     renderWithProviders(<LogViewer hostId="h1" sources={source} />);
     await waitFor(() => expect(channels).toHaveLength(1));
-    await user.click(screen.getByRole('button', { name: 'Timestamps' }));
+    await user.click(screen.getByRole('button', { name: 'Show' }));
+    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'Timestamps' }));
     await waitFor(() => expect(channels).toHaveLength(2));
     expect(cancelled).toEqual([1]);
+  });
+
+  it('hides a stream from the Show menu, and says on the button that one is hidden', async () => {
+    const { channels } = streaming();
+    const user = userEvent.setup();
+    renderWithProviders(<LogViewer hostId="h1" sources={source} />);
+    await waitFor(() => expect(channels).toHaveLength(1));
+    await user.click(screen.getByRole('button', { name: 'Show' }));
+    await user.click(await screen.findByRole('menuitemcheckbox', { name: 'stderr' }));
+    await waitFor(() => expect(channels).toHaveLength(2));
+    await user.keyboard('{Escape}');
+    expect(screen.getByRole('button', { name: /^Show\s*·\s*1$/ })).toBeInTheDocument();
   });
 
   it('stops the stream on unmount', async () => {

@@ -1,6 +1,6 @@
 import type { IncusInstance } from '@/shared/api';
-import { formatBytes, formatRelative } from '@/shared/lib';
-import { Badge, StatusDot, type ColumnDef } from '@/shared/ui';
+import { formatBytes, formatDateTime, formatRelative } from '@/shared/lib';
+import { StatusDot, type ColumnDef } from '@/shared/ui';
 import { seconds, STATUS_LABELS, statusTone, TYPE_LABELS } from '../model/instances';
 import { InstanceActions } from './InstanceActions';
 import { t } from '@/shared/i18n';
@@ -31,12 +31,17 @@ export function instanceColumns({
       id: 'type',
       header: t('incus.instances.column.type'),
       accessorFn: (i) => i.type,
-      cell: ({ row }) => <Badge variant="secondary">{t(TYPE_LABELS[row.original.type])}</Badge>,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground whitespace-nowrap">
+          {t(TYPE_LABELS[row.original.type])}
+        </span>
+      ),
     },
     {
       id: 'status',
       header: t('incus.instances.column.status'),
       accessorFn: (i) => i.status,
+      meta: { compact: true },
       cell: ({ row }) => t(STATUS_LABELS[row.original.status]),
     },
     {
@@ -44,7 +49,12 @@ export function instanceColumns({
       header: t('incus.instances.column.image'),
       accessorFn: (i) => i.image,
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs">{row.original.image || '—'}</span>
+        <span
+          className="text-muted-foreground block max-w-56 truncate text-xs"
+          title={row.original.image || undefined}
+        >
+          {row.original.image || '—'}
+        </span>
       ),
     },
     {
@@ -52,22 +62,33 @@ export function instanceColumns({
       header: t('incus.instances.column.addresses'),
       accessorFn: (i) => i.addresses.join(' '),
       cell: ({ row }) => (
-        <span className="font-mono text-xs">{row.original.addresses.join(', ') || '—'}</span>
+        <span
+          className="block max-w-48 truncate font-mono text-xs"
+          title={row.original.addresses.join('\n') || undefined}
+        >
+          {row.original.addresses.join(', ') || '—'}
+        </span>
       ),
     },
     {
       id: 'memory',
       header: t('incus.instances.column.memory'),
       accessorFn: (i) => i.memoryBytes ?? -1,
-      cell: ({ row }) =>
-        row.original.memoryBytes === null ? '—' : formatBytes(row.original.memoryBytes),
+      cell: ({ row }) => (
+        <div className="text-end whitespace-nowrap tabular-nums">
+          {row.original.memoryBytes === null ? '—' : formatBytes(row.original.memoryBytes)}
+        </div>
+      ),
     },
     {
       id: 'created',
       header: t('incus.instances.column.created'),
       accessorFn: (i) => seconds(i.createdAt),
       cell: ({ row }) => (
-        <span className="text-muted-foreground whitespace-nowrap">
+        <span
+          className="text-muted-foreground whitespace-nowrap"
+          title={formatDateTime(row.original.createdAt)}
+        >
           {formatRelative(seconds(row.original.createdAt))}
         </span>
       ),
@@ -77,15 +98,13 @@ export function instanceColumns({
       header: '',
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <InstanceActions
-            hostId={hostId}
-            project={project}
-            instance={row.original}
-            compact
-            onDelete={() => onDelete(row.original)}
-          />
-        </div>
+        <InstanceActions
+          hostId={hostId}
+          project={project}
+          instance={row.original}
+          compact
+          onDelete={() => onDelete(row.original)}
+        />
       ),
     },
   ];

@@ -5,7 +5,7 @@ description: Die Namespaces, Deployments, StatefulSets, DaemonSets, Jobs, CronJo
 
 import { DocScreenshot } from '@/features/docs';
 
-Wählen Sie einen Cluster im Umschalter, und die Seitenleiste zeigt seine Seiten. **Workloads** und **Pods** listen auf, was darauf läuft; jede Liste folgt dem Cluster live über einen Kubernetes-Watch, sodass ein Deployment, das Sie skalieren, oder ein Pod, der abstürzt, seinen neuen Zustand innerhalb von Sekunden ohne Aktualisieren zeigt. Jede Seite lässt Sie außerdem mit dem arbeiten, was sie zeigt: [Logs und ein Terminal](/docs/clusters/logs-exec/), [Skalieren, Neustarten und Löschen](/docs/clusters/actions/) und [YAML bearbeiten](/docs/clusters/yaml/).
+Wählen Sie einen Cluster in der Seitenleiste, und seine Seiten öffnen sich darunter. **Workloads** und **Pods** listen auf, was darauf läuft; jede Liste folgt dem Cluster live über einen Kubernetes-Watch, sodass ein Deployment, das Sie skalieren, oder ein Pod, der abstürzt, seinen neuen Zustand innerhalb von Sekunden ohne Aktualisieren zeigt. Jede Seite lässt Sie außerdem mit dem arbeiten, was sie zeigt: [Logs und ein Terminal](/docs/clusters/logs-exec/), [Skalieren, Neustarten und Löschen](/docs/clusters/actions/) und [YAML bearbeiten](/docs/clusters/yaml/).
 
 ## Namespaces
 
@@ -47,7 +47,7 @@ Die Seite eines Workloads hat:
 - **Logs** seiner Pods, alle verschränkt oder einzeln (nicht bei einem CronJob; seine Jobs haben ihre eigenen).
 - **Bedingungen**, **Events** (Warnungen zuerst; Kubernetes bewahrt sie etwa eine Stunde lang auf) und **YAML**, ohne `managedFields`, mit **Bearbeiten**.
 
-Seine Kopfzeile hat seine Aktionen: **Skalieren**, **Neu starten**, **Aussetzen** oder **Fortsetzen** und **Jetzt ausführen**, wo sie zutreffen, und **Löschen**; siehe [Skalieren, neu starten und löschen](/docs/clusters/actions/).
+Ihr Kopf behält die alltäglichen Aktionen – **Skalieren** und **Neu starten** oder bei einem CronJob **Jetzt ausführen** und **Aussetzen** (**Fortsetzen**, sobald ausgesetzt) –, und ihr Menü **Weitere Aktionen** enthält **Löschen**; siehe [Skalieren, neu starten und löschen](/docs/clusters/actions/).
 
 ## Pods
 

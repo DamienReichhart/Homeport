@@ -47,7 +47,8 @@ describe('creating a Synced Stack', () => {
     );
     await user.clear(screen.getByLabelText('Compose file'));
     await user.type(screen.getByLabelText('Compose file'), 'deploy/compose.yaml');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
+    await user.click(screen.getByRole('button', { name: 'More ways to save' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Save without deploying' }));
     await waitFor(() => expect(created).toHaveLength(1));
     expect(created[0]).toEqual({
       owner: { kind: 'host', id: 'h1' },

@@ -35,7 +35,7 @@ Homeport loads the lists only once you've typed two characters, and keeps them f
 | Keys                                       | Does                                                                              |
 | ------------------------------------------ | --------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Show the keyboard shortcuts                                                       |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Open the sidebar's pages in order: Overview, Board, Containers…                   |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Open the sidebar's pages in order: Board, Overview, Containers…                   |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Open Settings                                                                     |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Select the previous or next Host, in the order the Hosts page lists them          |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Refresh the selected Host's lists: containers, images, volumes, networks, Stacks… |
@@ -44,10 +44,11 @@ Hover a page in the sidebar to see its keys.
 
 ### On a page
 
-| Keys         | Does                                                                                                                                                                                                                                        |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Focus the page's search field. <kbd>Esc</kbd> in an empty field leaves it.                                                                                                                                                                  |
-| <kbd>N</kbd> | Start the page's main action: **Run container**, **Pull**, **Create volume**, **Create network**, **New Stack** or **Add host**; and on the pages of Podman, containerd, Incus and Helm, their own, such as **New pod** or **New instance** |
+| Keys                        | Does                                                                                                                                                                                                                                        |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd>                | Focus the page's search field. <kbd>Esc</kbd> in an empty field leaves it.                                                                                                                                                                  |
+| <kbd>N</kbd>                | Start the page's main action: **Run container**, **Pull**, **Create volume**, **Create network**, **New Stack** or **Add host**; and on the pages of Podman, containerd, Incus and Helm, their own, such as **New pod** or **New instance** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | In a list whose item is open beside it, open the item above or below                                                                                                                                                                        |
 
 The button of a page's main action shows <kbd>N</kbd> when you hover it.
 

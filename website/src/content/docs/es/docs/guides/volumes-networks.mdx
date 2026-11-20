@@ -12,23 +12,22 @@ La página **Volúmenes** lista los volúmenes del host seleccionado y cuántos 
 
 <DocScreenshot
   name="volumes"
-  alt="La página Volúmenes, con el stack, el driver y los contenedores que usan cada volumen."
+  alt="La página Volúmenes, con el stack, el tamaño y los contenedores que usan cada volumen."
 />
 
-| Columna       | Muestra                                                         |
-| ------------- | --------------------------------------------------------------- |
-| **Nombre**    | El nombre del volumen; un ID largo para los volúmenes anónimos. |
-| **Stack**     | El stack que lo creó, si lo hay.                                |
-| **Driver**    | Normalmente `local`.                                            |
-| **Tamaño**    | Cuánto disco ocupan sus datos, según `docker system df -v`.     |
-| **Usado por** | Los contenedores que lo montan, o **Sin usar**.                 |
-| **Creado**    | Cuándo se creó.                                                 |
+| Columna       | Muestra                                                                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Nombre**    | El nombre del volumen; un ID largo para los volúmenes anónimos. Un driver poco habitual, cualquiera que no sea `local`, aparece junto a él. |
+| **Stack**     | El stack que lo creó, si lo hay.                                                                                                            |
+| **Tamaño**    | Cuánto disco ocupan sus datos, según `docker system df -v`.                                                                                 |
+| **Usado por** | Los contenedores que lo montan, o **Sin usar**.                                                                                             |
+| **Creado**    | Cuándo se creó.                                                                                                                             |
 
-Un volumen cuenta como usado cuando algún contenedor lo monta, en ejecución o detenido. Selecciona un volumen para ver su tamaño, qué contenedores lo usan y todos sus detalles, incluido dónde están sus datos en el host (`Mountpoint`).
+Un volumen cuenta como usado cuando algún contenedor lo monta, en ejecución o detenido. Selecciona un volumen para ver su tamaño, qué contenedores lo usan y todos sus detalles, incluido dónde están sus datos en el host (**Punto de montaje**).
 
 ### Tamaños
 
-El Engine mide todos los volúmenes para dar sus tamaños, lo que puede tardar unos segundos en un host con muchos datos, así que la lista aparece al momento y la columna **Tamaño** se completa después. Ordena por **Tamaño** para encontrar el volumen que llena un disco. Los tamaños se vuelven a medir cuando se crea o se elimina un volumen, y cuando eliges **Actualizar tamaños**; no cada vez que un contenedor escribe, así que un tamaño puede ir un poco por detrás.
+El Engine mide todos los volúmenes para dar sus tamaños, lo que puede tardar unos segundos en un host con muchos datos, así que la lista aparece al momento y la columna **Tamaño** se completa después. Ordena por **Tamaño** para encontrar el volumen que llena un disco. Los tamaños se vuelven a medir cuando se crea o se elimina un volumen, y cuando eliges **Actualizar tamaños** (en el menú **Más acciones** de la página); no cada vez que un contenedor escribe, así que un tamaño puede ir un poco por detrás.
 
 Solo los volúmenes del driver `local` tienen tamaño; los demás drivers (NFS, plugins de almacenamiento en la nube) muestran **—**.
 
@@ -90,12 +89,12 @@ Si la copia falla — por ejemplo, porque el disco está lleno —, Homeport eli
 
 <Aside type="danger">Eliminar un volumen borra de forma permanente los datos que contiene.</Aside>
 
-El botón de eliminar de cada fila pide confirmación y nombra los contenedores que aún montan el volumen. El Engine se niega a eliminar un volumen que use cualquier contenedor, aunque esté detenido: elimina antes esos contenedores.
+**Eliminar…**, en el menú **⋯** de un volumen, nombra el host y los contenedores que aún montan el volumen, y te pide que escribas el nombre del volumen antes de que **Eliminar volumen y datos** funcione. El Engine se niega a eliminar un volumen que usa algún contenedor, aunque esté detenido: elimina antes esos contenedores.
 
-**Limpiar** elimina varios a la vez:
+**Limpiar** (en el menú **Más acciones** de la página) elimina varios a la vez:
 
 - **Volúmenes anónimos sin usar** — volúmenes sin nombre que no usa ningún contenedor.
-- **Todos los volúmenes sin usar** — todos los volúmenes que no usa ningún contenedor, incluidos los que tienen nombre.
+- **Todos los volúmenes sin usar** — todos los volúmenes que no usa ningún contenedor, incluidos los que tienen nombre. Homeport te pide antes que escribas el nombre del host.
 
 ## Redes
 
@@ -132,6 +131,6 @@ Las redes integradas no se pueden cambiar aquí.
 
 ### Eliminar redes
 
-Las redes integradas no se pueden eliminar. Para las demás redes, la confirmación indica cuántos contenedores siguen conectados; el Engine se niega a eliminar una red con contenedores en ejecución. Los contenedores que mencionan una red eliminada por su nombre no se iniciarán hasta que vuelva a existir.
+El menú **⋯** de cada fila tiene **Inspeccionar**, y **Eliminar** para las redes que se pueden quitar; quitar nombra el host. Las redes integradas no se pueden eliminar. Para las demás redes, la confirmación indica cuántos contenedores siguen conectados; el Engine se niega a eliminar una red con contenedores en ejecución. Los contenedores que mencionan una red eliminada por su nombre no se iniciarán hasta que vuelva a existir.
 
 **Limpiar** elimina todas las redes personalizadas a las que no está conectado ningún contenedor.

@@ -18,6 +18,10 @@ describe('inspect tab', () => {
 
     expect(await screen.findByText('nginx:1.27')).toBeInTheDocument();
     expect(screen.getByText('MODE')).toBeInTheDocument();
+    // Environment values stay hidden until asked for.
+    expect(screen.queryByText('production')).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Show values' }));
+    expect(screen.getByText('production')).toBeInTheDocument();
     expect(screen.getByText('0.0.0.0:8080')).toBeInTheDocument();
     expect(screen.getByText('web-data')).toBeInTheDocument();
     expect(screen.getByText('org.example.team')).toBeInTheDocument();

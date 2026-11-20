@@ -4,12 +4,18 @@ import {
   ChevronUpIcon,
   DownloadIcon,
   EraserIcon,
+  SlidersHorizontalIcon,
 } from 'lucide-react';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import type { AppError, LogEvent, LogOptions, LogSource } from '@/shared/api';
 import { pickSavePath } from '@/shared/lib';
 import {
   Button,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   Input,
   SEARCH_DECORATIONS,
   Select,
@@ -17,8 +23,12 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
+  Separator,
   terminalError,
   Toggle,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   XTerm,
   type XTermHandle,
 } from '@/shared/ui';
@@ -70,6 +80,8 @@ export function LogViewer(
   const saveLogs = useSaveLogs();
   const followRef = useRef(follow);
   const sourcesKey = JSON.stringify(sources);
+  // How many streams are hidden, shown on the Show button so it isn't missed.
+  const hidden = streamToggles ? Number(!stdout) + Number(!stderr) : 0;
 
   useEffect(() => {
     followRef.current = follow;
@@ -127,94 +139,107 @@ export function LogViewer(
 
   return (
     <div className="flex h-full min-h-0 flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
-        {toolbar}
-        <Select value={tail} onValueChange={setTail}>
-          <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.history')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TAILS.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {t(option.label)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={since} onValueChange={setSince}>
-          <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.sinceLabel')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SINCE.map((s) => (
-              <SelectItem key={s.value} value={s.value}>
-                {t(s.label)}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Toggle size="sm" variant="outline" pressed={timestamps} onPressedChange={setTimestamps}>
-          {t('containers.logs.timestamps')}
-        </Toggle>
-        {streamToggles && (
-          <>
-            <Toggle size="sm" variant="outline" pressed={stdout} onPressedChange={setStdout}>
-              stdout
-            </Toggle>
-            <Toggle size="sm" variant="outline" pressed={stderr} onPressedChange={setStderr}>
-              stderr
-            </Toggle>
-          </>
-        )}
-        <Toggle
-          size="sm"
-          variant="outline"
-          pressed={follow}
-          onPressedChange={setFollow}
-          aria-label={t('containers.logs.follow')}
-        >
-          <ArrowDownToLineIcon /> {t('containers.logs.follow')}
-        </Toggle>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        {/* What is fetched, and how it shows. */}
+        <div className="flex flex-wrap items-center gap-2">
+          {toolbar}
+          <Select value={tail} onValueChange={setTail}>
+            <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.history')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TAILS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {t(option.label)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={since} onValueChange={setSince}>
+            <SelectTrigger className="w-32" size="sm" aria-label={t('containers.logs.sinceLabel')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {SINCE.map((s) => (
+                <SelectItem key={s.value} value={s.value}>
+                  {t(s.label)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <SlidersHorizontalIcon /> {t('containers.logs.show')}
+                {hidden > 0 && (
+                  <span className="text-muted-foreground tabular-nums">· {hidden}</span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-48">
+              <DropdownMenuCheckboxItem
+                checked={timestamps}
+                onCheckedChange={setTimestamps}
+                onSelect={(e) => e.preventDefault()}
+              >
+                {t('containers.logs.timestamps')}
+              </DropdownMenuCheckboxItem>
+              {streamToggles && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={stdout}
+                    onCheckedChange={setStdout}
+                    onSelect={(e) => e.preventDefault()}
+                    className="font-mono"
+                  >
+                    stdout
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={stderr}
+                    onCheckedChange={setStderr}
+                    onSelect={(e) => e.preventDefault()}
+                    className="font-mono"
+                  >
+                    stderr
+                  </DropdownMenuCheckboxItem>
+                </>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        {/* Finding in what's shown, then following, clearing and saving it. */}
         <div className="ms-auto flex items-center gap-1">
           <Input
-            className="h-7 w-44"
+            className="h-7 w-40"
             placeholder={t('containers.logs.find')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && find(!e.shiftKey)}
             aria-label={t('containers.logs.find')}
           />
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('containers.logs.previous')}
-            onClick={() => find(false)}
-          >
+          <IconButton label={t('containers.logs.previous')} onClick={() => find(false)}>
             <ChevronUpIcon />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('containers.logs.next')}
-            onClick={() => find(true)}
-          >
+          </IconButton>
+          <IconButton label={t('containers.logs.next')} onClick={() => find(true)}>
             <ChevronDownIcon />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('containers.logs.clear')}
+          </IconButton>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <Toggle size="sm" variant="outline" pressed={follow} onPressedChange={setFollow}>
+            <ArrowDownToLineIcon /> {t('containers.logs.follow')}
+          </Toggle>
+          <Separator orientation="vertical" className="mx-1 h-5" />
+          <IconButton
+            label={t('containers.logs.clear')}
             onClick={() => {
               handle.current?.terminal.clear();
               kept.current = [];
             }}
           >
             <EraserIcon />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('containers.logs.download')}
+          </IconButton>
+          <IconButton
+            label={t('containers.logs.download')}
             onClick={async () => {
               const path = await pickSavePath(t('containers.logs.saveTitle'), 'logs.txt');
               if (!path) return;
@@ -222,7 +247,7 @@ export function LogViewer(
             }}
           >
             <DownloadIcon />
-          </Button>
+          </IconButton>
         </div>
       </div>
       <XTerm
@@ -238,5 +263,27 @@ export function LogViewer(
         }}
       />
     </div>
+  );
+}
+
+/** A ghost icon button of the toolbar, named by its tooltip. */
+function IconButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick}>
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }

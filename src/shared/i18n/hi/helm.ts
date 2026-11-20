@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Helm रिलीज़',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, one {# रिलीज़} other {# रिलीज़}}',
   'helm.section.releases': 'रिलीज़',
   'helm.search': 'रिलीज़ खोजें',
@@ -53,13 +53,13 @@ export default {
   'helm.run.done': 'हो गया।',
   'helm.run.failed': 'helm कोड {code} के साथ बंद हुआ।',
   'helm.repos.description':
-    'इस कंप्यूटर पर helm जिन चार्ट रिपॉज़िटरी को जानता है, वे टर्मिनल के helm के साथ साझा होती हैं। जिन रिपॉज़िटरी के लिए लॉगिन चाहिए, उन्हें वहाँ helm repo add --username से जोड़ा जाता है, और फिर वे यहाँ दिखती हैं।',
+    'इस कंप्यूटर पर helm जिन चार्ट रिपॉज़िटरी को जानता है, वे टर्मिनल के helm के साथ साझा होती हैं।',
   'helm.repos.name': 'नाम',
   'helm.repos.url': 'URL',
   'helm.repos.add': 'रिपॉज़िटरी जोड़ें',
   'helm.repos.addTitle': 'चार्ट रिपॉज़िटरी जोड़ें',
   'helm.repos.addDescription':
-    'helm अभी इसका इंडेक्स डाउनलोड करता है। यहाँ सिर्फ़ सार्वजनिक रिपॉज़िटरी जोड़ी जा सकती हैं।',
+    'helm अभी इसका इंडेक्स डाउनलोड करता है। यहाँ सिर्फ़ सार्वजनिक रिपॉज़िटरी जोड़ी जा सकती हैं; जिसके लिए लॉगिन चाहिए, उसे टर्मिनल में helm repo add --username से जोड़ा जाता है, और फिर वह यहाँ दिखती है।',
   'helm.repos.added': 'चार्ट रिपॉज़िटरी {name} जोड़ी गई',
   'helm.repos.update': 'अपडेट करें',
   'helm.repos.updateAll': 'सभी अपडेट करें',
@@ -173,4 +173,6 @@ export default {
   'helm.uninstall.confirm': '{name} अनइंस्टॉल करें',
   'helm.uninstall.running': '{cluster} से {name} अनइंस्टॉल हो रही है',
   'helm.uninstall.backToReleases': 'रिलीज़ पर वापस जाएँ',
+  'helm.emptyHint': 'यहाँ या टर्मिनल में helm से इंस्टॉल किए गए release इस पेज पर दिखते हैं।',
+  'helm.repos.updateNamed': '{name} अपडेट करें',
 } satisfies Translation<typeof en>;

@@ -58,13 +58,13 @@ Values, Hinweise, Manifest und Ressourcen zeigen die aktuelle Revision; wählen 
 
 ## Zurücksetzen
 
-Im **Verlauf** fragt **Auf Revision N zurücksetzen** bei jeder früheren Revision zuerst nach, nennt dabei die Chart- und App-Versionen jetzt und danach, und führt dann `helm rollback` aus: helm stellt Chart und Values dieser Revision als neue Revision wieder her, sodass auch ein Zurücksetzen zurückgesetzt werden kann. Haken Sie **Warten, bis seine Ressourcen bereit sind** an, damit helm auf sie wartet.
+Im **Verlauf** fragt **Auf Revision N zurücksetzen** bei jeder früheren Revision zuerst nach, nennt dabei die Chart- und App-Versionen jetzt und danach, und führt dann `helm rollback` aus: helm stellt Chart und Values dieser Revision als neue Revision wieder her, sodass auch ein Zurücksetzen zurückgesetzt werden kann. Haken Sie **Warten, bis seine Ressourcen bereit sind** an, damit helm auf sie wartet. Jede frühere Revision hat es als Symbolschaltfläche, und der Verlauf sagt, wie lange jede zurückliegt, mit dem Datum beim Darüberfahren.
 
 Ein Release, das nach einer unterbrochenen Installation, einem Upgrade oder einem Zurücksetzen auf **Ausstehend** hängt, ist gesperrt: helm lehnt Änderungen ab, bis der Vorgang endet. Es auf seine zuletzt bereitgestellte Revision zurückzusetzen, hebt die Sperre auf.
 
 ## Deinstallieren
 
-**Deinstallieren** auf der Seite eines Release nennt das Release, seinen Namespace und Cluster und listet die Objekte auf, die mit ihm gelöscht werden, bevor `helm uninstall` läuft. Objekte, die ein Chart zum Behalten markiert (`helm.sh/resource-policy: keep`), und die PersistentVolumeClaims von StatefulSets bleiben auf dem Cluster. **Verlauf behalten** lässt das Release als `uninstalled` in der Liste, sodass es zurückgesetzt werden kann; ohne diese Option verschwindet das Release aus der Liste. **Warten, bis seine Objekte gelöscht sind** lässt helm auf sie warten.
+**Deinstallieren** im Menü **Weitere Aktionen** eines Releases nennt das Release, seinen Namespace und Cluster, listet die Objekte auf, die mit ihm gelöscht werden, und verlangt den Namen des Releases, bevor `helm uninstall` läuft. Objekte, die ein Chart zum Behalten markiert (`helm.sh/resource-policy: keep`), und die PersistentVolumeClaims von StatefulSets bleiben auf dem Cluster. **Verlauf behalten** lässt das Release als `uninstalled` in der Liste, sodass es zurückgesetzt werden kann; ohne diese Option verschwindet das Release aus der Liste. **Warten, bis seine Objekte gelöscht sind** lässt helm auf sie warten.
 
 ## Chart-Repositorys
 

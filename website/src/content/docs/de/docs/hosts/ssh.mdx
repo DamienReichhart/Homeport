@@ -20,16 +20,16 @@ Homeport hat seinen eigenen SSH-Client. Er meldet sich am Server an und leitet e
 
 <Steps>
 
-1. Wählen Sie **Host hinzufügen…** im Host-Umschalter und lassen Sie **SSH** ausgewählt.
+1. Wählen Sie **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste, dann **Host hinzufügen…**, und lassen Sie **SSH** ausgewählt.
 
 2. Füllen Sie die Verbindung aus:
 
    | Feld                       | Was einzugeben ist                                                                                                                                                       |
    | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-   | **Name**                   | Ein Name, den Sie wiedererkennen, etwa `production`.                                                                                                                     |
    | **Server**                 | Der Hostname oder die IP-Adresse des Servers.                                                                                                                            |
    | **Port**                   | Der SSH-Port; standardmäßig `22`.                                                                                                                                        |
    | **Benutzer**               | Das Konto, mit dem die Anmeldung erfolgt. Es braucht Zugriff auf den Docker-Socket, meist über die Gruppe `docker`.                                                      |
+   | **Name**                   | Ein Name, den Sie wiedererkennen, etwa `production`. Bleibt er leer, wird der Host nach seinem Server benannt: `prod` für `prod.example.com`.                            |
    | **Entfernter Socket-Pfad** | Wo die Engine auf dem Server lauscht: standardmäßig `/var/run/docker.sock`, `/run/user/<uid>/docker.sock` für rootless Docker oder `/run/podman/podman.sock` für Podman. |
 
 3. Wählen Sie unter **Authentifizierung**, wie die Anmeldung erfolgt (siehe unten).
@@ -123,7 +123,7 @@ Für einen von Homeport erstellten oder einen von Ihnen importierten Schlüssel 
 
 </Steps>
 
-Bis der Schlüssel autorisiert ist, zeigt der Host **Zugriff verweigert**: _Der SSH-Server hat die Anmeldung von deploy@server abgelehnt._, mit dem Befehl, der den Schlüssel von Homeport autorisiert. Er wartet auf Sie, statt es erneut zu versuchen.
+Bis der Schlüssel autorisiert ist, zeigt der Host **Zugriff verweigert**: _Der SSH-Server hat die Anmeldung von deploy@server abgelehnt._, mit dem Befehl, der den Schlüssel von Homeport autorisiert. Er wartet auf Sie, statt es erneut zu versuchen. Sobald der Host verbunden ist, werden die Befehle eingeklappt; **Befehle anzeigen** zeigt sie wieder.
 
 ## Wenn sich der Schlüssel des Servers ändert
 

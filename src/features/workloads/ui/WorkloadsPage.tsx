@@ -16,13 +16,19 @@ import {
   ErrorMessage,
   PageHeader,
   SearchInput,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   Spinner,
   Tabs,
   TabsList,
   TabsTrigger,
+  useSplitPane,
 } from '@/shared/ui';
 import { workloadQueries } from '../api/queries';
-import { kindOf, WORKLOAD_KINDS, workloadPath } from '../model/kinds';
+import { kindLabel, kindOf, WORKLOAD_KINDS, workloadPath } from '../model/kinds';
 import { kindResource } from '../model/resource';
 import { workloadColumns } from './workloadColumns';
 import { t } from '@/shared/i18n';
@@ -39,6 +45,11 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
   const [selected, setSelected] = useState<WorkloadView[]>([]);
   const rowId = (w: WorkloadView) => `${w.kind}/${w.namespace}/${w.name}`;
   const picked = stillListed(selected, workloads.data, rowId);
+  const { compact } = useSplitPane();
+  const showKind = (next: string) => {
+    const path = WORKLOAD_KINDS.find((k) => k.kind === next)?.path;
+    if (path) void navigate(`/workloads/${path}`, { replace: true });
+  };
   return (
     <div>
       <PageHeader
@@ -47,26 +58,36 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
         actions={<NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />}
       />
       <div className="mb-3 flex flex-wrap items-center gap-3">
-        <Tabs
-          value={kind}
-          onValueChange={(next) => {
-            const path = WORKLOAD_KINDS.find((k) => k.kind === next)?.path;
-            if (path) void navigate(`/workloads/${path}`, { replace: true });
-          }}
-        >
-          <TabsList>
-            {WORKLOAD_KINDS.map((k) => (
-              <TabsTrigger
-                key={k.kind}
-                value={k.kind}
-                // A tab that switches what one view shows, without a panel of its own.
-                aria-controls={undefined}
-              >
-                {t(k.label)}
-              </TabsTrigger>
-            ))}
-          </TabsList>
-        </Tabs>
+        {compact ? (
+          // Beside an open workload the five kinds don't fit as tabs.
+          <Select value={kind} onValueChange={showKind}>
+            <SelectTrigger className="w-full" aria-label={t('workloads.kindLabel')}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WORKLOAD_KINDS.map((k) => (
+                <SelectItem key={k.kind} value={k.kind}>
+                  {t(k.label)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : (
+          <Tabs value={kind} onValueChange={showKind}>
+            <TabsList variant="default" aria-label={t('workloads.kindLabel')}>
+              {WORKLOAD_KINDS.map((k) => (
+                <TabsTrigger
+                  key={k.kind}
+                  value={k.kind}
+                  // A tab that switches what one view shows, without a panel of its own.
+                  aria-controls={undefined}
+                >
+                  {t(k.label)}
+                </TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+        )}
         <SearchInput value={query} onChange={setQuery} placeholder={t('workloads.search')} />
         <DeleteSelected
           cluster={cluster}
@@ -90,7 +111,11 @@ function WorkloadsList({ cluster }: { cluster: ClusterView }) {
           onSelectionChange={setSelected}
           filter={query}
           pageSize={100}
-          empty={t('workloads.empty')}
+          empty={
+            namespace === null
+              ? t('workloads.emptyAll', { kind: t(kindLabel(kind)) })
+              : t('workloads.emptyIn', { kind: t(kindLabel(kind)), namespace })
+          }
           onRowClick={(w) => void navigate(workloadPath(w.kind, w.namespace, w.name))}
         />
       )}

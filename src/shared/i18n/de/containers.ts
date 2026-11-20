@@ -54,9 +54,9 @@ export default {
   'containers.done.kill':
     '{count, plural, one {Container} other {# Container}} zwangsweise beendet',
   'containers.done.remove': '{count, plural, one {Container} other {# Container}} entfernt',
-  'containers.remove.title': '{name} entfernen?',
+  'containers.remove.title': '{name} von {host} entfernen?',
   'containers.remove.titleMany':
-    '{count, plural, one {# Container} other {# Container}} entfernen?',
+    '{count, plural, one {# Container} other {# Container}} von {host} entfernen?',
   'containers.remove.deleted':
     '{count, plural, one {Der Container wird mit seiner beschreibbaren Schicht und seinen anonymen Volumes gelöscht.} other {Die Container werden mit ihrer beschreibbaren Schicht und ihren anonymen Volumes gelöscht.}}',
   'containers.remove.running': '{count} laufende werden zuerst gestoppt.',
@@ -379,4 +379,7 @@ export default {
     'Fertig. Importieren Sie es auf der Seite „Images“ oder mit docker import.',
   'containers.export.done': 'Nach {destination} exportiert',
   'containers.palette.run': 'Container ausführen',
+  'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Den Stack {stack} öffnen',
+  'containers.logs.show': 'Anzeigen',
 } satisfies Translation<typeof en>;

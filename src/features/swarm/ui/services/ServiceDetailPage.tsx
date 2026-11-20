@@ -1,5 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, PencilIcon, ScaleIcon, Undo2Icon } from 'lucide-react';
+import {
+  ArrowLeftIcon,
+  EllipsisVerticalIcon,
+  PencilIcon,
+  ScaleIcon,
+  Trash2Icon,
+  Undo2Icon,
+} from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { LogViewer } from '@/features/containers';
@@ -8,6 +15,11 @@ import type { SwarmView } from '@/shared/api';
 import {
   Badge,
   Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   ErrorMessage,
   JsonView,
   PageHeader,
@@ -19,10 +31,11 @@ import {
 } from '@/shared/ui';
 import { swarmFeatureQueries } from '../../api/queries';
 import { serviceLogs } from '../../api/streams';
-import { canScale } from '../../model/services';
+import { canScale, updateTone } from '../../model/services';
 import { TasksTab } from '../tasks/TasksTab';
 import { EditServiceDialog } from './EditServiceDialog';
 import { ReplicasBadge } from './ReplicasBadge';
+import { UpdateState } from './UpdateState';
 import { useServiceActions } from './useServiceActions';
 import { t, type MessageKey } from '@/shared/i18n';
 
@@ -65,14 +78,15 @@ function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
             {service.name}
             <ReplicasBadge service={service} />
             {service.stack && <Badge variant="outline">{service.stack}</Badge>}
+            {updateTone(service.updateState) && <UpdateState service={service} />}
           </span>
         }
         description={
-          <span className="font-mono text-xs">
+          <span
+            className="block truncate font-mono text-xs"
+            title={service.updateMessage ?? undefined}
+          >
             {service.image}
-            {service.updateState &&
-              ` · ${t('swarm.service.update', { state: service.updateState })}`}
-            {service.updateMessage && ` (${service.updateMessage})`}
           </span>
         }
         actions={
@@ -85,12 +99,22 @@ function ServiceDetail({ swarm, id }: { swarm: SwarmView; id: string }) {
                 <ScaleIcon /> {t('swarm.services.action.scale')}
               </Button>
             )}
-            <Button variant="outline" onClick={() => actions.onRollback(service)}>
-              <Undo2Icon /> {t('swarm.services.action.rollback')}
-            </Button>
-            <Button variant="outline" onClick={() => actions.onRemove(service)}>
-              {t('common.remove')}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+                  <EllipsisVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => actions.onRollback(service)}>
+                  <Undo2Icon /> {t('swarm.services.action.rollback')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem variant="destructive" onSelect={() => actions.onRemove(service)}>
+                  <Trash2Icon /> {t('swarm.services.action.remove')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         }
       />

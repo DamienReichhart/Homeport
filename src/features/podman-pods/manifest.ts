@@ -1,14 +1,11 @@
 import { GroupIcon, PlusIcon } from 'lucide-react';
-import { defineFeature } from '@/core/feature';
+import { defineFeature, splitRoutes } from '@/core/feature';
 import { PodPage } from './ui/PodPage';
 import { PodsPage } from './ui/PodsPage';
 
 export const podmanPodsFeature = defineFeature({
   requires: 'podman',
-  routes: [
-    { path: 'podman-pods', Component: PodsPage },
-    { path: 'podman-pods/:id', Component: PodPage },
-  ],
+  routes: [splitRoutes('podman-pods', PodsPage, [{ path: ':id', Component: PodPage }])],
   nav: { path: '/podman-pods', label: 'podmanpods.nav', icon: GroupIcon, scope: 'host' },
   commands: [
     {

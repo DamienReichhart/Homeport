@@ -34,4 +34,7 @@ export default {
     'В том виде, в каком его выдали система, движок или библиотека, поэтому он не переведён.',
   'ui.errorDetails.openLogFolder': 'Открыть папку журналов',
   'ui.errorDetails.copyReport': 'Скопировать отчёт',
+  'ui.env.show': 'Показать значения',
+  'ui.env.hide': 'Скрыть значения',
+  'ui.confirm.typeName': 'Введите {name} для подтверждения',
 } satisfies Translation<typeof en>;

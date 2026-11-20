@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { BrushCleaningIcon, NetworkIcon, PlusIcon } from 'lucide-react';
 import { useState } from 'react';
-import { HostGate, resourceQueries } from '@/core/host';
+import { HostGate, hostQueries, resourceQueries } from '@/core/host';
 import type { NetworkView } from '@/shared/api';
 import {
   Button,
@@ -27,6 +27,8 @@ function NetworksList({ hostId }: { hostId: string }) {
   const networks = useQuery(resourceQueries.networks(hostId));
   const removeNetwork = useRemoveNetwork(hostId);
   const prune = usePruneNetworks(hostId);
+  const host =
+    useQuery(hostQueries.list()).data?.find((h) => h.host.id === hostId)?.host.name ?? hostId;
   const [dialog, confirm] = useConfirmedAction();
   const [query, setQuery] = usePageQuery();
   const [creating, setCreating] = useState(false);
@@ -34,7 +36,7 @@ function NetworksList({ hostId }: { hostId: string }) {
   usePageAction(t('networks.create'), () => setCreating(true));
 
   const remove = (n: NetworkView) =>
-    confirm(removeNetworkConfirmation(n, () => removeNetwork.mutateAsync(n)));
+    confirm(removeNetworkConfirmation(n, host, () => removeNetwork.mutateAsync(n)));
 
   if (networks.isPending) return <Spinner />;
   if (networks.error)
@@ -48,7 +50,7 @@ function NetworksList({ hostId }: { hostId: string }) {
           <>
             <Button
               variant="outline"
-              onClick={() => confirm(pruneNetworksConfirmation(() => prune.mutateAsync()))}
+              onClick={() => confirm(pruneNetworksConfirmation(host, () => prune.mutateAsync()))}
             >
               <BrushCleaningIcon /> {t('networks.cleanUp')}
             </Button>
@@ -64,7 +66,12 @@ function NetworksList({ hostId }: { hostId: string }) {
         <SearchInput value={query} onChange={setQuery} placeholder={t('networks.search')} />
       </div>
       {networks.data.length === 0 ? (
-        <EmptyState icon={NetworkIcon} title={t('networks.empty')} />
+        <EmptyState
+          icon={NetworkIcon}
+          title={t('networks.empty')}
+          description={t('networks.empty.description')}
+          action={<Button onClick={() => setCreating(true)}>{t('networks.create')}</Button>}
+        />
       ) : (
         <DataTable
           columns={networkColumns({ onInspect: setOpen, onRemove: remove })}

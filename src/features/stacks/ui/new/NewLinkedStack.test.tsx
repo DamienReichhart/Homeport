@@ -45,7 +45,8 @@ describe('creating a Linked Stack', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Choose a folder…' }));
     expect(await screen.findByText('compose.override.yaml')).toBeInTheDocument();
     expect(screen.getByLabelText('Name')).toHaveValue('site');
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More ways to save' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Save without deploying' }));
     await waitFor(() => expect(created).toHaveLength(1));
     expect(created[0]).toMatchObject({
       name: 'site',
@@ -70,6 +71,6 @@ describe('creating a Linked Stack', () => {
     );
     await userEvent.click(screen.getByRole('button', { name: 'Choose a folder…' }));
     expect(await screen.findByText('/home/me/empty has no compose file.')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Save and deploy' })).toBeNull();
   });
 });

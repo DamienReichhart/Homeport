@@ -68,7 +68,7 @@ Removing a repository deletes its key or token and its clone on this computer. I
 
 5. Check the **Name** (it comes from the repository's name), and add an **Environment** for what doesn't belong in git, such as passwords: `KEY=value` lines, encrypted on this computer and given to Compose as variables when it deploys.
 
-6. Choose **Save and deploy** — or **Save** to deploy later.
+6. Choose **Save and deploy** — or **Save without deploying**, under its arrow, to deploy later.
 
 </Steps>
 
@@ -122,4 +122,6 @@ What Homeport does hold stays editable on the same tab:
 - its **profiles**, if the compose file declares some;
 - whether it **checks for new commits** and **deploys them automatically**.
 
-**Forget** stops Homeport following the repository; the Stack's containers keep running, and it becomes External.
+Changes to them are saved by **Sync**, which then deploys, or by **Save without deploying**, under its arrow, for the next deploy. The environment's values stay hidden until **Show values**.
+
+**Forget**, in **Forget this Stack** at the foot of the tab, stops Homeport following the repository; the Stack's containers keep running, and it becomes External.

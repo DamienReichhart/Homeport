@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': '{name} रोकें',
   'containerd.containers.actionOne.pause': '{name} को विराम दें',
   'containerd.containers.actionOne.resume': '{name} जारी रखें',
-  'containerd.containers.removeOne': '{name} हटाएँ',
+  'containerd.containers.actionsFor': '{name} के लिए कार्रवाइयाँ',
   'containerd.containers.done.start': '{name} शुरू हुआ',
   'containerd.containers.done.stop': '{name} रुका',
   'containerd.containers.done.pause': '{name} को विराम दिया गया',
@@ -137,11 +137,18 @@ export default {
   'containerd.snapshots.kind.unknown': 'अज्ञात',
   'containerd.snapshots.removeOne': '{key} हटाएँ',
   'containerd.snapshots.removed': 'स्नैपशॉट {key} हटाया गया',
+  'containerd.snapshots.pruned':
+    '{count, plural, one {# स्नैपशॉट हटाया गया} other {# स्नैपशॉट हटाए गए}}',
   'containerd.snapshots.inUse':
     'कुछ इसका इस्तेमाल करता है या इस पर बना है। पहले कंटेनर या इमेज हटाएँ।',
   'containerd.snapshots.remove.title': 'स्नैपशॉट {key} हटाएँ?',
   'containerd.snapshots.remove.description':
     'कोई इसका इस्तेमाल नहीं करता। इसकी फ़ाइलें, {size}, होस्ट से मिटा दी जाती हैं।',
+  'containerd.snapshots.prune.open': 'इस्तेमाल न होने वाले हटाएँ',
+  'containerd.snapshots.prune.title':
+    '{count, plural, one {इस्तेमाल न होने वाला # स्नैपशॉट} other {इस्तेमाल न होने वाले # स्नैपशॉट}} हटाएँ?',
+  'containerd.snapshots.prune.description':
+    'कोई इनका इस्तेमाल नहीं करता और न ही इन पर कुछ बना है। इनकी फ़ाइलें, {size}, होस्ट से मिटा दी जाती हैं।',
   'containerd.namespaces.nav': 'नेमस्पेस',
   'containerd.namespaces.title': 'नेमस्पेस',
   'containerd.namespaces.summary':
@@ -150,7 +157,8 @@ export default {
   'containerd.namespaces.created': 'नेमस्पेस {name} बनाया गया',
   'containerd.namespaces.removed': 'नेमस्पेस {name} हटाया गया',
   'containerd.namespaces.shown': 'दिखाया गया',
-  'containerd.namespaces.show': 'दिखाएँ',
+  'containerd.namespaces.show': 'इसके कंटेनर और इमेज दिखाएँ',
+  'containerd.namespaces.showOne': '{name} दिखाएँ',
   'containerd.namespaces.removeOne': '{name} हटाएँ',
   'containerd.namespaces.notEmpty':
     'सिर्फ़ खाली नेमस्पेस हटाए जा सकते हैं। पहले इसके कंटेनर और इमेज हटाएँ।',

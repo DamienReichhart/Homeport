@@ -35,7 +35,7 @@ Homeport solo carga las listas cuando has escrito dos caracteres, y después las
 | Teclas                                     | Hace                                                                                           |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostrar los atajos de teclado                                                                  |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir las páginas de la barra lateral en orden: Resumen, Tablero, Contenedores…                |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir las páginas de la barra lateral en orden: Tablero, Resumen, Contenedores…                |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Abrir Ajustes                                                                                  |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Seleccionar el host anterior o el siguiente, en el orden en que los lista la página Hosts      |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Actualizar las listas del host seleccionado: contenedores, imágenes, volúmenes, redes, stacks… |
@@ -44,10 +44,11 @@ Pasa el puntero sobre una página de la barra lateral para ver sus teclas.
 
 ### En una página
 
-| Teclas       | Hace                                                                                                                                                                                                                                                                  |
-| ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| <kbd>/</kbd> | Poner el foco en el campo de búsqueda de la página. <kbd>Esc</kbd> en un campo vacío lo abandona.                                                                                                                                                                     |
-| <kbd>N</kbd> | Iniciar la acción principal de la página: **Ejecutar contenedor**, **Descargar imagen**, **Crear volumen**, **Crear red**, **Nuevo stack** o **Añadir host**; y en las páginas de Podman, containerd, Incus y Helm, la suya, como **Nuevo pod** o **Nueva instancia** |
+| Teclas                      | Hace                                                                                                                                                                                                                                                                  |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <kbd>/</kbd>                | Poner el foco en el campo de búsqueda de la página. <kbd>Esc</kbd> en un campo vacío lo abandona.                                                                                                                                                                     |
+| <kbd>N</kbd>                | Iniciar la acción principal de la página: **Ejecutar contenedor**, **Descargar imagen**, **Crear volumen**, **Crear red**, **Nuevo stack** o **Añadir host**; y en las páginas de Podman, containerd, Incus y Helm, la suya, como **Nuevo pod** o **Nueva instancia** |
+| <kbd>↑</kbd> / <kbd>↓</kbd> | En una lista con un elemento abierto a su lado, abrir el elemento de arriba o de abajo                                                                                                                                                                                |
 
 El botón de la acción principal de una página muestra <kbd>N</kbd> cuando pasas el puntero sobre él.
 

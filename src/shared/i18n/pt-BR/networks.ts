@@ -10,6 +10,7 @@ export default {
   'networks.create': 'Criar rede',
   'networks.search': 'Pesquisar redes',
   'networks.empty': 'Nenhuma rede',
+  'networks.empty.description': 'Contêineres na mesma rede se encontram pelo nome.',
 
   'networks.column.name': 'Nome',
   'networks.column.stack': 'Stack',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': 'Contêineres',
   'networks.builtIn': 'integrada',
   'networks.internal': 'interna',
-  'networks.inspectOne': 'Inspecionar {name}',
-  'networks.removeOne': 'Remover {name}',
+  'networks.moreActions': 'Mais ações para {name}',
+  'networks.action.inspect': 'Inspecionar',
 
-  'networks.remove.title': 'Remover a rede {name}?',
+  'networks.remove.title': 'Remover a rede {name} de {host}?',
   'networks.remove.attached':
     'Ela ainda tem {count, plural, one {# contêiner conectado} other {# contêineres conectados}}; desconecte-os antes.',
   'networks.remove.unused':
     'Nenhum contêiner a usa. Contêineres que a referenciam pelo nome não vão conseguir iniciar.',
-  'networks.prune.title': 'Remover redes não usadas?',
+  'networks.prune.title': 'Remover redes não usadas em {host}?',
   'networks.prune.description':
     'Todas as redes personalizadas sem nenhum contêiner conectado são removidas.',
 

@@ -31,13 +31,16 @@ export function NotificationsCard({
     <Card>
       <CardHeader>
         <CardTitle>{t('settings.notifications.title')}</CardTitle>
-        <CardDescription>{t('settings.notifications.description')}</CardDescription>
+        <CardDescription id="notifications-description">
+          {t('settings.notifications.description')}
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-3">
         {KINDS.map(({ key, label }) => (
           <div key={key} className="flex items-center gap-2">
             <Switch
               id={`notify-${key}`}
+              aria-describedby="notifications-description"
               checked={current?.[key] ?? true}
               onCheckedChange={(on) =>
                 onChange({

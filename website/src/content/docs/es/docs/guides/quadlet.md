@@ -41,7 +41,7 @@ En la página **Contenedores**, un contenedor creado por una unidad muestra el s
 
 ## La página de una unidad
 
-- La cabecera tiene **Iniciar**, **Detener** y **Reiniciar**, **Editar** y **Eliminar**.
+- El encabezado tiene las acciones del servicio de la unidad: **Iniciar**, **Detener** y **Reiniciar**. La que no se puede usar explica por qué en su descripción emergente.
 - **Servicio** muestra la unidad de systemd, si es una unidad del sistema o una unidad de usuario (`systemctl --user`), dónde está su archivo en el host, y su aplicación y su pod cuando los tiene.
 - **Archivo de la unidad** muestra el archivo tal como lo lee Podman, con resaltado.
 - **Contenedores** lista los contenedores que creó, y cada uno abre su página de contenedor.
@@ -58,9 +58,9 @@ Podman escribe los archivos donde van las unidades de su usuario y recarga syste
 
 ## Editar y eliminar
 
-**Editar** abre el archivo de la unidad. **Guardar** lo escribe en su sitio y recarga systemd; los archivos instalados junto a ella se mantienen. Un servicio en ejecución conserva sus ajustes anteriores hasta que lo **reinicias**. Si el archivo cambió en el host desde que lo abriste, **Guardar** se rechaza y lo dice, en lugar de sobrescribir ese cambio: abre la unidad de nuevo para verlo, o elige **Sobrescribir**.
+**Editar**, en la tarjeta **Archivo de la unidad**, abre el archivo de la unidad. **Guardar** lo escribe en su sitio y recarga systemd; los archivos instalados junto a ella se mantienen. Un servicio en ejecución conserva sus ajustes anteriores hasta que lo **reinicias**. Si el archivo cambió en el host desde que lo abriste, **Guardar** se rechaza y lo dice, en lugar de sobrescribir ese cambio: abre la unidad de nuevo para verlo, o elige **Sobrescribir**.
 
-**Eliminar** borra el archivo de la unidad y recarga systemd. **Detener antes su servicio en ejecución** está activado por defecto; sin ello, Podman se niega a eliminar una unidad en ejecución. Los contenedores, volúmenes e imágenes que creó la unidad se conservan.
+**Eliminar**, en **Eliminar esta unidad** al pie de la página de la unidad, borra el archivo de la unidad y recarga systemd. **Detener su servicio si está en ejecución** está activado por defecto; sin ello, Podman se niega a eliminar una unidad en ejecución. Los contenedores, volúmenes e imágenes que creó la unidad se conservan.
 
 ## Qué ejecuta Homeport en el host
 

@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { KeyboardIcon } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
+import { usePalette } from './paletteContext';
 import { useNavigate } from 'react-router-dom';
 import type { PaletteCommand } from '@/core/feature';
 import { useHosts, useHostSelection } from '@/core/host';
@@ -34,7 +35,7 @@ import { t } from '@/shared/i18n';
 
 /** The command palette, opened with Mod+K from any page. */
 export function CommandPalette() {
-  const [open, setOpen] = useState(false);
+  const { open, setOpen } = usePalette();
   const [query, setQuery] = useState('');
   // Kept for the session, most recent first.
   const [recent, setRecent] = useState<string[]>([]);

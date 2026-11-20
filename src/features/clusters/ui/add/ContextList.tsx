@@ -39,7 +39,7 @@ export function ContextList({
               <label htmlFor={id} className="font-medium">
                 {context.name}
               </label>
-              {context.current && <Badge variant="secondary">{t('clusters.import.current')}</Badge>}
+              {context.current && <Badge variant="outline">{t('clusters.import.current')}</Badge>}
               {context.auth && <Badge variant="outline">{authLabel(context.auth)}</Badge>}
               <span className="text-muted-foreground truncate font-mono text-xs">
                 {context.server}

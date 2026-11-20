@@ -27,4 +27,4 @@ Cliquez sur un objet pour ouvrir sa page :
 - **Conditions**, quand son `status` en a, comme pour les pages propres à Homeport.
 - **Événements** le concernant, et son **YAML**, sans `managedFields`.
 
-Quand son type le permet, **Modifier** ouvre son YAML pour le changer par une prévisualisation et un server-side apply (voir [Appliquer et modifier du YAML](/docs/clusters/yaml/)), et **Supprimer** le supprime après une confirmation qui le nomme, ainsi que le cluster (voir [Supprimer](/docs/clusters/actions/#supprimer)). Sur la liste, cochez plusieurs objets pour les supprimer ensemble.
+Quand son type le permet, **Modifier** ouvre son YAML pour le changer par une prévisualisation et un server-side apply (voir [Appliquer et modifier du YAML](/docs/clusters/yaml/)), et **Supprimer** (dans son menu **Plus d’actions**) le supprime après une confirmation qui le nomme, ainsi que le cluster (voir [Supprimer](/docs/clusters/actions/#supprimer)). Sur la liste, cochez plusieurs objets pour les supprimer ensemble.

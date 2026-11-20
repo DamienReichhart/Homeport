@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   connectionLabel,
   describeAddress,
@@ -10,22 +10,13 @@ import {
   supports,
   useHostSelection,
 } from '@/core/host';
-import { HostSwarmLink } from '@/features/swarm';
 import type { HostView } from '@/shared/api';
 import { cn } from '@/shared/lib';
-import {
-  Badge,
-  Card,
-  CardAction,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/shared/ui';
+import { Badge } from '@/shared/ui';
 import { HostUsage } from './HostUsage';
 import { t, tRich } from '@/shared/i18n';
 
-/** A Host at a glance; clicking it selects it and opens its containers. */
+/** A Host at a glance on the Board; clicking it opens its Overview. */
 export function HostCard({ view, selected }: { view: HostView; selected: boolean }) {
   const { select } = useHostSelection();
   const navigate = useNavigate();
@@ -53,77 +44,64 @@ export function HostCard({ view, selected }: { view: HostView; selected: boolean
     (sum, n) => ({ containers: sum.containers + n.containers, images: sum.images + n.images }),
     { containers: 0, images: 0 },
   );
+  const problem = view.status.state !== 'connected';
   return (
-    <Card
-      className={cn(
-        'cursor-pointer transition-colors hover:border-primary/60',
-        selected && 'border-primary',
-      )}
+    <button
+      type="button"
+      aria-current={selected || undefined}
       onClick={() => {
         select(view.host.id);
-        if (connected)
-          navigate(
-            containerd ? '/containerd/containers' : incus ? '/incus/instances' : '/containers',
-          );
+        void navigate('/overview');
       }}
+      className={cn(
+        'bg-card hover:border-foreground/40 focus-visible:ring-ring/50 grid min-w-0 gap-1.5 rounded-md border p-3 text-start text-sm transition-colors outline-none focus-visible:ring-3',
+        selected && 'border-foreground/60',
+        view.status.state === 'unreachable' && 'border-destructive/50',
+      )}
     >
-      <CardHeader>
-        <CardTitle className="truncate">{view.host.name}</CardTitle>
-        <CardDescription className="truncate font-mono text-xs">
-          {describeAddress(view.host.connection)}
-        </CardDescription>
-        <CardAction>
-          <Badge variant="outline">{connectionLabel(view.host.connection.kind)}</Badge>
-        </CardAction>
-      </CardHeader>
-      <CardContent className="grid gap-3">
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="min-w-0 flex-1 truncate font-semibold">{view.host.name}</span>
+        <Badge variant="outline" className="text-muted-foreground font-normal">
+          {connectionLabel(view.host.connection.kind)}
+        </Badge>
+      </span>
+      <span className="text-muted-foreground truncate font-mono text-xs">
+        {describeAddress(view.host.connection)}
+      </span>
+      {problem ? (
         <HostStatusBadge status={view.status} />
-        {connected && <HostSwarmLink hostId={view.host.id} />}
-        {connected && info.data && (
-          <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
-            <span>
-              {tRich('overview.host.running', {
-                running: info.data.running,
-                total: info.data.containers,
-                strong: (chunks) => <span className="text-foreground font-medium">{chunks}</span>,
-              })}
-            </span>
-            <span>{t('overview.host.images', { count: info.data.images })}</span>
-            <HostUsage hostId={view.host.id} cpus={info.data.cpus} memory={info.data.memory} />
-          </div>
-        )}
-        {connected && held && (
-          <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
+      ) : (
+        <span className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 tabular-nums">
+          {info.data && (
+            <>
+              <span>
+                {tRich('overview.host.running', {
+                  running: info.data.running,
+                  total: info.data.containers,
+                  strong: (chunks) => <span className="text-foreground font-medium">{chunks}</span>,
+                })}
+              </span>
+              <HostUsage hostId={view.host.id} cpus={info.data.cpus} memory={info.data.memory} />
+            </>
+          )}
+          {held && (
             <span>
               {t('overview.host.containerdContainers', {
                 count: held.containers,
                 namespaces: namespaces.data?.length ?? 0,
               })}
             </span>
-            <span>{t('overview.host.images', { count: held.images })}</span>
-          </div>
-        )}
-        {connected && inProjects && (
-          <div className="text-muted-foreground grid grid-cols-2 gap-2 text-sm">
+          )}
+          {inProjects && (
             <span>
               {t('overview.host.incusInstances', {
                 count: inProjects.instances,
                 projects: projects.data?.length ?? 0,
               })}
             </span>
-            <span>{t('overview.host.images', { count: inProjects.images })}</span>
-          </div>
-        )}
-        {connected && docker && (
-          <Link
-            to={`/board?host=${encodeURIComponent(view.host.id)}`}
-            className="text-primary justify-self-start text-sm hover:underline"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {t('overview.host.onBoard')}
-          </Link>
-        )}
-      </CardContent>
-    </Card>
+          )}
+        </span>
+      )}
+    </button>
   );
 }

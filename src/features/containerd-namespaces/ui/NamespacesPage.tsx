@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { CheckIcon, FolderTreeIcon, PlusIcon, Trash2Icon } from 'lucide-react';
+import { EyeIcon, FolderTreeIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import { useState } from 'react';
 import { useActionRequest } from '@/core/feature';
 import { containerdQueries, HostGate, useContainerdNamespace } from '@/core/host';
@@ -12,6 +12,9 @@ import {
   ErrorMessage,
   PageHeader,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   WithShortcut,
   type ColumnDef,
@@ -43,7 +46,7 @@ function NamespacesList({ hostId }: { hostId: string }) {
         <span className="flex items-center gap-2 font-medium">
           {row.original.name}
           {row.original.name === current && (
-            <Badge variant="secondary">{t('containerd.namespaces.shown')}</Badge>
+            <Badge variant="outline">{t('containerd.namespaces.shown')}</Badge>
           )}
         </span>
       ),
@@ -52,18 +55,20 @@ function NamespacesList({ hostId }: { hostId: string }) {
       id: 'containers',
       header: t('containerd.namespaces.column.containers'),
       accessorFn: (n) => n.containers,
+      cell: ({ row }) => <div className="text-end tabular-nums">{row.original.containers}</div>,
     },
     {
       id: 'images',
       header: t('containerd.namespaces.column.images'),
       accessorFn: (n) => n.images,
+      cell: ({ row }) => <div className="text-end tabular-nums">{row.original.images}</div>,
     },
     {
       id: 'labels',
       header: t('containerd.namespaces.column.labels'),
       accessorFn: (n) => Object.keys(n.labels).join(' '),
       cell: ({ row }) => (
-        <span className="flex flex-wrap gap-1">
+        <span className="flex max-w-80 gap-1 overflow-hidden">
           {Object.entries(row.original.labels).map(([k, v]) => (
             <Badge key={k} variant="outline" className="font-mono">
               {k}={v}
@@ -82,28 +87,49 @@ function NamespacesList({ hostId }: { hostId: string }) {
         return (
           <div className="flex justify-end gap-1" onClick={(e) => e.stopPropagation()}>
             {ns.name !== current && (
-              <Button variant="outline" size="sm" onClick={() => choose(ns.name)}>
-                <CheckIcon /> {t('containerd.namespaces.show')}
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('containerd.namespaces.showOne', { name: ns.name })}
+                    onClick={() => choose(ns.name)}
+                  >
+                    <EyeIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>{t('containerd.namespaces.show')}</TooltipContent>
+              </Tooltip>
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('containerd.namespaces.removeOne', { name: ns.name })}
-              title={empty ? undefined : t('containerd.namespaces.notEmpty')}
-              disabled={!empty || remove.isPending}
-              onClick={() =>
-                confirm({
-                  title: t('containerd.namespaces.remove.title', { name: ns.name }),
-                  description: t('containerd.namespaces.remove.description'),
-                  confirmLabel: t('common.remove'),
-                  destructive: true,
-                  action: () => remove.mutateAsync(ns.name),
-                })
-              }
-            >
-              <Trash2Icon />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled button shows no tooltip; its wrapper does. */}
+                <span tabIndex={empty ? -1 : 0}>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('containerd.namespaces.removeOne', { name: ns.name })}
+                    disabled={!empty || remove.isPending}
+                    onClick={() =>
+                      confirm({
+                        title: t('containerd.namespaces.remove.title', { name: ns.name }),
+                        description: t('containerd.namespaces.remove.description'),
+                        confirmLabel: t('common.remove'),
+                        destructive: true,
+                        action: () => remove.mutateAsync(ns.name),
+                      })
+                    }
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {empty
+                  ? t('containerd.namespaces.removeOne', { name: ns.name })
+                  : t('containerd.namespaces.notEmpty')}
+              </TooltipContent>
+            </Tooltip>
           </div>
         );
       },
@@ -128,6 +154,11 @@ function NamespacesList({ hostId }: { hostId: string }) {
           icon={FolderTreeIcon}
           title={t('containerd.namespaces.empty')}
           description={t('containerd.namespaces.emptyDescription')}
+          action={
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon /> {t('containerd.namespaces.new')}
+            </Button>
+          }
         />
       ) : (
         <DataTable

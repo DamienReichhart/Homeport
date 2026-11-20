@@ -13,6 +13,9 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   WithShortcut,
   type ColumnDef,
@@ -49,25 +52,36 @@ function ProfilesList({ hostId, project }: { hostId: string; project: string }) 
       header: t('incus.profiles.column.description'),
       accessorFn: (p) => p.description,
       cell: ({ row }) => (
-        <span className="text-muted-foreground">{row.original.description || '—'}</span>
+        <span
+          className="text-muted-foreground block max-w-80 truncate"
+          title={row.original.description || undefined}
+        >
+          {row.original.description || '—'}
+        </span>
       ),
     },
     {
       id: 'settings',
       header: t('incus.profiles.column.settings'),
       accessorFn: (p) => Object.keys(p.config).length + Object.keys(p.devices).length,
-      cell: ({ row }) =>
-        t('incus.profiles.settings', {
-          config: Object.keys(row.original.config).length,
-          devices: Object.keys(row.original.devices).length,
-        }),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground whitespace-nowrap">
+          {t('incus.profiles.settings', {
+            config: Object.keys(row.original.config).length,
+            devices: Object.keys(row.original.devices).length,
+          })}
+        </span>
+      ),
     },
     {
       id: 'usedBy',
       header: t('incus.profiles.column.usedBy'),
       accessorFn: (p) => p.usedBy.join(' '),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs">
+        <span
+          className="text-muted-foreground block max-w-64 truncate text-xs"
+          title={row.original.usedBy.join('\n') || undefined}
+        >
           {row.original.usedBy.join(', ') || '—'}
         </span>
       ),
@@ -81,24 +95,33 @@ function ProfilesList({ hostId, project }: { hostId: string; project: string }) 
         const why = undeletable(profile);
         return (
           <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('incus.profiles.deleteOne', { name: profile.name })}
-              title={why ?? undefined}
-              disabled={why !== null || remove.isPending}
-              onClick={() =>
-                confirm({
-                  title: t('incus.profiles.delete.title', { name: profile.name }),
-                  description: t('incus.profiles.delete.description', { project }),
-                  confirmLabel: t('incus.delete'),
-                  destructive: true,
-                  action: () => remove.mutateAsync(profile.name),
-                })
-              }
-            >
-              <Trash2Icon />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled button shows no tooltip; its wrapper does. */}
+                <span tabIndex={why ? 0 : -1}>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('incus.profiles.deleteOne', { name: profile.name })}
+                    disabled={why !== null || remove.isPending}
+                    onClick={() =>
+                      confirm({
+                        title: t('incus.profiles.delete.title', { name: profile.name }),
+                        description: t('incus.profiles.delete.description', { project }),
+                        confirmLabel: t('incus.delete'),
+                        destructive: true,
+                        action: () => remove.mutateAsync(profile.name),
+                      })
+                    }
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {why ?? t('incus.profiles.deleteOne', { name: profile.name })}
+              </TooltipContent>
+            </Tooltip>
           </div>
         );
       },
@@ -118,11 +141,21 @@ function ProfilesList({ hostId, project }: { hostId: string; project: string }) 
           </WithShortcut>
         }
       />
-      <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('incus.profiles.search')} />
-      </div>
+      {profiles.data.length > 0 && (
+        <div className="mb-3">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('incus.profiles.search')} />
+        </div>
+      )}
       {profiles.data.length === 0 ? (
-        <EmptyState icon={SlidersHorizontalIcon} title={t('incus.profiles.empty', { project })} />
+        <EmptyState
+          icon={SlidersHorizontalIcon}
+          title={t('incus.profiles.empty', { project })}
+          action={
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon /> {t('incus.profiles.new')}
+            </Button>
+          }
+        />
       ) : (
         <DataTable
           columns={columns}

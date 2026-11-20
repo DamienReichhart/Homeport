@@ -10,6 +10,7 @@ export default {
   'networks.create': 'Netzwerk erstellen',
   'networks.search': 'Netzwerke durchsuchen',
   'networks.empty': 'Keine Netzwerke',
+  'networks.empty.description': 'Container im selben Netzwerk erreichen einander über ihren Namen.',
 
   'networks.column.name': 'Name',
   'networks.column.stack': 'Stack',
@@ -18,15 +19,15 @@ export default {
   'networks.column.containers': 'Container',
   'networks.builtIn': 'integriert',
   'networks.internal': 'intern',
-  'networks.inspectOne': '{name} untersuchen',
-  'networks.removeOne': '{name} entfernen',
+  'networks.moreActions': 'Weitere Aktionen für {name}',
+  'networks.action.inspect': 'Untersuchen',
 
-  'networks.remove.title': 'Netzwerk {name} entfernen?',
+  'networks.remove.title': 'Netzwerk {name} von {host} entfernen?',
   'networks.remove.attached':
     'Es hat noch {count, plural, one {# verbundenen Container} other {# verbundene Container}}; trennen Sie sie zuerst.',
   'networks.remove.unused':
     'Kein Container verwendet es. Container, die es über seinen Namen referenzieren, starten dann nicht mehr.',
-  'networks.prune.title': 'Unbenutzte Netzwerke entfernen?',
+  'networks.prune.title': 'Unbenutzte Netzwerke auf {host} entfernen?',
   'networks.prune.description':
     'Alle benutzerdefinierten Netzwerke, mit denen kein Container verbunden ist, werden entfernt.',
 

@@ -3,7 +3,9 @@ export default {
   'hosts.title': 'Hosts',
   'hosts.description': 'The Docker Engines Homeport connects to.',
   'hosts.add': 'Add host',
-  'hosts.empty': 'No hosts yet.',
+  'hosts.empty': 'No hosts yet',
+  'hosts.emptyDescription':
+    'Add a Docker, Podman, containerd or Incus Engine: on this computer, or on a server over SSH or TLS.',
   'hosts.column.name': 'Name',
   'hosts.column.type': 'Type',
   'hosts.column.address': 'Address',
@@ -11,19 +13,19 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'Host saved',
   'hosts.notFound': 'This host no longer exists.',
-  'hosts.addPage.description': 'Connect Homeport to a Docker Engine.',
-  'hosts.switcher.label': 'Host',
-  'hosts.switcher.placeholder': 'No host',
+  'hosts.addPage.description':
+    'Add an Engine found on this computer, import one, or enter its connection below.',
+  'hosts.addPage.manual': 'Enter the connection',
   'hosts.switcher.add': 'Add host…',
   'hosts.switcher.manage': 'Manage hosts',
-  'hosts.switcher.hosts': 'Hosts',
-  'hosts.switcher.clusters': 'Clusters',
   'hosts.switcher.addCluster': 'Add cluster…',
   'hosts.switcher.manageClusters': 'Manage clusters',
   'hosts.switcher.whyUnusable': 'Why {name} can’t be used',
   'hosts.detail.enabled': 'Enabled',
   'hosts.detail.reconnect': 'Reconnect',
   'hosts.connection.title': 'Connection',
+  'hosts.connection.save': 'Save changes',
+  'hosts.connection.discard': 'Discard changes',
   'hosts.remove.title': 'Remove host',
   'hosts.remove.description':
     'Homeport forgets this host, its credentials and its Managed Stack definitions. Nothing running on the host is touched.',
@@ -31,6 +33,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Deletes the stored connection, SSH key or certificates, and the compose definitions of its Managed Stacks. Containers, images and volumes on the host stay as they are.',
   'hosts.sshSetup.title': 'Authorize Homeport on the server',
+  'hosts.sshSetup.show': 'Show commands',
+  'hosts.sshSetup.hide': 'Hide commands',
   'hosts.sshSetup.description':
     'Run these on <mono>{server}</mono> as the SSH user, then reconnect.',
   'hosts.sshSetup.descriptionBastions':
@@ -65,10 +69,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'Local socket',
   'hosts.form.keepHint': 'Leave blank to keep the stored value.',
+  'hosts.form.connectOver': 'Connect over',
   'hosts.form.name': 'Name',
+  'hosts.form.nameHint': 'Leave it empty to name it {name}.',
   'hosts.form.engine': 'Engine',
   'hosts.form.engineHint':
-    'Docker-compatible covers Docker and Podman; Homeport tells them apart when it connects. containerd is reached through its socket, here or over SSH; Incus also over HTTPS (TLS).',
+    'Docker-compatible covers Docker and Podman. containerd is reached through its socket, here or over SSH; Incus also over HTTPS (TLS).',
   'hosts.form.socketOnly': '{engine} only answers on its socket: connect locally or over SSH.',
   'hosts.form.noPlainTcp': '{engine} doesn’t answer over plain TCP: use TLS, SSH or its socket.',
   'hosts.form.socketPath': 'Socket path',
@@ -107,7 +113,8 @@ export default {
   'hosts.ssh.auth': 'Authentication',
   'hosts.ssh.auth.generated': 'New key for this host',
   'hosts.ssh.auth.imported': 'Existing key',
-  'hosts.ssh.generated.editing': 'This host keeps its key. Regenerate it from the host page.',
+  'hosts.ssh.generated.editing':
+    'This host keeps its key. To replace it, use Regenerate key beside the commands above.',
   'hosts.ssh.generated.new':
     'Homeport creates an Ed25519 key for this host and shows you the command that authorizes it on the server.',
   'hosts.ssh.privateKey': 'Private key',
@@ -170,7 +177,7 @@ export default {
   'hosts.bundle.confirmation': 'Passphrase again',
   'hosts.bundle.problem.short': 'Use at least {min} characters.',
   'hosts.bundle.problem.mismatch': 'The two passphrases differ.',
-  'hosts.bundle.export.button': 'Export',
+  'hosts.bundle.export.button': 'Export hosts to a file…',
   'hosts.bundle.export.title': 'Export hosts',
   'hosts.bundle.export.description':
     'Writes the hosts you pick, with their keys, certificates and trusted server keys, to one file encrypted with a passphrase. Import it on another computer to use them there.',
@@ -181,7 +188,7 @@ export default {
   'hosts.bundle.export.done': '{count, plural, one {Exported # host} other {Exported # hosts}}',
   'hosts.bundle.export.withoutSecrets':
     'These were exported without their credentials, which can’t be opened on this computer:',
-  'hosts.bundle.import.button': 'Import',
+  'hosts.bundle.import.button': 'Import hosts from a file…',
   'hosts.bundle.import.title': 'Import hosts from an export',
   'hosts.bundle.import.description':
     'Open a file exported from Homeport with its passphrase, then pick the hosts to add. Their credentials are stored encrypted on this computer.',

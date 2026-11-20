@@ -12,23 +12,22 @@ La page **Volumes** liste les volumes de l’hôte sélectionné et indique comb
 
 <DocScreenshot
   name="volumes"
-  alt="La page Volumes, qui montre pour chaque volume sa stack, son pilote et les conteneurs qui l’utilisent."
+  alt="La page Volumes, qui montre pour chaque volume sa stack, sa taille et les conteneurs qui l’utilisent."
 />
 
-| Colonne         | Affiche                                                                       |
-| --------------- | ----------------------------------------------------------------------------- |
-| **Nom**         | Le nom du volume ; un long ID pour les volumes anonymes.                      |
-| **Stack**       | La stack qui l’a créé, le cas échéant.                                        |
-| **Pilote**      | En général `local`.                                                           |
-| **Taille**      | La place que ses données occupent sur le disque, selon `docker system df -v`. |
-| **Utilisé par** | Les conteneurs qui le montent, ou **Inutilisé**.                              |
-| **Créé**        | Quand il a été créé.                                                          |
+| Colonne         | Affiche                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| **Nom**         | Le nom du volume ; un long ID pour les volumes anonymes. Un pilote inhabituel, autre que `local`, est indiqué à côté. |
+| **Stack**       | La stack qui l’a créé, le cas échéant.                                                                                |
+| **Taille**      | La place que ses données occupent sur le disque, selon `docker system df -v`.                                         |
+| **Utilisé par** | Les conteneurs qui le montent, ou **Inutilisé**.                                                                      |
+| **Créé**        | Quand il a été créé.                                                                                                  |
 
-Un volume compte comme utilisé dès qu’un conteneur le monte, en cours d’exécution ou arrêté. Sélectionnez un volume pour voir sa taille, les conteneurs qui l’utilisent et tous ses détails, y compris l’endroit où ses données se trouvent sur l’hôte (`Mountpoint`).
+Un volume compte comme utilisé dès qu’un conteneur le monte, en cours d’exécution ou arrêté. Sélectionnez un volume pour voir sa taille, les conteneurs qui l’utilisent et tous ses détails, y compris l’endroit où ses données se trouvent sur l’hôte (**Point de montage**).
 
 ### Tailles
 
-Le moteur mesure chaque volume pour donner leur taille, ce qui peut prendre quelques secondes sur un hôte qui a beaucoup de données ; la liste apparaît donc aussitôt et la colonne **Taille** se remplit ensuite. Triez par **Taille** pour trouver le volume qui remplit un disque. Les tailles sont mesurées à nouveau quand un volume est créé ou supprimé, et quand vous choisissez **Actualiser les tailles** — pas à chaque écriture d’un conteneur, si bien qu’une taille peut être légèrement en retard.
+Le moteur mesure chaque volume pour donner leur taille, ce qui peut prendre quelques secondes sur un hôte qui a beaucoup de données ; la liste apparaît donc aussitôt et la colonne **Taille** se remplit ensuite. Triez par **Taille** pour trouver le volume qui remplit un disque. Les tailles sont mesurées à nouveau quand un volume est créé ou supprimé, et quand vous choisissez **Actualiser les tailles** (dans le menu **Plus d’actions** de la page) — pas à chaque écriture d’un conteneur, si bien qu’une taille peut être légèrement en retard.
 
 Seuls les volumes du pilote `local` ont une taille ; les autres pilotes (NFS, plugins de stockage cloud) affichent **—**.
 
@@ -90,12 +89,12 @@ Si la copie échoue — le disque est plein, par exemple —, Homeport supprime 
 
 <Aside type="danger">Supprimer un volume supprime définitivement les données qu’il contient.</Aside>
 
-Le bouton de suppression de chaque ligne demande confirmation et nomme les conteneurs qui montent encore le volume. Le moteur refuse de supprimer un volume qu’un conteneur utilise, même arrêté — supprimez d’abord ces conteneurs.
+**Supprimer…**, dans le menu **⋯** d’un volume, nomme l’hôte et les conteneurs qui montent encore le volume, et vous demande de saisir le nom du volume avant que **Supprimer le volume et les données** ne fonctionne. Le moteur refuse de supprimer un volume utilisé par un conteneur, même arrêté — supprimez d’abord ces conteneurs.
 
-**Nettoyer** en supprime plusieurs à la fois :
+**Nettoyer** (dans le menu **Plus d’actions** de la page) en supprime plusieurs à la fois :
 
 - **Volumes anonymes inutilisés** — les volumes sans nom qu’aucun conteneur n’utilise.
-- **Tous les volumes inutilisés** — tous les volumes qu’aucun conteneur n’utilise, volumes nommés compris.
+- **Tous les volumes inutilisés** — tous les volumes qu’aucun conteneur n’utilise, volumes nommés compris. Homeport vous demande d’abord de saisir le nom de l’hôte.
 
 ## Réseaux
 
@@ -132,6 +131,6 @@ Les réseaux intégrés ne peuvent pas être modifiés ici.
 
 ### Supprimer des réseaux
 
-Les réseaux intégrés ne peuvent pas être supprimés. Pour les autres réseaux, la confirmation indique combien de conteneurs y sont encore rattachés ; le moteur refuse de supprimer un réseau sur lequel des conteneurs tournent. Les conteneurs qui font référence par son nom à un réseau supprimé ne démarreront pas tant qu’il n’existera pas à nouveau.
+Le menu **⋯** de chaque ligne propose **Inspecter**, et **Supprimer** pour les réseaux qui peuvent être supprimés ; la suppression nomme l’hôte. Les réseaux intégrés ne peuvent pas être supprimés. Pour les autres réseaux, la confirmation indique combien de conteneurs y sont encore rattachés ; le moteur refuse de supprimer un réseau sur lequel des conteneurs tournent. Les conteneurs qui font référence par son nom à un réseau supprimé ne démarreront pas tant qu’il n’existera pas à nouveau.
 
 **Nettoyer** supprime tous les réseaux personnalisés auxquels aucun conteneur n’est rattaché.

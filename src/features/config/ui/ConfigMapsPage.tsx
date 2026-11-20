@@ -12,7 +12,14 @@ function columns(showNamespace: boolean): ColumnDef<ConfigMapView, unknown>[] {
       id: 'name',
       header: t('config.column.name'),
       accessorFn: (c) => c.name,
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span
+          className="inline-block max-w-72 truncate align-bottom font-medium"
+          title={row.original.name}
+        >
+          {row.original.name}
+        </span>
+      ),
     },
     ...(showNamespace
       ? [
@@ -23,7 +30,12 @@ function columns(showNamespace: boolean): ColumnDef<ConfigMapView, unknown>[] {
           },
         ]
       : []),
-    { id: 'keys', header: t('config.column.keys'), accessorFn: (c) => c.keys.length },
+    {
+      id: 'keys',
+      header: t('config.column.keys'),
+      accessorFn: (c) => c.keys.length,
+      cell: ({ getValue }) => <span className="tabular-nums">{getValue<number>()}</span>,
+    },
     {
       id: 'age',
       header: t('config.column.age'),

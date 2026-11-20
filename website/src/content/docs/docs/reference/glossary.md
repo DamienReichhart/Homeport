@@ -27,7 +27,7 @@ What an Incus host runs: a system container, which boots a whole Linux distribut
 
 ### Project (Incus's)
 
-On an Incus host, the space its instances, images, profiles, custom volumes and networks live in. An Incus host's pages show one at a time, picked under the host switcher. See [projects](/docs/hosts/incus/#projects).
+On an Incus host, the space its instances, images, profiles, custom volumes and networks live in. An Incus host's pages show one at a time, picked under the Host in the sidebar. See [projects](/docs/hosts/incus/#projects).
 
 ### Profile
 
@@ -127,7 +127,15 @@ A short-lived `busybox` container Homeport creates on a Host to open a volume �
 
 ### Board
 
-The page listing the containers of every connected Host in one table, each labelled with its Host. See [Board](/docs/guides/overview/#board).
+The home page: a tile for every Host, Swarm and Cluster, what needs you on all of them, and the containers of every connected Host in one table, each labelled with its Host. See [Board](/docs/guides/overview/#board).
+
+### Needs you
+
+The Board's list of what asks for your attention: a Host or a Cluster that can't be reached, a container that is unhealthy, dead, restarting or exited with an error, a Kubernetes workload that isn't ready, a Stack whose images have a newer version published. Healthy things never appear in it. See [Needs you](/docs/guides/overview/#needs-you).
+
+### Overview
+
+One Host's or one Cluster's own page: its status and address, its Engine or API server, its usage and its recent events. Not the Board, which spans every Host and Cluster. See [Overview](/docs/guides/overview/#overview).
 
 ### Command palette
 
@@ -167,6 +175,8 @@ The French app, docs and website use these terms, so a screen and a page always 
 | External Stack | stack externe            |
 | Adopt          | adopter                  |
 | Board          | Tableau                  |
+| Needs you      | À traiter                |
+| Overview       | Vue d’ensemble (f.)      |
 | Bastion        | bastion (m.)             |
 | Deploy key     | clé de déploiement (f.)  |
 | Port forward   | redirection de port (f.) |

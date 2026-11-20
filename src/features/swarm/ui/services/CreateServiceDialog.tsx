@@ -11,6 +11,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  EnvTextarea,
   ErrorMessage,
   Input,
   Label,
@@ -19,7 +20,6 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-  Textarea,
 } from '@/shared/ui';
 import { useCreateService } from '../../api/mutations';
 import { swarmFeatureQueries } from '../../api/queries';
@@ -64,6 +64,7 @@ export function CreateServiceDialog({
               <Label htmlFor="service-image">{t('swarm.create.image')}</Label>
               <Input
                 id="service-image"
+                className="font-mono"
                 value={form.image}
                 autoFocus
                 placeholder={t('swarm.create.imagePlaceholder')}
@@ -129,6 +130,7 @@ export function CreateServiceDialog({
             <Label htmlFor="service-command">{t('swarm.create.command')}</Label>
             <Input
               id="service-command"
+              className="font-mono"
               value={form.command}
               placeholder={t('swarm.create.commandPlaceholder')}
               onChange={(e) => set({ command: e.target.value })}
@@ -136,13 +138,12 @@ export function CreateServiceDialog({
           </div>
           <div className="grid gap-1.5">
             <Label htmlFor="service-env">{t('swarm.create.env')}</Label>
-            <Textarea
+            <EnvTextarea
               id="service-env"
-              rows={3}
-              className="font-mono text-xs"
+              className="min-h-20"
               placeholder="KEY=value"
               value={form.env}
-              onChange={(e) => set({ env: e.target.value })}
+              onChange={(env) => set({ env })}
             />
           </div>
           <PortsField ports={form.ports} onChange={(ports) => set({ ports })} />

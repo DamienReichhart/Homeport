@@ -34,11 +34,11 @@ Ein Host, der zu einem Docker Swarm gehört, zeigt **Manager von** oder **Worker
 
 ## Hosts hinzufügen, bearbeiten und entfernen
 
-- **Fügen** Sie einen Host mit **Host hinzufügen…** im Host-Umschalter oben in der Seitenleiste **hinzu**, oder mit **Host hinzufügen** in der Übersicht.
-- **Hosts verwalten** im Host-Umschalter listet jeden Host mit Typ, Adresse und Status auf. Wählen Sie einen aus, um seine Seite zu öffnen.
-- Auf der Seite eines Hosts können Sie seine Verbindungsdetails ändern und **Speichern** wählen; Homeport verbindet sich mit den neuen Einstellungen neu. Der Verbindungstyp eines Hosts lässt sich nicht ändern – entfernen Sie ihn stattdessen und fügen Sie ihn erneut hinzu.
+- **Fügen** Sie einen Host mit **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste und dann **Host hinzufügen…** **hinzu**.
+- **Hosts verwalten**, das Einstellungssymbol neben **Hosts** in der Seitenleiste, öffnet die Seite „Hosts“: jeden Host mit Typ, Adresse und Status. Wählen Sie einen aus, um seine Seite zu öffnen.
+- Auf der Seite eines Hosts können Sie seine Verbindungsdetails ändern und **Änderungen speichern** wählen; Homeport verbindet sich mit den neuen Einstellungen neu. Der Verbindungstyp eines Hosts lässt sich nicht ändern – entfernen Sie ihn stattdessen und fügen Sie ihn erneut hinzu.
 - Der Schalter **Aktiviert** trennt einen Host, ohne ihn zu vergessen. Ein deaktivierter Host versucht es nicht erneut, bis Sie ihn wieder einschalten.
-- **Host entfernen** vergisst den Host, seine gespeicherten Anmeldedaten, die Compose-Definitionen seiner verwalteten Stacks, seine verknüpften Stacks und den Bereitstellungsverlauf seiner Stacks. Nichts, was auf dem Host läuft, wird angetastet: Container, Images und Volumes bleiben, wie sie sind, ebenso die Ordner verknüpfter Stacks. Die Stacks eines Swarms, den der Host verwaltet, gehören zum Swarm und bleiben erhalten.
+- **Host entfernen** vergisst den Host, seine gespeicherten Anmeldedaten, die Compose-Definitionen seiner verwalteten Stacks, seine verknüpften Stacks und den Bereitstellungsverlauf seiner Stacks. Nichts, was auf dem Host läuft, wird angetastet: Container, Images und Volumes bleiben, wie sie sind, ebenso die Ordner verknüpfter Stacks. Die Stacks eines Swarms, den der Host verwaltet, gehören zum Swarm und bleiben erhalten. Da die Definitionen endgültig gelöscht werden, fragt Homeport zuerst nach dem Namen des Hosts.
 
 Host-Namen müssen eindeutig sein, ohne Berücksichtigung der Groß- und Kleinschreibung.
 
@@ -73,11 +73,11 @@ Ein Kontext, dessen Name bereits der eines Hosts ist, wird als `name (2)` angebo
 
 ## Auf einen anderen Computer umziehen
 
-**Exportieren** auf der Seite „Hosts“ speichert die von Ihnen gewählten Hosts in einer durch eine Passphrase geschützten Datei; **Importieren** auf der Seite „Hosts“ des anderen Computers öffnet sie und fügt die von Ihnen gewählten Hosts hinzu, bereit zum Verbinden. Ein Host, dessen Name dort vergeben ist, wird als `name (2)` vorgeschlagen, und Sie können ihn umbenennen oder überspringen. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen), wie die Datei geschützt ist. Um alles auf einmal umzuziehen, Cluster, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen eingeschlossen, verwenden Sie stattdessen eine [Sicherung](/docs/reference/data-and-backups/#in-homeport-sichern).
+**Hosts in eine Datei exportieren…** im Menü **Weitere Aktionen** der Seite „Hosts“ speichert die von Ihnen gewählten Hosts in einer durch eine Passphrase geschützten Datei; **Hosts aus einer Datei importieren…** im selben Menü auf dem anderen Computer öffnet sie und fügt die von Ihnen gewählten Hosts hinzu, bereit zum Verbinden. Ein Host, dessen Name dort vergeben ist, wird als `name (2)` vorgeschlagen, und Sie können ihn umbenennen oder überspringen. Siehe [Auf einen anderen Computer umziehen](/docs/reference/security/#auf-einen-anderen-computer-umziehen), wie die Datei geschützt ist. Um alles auf einmal umzuziehen, Cluster, Stacks, Registry-Anmeldungen, Repositorys und Einstellungen eingeschlossen, verwenden Sie stattdessen eine [Sicherung](/docs/reference/data-and-backups/#in-homeport-sichern).
 
 ## Einen Host auswählen
 
-Jede Ressourcenseite – Container, Images, Volumes, Netzwerke, Stacks und Ereignisse – zeigt den im **Host-Umschalter** ausgewählten Host. Die Seiten eines containerd-Hosts zeigen außerdem jeweils einen Namespace, gewählt [unter dem Umschalter](/docs/hosts/containerd/#namespaces), und die eines Incus-Hosts ein [Projekt](/docs/hosts/incus/#projekte). Wechseln Sie den Host dort, oder wählen Sie die Karte eines Hosts in der [Übersicht](/docs/guides/overview/). Homeport merkt sich Ihre Wahl zwischen den Starts.
+Jede Ressourcenseite – Container, Images, Volumes, Netzwerke, Stacks und Ereignisse – zeigt den in der Seitenleiste ausgewählten Host, unter dessen Namen seine Seiten stehen. Die Seiten eines containerd-Hosts zeigen außerdem jeweils einen Namespace, gewählt [unter dem Host](/docs/hosts/containerd/#namespaces) in der Seitenleiste, und die eines Incus-Hosts ein [Projekt](/docs/hosts/incus/#projekte). Wählen Sie einen anderen Host in der Seitenleiste, um zu wechseln – dabei bleiben Sie auf derselben Art von Seite, wenn er sie hat –, oder seine Kachel auf dem [Board](/docs/guides/overview/#board). Ein Host, der nicht verwendet werden kann, hat daneben eine Schaltfläche **Warum … nicht verwendet werden kann**, die den Fehler zeigt. Homeport merkt sich Ihre Wahl zwischen den Starts.
 
 ## Status
 

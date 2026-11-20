@@ -1,4 +1,4 @@
-import { act, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { emit } from '@tauri-apps/api/event';
 import type { EngineEvent } from '@/shared/api';
@@ -78,12 +78,14 @@ describe('events page', () => {
     });
     const user = userEvent.setup();
     renderApp('/events');
-    await user.click(await screen.findByRole('button', { name: 'Clear history' }));
+    await screen.findByText('web');
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Clear history' }));
+    const confirmation = await screen.findByRole('alertdialog');
     expect(
-      await screen.findByText(/Every event kept for this Host is forgotten/),
+      within(confirmation).getByText(/Every event kept for this Host is forgotten/),
     ).toBeInTheDocument();
-    const buttons = screen.getAllByRole('button', { name: 'Clear history' });
-    await user.click(buttons[buttons.length - 1]!);
+    await user.click(within(confirmation).getByRole('button', { name: 'Clear history' }));
     await waitFor(() => expect(cleared).toEqual(['h1']));
     expect(await screen.findByText('No events yet')).toBeInTheDocument();
   });

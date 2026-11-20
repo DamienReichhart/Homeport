@@ -20,9 +20,9 @@ To connect to a remote Engine instead, choose **Add another host**:
 
 1. Pick how to connect: **SSH**, **TLS**, **TCP** or **Local socket**. SSH is the usual choice for a server.
 
-2. Give the Host a **Name** you'll recognise, such as `production`.
+2. Fill in the connection details. For SSH that's the **Server**, **Port**, **User** and, if Docker isn't at the default place, the **Remote socket path**.
 
-3. Fill in the connection details. For SSH that's the **Server**, **Port**, **User** and, if Docker isn't at the default place, the **Remote socket path**.
+3. Give the Host a **Name** you'll recognise, such as `production`. Left empty, it's named after its server.
 
 4. Choose **Add host**. Homeport opens the Host's page and starts connecting.
 
@@ -43,19 +43,19 @@ When the status turns **Connected**, you're done.
 
 ## 2. Look around
 
-The sidebar has a page for each kind of resource, and they all show the Host picked in the **Host switcher** at the top of the sidebar:
+The sidebar starts with **Search**, which opens the [command palette](/docs/guides/keyboard/#command-palette), and the **Board**. Below them it lists every Host with its status: select one and its pages open beneath it, each showing that Host. **Settings** is at the foot.
 
-| Page           | What it shows                                                            |
-| -------------- | ------------------------------------------------------------------------ |
-| **Overview**   | A card for every Host, the selected Host's engine, disk usage and events |
-| **Board**      | The containers of every connected Host in one table                      |
-| **Containers** | Every container, grouped by Stack, with live CPU and memory              |
-| **Images**     | Local images, what uses them, pulling and cleaning up                    |
-| **Volumes**    | Volumes and the containers that use them                                 |
-| **Networks**   | Networks, their subnets and attached containers                          |
-| **Stacks**     | Compose projects: Managed, Linked, Synced and External                   |
-| **Events**     | What the Engine reported, kept for 30 days                               |
-| **Settings**   | Theme and language, registry logins, backups, and what this machine has  |
+| Page           | What it shows                                                                        |
+| -------------- | ------------------------------------------------------------------------------------ |
+| **Board**      | Every Host and Cluster at a glance, what needs you, and every container in one table |
+| **Overview**   | The selected Host: its engine, containers, CPU, memory, disk usage and recent events |
+| **Containers** | Every container, grouped by Stack, with live CPU and memory                          |
+| **Images**     | Local images, what uses them, pulling and cleaning up                                |
+| **Volumes**    | Volumes and the containers that use them                                             |
+| **Networks**   | Networks, their subnets and attached containers                                      |
+| **Stacks**     | Compose projects: Managed, Linked, Synced and External                               |
+| **Events**     | What the Engine reported, kept for 30 days                                           |
+| **Settings**   | Theme and language, registry logins, backups, and what this machine has              |
 
 Homeport refreshes as the Engine reports changes, so you never need a refresh button — start a container in a terminal and it appears straight away.
 
@@ -79,7 +79,7 @@ Back on the Containers page, the port `8080:80/tcp` is a link: select it to open
 
 ## 4. Add more Hosts
 
-Add as many Hosts as you like with **Add host…** in the Host switcher. The Overview shows them all together; select a card to switch to that Host.
+Add as many Hosts as you like with **Add host or cluster**, under the list of Hosts in the sidebar. The Board shows them all together; select a Host in the sidebar, or its tile on the Board, to switch to it.
 
 <Aside type="tip">
   Homeport remembers the Host you had selected, and reconnects to every Host when it starts.

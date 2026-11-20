@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'Homeport 在此页面上遇到了意外问题。重新加载通常可以解决；如果问题反复出现，请从“详细信息”中复制报告并提交 issue。',
   'app.crash.reload': '重新加载',
-  'app.crash.backToOverview': '返回概览',
+  'app.crash.backToBoard': '返回看板',
   'app.shortcuts.title': '键盘快捷键',
   'app.shortcuts.description': '此处可用的快捷键。在输入框中输入时，N 和 / 等按键不会触发。',
   'app.shortcuts.general': '常规',
@@ -40,4 +40,10 @@ export default {
   'app.palette.hosts': '主机',
   'app.palette.actions': '操作',
   'app.palette.switchTo': '切换到 {name}',
+  'app.nav.search': '搜索',
+  'app.nav.hosts': '主机',
+  'app.nav.clusters': '集群',
+  'app.nav.target': '{name}，{status}',
+  'app.nav.running': '{total} 个容器中有 {running} 个正在运行',
+  'app.nav.add': '添加主机或集群',
 } satisfies Translation<typeof en>;

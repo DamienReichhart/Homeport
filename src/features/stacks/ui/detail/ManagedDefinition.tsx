@@ -6,18 +6,23 @@ import {
   type ManagedStack,
   useCapabilities,
 } from '@/shared/api';
-import { Button, ErrorMessage, useConfirm } from '@/shared/ui';
+import { Button, DangerZone, ErrorMessage, useConfirm } from '@/shared/ui';
 import { useForgetDefinition, useSaveDefinition } from '../../api/mutations';
 import { sameFiles } from '../../model/composeFiles';
 import type { ComposeJob } from '../../model/composeJob';
 import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { StackEditor } from '../StackEditor';
+import { DeployButton } from './DeployButton';
 import { ProfilesControl } from './ProfilesControl';
 import type { StackOwner } from '@/shared/api';
 import { deployTool } from '../../model/deployTool';
 import { t } from '@/shared/i18n';
 
-/** Edits, saves, redeploys or forgets the stored definition of a Managed Stack. */
+/**
+ * Edits and deploys the stored definition of a Managed Stack. Deploy saves,
+ * shows what changes when it already runs, then deploys; saving without
+ * deploying is one step away under it, and forgetting is set apart below.
+ */
 export function ManagedDefinition({
   owner,
   managed,
@@ -71,41 +76,39 @@ export function ManagedDefinition({
         }
       />
       {save.error && <ErrorMessage error={save.error} />}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          disabled={save.isPending || !canDeploy}
-          onClick={() =>
-            deployed ? setReview({ files, env }) : save.mutate({ files, env, deploy: true })
-          }
-        >
-          {t('stacks.managed.saveAndRedeploy')}
-        </Button>
-        <Button
-          variant="outline"
-          disabled={save.isPending || !dirty}
-          onClick={() => save.mutate({ files, env, deploy: false })}
-        >
-          {t('common.save')}
-        </Button>
-        <Button
-          variant="ghost"
-          className="ms-auto"
-          onClick={() =>
-            confirm({
-              title: t('stacks.forget.title', { name: managed.name }),
-              description: t('stacks.forget.description'),
-              confirmLabel: t('stacks.forget.confirm'),
-              destructive: true,
-              onConfirm: async () => {
-                await forget.mutateAsync();
-                navigate('/stacks');
-              },
-            })
-          }
-        >
-          {t('stacks.forget.confirm')}
-        </Button>
-      </div>
+      <DeployButton
+        canDeploy={canDeploy}
+        canSave={dirty}
+        unsaved={dirty}
+        pending={save.isPending}
+        onDeploy={() =>
+          deployed ? setReview({ files, env }) : save.mutate({ files, env, deploy: true })
+        }
+        onSave={() => save.mutate({ files, env, deploy: false })}
+      />
+      <DangerZone
+        title={t('stacks.forget.sectionTitle')}
+        description={t('stacks.forget.description')}
+        action={
+          <Button
+            variant="destructive"
+            onClick={() =>
+              confirm({
+                title: t('stacks.forget.title', { name: managed.name }),
+                description: t('stacks.forget.description'),
+                confirmLabel: t('stacks.forget.confirm'),
+                destructive: true,
+                onConfirm: async () => {
+                  await forget.mutateAsync();
+                  navigate('/stacks');
+                },
+              })
+            }
+          >
+            {t('stacks.forget.confirm')}
+          </Button>
+        }
+      />
       <ReviewDialog
         kind="managed"
         stackId={managed.id}

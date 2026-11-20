@@ -13,17 +13,17 @@ La página **Imágenes** lista las imágenes guardadas en el host seleccionado, 
   alt="La página Imágenes, con las imágenes, su tamaño y si están en uso."
 />
 
-| Columna    | Muestra                                                                            |
-| ---------- | ---------------------------------------------------------------------------------- |
-| **Nombre** | La primera etiqueta y cuántas más tiene; `<none>` para las imágenes sin etiqueta.  |
-| **ID**     | El ID corto de la imagen.                                                          |
-| **Creada** | Hace cuánto se compiló la imagen.                                                  |
-| **Tamaño** | Su tamaño en disco.                                                                |
-| **Estado** | **En uso** con el número de contenedores creados a partir de ella, o **Sin usar**. |
+| Columna    | Muestra                                                                           |
+| ---------- | --------------------------------------------------------------------------------- |
+| **Nombre** | La primera etiqueta y cuántas más tiene; `<none>` para las imágenes sin etiqueta. |
+| **ID**     | El ID corto de la imagen.                                                         |
+| **Creada** | Hace cuánto se compiló la imagen.                                                 |
+| **Tamaño** | Su tamaño en disco.                                                               |
+| **Estado** | Cuántos contenedores la usan, como **Usada por 3 contenedores**, o **Sin usar**.  |
 
 Los contenedores detenidos cuentan como usuarios de una imagen. Selecciona la cabecera de una columna para ordenar, y busca con **Buscar imágenes**.
 
-Una ⬆ junto al nombre significa que una de las etiquetas de la imagen apunta a una imagen más reciente en su registro; pasa el puntero por encima para ver cuál. Descarga la etiqueta para obtenerla. **Buscar imágenes más recientes** vuelve a preguntar a los registros en lugar de usar las respuestas guardadas durante 6 horas. Consulta [Imágenes más recientes](/docs/guides/containers/#imágenes-más-recientes) para saber cómo funciona la comprobación.
+**Versión más reciente**, una insignia ámbar junto al nombre, significa que una de las etiquetas de la imagen apunta a una imagen más reciente en su registro; pasa el puntero por encima para ver cuál. Esas imágenes aparecen primero, y el menú de la fila ofrece **Descargar la nueva versión de …** con la referencia ya escrita. **Buscar imágenes más recientes**, en el menú **Más acciones** de la página, vuelve a preguntar a los registros en lugar de usar las respuestas guardadas durante 6 horas. Consulta [imágenes más recientes](/docs/guides/containers/#imágenes-más-recientes) para ver cómo funciona la comprobación.
 
 ## Descargar una imagen
 
@@ -87,14 +87,14 @@ Si el registro la rechaza, el mensaje indica si hay que añadir un inicio de ses
 
 Para llevar imágenes a un host que no puede acceder a un registro — un servidor aislado, una Raspberry Pi en una red doméstica —, guárdalas en un archivo en este equipo y carga el archivo en el otro host.
 
-- **Guardar…**, en el menú **⋮** de una imagen, la escribe, con todos sus nombres, en un archivo `.tar` que eliges. Para guardar varias a la vez, márcalas en la lista y elige **Guardar N imágenes…** en la parte superior de la página.
-- **Cargar…**, en la parte superior de la página, lee un `.tar` creado con **Guardar…** o con `docker save` — también un `.tar.gz` comprimido — en el host seleccionado. Cuando termina, el cuadro de diálogo nombra las imágenes que cargó, con sus etiquetas.
+- **Guardar…**, en el menú **⋮** de una imagen, la escribe, con todos sus nombres, en un archivo `.tar` que eliges. Para guardar varias a la vez, márcalas en la lista y elige **Guardar N imágenes…** junto a la búsqueda.
+- **Cargar…** (en el menú **Más acciones** de la página) lee un `.tar` creado con **Guardar…** o con `docker save` — también un `.tar.gz` comprimido — en el host seleccionado. Cuando termina, el cuadro de diálogo nombra las imágenes que cargó, con sus etiquetas.
 
 El archivo viaja entre este equipo y el host por la propia conexión del host, así que esto también funciona con hosts remotos. El progreso muestra los bytes escritos o enviados; **Cancelar** lo detiene, y un guardado cancelado o fallido no deja ningún archivo a medias. Homeport nunca guarda el archivo entero en memoria, así que las imágenes de varios gigabytes no son un problema.
 
 ### Importar un sistema de archivos
 
-**Importar desde tar…**, en la parte superior de la página, convierte un tar de un sistema de archivos raíz en una imagen, como `docker import`: uno creado con [**Exportar sistema de archivos…**](/docs/guides/containers/#exportar-el-sistema-de-archivos-de-un-contenedor) de un contenedor o con `docker export`, una salida de `debootstrap` o de Buildroot, o un appliance de un fabricante. Elige el archivo (sin comprimir o comprimido con gzip, xz o bzip2), dale un **nombre** a la imagen — parte del nombre del archivo — y, opcionalmente, **Cambios**: instrucciones de Dockerfile como `CMD ["/bin/sh"]` o `ENV LANG=C.UTF-8`, ya que una imagen importada no tiene comando propio. El progreso muestra los bytes enviados; después, la imagen aparece en la lista.
+**Importar desde tar…** (en el menú **Más acciones** de la página) convierte un tar de un sistema de archivos raíz en una imagen, como `docker import`: uno creado con [**Exportar sistema de archivos…**](/docs/guides/containers/#exportar-el-sistema-de-archivos-de-un-contenedor) de un contenedor o con `docker export`, una salida de `debootstrap` o de Buildroot, o un appliance de un fabricante. Elige el archivo (sin comprimir o comprimido con gzip, xz o bzip2), dale un **nombre** a la imagen — parte del nombre del archivo — y, opcionalmente, **Cambios**: instrucciones de Dockerfile como `CMD ["/bin/sh"]` o `ENV LANG=C.UTF-8`, ya que una imagen importada no tiene comando propio. El progreso muestra los bytes enviados; después, la imagen aparece en la lista.
 
 ### ¿Guardar y cargar, o exportar e importar?
 
@@ -114,7 +114,7 @@ El archivo viaja entre este equipo y el host por la propia conexión del host, a
 
 ## Limpiar
 
-**Limpiar** ofrece dos niveles:
+**Limpiar** (en el menú **Más acciones** de la página) ofrece dos niveles:
 
 - **Imágenes huérfanas** — imágenes sin etiqueta que dejan las compilaciones y las descargas. Se pueden eliminar sin riesgo.
 - **Todas las imágenes sin usar** — todas las imágenes que no usa ningún contenedor, incluidas las etiquetadas. Se pueden volver a descargar, pero eso lleva tiempo y ancho de banda.

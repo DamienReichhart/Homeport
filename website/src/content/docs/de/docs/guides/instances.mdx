@@ -3,20 +3,20 @@ title: Instanzen
 description: Incus-Systemcontainer und virtuelle Maschinen ausführen; ihre Konsole und ein Terminal darin öffnen; Snapshots erstellen und wiederherstellen; Images, Profile, Speicherpools und Netzwerke verwalten.
 ---
 
-Eine **Instanz** ist das, was ein [Incus-Host](/docs/hosts/incus/) ausführt: ein **Systemcontainer**, der eine ganze Linux-Distribution bootet und dabei den Kernel des Hosts teilt, oder eine **virtuelle Maschine** mit eigenem Kernel. Jede Seite hier zeigt das Projekt, das unter dem Host-Umschalter gewählt ist.
+Eine **Instanz** ist das, was ein [Incus-Host](/docs/hosts/incus/) ausführt: ein **Systemcontainer**, der eine ganze Linux-Distribution bootet und dabei den Kernel des Hosts teilt, oder eine **virtuelle Maschine** mit eigenem Kernel. Jede Seite hier zeigt das Projekt, das unter dem ausgewählten Host in der Seitenleiste gewählt ist.
 
 ## Die Seite Instanzen
 
 **Instanzen** listet die Instanzen des Projekts mit Typ, Status, Image, globalen Adressen (IPv4 zuerst), Arbeitsspeicher und Alter auf. Filtern Sie sie nach Name, oder zeigen Sie nur Container oder nur virtuelle Maschinen.
 
-| Aktion              | Was Incus tut                                                                                                                                            |
-| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Starten**         | Bootet sie.                                                                                                                                              |
-| **Stoppen**         | Bittet ihr System, herunterzufahren, und gibt ihm 30 Sekunden; eine Instanz, die das nicht tut, wird gemeldet, mit **Stopp erzwingen** als Ausweg.       |
-| **Stopp erzwingen** | Schaltet sie sofort ab, wie beim Ziehen des Steckers.                                                                                                    |
-| **Neu starten**     | Fährt sie ordnungsgemäß herunter und bootet sie erneut.                                                                                                  |
-| **Einfrieren**      | Pausiert jeden Prozess darin; **Auftauen** setzt sie fort.                                                                                               |
-| **Löschen**         | Fragt zuerst nach und nennt die Snapshots, die mit ihr gelöscht werden. Eine laufende Instanz wird erst gelöscht, wenn Sie **Zuerst stoppen** ankreuzen. |
+| Aktion              | Was Incus tut                                                                                                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Starten**         | Bootet sie.                                                                                                                                                                    |
+| **Stoppen**         | Bittet ihr System, herunterzufahren, und gibt ihm 30 Sekunden; eine Instanz, die das nicht tut, wird gemeldet, mit **Stopp erzwingen** als Ausweg.                             |
+| **Stopp erzwingen** | Schaltet sie sofort ab, wie beim Ziehen des Steckers.                                                                                                                          |
+| **Neu starten**     | Fährt sie ordnungsgemäß herunter und bootet sie erneut.                                                                                                                        |
+| **Einfrieren**      | Pausiert jeden Prozess darin; **Auftauen** setzt sie fort.                                                                                                                     |
+| **Löschen**         | Fragt zuerst nach dem Namen der Instanz und nennt die Snapshots, die mit ihr gelöscht werden. Eine laufende Instanz wird erst gelöscht, wenn Sie **Zuerst stoppen** ankreuzen. |
 
 Die Liste aktualisiert sich binnen eines Augenblicks über die Ereignisse von Incus, wer auch immer die Änderung vorgenommen hat.
 
@@ -44,7 +44,7 @@ Ein bereits verwendeter Name, ein Image, das der Server nicht hat, ein voller Sp
 **Snapshots** listet die Snapshots der Instanz auf, mit dem Zeitpunkt der Erstellung, dem Ablaufzeitpunkt und der Angabe, ob sie den Laufzustand enthalten.
 
 - **Snapshot erstellen** benennt ihn (oder lässt Incus ihn `snap0`, `snap1`… nennen) und bewahrt ihn bis zum Löschen oder für einen Tag, eine Woche oder 30 Tage auf. Während die Instanz läuft und wenn ihre Einstellung `migration.stateful` es erlaubt, kann der Snapshot ihren Arbeitsspeicher enthalten, sodass eine Wiederherstellung dort fortsetzt, wo sie war.
-- **Wiederherstellen** versetzt die Instanz in den Zustand zum Zeitpunkt des Snapshots zurück. Alles, was sich seitdem geändert hat, geht verloren, und eine laufende Instanz startet neu, daher fragt Homeport zuerst nach.
+- **Wiederherstellen** setzt die Instanz auf den Stand zurück, den sie beim Erstellen des Snapshots hatte. Alles, was sich seitdem geändert hat, geht verloren, und eine laufende Instanz startet neu, deshalb fragt Homeport zuerst nach dem Namen der Instanz.
 - **Löschen** entfernt einen Snapshot nach einer Rückfrage; die Instanz bleibt, wie sie ist.
 
 ## Images
@@ -60,13 +60,13 @@ Ein bereits verwendeter Name, ein Image, das der Server nicht hat, ein voller Sp
 
 **Profile** listet die Profile des Projekts auf, mit der Anzahl der Schlüssel und Geräte, die jedes setzt, und den Instanzen, die es verwenden. Die Seite eines Profils bearbeitet seine Beschreibung, Konfiguration und Geräte als YAML, wie es `incus profile edit` tut, und verlinkt die Instanzen, die es verwenden. **Speichern** wendet die Änderungen auf diese Instanzen an, so wie Incus es tut. Hat jemand das Profil geändert, seit die Seite es geladen hat, wird das Speichern abgelehnt, statt dessen Änderungen zu überschreiben: **Neu laden** und dann Ihre Änderungen erneut vornehmen.
 
-**Neues Profil** erstellt ein leeres und öffnet es. `default` und Profile, die Instanzen verwenden, können nicht gelöscht werden.
+**Neues Profil** erstellt ein leeres und öffnet es. `default` und Profile, die Instanzen verwenden, können nicht gelöscht werden. Die Seite eines Profils hat **Löschen** in einem Abschnitt an ihrem Fuß, ausgegraut mit dem Grund, solange etwas das Profil verwendet.
 
 ## Speicher
 
 **Speicher** zeigt jeden Speicherpool mit seinem Treiber und wie voll er ist, sowie die Volumes des ausgewählten Pools im Projekt: die eigenen der Instanzen und Images und benutzerdefinierte, mit Inhalt, Größe und dem, was sie verwendet.
 
-**Neues Volume** erstellt ein benutzerdefiniertes Volume, ein Dateisystem oder ein Blockgerät, mit einer Größe oder der Standardgröße des Pools, um es an Instanzen anzuhängen, für Daten, die diese überdauern (`incus storage volume attach`). Ein benutzerdefiniertes Volume kann gelöscht werden, sobald es nichts mehr verwendet. Pools selbst werden mit `incus storage create` erstellt.
+**Neues Volume** erstellt ein benutzerdefiniertes Volume, ein Dateisystem oder ein Blockgerät, mit einer Größe oder der Standardgröße des Pools, um es an Instanzen anzuhängen, für Daten, die diese überdauern (`incus storage volume attach`). Ein benutzerdefiniertes Volume kann gelöscht werden, sobald es nichts mehr verwendet. Pools selbst werden mit `incus storage create` erstellt. Das Löschen eines solchen fragt zuerst nach seinem Namen.
 
 ## Netzwerke
 

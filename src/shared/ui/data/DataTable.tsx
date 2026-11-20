@@ -10,18 +10,37 @@ import {
   type SortingState,
 } from '@tanstack/react-table';
 import { ArrowDownIcon, ArrowUpIcon, ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
-import { useState, type ReactNode } from 'react';
+import { useState, type KeyboardEvent, type ReactNode } from 'react';
 import { Button } from '../primitives/button';
 import { Checkbox } from '../primitives/checkbox';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../primitives/table';
+import { useSplitPane } from '../layout/SplitView';
 import { cn } from '@/shared/lib/utils';
 import { t } from '@/shared/i18n';
 
 export type { ColumnDef } from '@tanstack/react-table';
 
+declare module '@tanstack/react-table' {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- the generics must match TanStack's
+  interface ColumnMeta<TData, TValue> {
+    /** Kept when the table is a split view's narrow list, beside the primary column. */
+    compact?: boolean;
+    /** `end` for numbers: the header and the cells line up on the end side. */
+    align?: 'end';
+  }
+}
+
 /** The keyboard focus ring of the table's own controls. */
 const FOCUS =
   'rounded-sm outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50 cursor-pointer';
+
+const safeDecode = (value: string) => {
+  try {
+    return decodeURIComponent(value);
+  } catch {
+    return value;
+  }
+};
 
 /** Brings a newly marked row into view (jsdom has no scrolling). */
 function scrollIntoView(row: HTMLTableRowElement | null) {
@@ -64,33 +83,53 @@ export function DataTable<T>({
 }) {
   const [sorting, setSorting] = useState<SortingState>(initialSorting);
   const [selection, setSelection] = useState<RowSelectionState>({});
+  const pane = useSplitPane();
+  // Beside an open item, the list shows what names each row and marks the open one.
+  const compact = pane.compact && !!onRowClick;
+  const openId = compact ? pane.selected : (selectedId ?? null);
+  const isOpen = (id: string) =>
+    openId !== null &&
+    (id === openId || id === safeDecode(openId) || (openId.length >= 12 && id.startsWith(openId)));
 
-  const allColumns: ColumnDef<T, unknown>[] = onSelectionChange
-    ? [
-        {
-          id: 'select',
-          enableSorting: false,
-          header: ({ table }) => (
-            <Checkbox
-              aria-label={t('ui.table.selectAll')}
-              checked={
-                table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && 'indeterminate')
-              }
-              onCheckedChange={(v) => table.toggleAllRowsSelected(v === true)}
-            />
-          ),
-          cell: ({ row }) => (
-            <Checkbox
-              aria-label={t('ui.table.selectRow')}
-              checked={row.getIsSelected()}
-              onClick={(e) => e.stopPropagation()}
-              onCheckedChange={(v) => row.toggleSelected(v === true)}
-            />
-          ),
-        },
-        ...columns,
-      ]
-    : columns;
+  const allColumns: ColumnDef<T, unknown>[] =
+    onSelectionChange && !compact
+      ? [
+          {
+            id: 'select',
+            enableSorting: false,
+            header: ({ table }) => (
+              <Checkbox
+                aria-label={t('ui.table.selectAll')}
+                checked={
+                  table.getIsAllRowsSelected() || (table.getIsSomeRowsSelected() && 'indeterminate')
+                }
+                onCheckedChange={(v) => table.toggleAllRowsSelected(v === true)}
+              />
+            ),
+            cell: ({ row }) => (
+              <Checkbox
+                aria-label={t('ui.table.selectRow')}
+                checked={row.getIsSelected()}
+                onClick={(e) => e.stopPropagation()}
+                onCheckedChange={(v) => row.toggleSelected(v === true)}
+              />
+            ),
+          },
+          ...columns,
+        ]
+      : columns;
+
+  const idOf = (c: ColumnDef<T, unknown>) =>
+    c.id ?? (c as { accessorKey?: string }).accessorKey ?? '';
+  const firstData = allColumns.map(idOf).find((id) => id && id !== 'select' && id !== 'actions');
+  const columnVisibility = compact
+    ? Object.fromEntries(
+        allColumns.map((c) => [
+          idOf(c),
+          idOf(c) === (primaryColumn ?? firstData) || c.meta?.compact === true,
+        ]),
+      )
+    : {};
 
   // The table instance changes in place, so the React Compiler must skip this
   // component, which is what this rule reports.
@@ -99,7 +138,7 @@ export function DataTable<T>({
     data,
     columns: allColumns,
     getRowId,
-    state: { sorting, globalFilter: filter, rowSelection: selection },
+    state: { sorting, globalFilter: filter, rowSelection: selection, columnVisibility },
     onSortingChange: setSorting,
     onRowSelectionChange: (updater) => {
       const next = typeof updater === 'function' ? updater(selection) : updater;
@@ -124,10 +163,19 @@ export function DataTable<T>({
     table.getAllLeafColumns().find((c) => c.id !== 'select' && c.id !== 'actions')?.id;
 
   const rows = table.getRowModel().rows;
+  /** Up and Down open the row above or below the open one. */
+  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!compact || !onRowClick || (event.key !== 'ArrowDown' && event.key !== 'ArrowUp')) return;
+    const at = rows.findIndex((row) => isOpen(row.id));
+    const next = rows[at + (event.key === 'ArrowDown' ? 1 : -1)];
+    if (!next) return;
+    event.preventDefault();
+    onRowClick(next.original);
+  };
   return (
-    <div className="rounded-md border">
+    <div className="bg-card rounded-md border" onKeyDown={onKeyDown}>
       <Table>
-        <TableHeader>
+        <TableHeader className={cn(compact && 'sr-only')}>
           {table.getHeaderGroups().map((group) => (
             <TableRow key={group.id}>
               {group.headers.map((header) => {
@@ -142,7 +190,10 @@ export function DataTable<T>({
                 return (
                   <TableHead
                     key={header.id}
-                    className={cn(header.id === 'select' && 'w-8')}
+                    className={cn(
+                      header.id === 'select' && 'w-8',
+                      header.column.columnDef.meta?.align === 'end' && 'text-end',
+                    )}
                     aria-sort={
                       !header.column.getCanSort()
                         ? undefined
@@ -185,16 +236,22 @@ export function DataTable<T>({
             rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() || row.id === selectedId ? 'selected' : undefined}
-                aria-selected={row.id === selectedId || undefined}
-                ref={row.id === selectedId ? scrollIntoView : undefined}
+                data-state={row.getIsSelected() || isOpen(row.id) ? 'selected' : undefined}
+                aria-selected={isOpen(row.id) || undefined}
+                aria-current={compact && isOpen(row.id) ? 'true' : undefined}
+                ref={isOpen(row.id) ? scrollIntoView : undefined}
                 className={cn(onRowClick && 'cursor-pointer')}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell) => {
                   const content = flexRender(cell.column.columnDef.cell, cell.getContext());
                   return (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        cell.column.columnDef.meta?.align === 'end' && 'text-end tabular-nums',
+                      )}
+                    >
                       {onRowClick && cell.column.id === primary ? (
                         // The row's one keyboard stop: Enter or Space clicks it, and
                         // the click reaches the row's handler like a mouse click.

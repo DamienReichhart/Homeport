@@ -1,9 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { RefreshCwIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
-import { ClusterGate, useNamespace } from '@/core/cluster';
+import { ClusterGate, NamespacePicker, useNamespace } from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
-import { Button, ErrorMessage, PageHeader, Spinner } from '@/shared/ui';
+import {
+  Button,
+  ErrorMessage,
+  PageHeader,
+  Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/shared/ui';
 import { apiQueries, CRDS } from '../api/queries';
 import { useApiWatch } from '../api/useApiWatch';
 import { findType } from '../model/types';
@@ -25,14 +33,26 @@ function ApiResources({ cluster }: { cluster: ClusterView }) {
         title={t('apiresources.title')}
         description={types.data && t('apiresources.summary', { count: types.data.length })}
         actions={
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => void types.refetch()}
-            disabled={types.isFetching}
-          >
-            <RefreshCwIcon /> {t('apiresources.refresh')}
-          </Button>
+          <>
+            {current?.api.namespaced && (
+              <NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />
+            )}
+            {/* The types follow CRDs live; this is for a type served another way. */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t('apiresources.refresh')}
+                  onClick={() => void types.refetch()}
+                  disabled={types.isFetching}
+                >
+                  <RefreshCwIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('apiresources.refresh')}</TooltipContent>
+            </Tooltip>
+          </>
         }
       />
       {types.isPending ? (
@@ -44,12 +64,7 @@ function ApiResources({ cluster }: { cluster: ClusterView }) {
           <TypePicker types={types.data} current={current} />
           <div className="min-w-0">
             {current ? (
-              <ObjectList
-                cluster={cluster}
-                info={current}
-                namespace={namespace}
-                onNamespace={setNamespace}
-              />
+              <ObjectList cluster={cluster} info={current} namespace={namespace} />
             ) : plural ? (
               <p className="text-muted-foreground text-sm">{t('apiresources.typeGone')}</p>
             ) : (

@@ -1,18 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, Trash2Icon } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { IncusGate } from '@/core/host';
 import {
   Badge,
   Button,
+  DangerZone,
   DataTable,
   ErrorMessage,
   KeyValue,
   PageHeader,
   Spinner,
+  useConfirmedAction,
   type ColumnDef,
 } from '@/shared/ui';
 import type { IncusLease } from '@/shared/api';
+import { useNetworks } from '../api/mutations';
 import { incusNetworkQueries } from '../api/queries';
 import { t } from '@/shared/i18n';
 
@@ -52,6 +55,8 @@ function NetworkDetail({
   const networks = useQuery(incusNetworkQueries.list(hostId, project));
   const state = useQuery(incusNetworkQueries.state(hostId, project, name));
   const network = networks.data?.find((n) => n.name === name);
+  const { remove } = useNetworks(hostId, project);
+  const [dialog, confirm] = useConfirmedAction();
   if (networks.isPending) return <Spinner />;
   if (networks.error)
     return <ErrorMessage error={networks.error} onRetry={() => void networks.refetch()} />;
@@ -64,6 +69,7 @@ function NetworkDetail({
         </Button>
       </div>
     );
+  const inUse = network.usedBy.length > 0;
   return (
     <div className="grid content-start gap-4">
       <PageHeader
@@ -73,7 +79,7 @@ function NetworkDetail({
               <ArrowLeftIcon className="rtl:-scale-x-100" />
             </Button>
             {network.name}
-            <Badge variant="secondary">{network.type}</Badge>
+            <Badge variant="outline">{network.type}</Badge>
           </span>
         }
         description={network.description || undefined}
@@ -85,15 +91,35 @@ function NetworkDetail({
             network.managed ? t('incus.networks.managed') : t('incus.networks.unmanaged'),
           ],
           [t('incus.networks.field.state'), state.data?.state ?? '—'],
-          [t('incus.networks.field.addresses'), state.data?.addresses.join(', ') || '—'],
-          [t('incus.networks.field.ipv4'), network.ipv4 ?? '—'],
-          [t('incus.networks.field.ipv6'), network.ipv6 ?? '—'],
+          [
+            t('incus.networks.field.addresses'),
+            <span key="addresses" className="font-mono text-xs">
+              {state.data?.addresses.join(', ') || '—'}
+            </span>,
+          ],
+          [
+            t('incus.networks.field.ipv4'),
+            <span key="ipv4" className="font-mono text-xs">
+              {network.ipv4 ?? '—'}
+            </span>,
+          ],
+          [
+            t('incus.networks.field.ipv6'),
+            <span key="ipv6" className="font-mono text-xs">
+              {network.ipv6 ?? '—'}
+            </span>,
+          ],
           [
             t('incus.networks.field.nat'),
             network.nat ? t('incus.networks.yes') : t('incus.networks.no'),
           ],
           [t('incus.networks.field.mtu'), state.data?.mtu ?? '—'],
-          [t('incus.networks.field.hwaddr'), state.data?.hwaddr || '—'],
+          [
+            t('incus.networks.field.hwaddr'),
+            <span key="hwaddr" className="font-mono text-xs">
+              {state.data?.hwaddr || '—'}
+            </span>,
+          ],
         ]}
       />
       <div>
@@ -131,6 +157,34 @@ function NetworkDetail({
           )}
         </div>
       )}
+      {network.managed && (
+        <DangerZone
+          title={t('incus.networks.delete.zone')}
+          description={
+            inUse
+              ? t('incus.networks.inUse', { names: network.usedBy.map((u) => u.name).join(', ') })
+              : t('incus.networks.delete.description')
+          }
+          action={
+            <Button
+              variant="destructive"
+              disabled={inUse || remove.isPending}
+              onClick={() =>
+                confirm({
+                  title: t('incus.networks.delete.title', { name: network.name }),
+                  description: t('incus.networks.delete.description'),
+                  confirmLabel: t('incus.delete'),
+                  destructive: true,
+                  action: () => remove.mutateAsync(network.name).then(back),
+                })
+              }
+            >
+              <Trash2Icon /> {t('incus.delete')}
+            </Button>
+          }
+        />
+      )}
+      {dialog}
     </div>
   );
 }

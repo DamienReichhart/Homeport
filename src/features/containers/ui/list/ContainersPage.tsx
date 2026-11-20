@@ -29,16 +29,20 @@ import {
   TableHeader,
   TableRow,
   useConfirm,
+  useSplitPane,
   WithShortcut,
 } from '@/shared/ui';
 import { useUsage } from '../../api/streams';
+import { columnCount, columnsFor } from '../../model/columns';
 import { groupByStack } from '../../model/grouping';
 import { swarmOfHost, useSwarms } from '@/core/swarm';
 import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { RunContainerDialog } from '../dialogs/RunContainerDialog';
+import { CompactContainerList } from './CompactContainerList';
 import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
 import { StackGroupRows } from './StackGroupRows';
+import { useWidth } from './useWidth';
 import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
 import { useActionRequest, usePageQuery } from '@/core/feature';
 import { t } from '@/shared/i18n';
@@ -57,6 +61,10 @@ function ContainersList({ hostId }: { hostId: string }) {
   const [selected, setSelected] = useState(new Set<string>());
   const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const [running, setRunning] = useState(false);
+  const pane = useSplitPane();
+  // The table keeps to the page's width: columns go as it narrows (model/columns).
+  const [tableBox, tableWidth] = useWidth();
+  const columns = columnsFor(tableWidth);
   usePageAction(t('containers.runContainer'), () => setRunning(true));
   useActionRequest('run', () => setRunning(true));
 
@@ -65,7 +73,17 @@ function ContainersList({ hostId }: { hostId: string }) {
     return <ErrorMessage error={containers.error} onRetry={() => void containers.refetch()} />;
 
   const all = containers.data;
-  const { groups, standalone } = groupByStack(all, query, onlyRunning);
+  const grouped = groupByStack(all, query, onlyRunning);
+  const { groups, standalone } = grouped;
+  if (pane.compact) {
+    return (
+      <div className="grid gap-3">
+        <PageHeader title={t('containers.title')} />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('containers.search')} />
+        <CompactContainerList grouped={grouped} openId={pane.selected} />
+      </div>
+    );
+  }
   const swarm = swarmOfHost(swarms.data, hostId);
   const address = host ? hostAddress(host.host.connection) : 'localhost';
   const selectedContainers = all.filter((c) => selected.has(c.id));
@@ -91,6 +109,7 @@ function ContainersList({ hostId }: { hostId: string }) {
       nested={nested}
       usage={usage.get(c.id)}
       pod={pods.get(c.id)}
+      columns={columns}
       newer={containerFreshness(freshness, c) === 'newer'}
       address={address}
       selected={selected.has(c.id)}
@@ -144,18 +163,22 @@ function ContainersList({ hostId }: { hostId: string }) {
           action={<Button onClick={() => setRunning(true)}>{t('containers.runContainer')}</Button>}
         />
       ) : (
-        <div className="rounded-md border">
+        <div ref={tableBox} className="bg-card rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8" />
                 <TableHead>{t('containers.column.name')}</TableHead>
-                <TableHead>{t('containers.column.image')}</TableHead>
+                {columns.image && <TableHead>{t('containers.column.image')}</TableHead>}
                 <TableHead>{t('containers.column.status')}</TableHead>
-                <TableHead>{t('containers.column.ports')}</TableHead>
-                <TableHead className="text-end">{t('containers.column.cpu')}</TableHead>
-                <TableHead className="text-end">{t('containers.column.memory')}</TableHead>
-                <TableHead>{t('containers.column.created')}</TableHead>
+                {columns.ports && <TableHead>{t('containers.column.ports')}</TableHead>}
+                {columns.usage && (
+                  <>
+                    <TableHead className="text-end">{t('containers.column.cpu')}</TableHead>
+                    <TableHead className="text-end">{t('containers.column.memory')}</TableHead>
+                  </>
+                )}
+                {columns.created && <TableHead>{t('containers.column.created')}</TableHead>}
                 <TableHead className="w-20" />
               </TableRow>
             </TableHeader>
@@ -172,6 +195,7 @@ function ContainersList({ hostId }: { hostId: string }) {
                     allSelected={ids.every((id) => selected.has(id))}
                     onSelect={(on) => toggle(ids, on)}
                     swarmId={swarm?.swarm.id}
+                    columns={columns}
                   >
                     {g.containers.map((c) => row(c, true))}
                   </StackGroupRows>
@@ -180,7 +204,10 @@ function ContainersList({ hostId }: { hostId: string }) {
               {standalone.map((c) => row(c, false))}
               {groups.length === 0 && standalone.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-muted-foreground h-20 text-center">
+                  <TableCell
+                    colSpan={columnCount(columns)}
+                    className="text-muted-foreground h-20 text-center"
+                  >
                     {t('containers.noMatch')}
                   </TableCell>
                 </TableRow>

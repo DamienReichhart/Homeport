@@ -165,6 +165,7 @@ export function NewInstanceDialog({
                   <Field id="instance-server" label={t('incus.remote.server')}>
                     <Input
                       id="instance-server"
+                      className="font-mono"
                       value={form.server}
                       onChange={(e) => set('server', e.target.value)}
                     />

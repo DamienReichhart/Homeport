@@ -33,4 +33,7 @@ export default {
     '시스템, 엔진 또는 라이브러리가 작성한 그대로이므로 번역되지 않습니다.',
   'ui.errorDetails.openLogFolder': '로그 폴더 열기',
   'ui.errorDetails.copyReport': '보고서 복사',
+  'ui.env.show': '값 표시',
+  'ui.env.hide': '값 숨기기',
+  'ui.confirm.typeName': '확인하려면 {name}을(를) 입력하세요',
 } satisfies Translation<typeof en>;

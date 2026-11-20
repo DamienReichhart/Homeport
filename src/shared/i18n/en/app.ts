@@ -15,7 +15,7 @@ export default {
   'app.crash.description':
     'Homeport hit an unexpected problem on this page. Reloading usually helps; if it keeps happening, copy the report from Details into an issue.',
   'app.crash.reload': 'Reload',
-  'app.crash.backToOverview': 'Back to overview',
+  'app.crash.backToBoard': 'Back to the Board',
   'app.shortcuts.title': 'Keyboard shortcuts',
   'app.shortcuts.description':
     'The shortcuts that work here. Keys like N and / don’t fire while you type in a field.',
@@ -38,4 +38,10 @@ export default {
   'app.palette.hosts': 'Hosts',
   'app.palette.actions': 'Actions',
   'app.palette.switchTo': 'Switch to {name}',
+  'app.nav.search': 'Search',
+  'app.nav.hosts': 'Hosts',
+  'app.nav.clusters': 'Clusters',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '{running} of {total} containers running',
+  'app.nav.add': 'Add host or cluster',
 } as const;

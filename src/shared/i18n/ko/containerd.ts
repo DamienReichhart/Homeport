@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': '{name} 중지',
   'containerd.containers.actionOne.pause': '{name} 일시 중지',
   'containerd.containers.actionOne.resume': '{name} 재개',
-  'containerd.containers.removeOne': '{name} 삭제',
+  'containerd.containers.actionsFor': '{name} 작업',
   'containerd.containers.done.start': '{name} 시작됨',
   'containerd.containers.done.stop': '{name} 중지됨',
   'containerd.containers.done.pause': '{name} 일시 중지됨',
@@ -136,11 +136,17 @@ export default {
   'containerd.snapshots.kind.unknown': '알 수 없음',
   'containerd.snapshots.removeOne': '{key} 삭제',
   'containerd.snapshots.removed': '스냅샷 {key} 삭제됨',
+  'containerd.snapshots.pruned': '스냅샷 {count, plural, other {#개}} 삭제됨',
   'containerd.snapshots.inUse':
     '이 스냅샷을 사용하거나 이 스냅샷을 기반으로 하는 항목이 있습니다. 먼저 컨테이너나 이미지를 삭제하세요.',
   'containerd.snapshots.remove.title': '스냅샷({key})을 삭제하시겠습니까?',
   'containerd.snapshots.remove.description':
     '사용하는 항목이 없습니다. 파일({size})이 호스트에서 삭제됩니다.',
+  'containerd.snapshots.prune.open': '사용하지 않는 항목 삭제',
+  'containerd.snapshots.prune.title':
+    '사용하지 않는 스냅샷 {count, plural, other {#개}}를 삭제하시겠습니까?',
+  'containerd.snapshots.prune.description':
+    '사용하거나 그 위에 만들어진 항목이 없습니다. 파일({size})이 호스트에서 삭제됩니다.',
   'containerd.namespaces.nav': '네임스페이스',
   'containerd.namespaces.title': '네임스페이스',
   'containerd.namespaces.summary':
@@ -149,7 +155,8 @@ export default {
   'containerd.namespaces.created': '{name} 네임스페이스를 만들었습니다',
   'containerd.namespaces.removed': '{name} 네임스페이스를 삭제했습니다',
   'containerd.namespaces.shown': '표시 중',
-  'containerd.namespaces.show': '표시',
+  'containerd.namespaces.show': '컨테이너와 이미지 표시',
+  'containerd.namespaces.showOne': '{name} 표시',
   'containerd.namespaces.removeOne': '{name} 삭제',
   'containerd.namespaces.notEmpty':
     '비어 있는 네임스페이스만 삭제할 수 있습니다. 먼저 컨테이너와 이미지를 삭제하세요.',

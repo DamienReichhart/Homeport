@@ -70,7 +70,7 @@ Supprimer un dépôt supprime sa clé ou son jeton et son clone sur cet ordinate
 
 5. Vérifiez le **Nom** (il vient du nom du dépôt), et ajoutez un **Environnement** pour ce qui n’a pas sa place dans git, comme les mots de passe : des lignes `KEY=value`, chiffrées sur cet ordinateur et transmises à Compose sous forme de variables au déploiement.
 
-6. Choisissez **Enregistrer et déployer** — ou **Enregistrer** pour déployer plus tard.
+6. Choisissez **Enregistrer et déployer** — ou **Enregistrer sans déployer**, sous sa flèche, pour déployer plus tard.
 
 </Steps>
 
@@ -124,4 +124,6 @@ Ce que Homeport détient reste modifiable dans le même onglet :
 - ses **profils**, si le fichier compose en déclare ;
 - s’il **recherche de nouveaux commits** et s’il **les déploie automatiquement**.
 
-**Oublier** fait cesser à Homeport de suivre le dépôt ; les conteneurs de la stack continuent de tourner, et elle devient externe.
+Leurs modifications sont enregistrées par **Synchroniser**, qui déploie ensuite, ou par **Enregistrer sans déployer**, sous sa flèche, pour le prochain déploiement. Les valeurs de l’environnement restent masquées jusqu’à **Afficher les valeurs**.
+
+**Oublier**, dans **Oublier cette stack** au pied de l’onglet, fait cesser à Homeport le suivi du dépôt ; les conteneurs de la stack continuent de tourner, et elle devient externe.

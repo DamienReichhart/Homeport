@@ -19,6 +19,7 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/shared/ui';
+import { formatDateTime } from '@/shared/lib';
 import { containerdContainerQueries } from '../api/queries';
 import { managedByKubernetes, STATE_LABELS, stateTone } from '../model/containers';
 import { CREATED_BY } from './containerColumns';
@@ -75,10 +76,19 @@ function ContainerDetail({
             </Button>
             <StatusDot tone={stateTone(container.state)} />
             {container.name}
-            <Badge variant="secondary">{t(CREATED_BY[container.createdBy])}</Badge>
+            <Badge variant="outline">{t(CREATED_BY[container.createdBy])}</Badge>
           </span>
         }
-        description={`${container.image} · ${t(STATE_LABELS[container.state])}`}
+        description={
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span>{t(STATE_LABELS[container.state])}</span>
+            {container.image && (
+              <span className="truncate font-mono text-xs" title={container.image}>
+                · {container.image}
+              </span>
+            )}
+          </span>
+        }
         actions={
           <TaskActions
             hostId={hostId}
@@ -126,8 +136,14 @@ function ContainerDetail({
                   : t('containerd.state.exited', { code: container.exitStatus }),
               ],
               [t('containerd.containers.field.pod'), container.pod ?? '—'],
-              [t('containerd.containers.field.created'), container.createdAt ?? '—'],
-              [t('containerd.containers.field.updated'), updatedAt ?? '—'],
+              [
+                t('containerd.containers.field.created'),
+                container.createdAt ? formatDateTime(container.createdAt) : '—',
+              ],
+              [
+                t('containerd.containers.field.updated'),
+                updatedAt ? formatDateTime(updatedAt) : '—',
+              ],
               [t('containerd.containers.field.extensions'), extensions.join(', ') || '—'],
             ]}
           />

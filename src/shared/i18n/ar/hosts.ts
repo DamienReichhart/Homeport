@@ -6,7 +6,9 @@ export default {
   'hosts.title': 'المضيفات',
   'hosts.description': 'محركات Docker التي يتصل بها Homeport.',
   'hosts.add': 'إضافة مضيف',
-  'hosts.empty': 'لا توجد مضيفات بعد.',
+  'hosts.empty': 'لا توجد مضيفات بعد',
+  'hosts.emptyDescription':
+    'أضف محرك Docker أو Podman أو containerd أو Incus: على هذا الكمبيوتر، أو على خادم عبر SSH أو TLS.',
   'hosts.column.name': 'الاسم',
   'hosts.column.type': 'النوع',
   'hosts.column.address': 'العنوان',
@@ -14,19 +16,19 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'تم حفظ المضيف',
   'hosts.notFound': 'لم يعد هذا المضيف موجودًا.',
-  'hosts.addPage.description': 'وصّل Homeport بمحرك Docker.',
-  'hosts.switcher.label': 'المضيف',
-  'hosts.switcher.placeholder': 'لا مضيف',
+  'hosts.addPage.description':
+    'أضف محركًا عُثر عليه على هذا الكمبيوتر، أو استورد واحدًا، أو أدخل اتصاله أدناه.',
+  'hosts.addPage.manual': 'إدخال الاتصال',
   'hosts.switcher.add': 'إضافة مضيف…',
   'hosts.switcher.manage': 'إدارة المضيفات',
-  'hosts.switcher.hosts': 'المضيفات',
-  'hosts.switcher.clusters': 'العناقيد',
   'hosts.switcher.addCluster': 'إضافة عنقود…',
   'hosts.switcher.manageClusters': 'إدارة العناقيد',
   'hosts.switcher.whyUnusable': 'لماذا لا يمكن استخدام {name}',
   'hosts.detail.enabled': 'مفعّل',
   'hosts.detail.reconnect': 'إعادة الاتصال',
   'hosts.connection.title': 'الاتصال',
+  'hosts.connection.save': 'حفظ التغييرات',
+  'hosts.connection.discard': 'تجاهل التغييرات',
   'hosts.remove.title': 'إزالة المضيف',
   'hosts.remove.description':
     'ينسى Homeport هذا المضيف وبيانات اعتماده وتعريفات المكدسات المُدارة الخاصة به. لا يُمسّ أي شيء يعمل على المضيف.',
@@ -34,6 +36,8 @@ export default {
   'hosts.remove.confirmDescription':
     'يحذف الاتصال المخزن ومفتاح SSH أو الشهادات وتعريفات compose للمكدسات المُدارة الخاصة به. تبقى الحاويات والصور ووحدات التخزين على المضيف كما هي.',
   'hosts.sshSetup.title': 'تخويل Homeport على الخادم',
+  'hosts.sshSetup.show': 'إظهار الأوامر',
+  'hosts.sshSetup.hide': 'إخفاء الأوامر',
   'hosts.sshSetup.description':
     'شغّل هذه الأوامر على <mono>{server}</mono> بصفتك مستخدم SSH، ثم أعد الاتصال.',
   'hosts.sshSetup.descriptionBastions':
@@ -68,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'مقبس محلي',
   'hosts.form.keepHint': 'اتركه فارغًا للاحتفاظ بالقيمة المخزنة.',
+  'hosts.form.connectOver': 'الاتصال عبر',
   'hosts.form.name': 'الاسم',
+  'hosts.form.nameHint': 'اتركه فارغًا لتسميته {name}.',
   'hosts.form.engine': 'المحرك',
   'hosts.form.engineHint':
-    'يشمل «متوافق مع Docker» كلًا من Docker وPodman؛ ويميّز Homeport بينهما عند الاتصال. يُوصل إلى containerd عبر مقبسه، هنا أو عبر SSH؛ وإلى Incus أيضًا عبر HTTPS (TLS).',
+    'يشمل «متوافق مع Docker» كلًا من Docker وPodman. يُوصل إلى containerd عبر مقبسه، هنا أو عبر SSH؛ وإلى Incus أيضًا عبر HTTPS (TLS).',
   'hosts.form.socketOnly': 'لا يستجيب {engine} إلا على مقبسه: اتصل محليًا أو عبر SSH.',
   'hosts.form.noPlainTcp': 'لا يستجيب {engine} عبر TCP العادي: استخدم TLS أو SSH أو مقبسه.',
   'hosts.form.socketPath': 'مسار المقبس',
@@ -110,7 +116,8 @@ export default {
   'hosts.ssh.auth': 'المصادقة',
   'hosts.ssh.auth.generated': 'مفتاح جديد لهذا المضيف',
   'hosts.ssh.auth.imported': 'مفتاح موجود',
-  'hosts.ssh.generated.editing': 'يحتفظ هذا المضيف بمفتاحه. أعد إنشاءه من صفحة المضيف.',
+  'hosts.ssh.generated.editing':
+    'يحتفظ هذا المضيف بمفتاحه. لاستبداله، استخدم «إعادة إنشاء المفتاح» بجانب الأوامر أعلاه.',
   'hosts.ssh.generated.new':
     'ينشئ Homeport مفتاح Ed25519 لهذا المضيف ويعرض لك الأمر الذي يخوّله على الخادم.',
   'hosts.ssh.privateKey': 'المفتاح الخاص',
@@ -175,7 +182,7 @@ export default {
   'hosts.bundle.confirmation': 'عبارة المرور مرة أخرى',
   'hosts.bundle.problem.short': 'استخدم {min} أحرف على الأقل.',
   'hosts.bundle.problem.mismatch': 'عبارتا المرور مختلفتان.',
-  'hosts.bundle.export.button': 'تصدير',
+  'hosts.bundle.export.button': 'تصدير المضيفات إلى ملف…',
   'hosts.bundle.export.title': 'تصدير المضيفات',
   'hosts.bundle.export.description':
     'يكتب المضيفات التي تختارها، مع مفاتيحها وشهاداتها ومفاتيح الخوادم الموثوقة، في ملف واحد مشفّر بعبارة مرور. استورده على كمبيوتر آخر لاستخدامها هناك.',
@@ -187,7 +194,7 @@ export default {
     '{count, plural, zero {لم يُصدَّر أي مضيف} one {تم تصدير مضيف واحد} two {تم تصدير مضيفين} few {تم تصدير # مضيفات} many {تم تصدير # مضيفًا} other {تم تصدير # مضيف}}',
   'hosts.bundle.export.withoutSecrets':
     'صُدّرت هذه دون بيانات اعتمادها، التي لا يمكن فتحها على هذا الكمبيوتر:',
-  'hosts.bundle.import.button': 'استيراد',
+  'hosts.bundle.import.button': 'استيراد مضيفات من ملف…',
   'hosts.bundle.import.title': 'استيراد مضيفات من ملف تصدير',
   'hosts.bundle.import.description':
     'افتح ملفًا صُدّر من Homeport باستخدام عبارة مروره، ثم اختر المضيفات المراد إضافتها. تُخزَّن بيانات اعتمادها مشفّرة على هذا الكمبيوتر.',
