@@ -65,10 +65,7 @@ export function ConfirmDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={busy}>{t('common.cancel')}</AlertDialogCancel>
           <Button
-            variant={options?.destructive ? 'destructive' : 'default'}
-            className={cn(
-              options?.destructive && 'bg-destructive text-white hover:bg-destructive/90',
-            )}
+            variant={options?.destructive ? 'danger' : 'default'}
             disabled={busy || (!!expected && !typedMatches(typed, expected))}
             onClick={async () => {
               if (!options) return;
