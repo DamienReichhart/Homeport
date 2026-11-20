@@ -94,6 +94,7 @@ export default {
   'quadlets.form.extraInvalid':
     'यूनिट के साथ की हर फ़ाइल का अपना सादा नाम होना चाहिए, बिना फ़ोल्डर के।',
   'quadlets.remove.title': '{name} हटाएँ?',
+  'quadlets.remove.zone': 'यह यूनिट हटाएँ',
   'quadlets.remove.description':
     'Podman यूनिट फ़ाइल मिटाता है और systemd को फिर से लोड करता है। इसके बनाए कंटेनर, वॉल्यूम और इमेज बने रहते हैं।',
   'quadlets.remove.stop': 'अगर इसकी सर्विस चल रही हो तो उसे रोकें',

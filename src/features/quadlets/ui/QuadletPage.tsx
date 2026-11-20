@@ -8,9 +8,11 @@ import { shortId } from '@/shared/lib';
 import {
   Button,
   Card,
+  CardAction,
   CardContent,
   CardHeader,
   CardTitle,
+  DangerZone,
   EmptyState,
   ErrorMessage,
   PageHeader,
@@ -34,15 +36,17 @@ function Row({ label, children }: { label: string; children: ReactNode }) {
   );
 }
 
-/** The unit's file, read-only, as Podman reads it on the Host. */
+/** The unit's file, read-only, as Podman reads it on the Host, with Edit beside it. */
 function UnitFile({
   hostId,
   units,
   unit,
+  edit,
 }: {
   hostId: string;
   units: QuadletUnits;
   unit: QuadletUnit;
+  edit: ReactNode;
 }) {
   const readable = units.managesFiles && unit.name !== null;
   const file = useQuery({ ...quadletQueries.file(hostId, unit.name ?? ''), enabled: readable });
@@ -63,6 +67,7 @@ function UnitFile({
     <Card>
       <CardHeader>
         <CardTitle>{t('quadlets.file.title')}</CardTitle>
+        <CardAction>{edit}</CardAction>
       </CardHeader>
       <CardContent>{body}</CardContent>
     </Card>
@@ -95,43 +100,19 @@ function UnitDetail({ hostId, unitKey }: { hostId: string; unitKey: string }) {
   const reason = blocked ? t(blocked, { version: units.data.podmanVersion }) : undefined;
   return (
     <div className="grid gap-4">
-      <div>
-        <Button variant="ghost" size="sm" className="-ms-2 mb-2" onClick={back}>
-          <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('quadlets.title')}
-        </Button>
-        <PageHeader
-          title={
-            <span className="flex items-center gap-2 font-mono">
-              <StatusDot tone={unitTone(unit.status)} />
-              {unit.name ?? unit.unitName}
-            </span>
-          }
-          description={t(unitStatusLabel(unit.status))}
-          actions={
-            <>
-              <UnitActions hostId={hostId} units={units.data} unit={unit} />
-              <span title={reason}>
-                <Button
-                  variant="outline"
-                  disabled={blocked !== null || !file.data}
-                  onClick={() => setEditing(true)}
-                >
-                  <PencilIcon /> {t('quadlets.edit')}
-                </Button>
-              </span>
-              <span title={reason}>
-                <Button
-                  variant="destructive"
-                  disabled={blocked !== null}
-                  onClick={() => setRemoving(unit)}
-                >
-                  <Trash2Icon /> {t('common.remove')}
-                </Button>
-              </span>
-            </>
-          }
-        />
-      </div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Button variant="ghost" size="icon-sm" aria-label={t('common.back')} onClick={back}>
+              <ArrowLeftIcon className="rtl:-scale-x-100" />
+            </Button>
+            <StatusDot tone={unitTone(unit.status)} />
+            <span className="truncate font-mono">{unit.name ?? unit.unitName}</span>
+          </span>
+        }
+        description={t(unitStatusLabel(unit.status))}
+        actions={<UnitActions hostId={hostId} units={units.data} unit={unit} />}
+      />
       <Card>
         <CardHeader>
           <CardTitle>{t('quadlets.detail.service')}</CardTitle>
@@ -152,7 +133,22 @@ function UnitDetail({ hostId, unitKey }: { hostId: string; unitKey: string }) {
           </dl>
         </CardContent>
       </Card>
-      <UnitFile hostId={hostId} units={units.data} unit={unit} />
+      <UnitFile
+        hostId={hostId}
+        units={units.data}
+        unit={unit}
+        edit={
+          <span title={reason}>
+            <Button
+              variant="outline"
+              disabled={blocked !== null || !file.data}
+              onClick={() => setEditing(true)}
+            >
+              <PencilIcon /> {t('quadlets.edit')}
+            </Button>
+          </span>
+        }
+      />
       <Card>
         <CardHeader>
           <CardTitle>
@@ -177,6 +173,19 @@ function UnitDetail({ hostId, unitKey }: { hostId: string; unitKey: string }) {
           ))}
         </CardContent>
       </Card>
+      <DangerZone
+        title={t('quadlets.remove.zone')}
+        description={reason ?? t('quadlets.remove.description')}
+        action={
+          <Button
+            variant="destructive"
+            disabled={blocked !== null}
+            onClick={() => setRemoving(unit)}
+          >
+            <Trash2Icon /> {t('common.remove')}
+          </Button>
+        }
+      />
       {editing && file.data !== undefined && (
         <UnitDialog
           hostId={hostId}

@@ -94,6 +94,7 @@ export default {
   'quadlets.form.extraInvalid':
     'Каждому файлу рядом с юнитом нужно собственное простое имя, без папок.',
   'quadlets.remove.title': 'Удалить {name}?',
+  'quadlets.remove.zone': 'Удалить этот юнит',
   'quadlets.remove.description':
     'Podman удалит файл юнита и перезагрузит systemd. Созданные им контейнеры, тома и образы останутся.',
   'quadlets.remove.stop': 'Остановить его сервис, если он работает',

@@ -92,6 +92,7 @@ export default {
   'quadlets.form.extraInvalid':
     '유닛과 함께 설치하는 각 파일에는 폴더 없이 고유한 이름만 있어야 합니다.',
   'quadlets.remove.title': '{name} 유닛을 삭제하시겠습니까?',
+  'quadlets.remove.zone': '이 유닛 삭제',
   'quadlets.remove.description':
     'Podman이 유닛 파일을 삭제하고 systemd를 다시 로드합니다. 유닛이 만든 컨테이너, 볼륨, 이미지는 그대로 유지됩니다.',
   'quadlets.remove.stop': '서비스가 실행 중이면 중지',

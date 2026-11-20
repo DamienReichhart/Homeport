@@ -88,6 +88,7 @@ export default {
   'quadlets.form.sectionMissing': '该文件需要一个 {section} 节，Quadlet 才能读取它。',
   'quadlets.form.extraInvalid': '单元旁的每个文件都需要一个独立的纯文件名，不能包含文件夹。',
   'quadlets.remove.title': '删除 {name}？',
+  'quadlets.remove.zone': '删除此单元',
   'quadlets.remove.description':
     'Podman 会删除该单元文件并重新加载 systemd。它创建的容器、卷和镜像会保留。',
   'quadlets.remove.stop': '如果其服务正在运行，则停止它',

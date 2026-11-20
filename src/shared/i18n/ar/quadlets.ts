@@ -92,6 +92,7 @@ export default {
   'quadlets.form.sectionMissing': 'يحتاج الملف إلى قسم {section} ليتمكن Quadlet من قراءته.',
   'quadlets.form.extraInvalid': 'يحتاج كل ملف بجانب الوحدة إلى اسم بسيط خاص به، دون مجلدات.',
   'quadlets.remove.title': 'هل تريد إزالة {name}؟',
+  'quadlets.remove.zone': 'إزالة هذه الوحدة',
   'quadlets.remove.description':
     'يحذف Podman ملف الوحدة ويعيد تحميل systemd. تبقى الحاويات ووحدات التخزين والصور التي أنشأتها.',
   'quadlets.remove.stop': 'إيقاف خدمتها إن كانت قيد التشغيل',

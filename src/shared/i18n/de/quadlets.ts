@@ -96,6 +96,7 @@ export default {
   'quadlets.form.extraInvalid':
     'Jede Datei neben der Unit braucht einen eigenen einfachen Namen, ohne Ordner.',
   'quadlets.remove.title': '{name} entfernen?',
+  'quadlets.remove.zone': 'Diese Unit entfernen',
   'quadlets.remove.description':
     'Podman löscht die Unit-Datei und lädt systemd neu. Von ihr erstellte Container, Volumes und Images bleiben erhalten.',
   'quadlets.remove.stop': 'Ihren Service stoppen, falls er läuft',
