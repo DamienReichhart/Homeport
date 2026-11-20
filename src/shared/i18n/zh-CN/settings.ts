@@ -5,6 +5,7 @@ import type { Translation } from '../types';
 export default {
   'settings.nav': '设置',
   'settings.title': '设置',
+  'settings.index.label': '设置分区',
   'settings.appearance.title': '外观',
   'settings.appearance.theme': '主题',
   'settings.theme.system': '跟随系统',
@@ -55,6 +56,7 @@ export default {
   'settings.sync.interval': '检查仓库的间隔',
   'settings.sync.minutes': '分钟',
   'settings.data.title': '数据',
+  'settings.about.title': '关于 Homeport',
   'settings.data.description': 'Homeport 在本机上保存的内容。',
   'settings.data.backup': '备份…',
   'settings.data.restore': '恢复…',

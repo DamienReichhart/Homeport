@@ -12,7 +12,7 @@ export const updatesFeature = defineFeature({
       icon: RefreshCwIcon,
       keywords: ['upgrade', 'version', 'new version'],
       run: async (ctx) => {
-        ctx.open('/settings');
+        ctx.open('/settings#updates');
         await checkForUpdatesNow(ctx.client);
       },
     },

@@ -205,3 +205,37 @@ describe('a keychain without the entry Homeport’s secrets were sealed with', (
     expect(screen.queryByRole('button', { name: 'Start over with a new key' })).toBeNull();
   });
 });
+
+describe('settings index', () => {
+  it('takes any section one click away', async () => {
+    mockCommands({ ...baseCommands, get_app_info: appInfo });
+    const user = userEvent.setup();
+    renderApp('/settings');
+    // Both the list beside the page and the row above it name every section.
+    const [index] = await screen.findAllByRole('navigation', { name: 'Settings sections' });
+    expect(
+      within(index!)
+        .getAllByRole('link')
+        .map((l) => l.textContent),
+    ).toEqual([
+      'Appearance',
+      'Registries',
+      'Repositories',
+      'Synced Stacks',
+      'Notifications',
+      'Desktop',
+      'Updates',
+      'Data',
+      'This machine',
+      'About Homeport',
+    ]);
+    await user.click(within(index!).getByRole('link', { name: 'This machine' }));
+    expect(screen.getByRole('region', { name: 'This machine' })).toHaveFocus();
+  });
+
+  it('opens at the section its link names', async () => {
+    mockCommands({ ...baseCommands, get_app_info: appInfo });
+    renderApp('/settings#updates');
+    await vi.waitFor(() => expect(screen.getByRole('region', { name: 'Updates' })).toHaveFocus());
+  });
+});

@@ -5,6 +5,7 @@ import type { Translation } from '../types';
 export default {
   'settings.nav': 'सेटिंग्स',
   'settings.title': 'सेटिंग्स',
+  'settings.index.label': 'सेटिंग्स के अनुभाग',
   'settings.appearance.title': 'रूप-रंग',
   'settings.appearance.theme': 'थीम',
   'settings.theme.system': 'सिस्टम के अनुसार',
@@ -62,6 +63,7 @@ export default {
   'settings.sync.interval': 'रिपॉज़िटरी इतने अंतराल पर जाँचें',
   'settings.sync.minutes': 'मिनट',
   'settings.data.title': 'डेटा',
+  'settings.about.title': 'Homeport के बारे में',
   'settings.data.description': 'Homeport इस कंप्यूटर पर क्या रखता है।',
   'settings.data.backup': 'बैकअप लें…',
   'settings.data.restore': 'रीस्टोर करें…',
