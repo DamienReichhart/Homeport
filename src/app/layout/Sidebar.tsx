@@ -7,7 +7,7 @@ import {
   SettingsIcon,
   type LucideIcon,
 } from 'lucide-react';
-import type { ComponentType } from 'react';
+import { Fragment, type ComponentType } from 'react';
 import { NavLink, useMatch } from 'react-router-dom';
 import type { NavEntry } from '@/core/feature';
 import { cn, DOCS_URL, REPO_URL } from '@/shared/lib';
@@ -43,8 +43,13 @@ export function Sidebar() {
       <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-3">
         {board && <PageLink entry={board} icon={LayoutGridIcon} keys={keysOf(board)} end />}
         <FleetNav
-          pages={pages.map((entry) => (
-            <PageLink key={entry.path} entry={entry} keys={keysOf(entry)} nested />
+          pages={pages.map((entry, i) => (
+            <Fragment key={entry.path}>
+              {i > 0 && entry.group !== pages[i - 1]?.group && (
+                <div role="separator" className="border-sidebar-border mx-2.5 my-1 border-t" />
+              )}
+              <PageLink entry={entry} keys={keysOf(entry)} nested />
+            </Fragment>
           ))}
         />
       </div>

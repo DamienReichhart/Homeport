@@ -30,6 +30,11 @@ export interface NavEntry {
   requires?: HostCapability;
   /** The kind the selected Cluster must be for the entry to show; its feature's `clusterKind`. */
   clusterKind?: ClusterKind;
+  /**
+   * Where it sits among the selected one's pages: its everyday resources
+   * first (no group), then what describes the cluster itself, then tools.
+   */
+  group?: 'cluster' | 'tools';
 }
 
 /**

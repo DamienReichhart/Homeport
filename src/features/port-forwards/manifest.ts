@@ -9,6 +9,7 @@ export const portForwardsFeature = defineFeature({
     label: 'portforwards.nav',
     icon: ArrowRightLeftIcon,
     scope: 'cluster',
+    group: 'tools',
   },
   clusterKind: 'kubernetes',
 });

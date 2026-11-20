@@ -5,6 +5,12 @@ import { NodesPage } from './ui/NodesPage';
 
 export const nomadNodesFeature = defineFeature({
   routes: [splitRoutes('nomad/nodes', NodesPage, [{ path: ':nodeId', Component: NodePage }])],
-  nav: { path: '/nomad/nodes', label: 'nomad.nodes.nav', icon: ServerIcon, scope: 'cluster' },
+  nav: {
+    path: '/nomad/nodes',
+    label: 'nomad.nodes.nav',
+    icon: ServerIcon,
+    scope: 'cluster',
+    group: 'cluster',
+  },
   clusterKind: 'nomad',
 });

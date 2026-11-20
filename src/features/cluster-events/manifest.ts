@@ -9,6 +9,7 @@ export const clusterEventsFeature = defineFeature({
     label: 'clusterevents.nav',
     icon: ActivityIcon,
     scope: 'cluster',
+    group: 'cluster',
   },
   clusterKind: 'kubernetes',
 });

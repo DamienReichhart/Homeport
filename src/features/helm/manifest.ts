@@ -9,6 +9,6 @@ export const helmFeature = defineFeature({
     splitRoutes('helm', ReleasesPage, [{ path: ':namespace/:name/:tab?', Component: ReleasePage }]),
     { path: 'helm/repositories', Component: RepositoriesPage },
   ],
-  nav: { path: '/helm', label: 'helm.nav', icon: ShipWheelIcon, scope: 'cluster' },
+  nav: { path: '/helm', label: 'helm.nav', icon: ShipWheelIcon, scope: 'cluster', group: 'tools' },
   clusterKind: 'kubernetes',
 });
