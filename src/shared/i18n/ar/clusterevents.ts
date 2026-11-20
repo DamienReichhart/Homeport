@@ -7,7 +7,7 @@ export default {
   'clusterevents.title': 'الأحداث',
   'clusterevents.summary':
     '{count, plural, zero {لا أحداث} one {حدث واحد} two {حدثان} few {# أحداث} many {# حدثًا} other {# حدث}}',
-  'clusterevents.search': 'البحث حسب السبب أو الكائن أو الرسالة',
+  'clusterevents.search': 'البحث في الأحداث',
   'clusterevents.empty': 'لا توجد أحداث. يحتفظ بها Kubernetes لمدة ساعة تقريبًا.',
   'clusterevents.filter': 'النوع',
   'clusterevents.all': 'الكل',

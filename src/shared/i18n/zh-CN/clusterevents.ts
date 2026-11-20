@@ -6,7 +6,7 @@ export default {
   'clusterevents.nav': '事件',
   'clusterevents.title': '事件',
   'clusterevents.summary': '{count, plural, other {# 个事件}}',
-  'clusterevents.search': '按原因、对象或消息搜索',
+  'clusterevents.search': '搜索事件',
   'clusterevents.empty': '没有事件。Kubernetes 只保留约一小时内的事件。',
   'clusterevents.filter': '类型',
   'clusterevents.all': '全部',

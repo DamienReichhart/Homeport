@@ -38,7 +38,7 @@ describe('a Cluster’s events', () => {
       'href',
       '/workloads/deployments/default/web',
     );
-    await user.click(screen.getByRole('radio', { name: 'Warnings' }));
+    await user.click(screen.getByRole('tab', { name: 'Warnings' }));
     await waitFor(() => expect(screen.queryByText('ScalingReplicaSet')).not.toBeInTheDocument());
     expect(screen.getByText('BackOff')).toBeInTheDocument();
   });

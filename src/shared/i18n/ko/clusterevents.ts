@@ -6,7 +6,7 @@ export default {
   'clusterevents.nav': '이벤트',
   'clusterevents.title': '이벤트',
   'clusterevents.summary': '{count, plural, other {이벤트 #개}}',
-  'clusterevents.search': '사유, 객체 또는 메시지로 검색',
+  'clusterevents.search': '이벤트 검색',
   'clusterevents.empty': '이벤트가 없습니다. Kubernetes는 이벤트를 약 1시간 동안 보관합니다.',
   'clusterevents.filter': '유형',
   'clusterevents.all': '전체',
