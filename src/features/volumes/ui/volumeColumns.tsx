@@ -91,6 +91,7 @@ export function volumeColumns({
     {
       id: 'size',
       header: t('volumes.column.size'),
+      meta: { align: 'end' },
       // Unknown sizes sort below every known one.
       accessorFn: (v) => sizes?.[v.name] ?? -1,
       cell: ({ row }) => (

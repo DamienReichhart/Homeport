@@ -75,6 +75,7 @@ function ImagesList({ hostId, namespace }: { hostId: string; namespace: string }
     {
       id: 'size',
       header: t('containerd.images.column.size'),
+      meta: { align: 'end' },
       accessorFn: (i) => i.size ?? -1,
       cell: ({ row }) => (
         <div className="text-end whitespace-nowrap tabular-nums">
@@ -91,6 +92,7 @@ function ImagesList({ hostId, namespace }: { hostId: string; namespace: string }
     {
       id: 'containers',
       header: t('containerd.images.column.containers'),
+      meta: { align: 'end' },
       accessorFn: (i) => i.containers,
       cell: ({ row }) => (
         <div

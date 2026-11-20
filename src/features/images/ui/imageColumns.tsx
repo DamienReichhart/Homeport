@@ -85,6 +85,7 @@ export function imageColumns({
     {
       id: 'size',
       header: t('images.column.size'),
+      meta: { align: 'end' },
       accessorFn: (i) => i.size,
       cell: ({ row }) => <span className="tabular-nums">{formatBytes(row.original.size)}</span>,
     },

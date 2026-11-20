@@ -118,6 +118,7 @@ function ImagesList({ hostId, project }: { hostId: string; project: string }) {
     {
       id: 'size',
       header: t('incus.images.column.size'),
+      meta: { align: 'end' },
       accessorFn: (i) => i.size,
       cell: ({ row }) => (
         <div className="text-end whitespace-nowrap tabular-nums">

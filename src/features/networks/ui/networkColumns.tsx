@@ -66,6 +66,7 @@ export function networkColumns({
     {
       id: 'containers',
       header: t('networks.column.containers'),
+      meta: { align: 'end' },
       accessorFn: (n) => n.containers.length,
       cell: ({ row }) => (
         <span
