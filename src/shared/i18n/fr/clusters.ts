@@ -28,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'Jeton ACL',
 
   'clusters.addPage.description':
-    'Chaque contexte Kubernetes que vous choisissez, ou chaque agent Nomad que vous indiquez, devient un cluster. Ses identifiants sont enregistrés chiffrés, jamais en clair sur le disque.',
+    'Choisissez des contextes d’un kubeconfig, ou indiquez un agent Nomad par son adresse.',
   'clusters.addPage.fromMachine': 'Depuis le kubeconfig de cette machine',
   'clusters.addPage.paste': 'Coller un kubeconfig',
   'clusters.addPage.nomad': 'Nomad',

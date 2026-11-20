@@ -27,8 +27,7 @@ export default {
   'clusters.auth.oidc': 'OpenID Connect',
   'clusters.auth.aclToken': 'ACL 令牌',
 
-  'clusters.addPage.description':
-    '你选择的每个 Kubernetes 上下文或你指定的每个 Nomad agent 都会成为一个集群。其凭据加密保存，绝不会以明文写入磁盘。',
+  'clusters.addPage.description': '从 kubeconfig 中选择上下文，或按地址指定一个 Nomad agent。',
   'clusters.addPage.fromMachine': '来自本机的 kubeconfig',
   'clusters.addPage.paste': '粘贴 kubeconfig',
   'clusters.addPage.nomad': 'Nomad',

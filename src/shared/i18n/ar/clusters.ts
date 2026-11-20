@@ -27,8 +27,7 @@ export default {
   'clusters.auth.oidc': 'OpenID Connect',
   'clusters.auth.aclToken': 'رمز ACL',
 
-  'clusters.addPage.description':
-    'يصبح كل سياق Kubernetes تختاره، أو كل وكيل Nomad تسمّيه، عنقودًا. تُخزَّن بيانات اعتماده مشفّرة، ولا تُحفظ أبدًا كنص واضح على القرص.',
+  'clusters.addPage.description': 'اختر سياقات من ملف kubeconfig، أو حدّد وكيل Nomad بعنوانه.',
   'clusters.addPage.fromMachine': 'من ملف kubeconfig على هذا الجهاز',
   'clusters.addPage.paste': 'لصق ملف kubeconfig',
   'clusters.addPage.nomad': 'Nomad',

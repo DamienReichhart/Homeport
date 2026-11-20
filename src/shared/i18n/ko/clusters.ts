@@ -28,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL 토큰',
 
   'clusters.addPage.description':
-    '선택한 각 Kubernetes 컨텍스트 또는 지정한 각 Nomad 에이전트가 하나의 클러스터가 됩니다. 자격 증명은 암호화되어 저장되며, 디스크에 평문으로 저장되지 않습니다.',
+    'kubeconfig에서 컨텍스트를 고르거나 주소로 Nomad 에이전트를 지정하세요.',
   'clusters.addPage.fromMachine': '이 컴퓨터의 kubeconfig에서',
   'clusters.addPage.paste': 'kubeconfig 붙여 넣기',
   'clusters.addPage.nomad': 'Nomad',

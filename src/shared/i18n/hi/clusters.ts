@@ -28,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL टोकन',
 
   'clusters.addPage.description':
-    'आपका चुना हर Kubernetes context, या आपका बताया हर Nomad agent, एक क्लस्टर बन जाता है। इसके क्रेडेंशियल एन्क्रिप्ट करके सहेजे जाते हैं, डिस्क पर कभी सादे रूप में नहीं।',
+    'किसी kubeconfig से context चुनें, या पते से कोई Nomad agent बताएँ।',
   'clusters.addPage.fromMachine': 'इस मशीन के kubeconfig से',
   'clusters.addPage.paste': 'kubeconfig पेस्ट करें',
   'clusters.addPage.nomad': 'Nomad',

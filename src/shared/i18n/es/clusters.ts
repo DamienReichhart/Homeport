@@ -26,7 +26,7 @@ export default {
   'clusters.auth.oidc': 'OpenID Connect',
   'clusters.auth.aclToken': 'Token ACL',
   'clusters.addPage.description':
-    'Cada contexto de Kubernetes que elijas, o cada agente de Nomad que indiques, se convierte en un clúster. Sus credenciales se guardan cifradas, nunca en claro en el disco.',
+    'Elige contextos de un kubeconfig o indica un agente de Nomad por su dirección.',
   'clusters.addPage.fromMachine': 'Desde el kubeconfig de este equipo',
   'clusters.addPage.paste': 'Pegar un kubeconfig',
   'clusters.addPage.nomad': 'Nomad',

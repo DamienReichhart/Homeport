@@ -99,8 +99,9 @@ export function AddClusterPage() {
       {capabilities.data?.keychain === false ? (
         <KeychainNeeded />
       ) : (
-        <div className="grid gap-4">
-          <LocalClusters onAdded={opened} />
+        <div className="grid gap-8">
+          {/* Fastest first: a cluster already running here, one click to add. */}
+          <LocalClusters onAdded={opened} hideAdded />
           <Card>
             <CardContent>
               <Tabs defaultValue="machine">

@@ -28,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL トークン',
 
   'clusters.addPage.description':
-    '選んだ Kubernetes コンテキスト、または指定した Nomad エージェントが、それぞれ 1 つのクラスターになります。認証情報は暗号化して保存され、ディスクに平文で保存されることはありません。',
+    'kubeconfig のコンテキストを選ぶか、アドレスで Nomad エージェントを指定します。',
   'clusters.addPage.fromMachine': 'このマシンの kubeconfig から',
   'clusters.addPage.paste': 'kubeconfig を貼り付け',
   'clusters.addPage.nomad': 'Nomad',

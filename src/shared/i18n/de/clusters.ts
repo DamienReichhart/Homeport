@@ -28,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'ACL-Token',
 
   'clusters.addPage.description':
-    'Jeder Kubernetes-Kontext, den Sie wählen, und jeder Nomad-Agent, den Sie angeben, wird zu einem Cluster. Seine Zugangsdaten werden verschlüsselt gespeichert, nie im Klartext auf der Festplatte.',
+    'Wählen Sie Kontexte aus einer kubeconfig oder geben Sie einen Nomad-Agenten über seine Adresse an.',
   'clusters.addPage.fromMachine': 'Aus der kubeconfig dieses Rechners',
   'clusters.addPage.paste': 'kubeconfig einfügen',
   'clusters.addPage.nomad': 'Nomad',

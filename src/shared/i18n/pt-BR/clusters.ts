@@ -28,7 +28,7 @@ export default {
   'clusters.auth.aclToken': 'Token ACL',
 
   'clusters.addPage.description':
-    'Cada contexto Kubernetes que você escolher, ou cada agente Nomad que você indicar, vira um cluster. As credenciais dele são armazenadas criptografadas, nunca em texto puro no disco.',
+    'Escolha contextos de um kubeconfig ou indique um agente Nomad pelo endereço dele.',
   'clusters.addPage.fromMachine': 'Do kubeconfig desta máquina',
   'clusters.addPage.paste': 'Colar um kubeconfig',
   'clusters.addPage.nomad': 'Nomad',
