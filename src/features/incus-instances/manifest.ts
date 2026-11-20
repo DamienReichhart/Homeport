@@ -1,13 +1,14 @@
 import { PlusIcon, ServerIcon } from 'lucide-react';
-import { defineFeature } from '@/core/feature';
+import { defineFeature, splitRoutes } from '@/core/feature';
 import { InstancePage } from './ui/InstancePage';
 import { InstancesPage } from './ui/InstancesPage';
 
 export const incusInstancesFeature = defineFeature({
   requires: 'incus',
   routes: [
-    { path: 'incus/instances', Component: InstancesPage },
-    { path: 'incus/instances/:name/:tab?', Component: InstancePage },
+    splitRoutes('incus/instances', InstancesPage, [
+      { path: ':name/:tab?', Component: InstancePage },
+    ]),
   ],
   nav: {
     path: '/incus/instances',

@@ -1,13 +1,14 @@
 import { BoxIcon, PlayIcon } from 'lucide-react';
-import { defineFeature } from '@/core/feature';
+import { defineFeature, splitRoutes } from '@/core/feature';
 import { ContainerDetailPage } from './ui/detail/ContainerDetailPage';
 import { ContainersPage } from './ui/list/ContainersPage';
 
 export const containersFeature = defineFeature({
   requires: 'docker',
   routes: [
-    { path: 'containers', Component: ContainersPage },
-    { path: 'containers/:id/:tab?', Component: ContainerDetailPage },
+    splitRoutes('containers', ContainersPage, [
+      { path: ':id/:tab?', Component: ContainerDetailPage },
+    ]),
   ],
   nav: { path: '/containers', label: 'containers.nav', icon: BoxIcon, scope: 'host' },
   commands: [

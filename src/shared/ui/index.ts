@@ -118,6 +118,7 @@ export { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './prim
 export { GitHubIcon } from './layout/GitHubIcon';
 export { Logo, LogoMark } from './layout/Logo';
 export { PageHeader } from './layout/PageHeader';
+export { SplitView, useSplitPane, useWideWindow } from './layout/SplitView';
 
 // feedback
 export { ConfirmDialog, useConfirm, type ConfirmOptions } from './feedback/ConfirmDialog';

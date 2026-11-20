@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
   useConfirm,
+  useSplitPane,
   WithShortcut,
 } from '@/shared/ui';
 import { useUsage } from '../../api/streams';
@@ -36,6 +37,7 @@ import { groupByStack } from '../../model/grouping';
 import { swarmOfHost, useSwarms } from '@/core/swarm';
 import { useContainerDialogs } from '../dialogs/ContainerDialogs';
 import { RunContainerDialog } from '../dialogs/RunContainerDialog';
+import { CompactContainerList } from './CompactContainerList';
 import { ContainerRow } from './ContainerRow';
 import { SelectionActions } from './SelectionActions';
 import { StackGroupRows } from './StackGroupRows';
@@ -57,6 +59,7 @@ function ContainersList({ hostId }: { hostId: string }) {
   const [selected, setSelected] = useState(new Set<string>());
   const [containerDialogs, openDialog] = useContainerDialogs(hostId);
   const [running, setRunning] = useState(false);
+  const pane = useSplitPane();
   usePageAction(t('containers.runContainer'), () => setRunning(true));
   useActionRequest('run', () => setRunning(true));
 
@@ -65,7 +68,17 @@ function ContainersList({ hostId }: { hostId: string }) {
     return <ErrorMessage error={containers.error} onRetry={() => void containers.refetch()} />;
 
   const all = containers.data;
-  const { groups, standalone } = groupByStack(all, query, onlyRunning);
+  const grouped = groupByStack(all, query, onlyRunning);
+  const { groups, standalone } = grouped;
+  if (pane.compact) {
+    return (
+      <div className="grid gap-3">
+        <PageHeader title={t('containers.title')} />
+        <SearchInput value={query} onChange={setQuery} placeholder={t('containers.search')} />
+        <CompactContainerList grouped={grouped} openId={pane.selected} />
+      </div>
+    );
+  }
   const swarm = swarmOfHost(swarms.data, hostId);
   const address = host ? hostAddress(host.host.connection) : 'localhost';
   const selectedContainers = all.filter((c) => selected.has(c.id));
@@ -144,7 +157,7 @@ function ContainersList({ hostId }: { hostId: string }) {
           action={<Button onClick={() => setRunning(true)}>{t('containers.runContainer')}</Button>}
         />
       ) : (
-        <div className="rounded-md border">
+        <div className="bg-card rounded-md border">
           <Table>
             <TableHeader>
               <TableRow>
