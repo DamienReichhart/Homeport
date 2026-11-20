@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'المكدسات',
   'stacks.title': 'المكدسات',
-  'stacks.description':
-    'مشاريع Compose على هذا المضيف. تحتفظ المكدسات المُدارة بتعريفها في Homeport، والمرتبطة في مجلد على هذا الكمبيوتر؛ أما الخارجية فقد نُشرت في مكان آخر.',
+  'stacks.description': 'مشاريع Compose على هذا المضيف.',
   'stacks.new': 'مكدس جديد',
   'stacks.search': 'البحث في المكدسات',
   'stacks.empty.title': 'لا توجد مكدسات',
-  'stacks.empty.description': 'اكتب تعريف compose وانشره على هذا المضيف.',
+  'stacks.empty.description':
+    'انشر مشروع compose على هذا المضيف، من ملف compose أو مجلد أو مستودع git.',
   'stacks.column.name': 'الاسم',
   'stacks.column.kind': 'النوع',
   'stacks.column.state': 'الحالة',
@@ -90,7 +90,6 @@ export default {
   'stacks.action.adopt': 'تبنّي',
   'stacks.action.stop': 'إيقاف',
   'stacks.action.start': 'تشغيل',
-  'stacks.action.more': 'مزيد من إجراءات المكدس',
   'stacks.action.restart': 'إعادة التشغيل',
   'stacks.action.pull': 'سحب الصور',
   'stacks.action.rebuild': 'إعادة البناء والنشر',
@@ -290,4 +289,8 @@ export default {
   'stacks.managed.saveOnly': 'حفظ دون نشر',
   'stacks.managed.unsaved': 'تغييرات غير محفوظة',
   'stacks.forget.sectionTitle': 'نسيان هذا المكدس',
+  'stacks.kind.managedHint': 'يحتفظ Homeport بملف compose الخاص به وبيئته.',
+  'stacks.kind.linkedHint': 'ملفات compose الخاصة به في مجلد على هذا الكمبيوتر.',
+  'stacks.kind.syncedHint': 'نُشر من مستودع git.',
+  'stacks.kind.externalHint': 'نُشر خارج Homeport.',
 } satisfies Translation<typeof en>;

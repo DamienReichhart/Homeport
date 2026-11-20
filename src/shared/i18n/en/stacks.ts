@@ -2,12 +2,12 @@
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Compose projects on this host. Managed Stacks keep their definition in Homeport, Linked ones in a folder on this computer; External ones were deployed elsewhere.',
+  'stacks.description': 'Compose projects on this host.',
   'stacks.new': 'New stack',
   'stacks.search': 'Search stacks',
   'stacks.empty.title': 'No stacks',
-  'stacks.empty.description': 'Write a compose definition and deploy it to this host.',
+  'stacks.empty.description':
+    'Deploy a compose project to this host, from a compose file, a folder or a git repository.',
   'stacks.column.name': 'Name',
   'stacks.column.kind': 'Kind',
   'stacks.column.state': 'State',
@@ -88,7 +88,6 @@ export default {
   'stacks.action.adopt': 'Adopt',
   'stacks.action.stop': 'Stop',
   'stacks.action.start': 'Start',
-  'stacks.action.more': 'More stack actions',
   'stacks.action.restart': 'Restart',
   'stacks.action.pull': 'Pull images',
   'stacks.action.rebuild': 'Rebuild and deploy',
@@ -292,4 +291,8 @@ export default {
   'stacks.managed.saveOnly': 'Save without deploying',
   'stacks.managed.unsaved': 'Unsaved changes',
   'stacks.forget.sectionTitle': 'Forget this Stack',
+  'stacks.kind.managedHint': 'Homeport keeps its compose file and environment.',
+  'stacks.kind.linkedHint': 'Its compose files are in a folder on this computer.',
+  'stacks.kind.syncedHint': 'Deployed from a git repository.',
+  'stacks.kind.externalHint': 'Deployed outside Homeport.',
 } as const;

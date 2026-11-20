@@ -5,13 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Compose-Projekte auf diesem Host. Verwaltete Stacks bewahren ihre Definition in Homeport auf, verknüpfte in einem Ordner auf diesem Computer; externe wurden anderswo bereitgestellt.',
+  'stacks.description': 'Compose-Projekte auf diesem Host.',
   'stacks.new': 'Neuer Stack',
   'stacks.search': 'Stacks durchsuchen',
   'stacks.empty.title': 'Keine Stacks',
   'stacks.empty.description':
-    'Schreiben Sie eine Compose-Definition und stellen Sie sie auf diesem Host bereit.',
+    'Stellen Sie ein Compose-Projekt auf diesem Host bereit, aus einer Compose-Datei, einem Ordner oder einem Git-Repository.',
   'stacks.column.name': 'Name',
   'stacks.column.kind': 'Art',
   'stacks.column.state': 'Zustand',
@@ -93,7 +92,6 @@ export default {
   'stacks.action.adopt': 'Übernehmen',
   'stacks.action.stop': 'Stoppen',
   'stacks.action.start': 'Starten',
-  'stacks.action.more': 'Weitere Stack-Aktionen',
   'stacks.action.restart': 'Neu starten',
   'stacks.action.pull': 'Images pullen',
   'stacks.action.rebuild': 'Neu bauen und bereitstellen',
@@ -304,4 +302,8 @@ export default {
   'stacks.managed.saveOnly': 'Speichern, ohne bereitzustellen',
   'stacks.managed.unsaved': 'Ungespeicherte Änderungen',
   'stacks.forget.sectionTitle': 'Diesen Stack vergessen',
+  'stacks.kind.managedHint': 'Homeport bewahrt seine Compose-Datei und Umgebung auf.',
+  'stacks.kind.linkedHint': 'Seine Compose-Dateien liegen in einem Ordner auf diesem Computer.',
+  'stacks.kind.syncedHint': 'Aus einem Git-Repository bereitgestellt.',
+  'stacks.kind.externalHint': 'Außerhalb von Homeport bereitgestellt.',
 } satisfies Translation<typeof en>;

@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'स्टैक',
   'stacks.title': 'स्टैक',
-  'stacks.description':
-    'इस होस्ट पर Compose प्रोजेक्ट। प्रबंधित स्टैक अपनी परिभाषा Homeport में रखते हैं, लिंक्ड स्टैक इस कंप्यूटर के किसी फ़ोल्डर में; बाहरी स्टैक कहीं और से डिप्लॉय किए गए थे।',
+  'stacks.description': 'इस होस्ट पर Compose प्रोजेक्ट।',
   'stacks.new': 'नया स्टैक',
   'stacks.search': 'स्टैक खोजें',
   'stacks.empty.title': 'कोई स्टैक नहीं',
-  'stacks.empty.description': 'एक compose परिभाषा लिखें और उसे इस होस्ट पर डिप्लॉय करें।',
+  'stacks.empty.description':
+    'किसी compose फ़ाइल, फ़ोल्डर या git रिपॉज़िटरी से इस होस्ट पर एक compose प्रोजेक्ट डिप्लॉय करें।',
   'stacks.column.name': 'नाम',
   'stacks.column.kind': 'प्रकार',
   'stacks.column.state': 'स्थिति',
@@ -91,7 +91,6 @@ export default {
   'stacks.action.adopt': 'अपनाएँ',
   'stacks.action.stop': 'रोकें',
   'stacks.action.start': 'शुरू करें',
-  'stacks.action.more': 'स्टैक की और कार्रवाइयाँ',
   'stacks.action.restart': 'फिर से शुरू करें',
   'stacks.action.pull': 'इमेज पुल करें',
   'stacks.action.rebuild': 'फिर से बिल्ड करें और डिप्लॉय करें',
@@ -297,4 +296,8 @@ export default {
   'stacks.managed.saveOnly': 'डिप्लॉय किए बिना सहेजें',
   'stacks.managed.unsaved': 'बिना सहेजे बदलाव',
   'stacks.forget.sectionTitle': 'यह स्टैक भूल जाएँ',
+  'stacks.kind.managedHint': 'Homeport इसकी compose फ़ाइल और एनवायरनमेंट रखता है।',
+  'stacks.kind.linkedHint': 'इसकी compose फ़ाइलें इस कंप्यूटर के किसी फ़ोल्डर में हैं।',
+  'stacks.kind.syncedHint': 'किसी git रिपॉज़िटरी से डिप्लॉय किया गया।',
+  'stacks.kind.externalHint': 'Homeport के बाहर डिप्लॉय किया गया।',
 } satisfies Translation<typeof en>;

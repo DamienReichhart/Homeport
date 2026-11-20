@@ -3,7 +3,7 @@ import type { Stack } from '@/shared/api';
 import { Badge, type ColumnDef, type ConfirmOptions, StatusDot } from '@/shared/ui';
 import type { ComposeJob } from '../model/composeJob';
 import type { ServiceFreshness } from '../model/freshness';
-import { KIND_BADGE, KIND_LABEL } from '../model/stackKind';
+import { KIND_BADGE, KIND_HINT, KIND_LABEL } from '../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../model/stackState';
 import { StackActions } from './StackActions';
 import { SyncBadge } from './SyncBadge';
@@ -29,10 +29,14 @@ export function stackColumns({
       header: t('stacks.column.name'),
       accessorFn: (s) => s.name,
       cell: ({ row }) => (
-        <span className="grid">
+        <span className="flex min-w-0 items-center gap-2">
+          <StatusDot tone={STATE_TONE[row.original.state]} />
           <span className="font-medium">{row.original.name}</span>
           {row.original.kind === 'linked' && row.original.workingDir && (
-            <span className="text-muted-foreground font-mono text-xs">
+            <span
+              className="text-muted-foreground max-w-56 truncate font-mono text-xs"
+              title={row.original.workingDir}
+            >
               {row.original.workingDir}
             </span>
           )}
@@ -45,7 +49,9 @@ export function stackColumns({
       accessorFn: (s) => s.kind,
       cell: ({ row }) => (
         <span className="flex items-center gap-1.5">
-          <Badge variant={KIND_BADGE[row.original.kind]}>{t(KIND_LABEL[row.original.kind])}</Badge>
+          <Badge variant={KIND_BADGE[row.original.kind]} title={t(KIND_HINT[row.original.kind])}>
+            {t(KIND_LABEL[row.original.kind])}
+          </Badge>
           {row.original.problem === 'filesMissing' && (
             <TriangleAlertIcon
               role="img"
@@ -63,11 +69,10 @@ export function stackColumns({
       header: t('stacks.column.state'),
       accessorFn: (s) => s.state,
       cell: ({ row }) => (
-        <span className="flex items-center gap-1.5 text-sm">
-          <StatusDot tone={STATE_TONE[row.original.state]} />
+        <span className="flex items-center gap-1.5 text-sm whitespace-nowrap">
           {t(STATE_LABEL[row.original.state])}
           {row.original.total > 0 && (
-            <span className="text-muted-foreground">
+            <span className="text-muted-foreground tabular-nums">
               · {row.original.running}/{row.original.total}
             </span>
           )}
@@ -82,11 +87,14 @@ export function stackColumns({
       id: 'services',
       header: t('stacks.column.services'),
       accessorFn: (s) => s.services.map((x) => x.name).join(', '),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">
-          {row.original.services.map((x) => x.name).join(', ') || '—'}
-        </span>
-      ),
+      cell: ({ row }) => {
+        const names = row.original.services.map((x) => x.name).join(', ');
+        return (
+          <span className="text-muted-foreground block max-w-72 truncate text-sm" title={names}>
+            {names || '—'}
+          </span>
+        );
+      },
     },
     {
       id: 'actions',
@@ -94,7 +102,7 @@ export function stackColumns({
       enableSorting: false,
       cell: ({ row }) => (
         <StackActions
-          compact
+          row
           hostId={hostId}
           stack={row.original}
           newer={newerServices(row.original)}

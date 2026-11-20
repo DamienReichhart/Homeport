@@ -19,7 +19,7 @@ import {
 } from '@/shared/ui';
 import type { ComposeJob } from '../../model/composeJob';
 import { serviceFreshness, stackFreshness } from '../../model/freshness';
-import { KIND_BADGE, KIND_LABEL } from '../../model/stackKind';
+import { KIND_BADGE, KIND_HINT, KIND_LABEL } from '../../model/stackKind';
 import { STATE_LABEL, STATE_TONE } from '../../model/stackState';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { StackActions } from '../StackActions';
@@ -65,7 +65,9 @@ function StackDetail({ hostId, name }: { hostId: string; name: string }) {
               <ArrowLeftIcon className="rtl:-scale-x-100" />
             </Button>
             {stack.name}
-            <Badge variant={KIND_BADGE[stack.kind]}>{t(KIND_LABEL[stack.kind])}</Badge>
+            <Badge variant={KIND_BADGE[stack.kind]} title={t(KIND_HINT[stack.kind])}>
+              {t(KIND_LABEL[stack.kind])}
+            </Badge>
             {newer.length > 0 && <UpdateBadge newer={newer} />}
             {stack.updateAvailable && <SyncBadge />}
           </span>

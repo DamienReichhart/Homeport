@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Стеки',
   'stacks.title': 'Стеки',
-  'stacks.description':
-    'Проекты Compose на этом хосте. Управляемые стеки хранят своё определение в Homeport, связанные — в папке на этом компьютере; внешние были развёрнуты в другом месте.',
+  'stacks.description': 'Проекты Compose на этом хосте.',
   'stacks.new': 'Новый стек',
   'stacks.search': 'Поиск стеков',
   'stacks.empty.title': 'Стеков нет',
-  'stacks.empty.description': 'Напишите определение compose и разверните его на этом хосте.',
+  'stacks.empty.description':
+    'Разверните проект compose на этом хосте из файла compose, папки или git-репозитория.',
   'stacks.column.name': 'Имя',
   'stacks.column.kind': 'Вид',
   'stacks.column.state': 'Состояние',
@@ -91,7 +91,6 @@ export default {
   'stacks.action.adopt': 'Взять под управление',
   'stacks.action.stop': 'Остановить',
   'stacks.action.start': 'Запустить',
-  'stacks.action.more': 'Другие действия со стеком',
   'stacks.action.restart': 'Перезапустить',
   'stacks.action.pull': 'Скачать образы',
   'stacks.action.rebuild': 'Пересобрать и развернуть',
@@ -298,4 +297,8 @@ export default {
   'stacks.managed.saveOnly': 'Сохранить без развёртывания',
   'stacks.managed.unsaved': 'Несохранённые изменения',
   'stacks.forget.sectionTitle': 'Забыть этот стек',
+  'stacks.kind.managedHint': 'Homeport хранит его файл compose и окружение.',
+  'stacks.kind.linkedHint': 'Его файлы compose лежат в папке на этом компьютере.',
+  'stacks.kind.syncedHint': 'Развёрнут из git-репозитория.',
+  'stacks.kind.externalHint': 'Развёрнут вне Homeport.',
 } satisfies Translation<typeof en>;

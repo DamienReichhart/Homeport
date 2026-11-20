@@ -5,12 +5,11 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': '堆栈',
   'stacks.title': '堆栈',
-  'stacks.description':
-    '此主机上的 Compose 项目。托管堆栈的定义保存在 Homeport 中，关联堆栈的定义位于本机的文件夹中；外部堆栈是在其他地方部署的。',
+  'stacks.description': '此主机上的 Compose 项目。',
   'stacks.new': '新建堆栈',
   'stacks.search': '搜索堆栈',
   'stacks.empty.title': '没有堆栈',
-  'stacks.empty.description': '编写一个 compose 定义并将其部署到此主机。',
+  'stacks.empty.description': '从 compose 文件、文件夹或 git 仓库将 compose 项目部署到此主机。',
   'stacks.column.name': '名称',
   'stacks.column.kind': '类型',
   'stacks.column.state': '状态',
@@ -85,7 +84,6 @@ export default {
   'stacks.action.adopt': '接管',
   'stacks.action.stop': '停止',
   'stacks.action.start': '启动',
-  'stacks.action.more': '更多堆栈操作',
   'stacks.action.restart': '重启',
   'stacks.action.pull': '拉取镜像',
   'stacks.action.rebuild': '重新构建并部署',
@@ -278,4 +276,8 @@ export default {
   'stacks.managed.saveOnly': '仅保存，不部署',
   'stacks.managed.unsaved': '有未保存的更改',
   'stacks.forget.sectionTitle': '忘记此堆栈',
+  'stacks.kind.managedHint': 'Homeport 保存其 compose 文件和环境。',
+  'stacks.kind.linkedHint': '其 compose 文件位于本机的文件夹中。',
+  'stacks.kind.syncedHint': '从 git 仓库部署。',
+  'stacks.kind.externalHint': '在 Homeport 之外部署。',
 } satisfies Translation<typeof en>;

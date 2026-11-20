@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Stack',
   'stacks.title': 'Stack',
-  'stacks.description':
-    'Progetti Compose su questo host. Gli stack gestiti conservano la loro definizione in Homeport, quelli collegati in una cartella di questo computer; quelli esterni sono stati distribuiti altrove.',
+  'stacks.description': 'Progetti Compose su questo host.',
   'stacks.new': 'Nuovo stack',
   'stacks.search': 'Cerca stack',
   'stacks.empty.title': 'Nessuno stack',
-  'stacks.empty.description': 'Scrivi una definizione compose e distribuiscila su questo host.',
+  'stacks.empty.description':
+    'Distribuisci un progetto compose su questo host, da un file compose, una cartella o un repository git.',
   'stacks.column.name': 'Nome',
   'stacks.column.kind': 'Tipo',
   'stacks.column.state': 'Stato',
@@ -91,7 +91,6 @@ export default {
   'stacks.action.adopt': 'Adotta',
   'stacks.action.stop': 'Arresta',
   'stacks.action.start': 'Avvia',
-  'stacks.action.more': 'Altre azioni dello stack',
   'stacks.action.restart': 'Riavvia',
   'stacks.action.pull': 'Scarica immagini',
   'stacks.action.rebuild': 'Ricompila e distribuisci',
@@ -297,4 +296,8 @@ export default {
   'stacks.managed.saveOnly': 'Salva senza distribuire',
   'stacks.managed.unsaved': 'Modifiche non salvate',
   'stacks.forget.sectionTitle': 'Dimentica questo stack',
+  'stacks.kind.managedHint': 'Homeport conserva il suo file compose e il suo ambiente.',
+  'stacks.kind.linkedHint': 'I suoi file compose sono in una cartella di questo computer.',
+  'stacks.kind.syncedHint': 'Distribuito da un repository git.',
+  'stacks.kind.externalHint': 'Distribuito al di fuori di Homeport.',
 } satisfies Translation<typeof en>;

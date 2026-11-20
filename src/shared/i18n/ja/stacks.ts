@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'スタック',
   'stacks.title': 'スタック',
-  'stacks.description':
-    'このホスト上の Compose プロジェクトです。管理スタックは定義を Homeport に、リンクスタックはこのコンピューター上のフォルダーに保持します。外部スタックはほかの場所からデプロイされたものです。',
+  'stacks.description': 'このホスト上の Compose プロジェクトです。',
   'stacks.new': '新しいスタック',
   'stacks.search': 'スタックを検索',
   'stacks.empty.title': 'スタックはありません',
-  'stacks.empty.description': 'compose 定義を書いて、このホストにデプロイしてください。',
+  'stacks.empty.description':
+    'compose ファイル、フォルダー、または git リポジトリから、このホストに compose プロジェクトをデプロイします。',
   'stacks.column.name': '名前',
   'stacks.column.kind': '種類',
   'stacks.column.state': '状態',
@@ -88,7 +88,6 @@ export default {
   'stacks.action.adopt': '引き継ぎ',
   'stacks.action.stop': '停止',
   'stacks.action.start': '起動',
-  'stacks.action.more': 'その他のスタック操作',
   'stacks.action.restart': '再起動',
   'stacks.action.pull': 'イメージをプル',
   'stacks.action.rebuild': '再ビルドしてデプロイ',
@@ -293,4 +292,8 @@ export default {
   'stacks.managed.saveOnly': 'デプロイせずに保存',
   'stacks.managed.unsaved': '未保存の変更があります',
   'stacks.forget.sectionTitle': 'このスタックを破棄',
+  'stacks.kind.managedHint': 'Homeport が compose ファイルと環境を保持します。',
+  'stacks.kind.linkedHint': 'compose ファイルはこのコンピューター上のフォルダーにあります。',
+  'stacks.kind.syncedHint': 'git リポジトリからデプロイされます。',
+  'stacks.kind.externalHint': 'Homeport の外でデプロイされました。',
 } satisfies Translation<typeof en>;

@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': '스택',
   'stacks.title': '스택',
-  'stacks.description':
-    '이 호스트의 Compose 프로젝트입니다. 관리형 스택은 정의를 Homeport에, 링크된 스택은 이 컴퓨터의 폴더에 보관하며, 외부 스택은 다른 곳에서 배포되었습니다.',
+  'stacks.description': '이 호스트의 Compose 프로젝트입니다.',
   'stacks.new': '새 스택',
   'stacks.search': '스택 검색',
   'stacks.empty.title': '스택 없음',
-  'stacks.empty.description': 'compose 정의를 작성해 이 호스트에 배포하세요.',
+  'stacks.empty.description':
+    'compose 파일, 폴더 또는 git 저장소에서 이 호스트에 compose 프로젝트를 배포하세요.',
   'stacks.column.name': '이름',
   'stacks.column.kind': '종류',
   'stacks.column.state': '상태',
@@ -88,7 +88,6 @@ export default {
   'stacks.action.adopt': '관리형으로 전환',
   'stacks.action.stop': '중지',
   'stacks.action.start': '시작',
-  'stacks.action.more': '추가 스택 작업',
   'stacks.action.restart': '다시 시작',
   'stacks.action.pull': '이미지 풀',
   'stacks.action.rebuild': '다시 빌드 후 배포',
@@ -291,4 +290,8 @@ export default {
   'stacks.managed.saveOnly': '배포하지 않고 저장',
   'stacks.managed.unsaved': '저장하지 않은 변경 사항',
   'stacks.forget.sectionTitle': '이 스택 잊기',
+  'stacks.kind.managedHint': 'Homeport가 compose 파일과 환경을 보관합니다.',
+  'stacks.kind.linkedHint': 'compose 파일이 이 컴퓨터의 폴더에 있습니다.',
+  'stacks.kind.syncedHint': 'git 저장소에서 배포됩니다.',
+  'stacks.kind.externalHint': 'Homeport 밖에서 배포되었습니다.',
 } satisfies Translation<typeof en>;

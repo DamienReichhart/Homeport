@@ -5,12 +5,12 @@ import type { Translation } from '../types';
 export default {
   'stacks.nav': 'Stacks',
   'stacks.title': 'Stacks',
-  'stacks.description':
-    'Proyectos de Compose en este host. Los stacks gestionados guardan su definición en Homeport; los vinculados, en una carpeta de este equipo; los externos se desplegaron en otro lugar.',
+  'stacks.description': 'Proyectos de Compose en este host.',
   'stacks.new': 'Nuevo stack',
   'stacks.search': 'Buscar stacks',
   'stacks.empty.title': 'No hay stacks',
-  'stacks.empty.description': 'Escribe una definición compose y despliégala en este host.',
+  'stacks.empty.description':
+    'Despliega un proyecto de Compose en este host, desde un archivo compose, una carpeta o un repositorio git.',
   'stacks.column.name': 'Nombre',
   'stacks.column.kind': 'Tipo',
   'stacks.column.state': 'Estado',
@@ -91,7 +91,6 @@ export default {
   'stacks.action.adopt': 'Adoptar',
   'stacks.action.stop': 'Detener',
   'stacks.action.start': 'Iniciar',
-  'stacks.action.more': 'Más acciones del stack',
   'stacks.action.restart': 'Reiniciar',
   'stacks.action.pull': 'Descargar imágenes',
   'stacks.action.rebuild': 'Recompilar y desplegar',
@@ -297,4 +296,8 @@ export default {
   'stacks.managed.saveOnly': 'Guardar sin desplegar',
   'stacks.managed.unsaved': 'Cambios sin guardar',
   'stacks.forget.sectionTitle': 'Olvidar este stack',
+  'stacks.kind.managedHint': 'Homeport guarda su archivo compose y su entorno.',
+  'stacks.kind.linkedHint': 'Sus archivos compose están en una carpeta de este equipo.',
+  'stacks.kind.syncedHint': 'Desplegado desde un repositorio git.',
+  'stacks.kind.externalHint': 'Desplegado fuera de Homeport.',
 } satisfies Translation<typeof en>;
