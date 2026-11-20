@@ -27,4 +27,4 @@ Click an object for its page:
 - **Conditions**, when its `status` has them, as for Homeport's own pages.
 - **Events** about it, and its **YAML**, without `managedFields`.
 
-When its type allows it, **Edit** opens its YAML to change it through a preview and server-side apply (see [Applying and editing YAML](/docs/clusters/yaml/)), and **Delete** removes it after a confirmation naming it and the cluster (see [Deleting](/docs/clusters/actions/#deleting)). On the list, tick several objects to delete them together.
+When its type allows it, **Edit** opens its YAML to change it through a preview and server-side apply (see [Applying and editing YAML](/docs/clusters/yaml/)), and **Delete** (in its **More actions** menu) removes it after a confirmation naming it and the cluster (see [Deleting](/docs/clusters/actions/#deleting)). On the list, tick several objects to delete them together.

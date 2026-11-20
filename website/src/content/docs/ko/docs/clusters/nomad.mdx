@@ -58,7 +58,7 @@ Homeport는 토큰을 URL이 아니라 각 요청의 `X-Nomad-Token` 헤더로 �
 
 job을 열면 설정(우선순위, 데이터센터, 노드 풀, 버전), 태스크와 드라이버가 표시된 **task group**, 그리고 각각 실행 중인 노드와 함께 최신순으로 표시된 **allocation** 목록을 볼 수 있습니다.
 
-- **중지** 버튼은 job과 그 네임스페이스를 밝히며 먼저 확인을 요청합니다. Nomad는 모든 allocation을 중지하고, 가비지 컬렉션이 실행될 때까지 job의 정의를 유지합니다. `nomad job stop -purge`처럼 job과 그 기록을 즉시 삭제하려면 **영구 삭제** 옵션에 체크하세요. 영구 삭제는 기본적으로 꺼져 있습니다.
+- **중지** 버튼은 job과 그 네임스페이스를 밝히며 먼저 확인을 요청합니다. Nomad는 모든 allocation을 중지하고, 가비지 컬렉션이 실행될 때까지 job의 정의를 유지합니다. `nomad job stop -purge`처럼 job과 그 기록을 즉시 삭제하려면 **영구 삭제** 옵션에 체크하세요. 영구 삭제는 기본적으로 꺼져 있습니다. **영구 삭제**를 체크하면 Homeport는 먼저 job 이름을 입력하라고 요청합니다.
 - `service` 또는 `batch` job의 task group에 있는 **스케일** 버튼은 `nomad job scale`처럼 실행할 allocation 수를 정합니다. 그룹에 `scaling` 블록이 있으면 개수는 `min`과 `max` 사이여야 합니다. Homeport는 범위를 벗어난 값을 Nomad에 묻기 전에 거부하며, Nomad가 거부하면 진행 중인 deployment 같은 Nomad 자체의 이유를 보여 줍니다. 이 정책에 따라 동작하는 오토스케일러가 개수를 다시 바꿀 수 있습니다.
 
 job 목록을 보려면 job의 네임스페이스에 대해 `list-jobs`와 `read-job` 기능이 필요하고, 중지하려면 `submit-job`, 스케일하려면 `scale-job`(또는 `submit-job`)이 필요합니다.

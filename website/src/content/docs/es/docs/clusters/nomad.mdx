@@ -58,7 +58,7 @@ Un token que no puede leer el agente (`agent:read`) se conecta igualmente: la p�
 
 Abre un job para ver sus ajustes (prioridad, centros de datos, node pool, versión), sus **task groups** con sus tasks y sus drivers, y sus **allocations**, las más recientes primero, con el nodo en el que se ejecuta cada una.
 
-- **Detener** pregunta antes, indicando el job y su namespace. Nomad detiene todas las allocations y conserva la definición del job hasta que se ejecuta su recolección de basura; marca **Purgarlo** para eliminar el job y su historial al instante, como hace `nomad job stop -purge`. La purga está desactivada de forma predeterminada.
+- **Detener** pregunta antes, indicando el job y su namespace. Nomad detiene todas las allocations y conserva la definición del job hasta que se ejecuta su recolección de basura; marca **Purgarlo** para eliminar el job y su historial al instante, como hace `nomad job stop -purge`. La purga está desactivada de forma predeterminada. Con **Purgarlo** marcado, Homeport te pide antes que escribas el nombre del job.
 - **Escalar**, en un task group de un job `service` o `batch`, establece cuántas allocations ejecuta, como hace `nomad job scale`. Cuando el grupo tiene un bloque `scaling`, el número debe quedar entre su `min` y su `max`; Homeport rechaza uno fuera de ese rango antes de preguntar a Nomad, y muestra el motivo de Nomad cuando este lo rechaza, como un deployment en curso. Un autoescalador que actúe según la política puede volver a cambiar el número.
 
 Listar los jobs requiere las capacidades `list-jobs` y `read-job`; detener uno requiere `submit-job`, y escalar, `scale-job` (o `submit-job`), en el namespace del job.

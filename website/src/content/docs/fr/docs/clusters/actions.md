@@ -5,11 +5,11 @@ description: Mettez à l’échelle des Deployments et des StatefulSets, redéma
 
 Les changements courants d’un cluster sont à un clic sur ses pages, chacun envoyé à l’API Kubernetes avec les identifiants propres au cluster, comme le ferait `kubectl`. Les listes suivent le changement en direct par leur watch.
 
-Chaque action qui supprime ou remplace quelque chose demande d’abord confirmation, et la confirmation nomme le cluster, le namespace, le kind et le nom : un changement n’atterrit ainsi jamais par accident sur le mauvais cluster ou le mauvais namespace.
+Chaque action qui supprime ou remplace quelque chose demande d’abord confirmation, et la confirmation nomme le cluster, le namespace, le kind et le nom : un changement n’atterrit ainsi jamais par accident sur le mauvais cluster ou le mauvais namespace. Redémarrer et suspendre ne demandent rien : ils se déploient calmement et peuvent être annulés, et un message dit ce qui s’est passé.
 
 ## Charges de travail
 
-La page d’une charge de travail porte ses actions dans l’en-tête ; sur **Charges de travail**, chaque ligne les a dans son menu **⋯**.
+La page d’une charge de travail garde **Mettre à l’échelle** et **Redémarrer** (ou **Exécuter maintenant** et **Suspendre** pour une CronJob) dans son en-tête, et **Supprimer** dans son menu **Plus d’actions** ; sur **Charges de travail**, chaque ligne les a dans son menu **⋯**.
 
 | Action                  | Sur                                   | Fait, comme                                                               |
 | ----------------------- | ------------------------------------- | ------------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ La page d’une charge de travail porte ses actions dans l’en-tête ; sur **C
 
 ## Supprimer
 
-Chaque page d’objet — une charge de travail, un Pod, un Service, un Ingress, une ConfigMap, un Secret, un Node, ou tout objet sous **Ressources de l’API** — a **Supprimer** dans son en-tête. Sur une liste, cochez des lignes et **Supprimer N** les supprime toutes après une seule confirmation qui les liste.
+Chaque page d’objet — une charge de travail, un Pod, un Service, un Ingress, une ConfigMap, un Secret, un Node, ou n’importe quel objet sous **Ressources de l’API** — a **Supprimer** dans son menu **Plus d’actions**. Sur une liste, cochez des lignes et **Supprimer N** les supprime toutes après une seule confirmation qui les liste.
 
 Les objets sont supprimés avec la propagation `Background`, comme le fait `kubectl delete` : l’objet part immédiatement et le ramasse-miettes supprime ce qu’il possède (les ReplicaSets et les Pods d’un Deployment, les Jobs d’une CronJob).
 

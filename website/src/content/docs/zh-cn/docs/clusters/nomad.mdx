@@ -58,7 +58,7 @@ Homeport 在每个请求的 `X-Nomad-Token` 请求头中发送令牌，绝不放
 
 打开一个 job 可查看其设置（优先级、datacenter、node pool、版本）、其 **task group** 及其 task 和驱动，以及其 **allocation**（最新的在最前）和每个 allocation 所在的 node。
 
-- **停止**会先询问你，注明该 job 及其 namespace。Nomad 会停止每个 allocation，并保留该 job 的定义，直到其垃圾回收运行；勾选**清除它**会立即删除该 job 及其历史，与 `nomad job stop -purge` 相同。清除默认处于关闭状态。
+- **停止**会先询问你，注明该 job 及其 namespace。Nomad 会停止每个 allocation，并保留该 job 的定义，直到其垃圾回收运行；勾选**清除它**会立即删除该 job 及其历史，与 `nomad job stop -purge` 相同。清除默认处于关闭状态。勾选**清除它**时，Homeport 会先要求你输入 job 的名称。
 - **扩缩**作用于 `service` 或 `batch` job 的某个 task group，设置它运行多少个 allocation，与 `nomad job scale` 相同。当该 group 有 `scaling` 块时，数量必须保持在其 `min` 和 `max` 之间；超出范围的数量 Homeport 会在询问 Nomad 之前就拒绝，而 Nomad 拒绝时（例如有 deployment 正在进行），会显示 Nomad 自己给出的原因。依据该策略工作的自动扩缩器可能会再次更改数量。
 
 列出 job 需要 `list-jobs` 和 `read-job` 能力；停止 job 需要 `submit-job`，扩缩需要 `scale-job`（或 `submit-job`），均针对该 job 的 namespace。

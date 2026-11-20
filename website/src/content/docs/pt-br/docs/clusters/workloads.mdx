@@ -47,7 +47,7 @@ A página de uma carga de trabalho tem:
 - **Logs** dos Pods dela, todos intercalados ou um de cada vez (não para um CronJob; os Jobs dele têm os próprios).
 - **Condições**, **Eventos** (avisos primeiro; o Kubernetes os mantém por cerca de uma hora) e **YAML**, sem `managedFields`, com **Editar**.
 
-O cabeçalho dela tem as ações: **Escalar**, **Reiniciar**, **Suspender** ou **Retomar** e **Executar agora** quando se aplicam, e **Excluir**; veja [Escalar, reiniciar e excluir](/docs/clusters/actions/).
+O cabeçalho mantém as ações do dia a dia — **Escalar** e **Reiniciar**, ou **Executar agora** e **Suspender** (**Retomar** depois de suspenso) num CronJob — e o menu **Mais ações** tem **Excluir**; veja [Escalar, reiniciar e excluir](/docs/clusters/actions/).
 
 ## Pods
 

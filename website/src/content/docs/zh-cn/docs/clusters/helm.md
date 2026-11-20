@@ -58,13 +58,13 @@ Release 页面上的**升级**可更改其 Chart 版本、其 Values，或两者
 
 ## 回滚
 
-在**历史**中，任何较早修订版本上的**回滚到修订版本 N** 会先询问你，注明当前和回滚后的 Chart 版本及应用版本，然后运行 `helm rollback`：helm 会以一个新的修订版本恢复该修订版本的 Chart 和 Values，因此回滚本身也可以被回滚。勾选**等待其资源就绪**可让 helm 等待资源就绪。
+在**历史**中，任何较早修订版本上的**回滚到修订版本 N** 会先询问你，注明当前和回滚后的 Chart 版本及应用版本，然后运行 `helm rollback`：helm 会以一个新的修订版本恢复该修订版本的 Chart 和 Values，因此回滚本身也可以被回滚。勾选**等待其资源就绪**可让 helm 等待资源就绪。每个较早的修订都以图标按钮提供该操作，历史会显示每个修订是多久之前创建的，悬停可查看日期。
 
 在安装、升级或回滚中断后卡在**等待中**的 Release 处于锁定状态：在该操作结束前，helm 拒绝更改它。将其回滚到上次部署的修订版本即可解锁。
 
 ## 卸载
 
-Release 页面上的**卸载**会在运行 `helm uninstall` 之前注明该 Release、其 Namespace 和集群，并列出将随之删除的对象。Chart 标记为保留的对象（`helm.sh/resource-policy: keep`）以及 StatefulSet 的 PersistentVolumeClaim 会留在集群上。**保留其历史**会让该 Release 以 `uninstalled` 状态留在列表中，以便回滚；不勾选时，该 Release 会从列表中消失。**等待其对象被删除**会让 helm 等待这些对象被删除。
+发布的**更多操作**菜单中的**卸载**会说明该发布、其 Namespace 和集群，列出将随之删除的对象，并要求你先输入发布的名称，然后才运行 `helm uninstall`。Chart 标记为保留的对象（`helm.sh/resource-policy: keep`）以及 StatefulSet 的 PersistentVolumeClaim 会留在集群上。**保留其历史**会让该 Release 以 `uninstalled` 状态留在列表中，以便回滚；不勾选时，该 Release 会从列表中消失。**等待其对象被删除**会让 helm 等待这些对象被删除。
 
 ## Chart 仓库
 

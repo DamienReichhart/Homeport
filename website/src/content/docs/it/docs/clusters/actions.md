@@ -5,11 +5,11 @@ description: Ridimensiona Deployment e StatefulSet, riavvia un rollout, sospendi
 
 Le modifiche quotidiane a un cluster sono a un clic di distanza nelle sue pagine, ognuna inviata all’API di Kubernetes con le credenziali del cluster stesso, come farebbe `kubectl`. Gli elenchi seguono la modifica in tempo reale tramite il loro watch.
 
-Ogni azione che rimuove o sostituisce qualcosa chiede prima conferma, e la conferma indica il cluster, il namespace, il kind e il nome, così una modifica non finisce mai per errore sul cluster o sul namespace sbagliato.
+Ogni azione che rimuove o sostituisce qualcosa chiede prima conferma, e la conferma indica il cluster, il namespace, il kind e il nome, così una modifica non finisce mai per errore sul cluster o sul namespace sbagliato. Riavviare e sospendere non chiedono nulla: avviano un rollout tranquillo e si possono annullare, e un avviso dice cosa è successo.
 
 ## Carichi di lavoro
 
-La pagina di un carico di lavoro ha le sue azioni nell’intestazione; in **Carichi di lavoro**, ogni riga le ha nel suo menu **⋯**.
+La pagina di un carico di lavoro tiene **Ridimensiona** e **Riavvia** (o **Esegui ora** e **Sospendi** per un CronJob) nell’intestazione, e **Elimina** nel menu **Altre azioni**; in **Carichi di lavoro**, ogni riga le ha nel suo menu **⋯**.
 
 | Azione           | Su                                 | Fa, come                                                                |
 | ---------------- | ---------------------------------- | ----------------------------------------------------------------------- |
@@ -34,7 +34,7 @@ La pagina di un carico di lavoro ha le sue azioni nell’intestazione; in **Cari
 
 ## Eliminare
 
-Ogni pagina di un oggetto — un carico di lavoro, un Pod, un Service, un Ingress, una ConfigMap, un Secret, un Node, o qualsiasi oggetto in **Risorse API** — ha **Elimina** nella sua intestazione. In un elenco, spunta le righe ed **Elimina N** le rimuove tutte dopo un’unica conferma che le elenca.
+Ogni pagina di un oggetto — un carico di lavoro, un Pod, un Service, un Ingress, una ConfigMap, un Secret, un Node o qualsiasi oggetto in **Risorse API** — ha **Elimina** nel menu **Altre azioni**. In un elenco, seleziona le righe e **Elimina N** le rimuove tutte dopo un’unica conferma che le elenca.
 
 Gli oggetti vengono eliminati con la propagazione `Background`, come fa `kubectl delete`: l’oggetto se ne va subito e il garbage collector rimuove ciò che possiede (i ReplicaSet e i Pod di un Deployment, i Job di un CronJob).
 

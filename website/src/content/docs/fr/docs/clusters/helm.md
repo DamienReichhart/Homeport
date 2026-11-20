@@ -58,13 +58,13 @@ Valeurs, Notes, Manifeste et Ressources affichent la révision courante ; chois
 
 ## Revenir en arrière
 
-Dans **Historique**, **Revenir à la révision N** sur n’importe quelle révision antérieure demande d’abord confirmation, en nommant les versions de chart et d’application actuelles et à venir, puis exécute `helm rollback` : helm remet le chart et les valeurs de cette révision sous forme d’une nouvelle révision ; un retour arrière peut donc lui-même être annulé par un retour arrière. Cochez **Attendre que ses ressources soient prêtes** pour que helm les attende.
+Dans **Historique**, **Revenir à la révision N** sur n’importe quelle révision antérieure demande d’abord confirmation, en nommant les versions de chart et d’application actuelles et à venir, puis exécute `helm rollback` : helm remet le chart et les valeurs de cette révision sous forme d’une nouvelle révision ; un retour arrière peut donc lui-même être annulé par un retour arrière. Cochez **Attendre que ses ressources soient prêtes** pour que helm les attende. Chaque révision antérieure l’a sous forme de bouton icône, et l’historique indique il y a combien de temps chacune a été faite, avec la date au survol.
 
 Une release bloquée en **pending** après une installation, une mise à niveau ou un retour arrière interrompu est verrouillée : helm refuse de la changer tant que l’opération n’est pas terminée. La ramener à sa dernière révision déployée la déverrouille.
 
 ## Désinstaller
 
-**Désinstaller**, sur la page d’une release, nomme la release, son Namespace et son cluster et liste les objets qui seront supprimés avec elle, avant que `helm uninstall` ne s’exécute. Les objets qu’un chart marque comme à conserver (`helm.sh/resource-policy: keep`) et les PersistentVolumeClaims des StatefulSets restent sur le cluster. **Conserver son historique, pour pouvoir revenir en arrière** laisse la release listée comme `uninstalled`, pour qu’elle puisse être ramenée à une révision ; sans cela, la release disparaît de la liste. **Attendre que ses objets soient supprimés** fait attendre helm jusqu’à leur suppression.
+**Désinstaller**, dans le menu **Plus d’actions** d’une release, nomme la release, son Namespace et son cluster et liste les objets qui seront supprimés avec elle, puis vous demande de saisir le nom de la release avant que `helm uninstall` ne s’exécute. Les objets qu’un chart marque comme à conserver (`helm.sh/resource-policy: keep`) et les PersistentVolumeClaims des StatefulSets restent sur le cluster. **Conserver son historique, pour pouvoir revenir en arrière** laisse la release listée comme `uninstalled`, pour qu’elle puisse être ramenée à une révision ; sans cela, la release disparaît de la liste. **Attendre que ses objets soient supprimés** fait attendre helm jusqu’à leur suppression.
 
 ## Dépôts de charts
 

@@ -47,7 +47,7 @@ La pagina di un carico di lavoro ha:
 - **Log** dei suoi Pod, tutti alternati o uno alla volta (non per un CronJob; i suoi Job hanno i propri).
 - **Condizioni**, **Eventi** (prima gli avvisi; Kubernetes li conserva per circa un’ora) e **YAML**, senza `managedFields`, con **Modifica**.
 
-La sua intestazione ha le sue azioni: **Ridimensiona**, **Riavvia**, **Sospendi** o **Riprendi** ed **Esegui ora** dove si applicano, ed **Elimina**; vedi [Ridimensionare, riavviare ed eliminare](/docs/clusters/actions/).
+La sua intestazione tiene le azioni di tutti i giorni — **Ridimensiona** e **Riavvia**, o **Esegui ora** e **Sospendi** (**Riprendi** una volta sospeso) per un CronJob — e il suo menu **Altre azioni** ha **Elimina**; vedi [Scalare, riavviare ed eliminare](/docs/clusters/actions/).
 
 ## Pod
 

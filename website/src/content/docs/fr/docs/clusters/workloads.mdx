@@ -47,7 +47,7 @@ La page d’une charge de travail comporte :
 - **Journaux** de ses Pods, tous entremêlés ou un à la fois (pas pour une CronJob ; ses Jobs ont les leurs).
 - **Conditions**, **Événements** (les avertissements d’abord ; Kubernetes les conserve environ une heure) et **YAML**, sans `managedFields`, avec **Modifier**.
 
-Son en-tête porte ses actions : **Mettre à l’échelle**, **Redémarrer**, **Suspendre** ou **Reprendre** et **Exécuter maintenant** quand elles s’appliquent, et **Supprimer** ; voir [Mise à l’échelle, redémarrage et suppression](/docs/clusters/actions/).
+Son en-tête garde ses actions courantes — **Mettre à l’échelle** et **Redémarrer**, ou **Exécuter maintenant** et **Suspendre** (**Reprendre** une fois suspendue) pour une CronJob — et son menu **Plus d’actions** contient **Supprimer** ; voir [Mettre à l’échelle, redémarrer et supprimer](/docs/clusters/actions/).
 
 ## Pods
 

@@ -58,13 +58,13 @@ Values, Notes, Manifest and Resources show the current revision; pick an earlier
 
 ## Rolling back
 
-In **History**, **Roll back to revision N** on any earlier revision asks first, naming the chart and app versions now and after, then runs `helm rollback`: helm puts back that revision's chart and values as a new revision, so a rollback can itself be rolled back. Tick **Wait until its resources are ready** to have helm wait for them.
+In **History**, **Roll back to revision N** on any earlier revision asks first, naming the chart and app versions now and after, then runs `helm rollback`: helm puts back that revision's chart and values as a new revision, so a rollback can itself be rolled back. Tick **Wait until its resources are ready** to have helm wait for them. Each earlier revision has it as an icon button, and the history says how long ago each one was made, with the date on hover.
 
 A release stuck **pending** after an interrupted install, upgrade or rollback is locked: helm refuses to change it until it ends. Rolling it back to its last deployed revision unlocks it.
 
 ## Uninstalling
 
-**Uninstall**, on a release's page, names the release, its Namespace and Cluster and lists the objects that will be deleted with it, before `helm uninstall` runs. Objects a chart marks to keep (`helm.sh/resource-policy: keep`) and the PersistentVolumeClaims of StatefulSets stay on the Cluster. **Keep its history** leaves the release listed as `uninstalled`, so it can be rolled back; without it, the release is gone from the list. **Wait until its objects are deleted** has helm wait for them.
+**Uninstall**, in a release's **More actions** menu, names the release, its Namespace and Cluster and lists the objects that will be deleted with it, and asks you to type the release's name before `helm uninstall` runs. Objects a chart marks to keep (`helm.sh/resource-policy: keep`) and the PersistentVolumeClaims of StatefulSets stay on the Cluster. **Keep its history** leaves the release listed as `uninstalled`, so it can be rolled back; without it, the release is gone from the list. **Wait until its objects are deleted** has helm wait for them.
 
 ## Chart repositories
 

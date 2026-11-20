@@ -58,7 +58,7 @@ Homeport हर अनुरोध के `X-Nomad-Token` header में ट�
 
 किसी job की सेटिंग्स (priority, datacenters, node pool, संस्करण), उसके **task groups** उनके tasks और drivers के साथ, और उसके **allocations**, सबसे नया पहले, हर एक जिस node पर चलता है उसके साथ, देखने के लिए उसे खोलें।
 
-- **रोकें** job और उसके namespace का नाम लेकर पहले पूछता है। Nomad हर allocation रोक देता है और job की definition उसका garbage collection चलने तक रखता है; job और उसका इतिहास तुरंत हटाने के लिए **इसे purge करें** पर टिक करें, जैसे `nomad job stop -purge` करता है। Purge डिफ़ॉल्ट रूप से बंद होता है।
+- **रोकें** job और उसके namespace का नाम लेकर पहले पूछता है। Nomad हर allocation रोक देता है और job की definition उसका garbage collection चलने तक रखता है; job और उसका इतिहास तुरंत हटाने के लिए **इसे purge करें** पर टिक करें, जैसे `nomad job stop -purge` करता है। Purge डिफ़ॉल्ट रूप से बंद होता है। **इसे purge करें** पर टिक होने पर Homeport पहले job का नाम टाइप करने को कहता है।
 - **स्केल करें**, किसी `service` या `batch` job के task group पर, यह सेट करता है कि वह कितने allocations चलाए, जैसे `nomad job scale` करता है। जब group में `scaling` block हो, तो संख्या उसके `min` और `max` के अंदर रहनी चाहिए; Homeport Nomad से पूछने से पहले ही बाहर की संख्या अस्वीकार कर देता है, और जब Nomad अस्वीकार करता है तो उसका अपना कारण दिखाता है, जैसे कोई deployment चल रहा हो। policy पर काम करने वाला कोई autoscaler संख्या फिर से बदल सकता है।
 
 jobs की सूची देखने के लिए `list-jobs` और `read-job` capabilities चाहिए; किसी एक को रोकने के लिए `submit-job`, और स्केल करने के लिए `scale-job` (या `submit-job`), job के namespace पर।

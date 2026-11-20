@@ -47,7 +47,7 @@ A workload's page has:
 - **Logs** of its Pods, all interleaved or one at a time (not for a CronJob; its Jobs have theirs).
 - **Conditions**, **Events** (warnings first; Kubernetes keeps them for about an hour) and **YAML**, without `managedFields`, with **Edit**.
 
-Its header has its actions: **Scale**, **Restart**, **Suspend** or **Resume** and **Run now** where they apply, and **Delete**; see [Scaling, restarting and deleting](/docs/clusters/actions/).
+Its header keeps its everyday actions — **Scale** and **Restart**, or **Run now** and **Suspend** (**Resume** once suspended) for a CronJob — and its **More actions** menu has **Delete**; see [Scaling, restarting and deleting](/docs/clusters/actions/).
 
 ## Pods
 

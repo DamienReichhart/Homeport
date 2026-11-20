@@ -58,7 +58,7 @@ Um token que não pode ler o agente (`agent:read`) ainda conecta: a página do c
 
 Abra um job para ver as configurações dele (prioridade, datacenters, node pool, versão), os **grupos de tarefas** com as tarefas e os drivers deles, e as **alocações**, as mais recentes primeiro, com o nó em que cada uma é executada.
 
-- **Parar** pede confirmação antes, indicando o job e o namespace dele. O Nomad para todas as alocações e mantém a definição do job até que a coleta de lixo dele seja executada; marque **Expurgá-lo** para remover o job e o histórico dele na hora, como o `nomad job stop -purge` faz. Expurgar fica desativado por padrão.
+- **Parar** pede confirmação antes, indicando o job e o namespace dele. O Nomad para todas as alocações e mantém a definição do job até que a coleta de lixo dele seja executada; marque **Expurgá-lo** para remover o job e o histórico dele na hora, como o `nomad job stop -purge` faz. Expurgar fica desativado por padrão. Com **Expurgá-lo** marcado, o Homeport pede antes que você digite o nome do job.
 - **Escalar**, em um grupo de tarefas de um job `service` ou `batch`, define quantas alocações ele executa, como o `nomad job scale` faz. Quando o grupo tem um bloco `scaling`, a contagem precisa ficar entre o `min` e o `max` dele; o Homeport recusa uma contagem fora desse intervalo antes de consultar o Nomad, e mostra o próprio motivo do Nomad quando ele recusa, como uma implantação em andamento. Um autoscaler que age sobre a política pode alterar a contagem de novo.
 
 Listar jobs exige as capabilities `list-jobs` e `read-job`; parar um exige `submit-job`, e escalar exige `scale-job` (ou `submit-job`), no namespace do job.
