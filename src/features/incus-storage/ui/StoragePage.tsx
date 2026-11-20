@@ -14,6 +14,9 @@ import {
   PageHeader,
   Progress,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   type ColumnDef,
 } from '@/shared/ui';
@@ -44,7 +47,9 @@ function PoolCard({
     >
       <span className="flex items-center justify-between gap-2">
         <span className="font-medium">{pool.name}</span>
-        <Badge variant="secondary">{pool.driver}</Badge>
+        <Badge variant="outline" className="font-mono">
+          {pool.driver}
+        </Badge>
       </span>
       {share === null ? (
         <span className="text-muted-foreground text-xs">{t('incus.storage.spaceUnknown')}</span>
@@ -83,31 +88,41 @@ function Volumes({ hostId, project, pool }: { hostId: string; project: string; p
       id: 'name',
       header: t('incus.storage.column.name'),
       accessorFn: (v) => v.name,
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span className="block max-w-72 truncate font-mono text-xs" title={row.original.name}>
+          {row.original.name}
+        </span>
+      ),
     },
     {
       id: 'type',
       header: t('incus.storage.column.type'),
       accessorFn: (v) => v.type,
-      cell: ({ row }) => <Badge variant="outline">{row.original.type}</Badge>,
+      cell: ({ row }) => <span className="text-muted-foreground">{row.original.type}</span>,
     },
     {
       id: 'content',
       header: t('incus.storage.column.content'),
       accessorFn: (v) => v.contentType,
+      cell: ({ row }) => <span className="text-muted-foreground">{row.original.contentType}</span>,
     },
     {
       id: 'size',
       header: t('incus.storage.column.size'),
       accessorFn: (v) => v.size ?? '',
-      cell: ({ row }) => row.original.size ?? '—',
+      cell: ({ row }) => (
+        <div className="text-end whitespace-nowrap tabular-nums">{row.original.size ?? '—'}</div>
+      ),
     },
     {
       id: 'usedBy',
       header: t('incus.storage.column.usedBy'),
       accessorFn: (v) => v.usedBy.map((u) => u.name).join(' '),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs">
+        <span
+          className="text-muted-foreground block max-w-64 truncate text-xs"
+          title={row.original.usedBy.map((u) => u.name).join('\n') || undefined}
+        >
           {row.original.usedBy.map((u) => u.name).join(', ') || '—'}
         </span>
       ),
@@ -122,29 +137,36 @@ function Volumes({ hostId, project, pool }: { hostId: string; project: string; p
         const inUse = volume.usedBy.length > 0;
         return (
           <div className="flex justify-end">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('incus.storage.deleteOne', { name: volume.name })}
-              title={
-                inUse
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled button shows no tooltip; its wrapper does. */}
+                <span tabIndex={inUse ? 0 : -1}>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('incus.storage.deleteOne', { name: volume.name })}
+                    disabled={inUse || remove.isPending}
+                    onClick={() =>
+                      confirm({
+                        title: t('incus.storage.delete.title', { name: volume.name }),
+                        description: t('incus.storage.delete.description', { pool }),
+                        confirmLabel: t('incus.delete'),
+                        destructive: true,
+                        typeToConfirm: volume.name,
+                        action: () => remove.mutateAsync(volume.name),
+                      })
+                    }
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {inUse
                   ? t('incus.storage.inUse', { names: volume.usedBy.map((u) => u.name).join(', ') })
-                  : undefined
-              }
-              disabled={inUse || remove.isPending}
-              onClick={() =>
-                confirm({
-                  title: t('incus.storage.delete.title', { name: volume.name }),
-                  description: t('incus.storage.delete.description', { pool }),
-                  confirmLabel: t('incus.delete'),
-                  destructive: true,
-                  typeToConfirm: volume.name,
-                  action: () => remove.mutateAsync(volume.name),
-                })
-              }
-            >
-              <Trash2Icon />
-            </Button>
+                  : t('incus.storage.deleteOne', { name: volume.name })}
+              </TooltipContent>
+            </Tooltip>
           </div>
         );
       },
@@ -153,8 +175,8 @@ function Volumes({ hostId, project, pool }: { hostId: string; project: string; p
   return (
     <div className="grid gap-3">
       <div className="flex items-center justify-between gap-2">
-        <h2 className="text-sm font-medium">{t('incus.storage.volumesOf', { pool })}</h2>
-        <Button variant="outline" onClick={() => setCreating(true)}>
+        <h2 className="text-base font-semibold">{t('incus.storage.volumesOf', { pool })}</h2>
+        <Button onClick={() => setCreating(true)}>
           <PlusIcon /> {t('incus.storage.new')}
         </Button>
       </div>

@@ -3,7 +3,7 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { IncusGate } from '@/core/host';
-import { formatBytes } from '@/shared/lib';
+import { formatBytes, formatDateTime } from '@/shared/lib';
 import {
   Badge,
   Button,
@@ -75,12 +75,19 @@ function InstanceDetail({
             </Button>
             <StatusDot tone={statusTone(instance.status)} />
             {instance.name}
-            <Badge variant="secondary">{t(TYPE_LABELS[instance.type])}</Badge>
+            <Badge variant="outline">{t(TYPE_LABELS[instance.type])}</Badge>
           </span>
         }
-        description={[instance.image, t(STATUS_LABELS[instance.status])]
-          .filter(Boolean)
-          .join(' · ')}
+        description={
+          <span className="flex min-w-0 items-center gap-1.5">
+            <span>{t(STATUS_LABELS[instance.status])}</span>
+            {instance.image && (
+              <span className="truncate" title={instance.image}>
+                · {instance.image}
+              </span>
+            )}
+          </span>
+        }
         actions={
           <InstanceActions
             hostId={hostId}
@@ -107,7 +114,12 @@ function InstanceDetail({
             items={[
               [t('incus.instances.field.project'), project],
               [t('incus.instances.field.architecture'), instance.architecture || '—'],
-              [t('incus.instances.field.addresses'), instance.addresses.join(', ') || '—'],
+              [
+                t('incus.instances.field.addresses'),
+                <span key="addresses" className="font-mono text-xs">
+                  {instance.addresses.join(', ') || '—'}
+                </span>,
+              ],
               [
                 t('incus.instances.field.cpu'),
                 instance.cpuUsageNs === null
@@ -119,8 +131,11 @@ function InstanceDetail({
                 instance.memoryBytes === null ? '—' : formatBytes(instance.memoryBytes),
               ],
               [t('incus.instances.field.processes'), instance.processes ?? '—'],
-              [t('incus.instances.field.created'), instance.createdAt],
-              [t('incus.instances.field.lastUsed'), instance.lastUsedAt ?? '—'],
+              [t('incus.instances.field.created'), formatDateTime(instance.createdAt)],
+              [
+                t('incus.instances.field.lastUsed'),
+                instance.lastUsedAt ? formatDateTime(instance.lastUsedAt) : '—',
+              ],
               [t('incus.instances.field.snapshots'), detail.data.snapshotNames.join(', ') || '—'],
               [t('incus.instances.field.location'), instance.location || '—'],
               [t('incus.instances.field.description'), instance.description || '—'],

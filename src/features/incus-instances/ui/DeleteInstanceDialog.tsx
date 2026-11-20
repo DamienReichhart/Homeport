@@ -89,7 +89,7 @@ export function DeleteInstanceDialog({
                 {t('common.cancel')}
               </Button>
               <Button
-                variant="destructive"
+                variant="danger"
                 disabled={
                   remove.isPending || (up && !stopFirst) || !typedMatches(typed, instance.name)
                 }

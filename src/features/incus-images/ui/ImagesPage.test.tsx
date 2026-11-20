@@ -43,7 +43,8 @@ describe('incus images', () => {
     expect(screen.getAllByRole('button', { name: /^Refresh / })).toHaveLength(1);
     await user.click(screen.getByRole('button', { name: 'Refresh alpine from its server' }));
     await user.click(screen.getByRole('button', { name: 'Remove the alias alpine' }));
-    await user.click(screen.getByRole('button', { name: 'Delete 0a1b2c3d4e5f' }));
+    await user.click(screen.getByRole('button', { name: 'More actions for 0a1b2c3d4e5f' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
     await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() =>
       expect(calls.map((c) => c.cmd)).toEqual([

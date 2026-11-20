@@ -14,6 +14,9 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   WithShortcut,
   type ColumnDef,
@@ -55,14 +58,14 @@ function NetworksList({ hostId, project }: { hostId: string; project: string }) 
       id: 'type',
       header: t('incus.networks.column.type'),
       accessorFn: (n) => n.type,
-      cell: ({ row }) => <Badge variant="secondary">{row.original.type}</Badge>,
+      cell: ({ row }) => <span className="text-muted-foreground">{row.original.type}</span>,
     },
     {
       id: 'ipv4',
       header: t('incus.networks.column.ipv4'),
       accessorFn: (n) => n.ipv4 ?? '',
       cell: ({ row }) => (
-        <span className="font-mono text-xs">
+        <span className="font-mono text-xs whitespace-nowrap">
           {row.original.ipv4 ?? '—'}
           {row.original.nat && (
             <Badge variant="outline" className="ms-2">
@@ -76,14 +79,24 @@ function NetworksList({ hostId, project }: { hostId: string; project: string }) 
       id: 'ipv6',
       header: t('incus.networks.column.ipv6'),
       accessorFn: (n) => n.ipv6 ?? '',
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.ipv6 ?? '—'}</span>,
+      cell: ({ row }) => (
+        <span
+          className="block max-w-56 truncate font-mono text-xs"
+          title={row.original.ipv6 ?? undefined}
+        >
+          {row.original.ipv6 ?? '—'}
+        </span>
+      ),
     },
     {
       id: 'usedBy',
       header: t('incus.networks.column.usedBy'),
       accessorFn: (n) => n.usedBy.map((u) => u.name).join(' '),
       cell: ({ row }) => (
-        <span className="text-muted-foreground text-xs">
+        <span
+          className="text-muted-foreground block max-w-64 truncate text-xs"
+          title={row.original.usedBy.map((u) => u.name).join('\n') || undefined}
+        >
           {row.original.usedBy.map((u) => u.name).join(', ') || '—'}
         </span>
       ),
@@ -98,30 +111,37 @@ function NetworksList({ hostId, project }: { hostId: string; project: string }) 
         const inUse = network.usedBy.length > 0;
         return (
           <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('incus.networks.deleteOne', { name: network.name })}
-              title={
-                inUse
+            <Tooltip>
+              <TooltipTrigger asChild>
+                {/* A disabled button shows no tooltip; its wrapper does. */}
+                <span tabIndex={inUse ? 0 : -1}>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('incus.networks.deleteOne', { name: network.name })}
+                    disabled={inUse || remove.isPending}
+                    onClick={() =>
+                      confirm({
+                        title: t('incus.networks.delete.title', { name: network.name }),
+                        description: t('incus.networks.delete.description'),
+                        confirmLabel: t('incus.delete'),
+                        destructive: true,
+                        action: () => remove.mutateAsync(network.name),
+                      })
+                    }
+                  >
+                    <Trash2Icon />
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                {inUse
                   ? t('incus.networks.inUse', {
                       names: network.usedBy.map((u) => u.name).join(', '),
                     })
-                  : undefined
-              }
-              disabled={inUse || remove.isPending}
-              onClick={() =>
-                confirm({
-                  title: t('incus.networks.delete.title', { name: network.name }),
-                  description: t('incus.networks.delete.description'),
-                  confirmLabel: t('incus.delete'),
-                  destructive: true,
-                  action: () => remove.mutateAsync(network.name),
-                })
-              }
-            >
-              <Trash2Icon />
-            </Button>
+                  : t('incus.networks.deleteOne', { name: network.name })}
+              </TooltipContent>
+            </Tooltip>
           </div>
         );
       },
@@ -141,11 +161,21 @@ function NetworksList({ hostId, project }: { hostId: string; project: string }) 
           </WithShortcut>
         }
       />
-      <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('incus.networks.search')} />
-      </div>
+      {networks.data.length > 0 && (
+        <div className="mb-3">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('incus.networks.search')} />
+        </div>
+      )}
       {networks.data.length === 0 ? (
-        <EmptyState icon={NetworkIcon} title={t('incus.networks.empty')} />
+        <EmptyState
+          icon={NetworkIcon}
+          title={t('incus.networks.empty')}
+          action={
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon /> {t('incus.networks.new')}
+            </Button>
+          }
+        />
       ) : (
         <DataTable
           columns={columns}

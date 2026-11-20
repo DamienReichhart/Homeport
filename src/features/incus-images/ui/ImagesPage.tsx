@@ -1,19 +1,35 @@
 import { useQuery } from '@tanstack/react-query';
-import { DiscIcon, DownloadIcon, RefreshCwIcon, TagIcon, Trash2Icon, XIcon } from 'lucide-react';
+import {
+  DiscIcon,
+  DownloadIcon,
+  EllipsisVerticalIcon,
+  RefreshCwIcon,
+  TagIcon,
+  Trash2Icon,
+  XIcon,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useActionRequest, usePageQuery } from '@/core/feature';
 import { IncusGate } from '@/core/host';
 import type { IncusImage } from '@/shared/api';
-import { formatBytes, formatRelative } from '@/shared/lib';
+import { formatBytes, formatDateTime, formatRelative } from '@/shared/lib';
 import {
   Badge,
   Button,
   DataTable,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
   EmptyState,
   ErrorMessage,
   PageHeader,
   SearchInput,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   WithShortcut,
   type ColumnDef,
@@ -49,9 +65,9 @@ function ImagesList({ hostId, project }: { hostId: string; project: string }) {
       header: t('incus.images.column.aliases'),
       accessorFn: (i) => `${i.aliases.join(' ')} ${i.fingerprint}`,
       cell: ({ row }) => (
-        <span className="flex flex-wrap items-center gap-1">
+        <span className="flex items-center gap-1 whitespace-nowrap">
           {row.original.aliases.map((alias) => (
-            <Badge key={alias} variant="secondary" className="gap-1 font-mono">
+            <Badge key={alias} variant="outline" className="gap-1 font-mono">
               {alias}
               <button
                 type="button"
@@ -73,32 +89,51 @@ function ImagesList({ hostId, project }: { hostId: string; project: string }) {
       id: 'description',
       header: t('incus.images.column.description'),
       accessorFn: (i) => i.description,
+      cell: ({ row }) => (
+        <span className="block max-w-72 truncate" title={row.original.description}>
+          {row.original.description}
+        </span>
+      ),
     },
     {
       id: 'type',
       header: t('incus.images.column.type'),
       accessorFn: (i) => i.type,
       cell: ({ row }) => (
-        <Badge variant="outline">
+        <span className="text-muted-foreground whitespace-nowrap">
           {row.original.type === 'container'
             ? t('incus.type.container')
             : t('incus.type.virtualMachine')}
-        </Badge>
+        </span>
       ),
     },
-    { id: 'arch', header: t('incus.images.column.arch'), accessorFn: (i) => i.architecture },
+    {
+      id: 'arch',
+      header: t('incus.images.column.arch'),
+      accessorFn: (i) => i.architecture,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground font-mono text-xs">{row.original.architecture}</span>
+      ),
+    },
     {
       id: 'size',
       header: t('incus.images.column.size'),
       accessorFn: (i) => i.size,
-      cell: ({ row }) => formatBytes(row.original.size),
+      cell: ({ row }) => (
+        <div className="text-end whitespace-nowrap tabular-nums">
+          {formatBytes(row.original.size)}
+        </div>
+      ),
     },
     {
       id: 'uploaded',
       header: t('incus.images.column.uploaded'),
       accessorFn: (i) => seconds(i.uploadedAt),
       cell: ({ row }) => (
-        <span className="text-muted-foreground whitespace-nowrap">
+        <span
+          className="text-muted-foreground whitespace-nowrap"
+          title={formatDateTime(row.original.uploadedAt)}
+        >
           {formatRelative(seconds(row.original.uploadedAt))}
           {row.original.cached && (
             <Badge variant="outline" className="ms-2" title={t('incus.images.cachedHint')}>
@@ -115,43 +150,57 @@ function ImagesList({ hostId, project }: { hostId: string; project: string }) {
       cell: ({ row }) => {
         const image = row.original;
         return (
-          <div className="flex justify-end gap-1">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('incus.images.aliasAdd', { name: imageName(image) })}
-              onClick={() => setAliasing(image)}
-            >
-              <TagIcon />
-            </Button>
+          <div className="flex justify-end gap-0.5">
             {image.source && (
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t('incus.images.refreshOne', { name: imageName(image) })}
-                disabled={refresh.isPending}
-                onClick={() => refresh.mutate(image)}
-              >
-                <RefreshCwIcon />
-              </Button>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label={t('incus.images.refreshOne', { name: imageName(image) })}
+                    disabled={refresh.isPending}
+                    onClick={() => refresh.mutate(image)}
+                  >
+                    <RefreshCwIcon />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  {t('incus.images.refreshOne', { name: imageName(image) })}
+                </TooltipContent>
+              </Tooltip>
             )}
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-label={t('incus.images.deleteOne', { name: imageName(image) })}
-              disabled={remove.isPending}
-              onClick={() =>
-                confirm({
-                  title: t('incus.images.delete.title', { name: imageName(image) }),
-                  description: t('incus.images.delete.description'),
-                  confirmLabel: t('incus.delete'),
-                  destructive: true,
-                  action: () => remove.mutateAsync(image),
-                })
-              }
-            >
-              <Trash2Icon />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t('incus.instances.more', { name: imageName(image) })}
+                >
+                  <EllipsisVerticalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onSelect={() => setAliasing(image)}>
+                  <TagIcon /> {t('incus.images.alias.add')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  variant="destructive"
+                  disabled={remove.isPending}
+                  onSelect={() =>
+                    confirm({
+                      title: t('incus.images.delete.title', { name: imageName(image) }),
+                      description: t('incus.images.delete.description'),
+                      confirmLabel: t('incus.delete'),
+                      destructive: true,
+                      action: () => remove.mutateAsync(image),
+                    })
+                  }
+                >
+                  <Trash2Icon /> {t('incus.delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         );
       },
@@ -171,14 +220,21 @@ function ImagesList({ hostId, project }: { hostId: string; project: string }) {
           </WithShortcut>
         }
       />
-      <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('incus.images.search')} />
-      </div>
+      {images.data.length > 0 && (
+        <div className="mb-3">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('incus.images.search')} />
+        </div>
+      )}
       {images.data.length === 0 ? (
         <EmptyState
           icon={DiscIcon}
           title={t('incus.images.empty', { project })}
           description={t('incus.images.emptyDescription')}
+          action={
+            <Button onClick={() => setGetting(true)}>
+              <DownloadIcon /> {t('incus.images.get')}
+            </Button>
+          }
         />
       ) : (
         <DataTable

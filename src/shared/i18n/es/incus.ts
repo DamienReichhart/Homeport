@@ -115,7 +115,6 @@ export default {
   'incus.images.cached': 'en caché',
   'incus.images.cachedHint':
     'Se descargó para crear una instancia; Incus la elimina cuando nada la ha usado durante un tiempo.',
-  'incus.images.aliasAdd': 'Añadir un alias a {name}',
   'incus.images.aliasRemove': 'Quitar el alias {name}',
   'incus.images.aliasRemoved': 'Se quitó el alias {name}',
   'incus.images.alias.title': 'Añadir un alias a {name}',
@@ -123,7 +122,6 @@ export default {
   'incus.images.alias.add': 'Añadir alias',
   'incus.images.refreshOne': 'Actualizar {name} desde su servidor',
   'incus.images.refreshed': 'Se actualizó {name}',
-  'incus.images.deleteOne': 'Eliminar {name}',
   'incus.images.deleted': 'Se eliminó {name}',
   'incus.images.delete.title': '¿Eliminar la imagen {name}?',
   'incus.images.delete.description':
@@ -154,9 +152,14 @@ export default {
   'incus.profiles.delete.title': '¿Eliminar el perfil {name}?',
   'incus.profiles.delete.description':
     'Se elimina del proyecto {project}. Ninguna instancia lo usa.',
+  'incus.profiles.delete.zone': 'Eliminar este perfil',
   'incus.profiles.backToList': 'Volver a los perfiles',
   'incus.profiles.noDescription': 'Sin descripción',
   'incus.profiles.reload': 'Volver a cargar',
+  'incus.profiles.unsaved': 'Cambios sin guardar',
+  'incus.profiles.discard.title': '¿Descartar sus cambios?',
+  'incus.profiles.discard.description':
+    'Al volver a cargar se muestra {name} como lo tiene Incus ahora; lo que cambió aquí se pierde.',
   'incus.profiles.saved': 'Se guardó el perfil {name}',
   'incus.profiles.usedBy': 'Usado por',
   'incus.profiles.editHint':
@@ -223,6 +226,7 @@ export default {
   'incus.snapshots.column.size': 'Tamaño',
   'incus.snapshots.stateful': 'con estado',
   'incus.snapshots.restore': 'Restaurar',
+  'incus.snapshots.restoreOne': 'Restaurar {snapshot}',
   'incus.snapshots.restore.title': '¿Restaurar {name} a {snapshot}?',
   'incus.snapshots.restore.description':
     'Se pierde todo lo que cambió en su disco desde {time}, cuando se creó {snapshot}. Una instancia en ejecución se reinicia.',
@@ -291,6 +295,7 @@ export default {
   'incus.networks.deleteOne': 'Eliminar {name}',
   'incus.networks.delete.title': '¿Eliminar la red {name}?',
   'incus.networks.delete.description': 'Incus elimina el bridge y su DHCP y DNS. Nada la usa.',
+  'incus.networks.delete.zone': 'Eliminar esta red',
   'incus.networks.deleted': 'Se eliminó la red {name}',
   'incus.networks.gone': 'Ya no existe la red {name}.',
   'incus.networks.backToList': 'Volver a las redes',

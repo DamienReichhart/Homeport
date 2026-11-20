@@ -114,7 +114,6 @@ export default {
   'incus.images.cached': 'zwischengespeichert',
   'incus.images.cachedHint':
     'Zum Erstellen einer Instanz heruntergeladen; Incus löscht es, sobald es eine Weile nicht verwendet wurde.',
-  'incus.images.aliasAdd': 'Alias zu {name} hinzufügen',
   'incus.images.aliasRemove': 'Alias {name} entfernen',
   'incus.images.aliasRemoved': 'Alias {name} entfernt',
   'incus.images.alias.title': 'Alias zu {name} hinzufügen',
@@ -122,7 +121,6 @@ export default {
   'incus.images.alias.add': 'Alias hinzufügen',
   'incus.images.refreshOne': '{name} von seinem Server aktualisieren',
   'incus.images.refreshed': '{name} aktualisiert',
-  'incus.images.deleteOne': '{name} löschen',
   'incus.images.deleted': '{name} gelöscht',
   'incus.images.delete.title': 'Image {name} löschen?',
   'incus.images.delete.description':
@@ -153,9 +151,14 @@ export default {
   'incus.profiles.delete.title': 'Profil {name} löschen?',
   'incus.profiles.delete.description':
     'Es wird aus dem Projekt {project} gelöscht. Keine Instanz verwendet es.',
+  'incus.profiles.delete.zone': 'Dieses Profil löschen',
   'incus.profiles.backToList': 'Zurück zu den Profilen',
   'incus.profiles.noDescription': 'Keine Beschreibung',
   'incus.profiles.reload': 'Neu laden',
+  'incus.profiles.unsaved': 'Ungespeicherte Änderungen',
+  'incus.profiles.discard.title': 'Ihre Änderungen verwerfen?',
+  'incus.profiles.discard.description':
+    'Neu laden zeigt {name} so, wie Incus es jetzt hat; was Sie hier geändert haben, geht verloren.',
   'incus.profiles.saved': 'Profil {name} gespeichert',
   'incus.profiles.usedBy': 'Verwendet von',
   'incus.profiles.editHint':
@@ -223,6 +226,7 @@ export default {
   'incus.snapshots.column.size': 'Größe',
   'incus.snapshots.stateful': 'mit Zustand',
   'incus.snapshots.restore': 'Wiederherstellen',
+  'incus.snapshots.restoreOne': '{snapshot} wiederherstellen',
   'incus.snapshots.restore.title': '{name} auf {snapshot} zurücksetzen?',
   'incus.snapshots.restore.description':
     'Alles, was sich seit {time}, als {snapshot} erstellt wurde, auf ihrer Festplatte geändert hat, geht verloren. Eine laufende Instanz startet neu.',
@@ -294,6 +298,7 @@ export default {
   'incus.networks.delete.title': 'Netzwerk {name} löschen?',
   'incus.networks.delete.description':
     'Incus entfernt die Bridge und ihr DHCP und DNS. Nichts verwendet sie.',
+  'incus.networks.delete.zone': 'Dieses Netzwerk löschen',
   'incus.networks.deleted': 'Netzwerk {name} gelöscht',
   'incus.networks.gone': 'Es gibt kein Netzwerk {name} mehr.',
   'incus.networks.backToList': 'Zurück zu den Netzwerken',

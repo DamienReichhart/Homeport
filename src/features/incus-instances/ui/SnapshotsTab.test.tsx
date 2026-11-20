@@ -74,7 +74,7 @@ describe('an instance’s snapshots', () => {
         statefulAllowed={false}
       />,
     );
-    await user.click(await screen.findByRole('button', { name: 'Restore' }));
+    await user.click(await screen.findByRole('button', { name: 'Restore before-upgrade' }));
     const confirm = await screen.findByRole('alertdialog');
     expect(within(confirm).getByText(/is lost/)).toBeInTheDocument();
     expect(calls).toEqual([]);

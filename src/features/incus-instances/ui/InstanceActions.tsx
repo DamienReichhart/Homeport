@@ -1,7 +1,7 @@
 import {
+  CirclePlayIcon,
   EllipsisVerticalIcon,
   PauseIcon,
-  PlayIcon,
   PowerOffIcon,
   RotateCwIcon,
   CircleStopIcon,
@@ -16,17 +16,24 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@/shared/ui';
 import { useInstanceAction } from '../api/mutations';
 import { instanceActions } from '../model/instances';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const ACTIONS: Record<InstanceAction, { icon: LucideIcon; label: MessageKey; one: MessageKey }> = {
-  start: { icon: PlayIcon, label: 'incus.action.start', one: 'incus.actionOne.start' },
+  start: { icon: CirclePlayIcon, label: 'incus.action.start', one: 'incus.actionOne.start' },
   stop: { icon: CircleStopIcon, label: 'incus.action.stop', one: 'incus.actionOne.stop' },
   restart: { icon: RotateCwIcon, label: 'incus.action.restart', one: 'incus.actionOne.restart' },
   freeze: { icon: PauseIcon, label: 'incus.action.freeze', one: 'incus.actionOne.freeze' },
-  unfreeze: { icon: PlayIcon, label: 'incus.action.unfreeze', one: 'incus.actionOne.unfreeze' },
+  unfreeze: {
+    icon: CirclePlayIcon,
+    label: 'incus.action.unfreeze',
+    one: 'incus.actionOne.unfreeze',
+  },
 };
 
 /**
@@ -53,18 +60,32 @@ export function InstanceActions({
   const up = instance.status === 'running' || instance.status === 'frozen';
   const MainIcon = main ? ACTIONS[main].icon : null;
   return (
-    <div className="flex items-center gap-1">
-      {main && MainIcon && (
-        <Button
-          variant={compact ? 'ghost' : 'outline'}
-          size={compact ? 'icon-sm' : 'default'}
-          aria-label={compact ? t(ACTIONS[main].one, { name: instance.name }) : undefined}
-          disabled={act.isPending}
-          onClick={() => run(main)}
-        >
-          <MainIcon /> {!compact && t(ACTIONS[main].label)}
-        </Button>
-      )}
+    <div
+      className={compact ? 'flex items-center justify-end gap-0.5' : 'flex items-center gap-2'}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {main &&
+        MainIcon &&
+        (compact ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t(ACTIONS[main].one, { name: instance.name })}
+                disabled={act.isPending}
+                onClick={() => run(main)}
+              >
+                <MainIcon />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>{t(ACTIONS[main].label)}</TooltipContent>
+          </Tooltip>
+        ) : (
+          <Button variant="outline" disabled={act.isPending} onClick={() => run(main)}>
+            <MainIcon /> {t(ACTIONS[main].label)}
+          </Button>
+        ))}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button

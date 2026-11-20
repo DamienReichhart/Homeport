@@ -110,7 +110,6 @@ export default {
   'incus.images.column.uploaded': '添加时间',
   'incus.images.cached': '已缓存',
   'incus.images.cachedHint': '为创建实例而下载；一段时间无人使用后，Incus 会将其删除。',
-  'incus.images.aliasAdd': '为 {name} 添加别名',
   'incus.images.aliasRemove': '删除别名 {name}',
   'incus.images.aliasRemoved': '已删除别名 {name}',
   'incus.images.alias.title': '为 {name} 添加别名',
@@ -118,7 +117,6 @@ export default {
   'incus.images.alias.add': '添加别名',
   'incus.images.refreshOne': '从服务器刷新 {name}',
   'incus.images.refreshed': '已刷新 {name}',
-  'incus.images.deleteOne': '删除 {name}',
   'incus.images.deleted': '已删除 {name}',
   'incus.images.delete.title': '删除镜像 {name}？',
   'incus.images.delete.description':
@@ -146,9 +144,14 @@ export default {
   'incus.profiles.deleted': '已删除配置文件 {name}',
   'incus.profiles.delete.title': '删除配置文件 {name}？',
   'incus.profiles.delete.description': '它将从项目 {project} 中删除。没有实例使用它。',
+  'incus.profiles.delete.zone': '删除此配置文件',
   'incus.profiles.backToList': '返回配置文件',
   'incus.profiles.noDescription': '无描述',
   'incus.profiles.reload': '重新加载',
+  'incus.profiles.unsaved': '有未保存的更改',
+  'incus.profiles.discard.title': '放弃你的更改？',
+  'incus.profiles.discard.description':
+    '重新加载会显示 Incus 中当前的 {name}；你在这里所做的更改将丢失。',
   'incus.profiles.saved': '已保存配置文件 {name}',
   'incus.profiles.usedBy': '使用者',
   'incus.profiles.editHint':
@@ -212,6 +215,7 @@ export default {
   'incus.snapshots.column.size': '大小',
   'incus.snapshots.stateful': '有状态',
   'incus.snapshots.restore': '恢复',
+  'incus.snapshots.restoreOne': '恢复 {snapshot}',
   'incus.snapshots.restore.title': '将 {name} 恢复到 {snapshot}？',
   'incus.snapshots.restore.description':
     '自 {time} 创建 {snapshot} 以来，其磁盘上的所有更改都会丢失。正在运行的实例会重启。',
@@ -277,6 +281,7 @@ export default {
   'incus.networks.deleteOne': '删除 {name}',
   'incus.networks.delete.title': '删除网络 {name}？',
   'incus.networks.delete.description': 'Incus 会删除该网桥及其 DHCP 和 DNS。没有对象使用它。',
+  'incus.networks.delete.zone': '删除此网络',
   'incus.networks.deleted': '已删除网络 {name}',
   'incus.networks.gone': '网络 {name} 已不存在。',
   'incus.networks.backToList': '返回网络',

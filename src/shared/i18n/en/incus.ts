@@ -112,7 +112,6 @@ export default {
   'incus.images.cached': 'cached',
   'incus.images.cachedHint':
     'Downloaded to make an instance; Incus deletes it once nothing has used it for a while.',
-  'incus.images.aliasAdd': 'Add an alias to {name}',
   'incus.images.aliasRemove': 'Remove the alias {name}',
   'incus.images.aliasRemoved': 'Removed the alias {name}',
   'incus.images.alias.title': 'Add an alias to {name}',
@@ -120,7 +119,6 @@ export default {
   'incus.images.alias.add': 'Add alias',
   'incus.images.refreshOne': 'Refresh {name} from its server',
   'incus.images.refreshed': 'Refreshed {name}',
-  'incus.images.deleteOne': 'Delete {name}',
   'incus.images.deleted': 'Deleted {name}',
   'incus.images.delete.title': 'Delete the image {name}?',
   'incus.images.delete.description':
@@ -151,9 +149,14 @@ export default {
   'incus.profiles.delete.title': 'Delete the profile {name}?',
   'incus.profiles.delete.description':
     'It’s deleted from the project {project}. No instance uses it.',
+  'incus.profiles.delete.zone': 'Delete this profile',
   'incus.profiles.backToList': 'Back to profiles',
   'incus.profiles.noDescription': 'No description',
   'incus.profiles.reload': 'Reload',
+  'incus.profiles.unsaved': 'Unsaved changes',
+  'incus.profiles.discard.title': 'Discard your changes?',
+  'incus.profiles.discard.description':
+    'Reloading shows {name} as Incus has it now; what you changed here is lost.',
   'incus.profiles.saved': 'Saved the profile {name}',
   'incus.profiles.usedBy': 'Used by',
   'incus.profiles.editHint':
@@ -220,6 +223,7 @@ export default {
   'incus.snapshots.column.size': 'Size',
   'incus.snapshots.stateful': 'stateful',
   'incus.snapshots.restore': 'Restore',
+  'incus.snapshots.restoreOne': 'Restore {snapshot}',
   'incus.snapshots.restore.title': 'Restore {name} to {snapshot}?',
   'incus.snapshots.restore.description':
     'Everything that changed on its disk since {time}, when {snapshot} was taken, is lost. A running instance restarts.',
@@ -289,6 +293,7 @@ export default {
   'incus.networks.delete.title': 'Delete the network {name}?',
   'incus.networks.delete.description':
     'Incus removes the bridge and its DHCP and DNS. Nothing uses it.',
+  'incus.networks.delete.zone': 'Delete this network',
   'incus.networks.deleted': 'Deleted the network {name}',
   'incus.networks.gone': 'There’s no network {name} any more.',
   'incus.networks.backToList': 'Back to networks',
