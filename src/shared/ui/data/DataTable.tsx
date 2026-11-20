@@ -25,6 +25,8 @@ declare module '@tanstack/react-table' {
   interface ColumnMeta<TData, TValue> {
     /** Kept when the table is a split view's narrow list, beside the primary column. */
     compact?: boolean;
+    /** `end` for numbers: the header and the cells line up on the end side. */
+    align?: 'end';
   }
 }
 
@@ -188,7 +190,10 @@ export function DataTable<T>({
                 return (
                   <TableHead
                     key={header.id}
-                    className={cn(header.id === 'select' && 'w-8')}
+                    className={cn(
+                      header.id === 'select' && 'w-8',
+                      header.column.columnDef.meta?.align === 'end' && 'text-end',
+                    )}
                     aria-sort={
                       !header.column.getCanSort()
                         ? undefined
@@ -241,7 +246,12 @@ export function DataTable<T>({
                 {row.getVisibleCells().map((cell) => {
                   const content = flexRender(cell.column.columnDef.cell, cell.getContext());
                   return (
-                    <TableCell key={cell.id}>
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        cell.column.columnDef.meta?.align === 'end' && 'text-end tabular-nums',
+                      )}
+                    >
                       {onRowClick && cell.column.id === primary ? (
                         // The row's one keyboard stop: Enter or Space clicks it, and
                         // the click reaches the row's handler like a mouse click.
