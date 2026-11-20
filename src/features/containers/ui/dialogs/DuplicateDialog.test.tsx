@@ -46,6 +46,9 @@ describe('duplicating a container', () => {
     const user = userEvent.setup();
     const dialog = await openDuplicate(user);
     expect(within(dialog).getByLabelText('Name')).toHaveValue('web-copy-2');
+    // The copied environment is hidden until asked for.
+    expect(within(dialog).getByLabelText('Environment')).toHaveValue('MODE=••••••••');
+    await user.click(within(dialog).getByRole('button', { name: 'Show values' }));
     expect(within(dialog).getByLabelText('Environment')).toHaveValue('MODE=prod');
     expect(within(dialog).getByLabelText('Memory limit')).toHaveValue('512m');
   });

@@ -47,6 +47,7 @@ async function editAndApply(user: ReturnType<typeof userEvent.setup>) {
   await user.click(await screen.findByRole('menuitem', { name: 'Edit' }));
   const dialog = await screen.findByRole('dialog', { name: 'Edit web' });
   expect(within(dialog).getByLabelText('Name')).toBeDisabled();
+  await user.click(within(dialog).getByRole('button', { name: 'Show values' }));
   const env = within(dialog).getByLabelText('Environment');
   await user.clear(env);
   await user.type(env, 'MODE=staging');
