@@ -93,16 +93,16 @@ export default {
   'stacks.action.restart': 'إعادة التشغيل',
   'stacks.action.pull': 'سحب الصور',
   'stacks.action.rebuild': 'إعادة البناء والنشر',
-  'stacks.down.title': 'هل تريد إنزال {name}؟',
+  'stacks.down.title': 'هل تريد إنزال {name} على {host}؟',
   'stacks.down.description':
     'تُزال حاوياته وشبكاته. يُحتفظ بوحدات التخزين والتعريف، لذا يمكنك النشر مجددًا.',
   'stacks.down.confirm': 'إنزال',
-  'stacks.downWithVolumes.title': 'هل تريد إنزال {name} وحذف وحدات التخزين الخاصة به؟',
+  'stacks.downWithVolumes.title': 'هل تريد إنزال {name} على {host} وحذف وحدات التخزين الخاصة به؟',
   'stacks.downWithVolumes.warning':
     'تُحذف الحاويات والشبكات وكل وحدة تخزين لهذا المكدس، مع كل بياناتها.',
   'stacks.downWithVolumes.confirm': 'حذف مع وحدات التخزين',
   'stacks.downWithVolumes.action': 'إنزال مع وحدات التخزين',
-  'stacks.remove.title': 'هل تريد إزالة {name}؟',
+  'stacks.remove.title': 'هل تريد إزالة {name} من {host}؟',
   'stacks.remove.description':
     'تُزال {count, plural, zero {حاوياته} one {حاويته الوحيدة} two {حاويتاه} few {حاوياته الـ #} many {حاوياته الـ #} other {حاوياته الـ #}} وشبكاته. يُحتفظ بوحدات التخزين. لا يملك Homeport ملف compose لهذا المكدس، لذا لا يمكن إعادة نشره من هنا.',
   'stacks.remove.action': 'إزالة الحاويات',

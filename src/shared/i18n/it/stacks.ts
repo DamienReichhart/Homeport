@@ -94,16 +94,16 @@ export default {
   'stacks.action.restart': 'Riavvia',
   'stacks.action.pull': 'Scarica immagini',
   'stacks.action.rebuild': 'Ricompila e distribuisci',
-  'stacks.down.title': 'Smontare {name}?',
+  'stacks.down.title': 'Smontare {name} su {host}?',
   'stacks.down.description':
     'I suoi container e le sue reti vengono rimossi. I volumi e la definizione vengono conservati, così puoi distribuirlo di nuovo.',
   'stacks.down.confirm': 'Smonta',
-  'stacks.downWithVolumes.title': 'Smontare {name} ed eliminarne i volumi?',
+  'stacks.downWithVolumes.title': 'Smontare {name} su {host} ed eliminarne i volumi?',
   'stacks.downWithVolumes.warning':
     'Vengono eliminati i container, le reti e tutti i volumi di questo stack, con tutti i loro dati.',
   'stacks.downWithVolumes.confirm': 'Elimina con i volumi',
   'stacks.downWithVolumes.action': 'Smonta con i volumi',
-  'stacks.remove.title': 'Rimuovere {name}?',
+  'stacks.remove.title': 'Rimuovere {name} da {host}?',
   'stacks.remove.description':
     'Vengono rimossi i suoi {count, plural, one {# container} other {# container}} e le sue reti. I volumi vengono conservati. Homeport non ha alcun file compose per questo stack, quindi non può essere ridistribuito da qui.',
   'stacks.remove.action': 'Rimuovi i container',

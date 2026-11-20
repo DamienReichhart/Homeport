@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useHosts } from '@/core/host';
 import { useCapabilities, type Stack } from '@/shared/api';
 import {
   Button,
@@ -73,6 +74,8 @@ export function StackActions({
   const capabilities = useCapabilities();
   const [syncing, setSyncing] = useState(false);
   const { act, remove } = useStackMutations(hostId);
+  // Taking down and removing name the Host they act on (DESIGN.md).
+  const host = useHosts().data?.find((h) => h.host.id === hostId)?.host.name ?? hostId;
   const support = capabilities.data?.compose;
   // Managed, Linked and Synced Stacks have a definition to deploy; External ones don't.
   const source = stack.kind === 'external' ? null : stack.kind;
@@ -236,7 +239,7 @@ export function StackActions({
                 disabled={!canCompose}
                 onSelect={() =>
                   confirm({
-                    title: t('stacks.down.title', { name: stack.name }),
+                    title: t('stacks.down.title', { name: stack.name, host }),
                     description: t('stacks.down.description'),
                     confirmLabel: t('stacks.down.confirm'),
                     destructive: true,
@@ -251,7 +254,7 @@ export function StackActions({
                 disabled={!canCompose}
                 onSelect={() =>
                   confirm({
-                    title: t('stacks.downWithVolumes.title', { name: stack.name }),
+                    title: t('stacks.downWithVolumes.title', { name: stack.name, host }),
                     description: <strong>{t('stacks.downWithVolumes.warning')}</strong>,
                     confirmLabel: t('stacks.downWithVolumes.confirm'),
                     typeToConfirm: stack.name,
@@ -268,7 +271,7 @@ export function StackActions({
               variant="destructive"
               onSelect={() =>
                 confirm({
-                  title: t('stacks.remove.title', { name: stack.name }),
+                  title: t('stacks.remove.title', { name: stack.name, host }),
                   description: t('stacks.remove.description', { count: stack.total }),
                   confirmLabel: t('common.remove'),
                   destructive: true,

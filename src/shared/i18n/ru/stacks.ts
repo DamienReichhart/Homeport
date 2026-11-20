@@ -94,16 +94,16 @@ export default {
   'stacks.action.restart': 'Перезапустить',
   'stacks.action.pull': 'Скачать образы',
   'stacks.action.rebuild': 'Пересобрать и развернуть',
-  'stacks.down.title': 'Свернуть {name}?',
+  'stacks.down.title': 'Свернуть {name} на {host}?',
   'stacks.down.description':
     'Его контейнеры и сети будут удалены. Тома и определение сохраняются, так что его можно развернуть снова.',
   'stacks.down.confirm': 'Свернуть',
-  'stacks.downWithVolumes.title': 'Свернуть {name} и удалить его тома?',
+  'stacks.downWithVolumes.title': 'Свернуть {name} на {host} и удалить его тома?',
   'stacks.downWithVolumes.warning':
     'Контейнеры, сети и все тома этого стека будут удалены вместе со всеми данными.',
   'stacks.downWithVolumes.confirm': 'Удалить вместе с томами',
   'stacks.downWithVolumes.action': 'Свернуть вместе с томами',
-  'stacks.remove.title': 'Удалить {name}?',
+  'stacks.remove.title': 'Удалить {name} с {host}?',
   'stacks.remove.description':
     'Его {count, plural, one {# контейнер} few {# контейнера} many {# контейнеров} other {# контейнера}} и сети будут удалены. Тома сохраняются. У Homeport нет файла compose для этого стека, поэтому развернуть его заново отсюда нельзя.',
   'stacks.remove.action': 'Удалить контейнеры',

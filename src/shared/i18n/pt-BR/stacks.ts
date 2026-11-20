@@ -94,16 +94,16 @@ export default {
   'stacks.action.restart': 'Reiniciar',
   'stacks.action.pull': 'Baixar imagens',
   'stacks.action.rebuild': 'Refazer a build e implantar',
-  'stacks.down.title': 'Desativar {name}?',
+  'stacks.down.title': 'Desativar {name} em {host}?',
   'stacks.down.description':
     'Os contêineres e as redes dela são removidos. Os volumes e a definição são mantidos, para que você possa implantar de novo.',
   'stacks.down.confirm': 'Desativar',
-  'stacks.downWithVolumes.title': 'Desativar {name} e excluir os volumes dela?',
+  'stacks.downWithVolumes.title': 'Desativar {name} em {host} e excluir os volumes dela?',
   'stacks.downWithVolumes.warning':
     'Os contêineres, as redes e todos os volumes desta stack são excluídos, com todos os dados deles.',
   'stacks.downWithVolumes.confirm': 'Excluir com os volumes',
   'stacks.downWithVolumes.action': 'Desativar com os volumes',
-  'stacks.remove.title': 'Remover {name}?',
+  'stacks.remove.title': 'Remover {name} de {host}?',
   'stacks.remove.description':
     '{count, plural, one {O # contêiner} other {Os # contêineres}} e as redes dela são removidos. Os volumes são mantidos. O Homeport não tem nenhum arquivo compose para esta stack, então ela não pode ser reimplantada daqui.',
   'stacks.remove.action': 'Remover contêineres',

@@ -94,16 +94,16 @@ export default {
   'stacks.action.restart': 'Reiniciar',
   'stacks.action.pull': 'Descargar imágenes',
   'stacks.action.rebuild': 'Recompilar y desplegar',
-  'stacks.down.title': '¿Desmontar {name}?',
+  'stacks.down.title': '¿Desmontar {name} en {host}?',
   'stacks.down.description':
     'Se eliminan sus contenedores y redes. Los volúmenes y la definición se conservan, así que puedes volver a desplegarlo.',
   'stacks.down.confirm': 'Desmontar',
-  'stacks.downWithVolumes.title': '¿Desmontar {name} y eliminar sus volúmenes?',
+  'stacks.downWithVolumes.title': '¿Desmontar {name} en {host} y eliminar sus volúmenes?',
   'stacks.downWithVolumes.warning':
     'Se eliminan los contenedores, las redes y todos los volúmenes de este stack, con todos sus datos.',
   'stacks.downWithVolumes.confirm': 'Eliminar con volúmenes',
   'stacks.downWithVolumes.action': 'Desmontar con volúmenes',
-  'stacks.remove.title': '¿Eliminar {name}?',
+  'stacks.remove.title': '¿Eliminar {name} de {host}?',
   'stacks.remove.description':
     'Se eliminan sus {count, plural, one {# contenedor} other {# contenedores}} y redes. Los volúmenes se conservan. Homeport no tiene ningún archivo compose para este stack, así que no se puede volver a desplegar desde aquí.',
   'stacks.remove.action': 'Eliminar contenedores',

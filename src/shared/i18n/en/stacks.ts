@@ -91,16 +91,16 @@ export default {
   'stacks.action.restart': 'Restart',
   'stacks.action.pull': 'Pull images',
   'stacks.action.rebuild': 'Rebuild and deploy',
-  'stacks.down.title': 'Take down {name}?',
+  'stacks.down.title': 'Take down {name} on {host}?',
   'stacks.down.description':
     'Its containers and networks are removed. Volumes and the definition are kept, so you can deploy again.',
   'stacks.down.confirm': 'Take down',
-  'stacks.downWithVolumes.title': 'Take down {name} and delete its volumes?',
+  'stacks.downWithVolumes.title': 'Take down {name} on {host} and delete its volumes?',
   'stacks.downWithVolumes.warning':
     'Containers, networks and every volume of this Stack are deleted, with all their data.',
   'stacks.downWithVolumes.confirm': 'Delete with volumes',
   'stacks.downWithVolumes.action': 'Take down with volumes',
-  'stacks.remove.title': 'Remove {name}?',
+  'stacks.remove.title': 'Remove {name} from {host}?',
   'stacks.remove.description':
     "Its {count, plural, one {# container} other {# containers}} and networks are removed. Volumes are kept. Homeport has no compose file for this Stack, so it can't be redeployed from here.",
   'stacks.remove.action': 'Remove containers',

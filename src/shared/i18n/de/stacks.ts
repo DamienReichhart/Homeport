@@ -95,16 +95,16 @@ export default {
   'stacks.action.restart': 'Neu starten',
   'stacks.action.pull': 'Images pullen',
   'stacks.action.rebuild': 'Neu bauen und bereitstellen',
-  'stacks.down.title': '{name} herunterfahren?',
+  'stacks.down.title': '{name} auf {host} herunterfahren?',
   'stacks.down.description':
     'Seine Container und Netzwerke werden entfernt. Volumes und die Definition bleiben erhalten, sodass Sie erneut bereitstellen können.',
   'stacks.down.confirm': 'Herunterfahren',
-  'stacks.downWithVolumes.title': '{name} herunterfahren und seine Volumes löschen?',
+  'stacks.downWithVolumes.title': '{name} auf {host} herunterfahren und seine Volumes löschen?',
   'stacks.downWithVolumes.warning':
     'Container, Netzwerke und alle Volumes dieses Stacks werden mit allen ihren Daten gelöscht.',
   'stacks.downWithVolumes.confirm': 'Mit Volumes löschen',
   'stacks.downWithVolumes.action': 'Mit Volumes herunterfahren',
-  'stacks.remove.title': '{name} entfernen?',
+  'stacks.remove.title': '{name} von {host} entfernen?',
   'stacks.remove.description':
     'Seine {count, plural, one {# Container} other {# Container}} und Netzwerke werden entfernt. Volumes bleiben erhalten. Homeport hat keine Compose-Datei für diesen Stack, daher kann er von hier nicht neu bereitgestellt werden.',
   'stacks.remove.action': 'Container entfernen',

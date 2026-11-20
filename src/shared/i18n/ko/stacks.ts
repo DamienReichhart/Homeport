@@ -91,16 +91,16 @@ export default {
   'stacks.action.restart': '다시 시작',
   'stacks.action.pull': '이미지 풀',
   'stacks.action.rebuild': '다시 빌드 후 배포',
-  'stacks.down.title': '{name} 스택을 내리시겠습니까?',
+  'stacks.down.title': '{host}의 {name} 스택을 내리시겠습니까?',
   'stacks.down.description':
     '컨테이너와 네트워크가 삭제됩니다. 볼륨과 정의는 유지되므로 다시 배포할 수 있습니다.',
   'stacks.down.confirm': '내리기',
-  'stacks.downWithVolumes.title': '{name} 스택을 내리고 볼륨을 삭제하시겠습니까?',
+  'stacks.downWithVolumes.title': '{host}의 {name} 스택을 내리고 볼륨을 삭제하시겠습니까?',
   'stacks.downWithVolumes.warning':
     '이 스택의 컨테이너, 네트워크, 모든 볼륨이 데이터와 함께 삭제됩니다.',
   'stacks.downWithVolumes.confirm': '볼륨과 함께 삭제',
   'stacks.downWithVolumes.action': '볼륨과 함께 내리기',
-  'stacks.remove.title': '{name} 스택을 삭제하시겠습니까?',
+  'stacks.remove.title': '{host}에서 {name} 스택을 삭제하시겠습니까?',
   'stacks.remove.description':
     '{count, plural, other {컨테이너 #개}}와 네트워크가 삭제됩니다. 볼륨은 유지됩니다. Homeport에 이 스택의 compose 파일이 없으므로 여기에서 다시 배포할 수 없습니다.',
   'stacks.remove.action': '컨테이너 삭제',

@@ -94,16 +94,16 @@ export default {
   'stacks.action.restart': 'फिर से शुरू करें',
   'stacks.action.pull': 'इमेज पुल करें',
   'stacks.action.rebuild': 'फिर से बिल्ड करें और डिप्लॉय करें',
-  'stacks.down.title': '{name} को डाउन करें?',
+  'stacks.down.title': '{host} पर {name} को डाउन करें?',
   'stacks.down.description':
     'इसके कंटेनर और नेटवर्क हटाए जाते हैं। वॉल्यूम और परिभाषा रखे जाते हैं, ताकि आप फिर से डिप्लॉय कर सकें।',
   'stacks.down.confirm': 'डाउन करें',
-  'stacks.downWithVolumes.title': '{name} को डाउन करें और इसके वॉल्यूम हटाएँ?',
+  'stacks.downWithVolumes.title': '{host} पर {name} को डाउन करें और इसके वॉल्यूम हटाएँ?',
   'stacks.downWithVolumes.warning':
     'इस स्टैक के कंटेनर, नेटवर्क और हर वॉल्यूम, उनके सारे डेटा के साथ, हटा दिए जाते हैं।',
   'stacks.downWithVolumes.confirm': 'वॉल्यूम सहित हटाएँ',
   'stacks.downWithVolumes.action': 'वॉल्यूम सहित डाउन करें',
-  'stacks.remove.title': '{name} हटाएँ?',
+  'stacks.remove.title': '{host} से {name} हटाएँ?',
   'stacks.remove.description':
     'इसके {count, plural, one {# कंटेनर} other {# कंटेनर}} और नेटवर्क हटाए जाते हैं। वॉल्यूम रखे जाते हैं। Homeport के पास इस स्टैक की कोई compose फ़ाइल नहीं है, इसलिए इसे यहाँ से फिर से डिप्लॉय नहीं किया जा सकता।',
   'stacks.remove.action': 'कंटेनर हटाएँ',

@@ -94,16 +94,16 @@ export default {
   'stacks.action.restart': 'Redémarrer',
   'stacks.action.pull': 'Récupérer les images',
   'stacks.action.rebuild': 'Reconstruire et déployer',
-  'stacks.down.title': 'Retirer {name} ?',
+  'stacks.down.title': 'Retirer {name} de {host} ?',
   'stacks.down.description':
     'Ses conteneurs et réseaux sont supprimés. Les volumes et la définition sont conservés : vous pourrez donc la déployer à nouveau.',
   'stacks.down.confirm': 'Retirer',
-  'stacks.downWithVolumes.title': 'Retirer {name} et supprimer ses volumes ?',
+  'stacks.downWithVolumes.title': 'Retirer {name} de {host} et supprimer ses volumes ?',
   'stacks.downWithVolumes.warning':
     'Les conteneurs, les réseaux et tous les volumes de cette stack sont supprimés, avec toutes leurs données.',
   'stacks.downWithVolumes.confirm': 'Supprimer avec les volumes',
   'stacks.downWithVolumes.action': 'Retirer avec les volumes',
-  'stacks.remove.title': 'Supprimer {name} ?',
+  'stacks.remove.title': 'Supprimer {name} de {host} ?',
   'stacks.remove.description':
     'Ses {count, plural, one {# conteneur} other {# conteneurs}} et réseaux sont supprimés. Les volumes sont conservés. Homeport n’a pas de fichier compose pour cette stack : elle ne pourra donc pas être redéployée d’ici.',
   'stacks.remove.action': 'Supprimer les conteneurs',

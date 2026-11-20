@@ -91,16 +91,16 @@ export default {
   'stacks.action.restart': '再起動',
   'stacks.action.pull': 'イメージをプル',
   'stacks.action.rebuild': '再ビルドしてデプロイ',
-  'stacks.down.title': '{name} を停止して削除しますか？',
+  'stacks.down.title': '{host} の {name} を停止して削除しますか？',
   'stacks.down.description':
     'コンテナとネットワークが削除されます。ボリュームと定義は残るため、再びデプロイできます。',
   'stacks.down.confirm': '停止して削除',
-  'stacks.downWithVolumes.title': '{name} を停止して削除し、ボリュームも削除しますか？',
+  'stacks.downWithVolumes.title': '{host} の {name} を停止して削除し、ボリュームも削除しますか？',
   'stacks.downWithVolumes.warning':
     'このスタックのコンテナ、ネットワーク、すべてのボリュームが、そのデータごと削除されます。',
   'stacks.downWithVolumes.confirm': 'ボリュームごと削除',
   'stacks.downWithVolumes.action': 'ボリュームごと停止して削除',
-  'stacks.remove.title': '{name} を削除しますか？',
+  'stacks.remove.title': '{host} から {name} を削除しますか？',
   'stacks.remove.description':
     '{count, plural, other {# 個のコンテナ}}とネットワークが削除されます。ボリュームは残ります。Homeport にはこのスタックの compose ファイルがないため、ここから再デプロイすることはできません。',
   'stacks.remove.action': 'コンテナを削除',
