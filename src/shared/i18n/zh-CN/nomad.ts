@@ -32,7 +32,6 @@ export default {
   'nomad.jobs.run': '运行 job',
 
   'nomad.job.description': 'namespace {namespace} 中的 {type} job，版本 {version}',
-  'nomad.job.back': 'Job',
   'nomad.job.stop': '停止',
   'nomad.job.editAndRun': '编辑并运行',
   'nomad.job.sourceFailed': 'Homeport 无法读取该 job 的规范',

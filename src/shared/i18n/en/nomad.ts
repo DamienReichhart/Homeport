@@ -29,7 +29,6 @@ export default {
   'nomad.jobs.run': 'Run job',
 
   'nomad.job.description': '{type} job in namespace {namespace}, version {version}',
-  'nomad.job.back': 'Jobs',
   'nomad.job.stop': 'Stop',
   'nomad.job.editAndRun': 'Edit and run',
   'nomad.job.sourceFailed': 'Homeport couldn’t read the job’s specification',

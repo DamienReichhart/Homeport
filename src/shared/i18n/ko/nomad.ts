@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'job 실행',
 
   'nomad.job.description': '{namespace} 네임스페이스의 {type} job, 버전 {version}',
-  'nomad.job.back': 'job',
   'nomad.job.stop': '중지',
   'nomad.job.editAndRun': '편집 후 실행',
   'nomad.job.sourceFailed': 'Homeport가 job 명세를 읽지 못했습니다',

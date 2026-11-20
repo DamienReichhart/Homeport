@@ -22,8 +22,11 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
+  WithShortcut,
   type ColumnDef,
 } from '@/shared/ui';
+import { PAGE_ACTION_KEYS, usePageAction } from '@/shared/hooks';
+import { cn } from '@/shared/lib';
 import { nomadJobQueries } from '../api/queries';
 import { jobCounts, jobPath } from '../model/jobs';
 import { RunJobDialog } from './RunJobDialog';
@@ -39,7 +42,14 @@ const nameColumn: ColumnDef<NomadJobView, unknown> = {
   id: 'name',
   header: t('nomad.jobs.column.name'),
   accessorFn: (j) => j.name,
-  cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+  cell: ({ row }) => (
+    <span
+      className="inline-block max-w-72 truncate align-bottom font-medium"
+      title={row.original.name}
+    >
+      {row.original.name}
+    </span>
+  ),
 };
 
 const otherColumns: ColumnDef<NomadJobView, unknown>[] = [
@@ -61,6 +71,8 @@ const otherColumns: ColumnDef<NomadJobView, unknown>[] = [
           tone={jobTone(row.original.status, row.original.stopped)}
         />
       ),
+    // Beside an open job, the list still shows each one's state.
+    meta: { compact: true },
   },
   {
     id: 'groups',
@@ -68,8 +80,17 @@ const otherColumns: ColumnDef<NomadJobView, unknown>[] = [
     accessorFn: (j) => jobCounts(j).running,
     cell: ({ row }) => {
       const { running, desired } = jobCounts(row.original);
+      // A service short of what it wants needs a look; a batch job finishes on its own.
+      const short =
+        row.original.jobType === 'service' &&
+        !row.original.stopped &&
+        desired !== null &&
+        running < desired;
       return (
-        <span className="tabular-nums" title={row.original.groups.map((g) => g.name).join(', ')}>
+        <span
+          className={cn('tabular-nums', short && 'text-warning')}
+          title={row.original.groups.map((g) => g.name).join(', ')}
+        >
           {desired === null
             ? t('nomad.jobs.running', { running })
             : t('nomad.jobs.runningOf', { running, desired })}
@@ -93,6 +114,7 @@ function JobsList({ cluster }: { cluster: ClusterView }) {
   const navigate = useNavigate();
   const [query, setQuery] = usePageQuery();
   const [running, setRunning] = useState(false);
+  usePageAction(t('nomad.jobs.run'), () => setRunning(true));
   // Asked once the namespaces are known, so the token's default isn't fetched for nothing.
   const jobs = useQuery({ ...nomadJobQueries.list(id, namespace), enabled: selection.ready });
   useNomadWatch(id, { topic: 'jobs', namespace }, nomadKeys.jobs(id, namespace), selection.ready);
@@ -107,9 +129,11 @@ function JobsList({ cluster }: { cluster: ClusterView }) {
         actions={
           <>
             <NomadNamespacePicker selection={selection} />
-            <Button onClick={() => setRunning(true)}>
-              <PlayIcon /> {t('nomad.jobs.run')}
-            </Button>
+            <WithShortcut keys={PAGE_ACTION_KEYS} label={t('nomad.jobs.run')}>
+              <Button onClick={() => setRunning(true)}>
+                <PlayIcon /> {t('nomad.jobs.run')}
+              </Button>
+            </WithShortcut>
           </>
         }
       />
@@ -134,6 +158,11 @@ function JobsList({ cluster }: { cluster: ClusterView }) {
           icon={BriefcaseIcon}
           title={t('nomad.jobs.empty.title')}
           description={t('nomad.jobs.empty.description')}
+          action={
+            <Button variant="outline" onClick={() => setRunning(true)}>
+              <PlayIcon /> {t('nomad.jobs.run')}
+            </Button>
+          }
         />
       ) : (
         <DataTable

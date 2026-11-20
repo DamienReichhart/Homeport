@@ -23,6 +23,7 @@ import { nomadJobQueries } from '../../api/queries';
 import { jobPath } from '../../model/jobs';
 import { AllocationLogs } from './AllocationLogs';
 import { AllocationShell } from './AllocationShell';
+import { cn } from '@/shared/lib';
 import { t } from '@/shared/i18n';
 
 const TABS = ['overview', 'logs', 'shell'] as const;
@@ -31,7 +32,7 @@ type Tab = (typeof TABS)[number];
 function Overview({ detail }: { detail: NomadAllocationDetail }) {
   const a = detail.allocation;
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-8">
       <Card>
         <CardHeader>
           <CardTitle>{t('nomad.alloc.title')}</CardTitle>
@@ -55,43 +56,39 @@ function Overview({ detail }: { detail: NomadAllocationDetail }) {
           />
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nomad.alloc.tasks')}</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-2">
+      <section className="grid gap-3">
+        <h2 className="text-base font-semibold">{t('nomad.alloc.tasks')}</h2>
+        <div className="grid gap-2">
           {a.tasks.map((task) => (
             <div key={task.name} className="flex flex-wrap items-center gap-3 text-sm">
               <span className="font-medium">{task.name}</span>
-              <NomadStatus
-                status={task.state}
-                tone={task.failed ? 'danger' : allocationTone(task.state)}
-              />
+              <span className={cn(task.failed && 'text-destructive font-medium')}>
+                <NomadStatus
+                  status={task.state}
+                  tone={task.failed ? 'danger' : allocationTone(task.state)}
+                />
+              </span>
               <span className="text-muted-foreground">
                 {t('nomad.alloc.restarts', { count: task.restarts })}
               </span>
             </div>
           ))}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
       {detail.events.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('nomad.alloc.events')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="grid gap-1 text-sm">
-              {detail.events.map((e, i) => (
-                <li key={i} className="flex gap-3">
-                  <span className="text-muted-foreground w-12 shrink-0">{age(e.time)}</span>
-                  <span className="w-24 shrink-0">{e.task}</span>
-                  <span className="font-medium">{e.kind}</span>
-                  <span className="text-muted-foreground">{e.message}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold">{t('nomad.alloc.events')}</h2>
+          <ul className="grid gap-1 text-sm">
+            {detail.events.map((e, i) => (
+              <li key={i} className="flex gap-3">
+                <span className="text-muted-foreground w-12 shrink-0">{age(e.time)}</span>
+                <span className="w-24 shrink-0">{e.task}</span>
+                <span className="font-medium">{e.kind}</span>
+                <span className="text-muted-foreground">{e.message}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       )}
     </div>
   );

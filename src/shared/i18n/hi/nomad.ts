@@ -32,7 +32,6 @@ export default {
   'nomad.jobs.run': 'Job चलाएँ',
 
   'nomad.job.description': 'namespace {namespace} में {type} job, संस्करण {version}',
-  'nomad.job.back': 'Jobs',
   'nomad.job.stop': 'रोकें',
   'nomad.job.editAndRun': 'संपादित करें और चलाएँ',
   'nomad.job.sourceFailed': 'Homeport job का specification नहीं पढ़ सका',

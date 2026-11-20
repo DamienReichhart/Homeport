@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'Запустить job',
 
   'nomad.job.description': 'Job типа {type} в пространстве имён {namespace}, версия {version}',
-  'nomad.job.back': 'Job',
   'nomad.job.stop': 'Остановить',
   'nomad.job.editAndRun': 'Изменить и запустить',
   'nomad.job.sourceFailed': 'Homeport не удалось прочитать спецификацию job',

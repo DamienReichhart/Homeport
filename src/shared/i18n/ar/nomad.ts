@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'تشغيل job',
 
   'nomad.job.description': 'job من نوع {type} في الـ namespace {namespace}، الإصدار {version}',
-  'nomad.job.back': 'Jobs',
   'nomad.job.stop': 'إيقاف',
   'nomad.job.editAndRun': 'تحرير وتشغيل',
   'nomad.job.sourceFailed': 'تعذّر على Homeport قراءة مواصفات الـ job',

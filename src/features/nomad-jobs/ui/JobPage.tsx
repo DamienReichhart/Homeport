@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, PencilIcon, CircleStopIcon } from 'lucide-react';
+import { CircleStopIcon, PencilIcon, ScalingIcon } from 'lucide-react';
 import { useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { age, ClusterGate } from '@/core/cluster';
 import { AllocationsTable, jobTone, NomadStatus, nomadKeys, useNomadWatch } from '@/core/nomad';
 import type { ClusterView, NomadJobDetail, NomadJobSource, NomadTaskGroupView } from '@/shared/api';
@@ -17,8 +17,12 @@ import {
   PageHeader,
   Spinner,
   toastError,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   type ColumnDef,
 } from '@/shared/ui';
+import { cn } from '@/shared/lib';
 import type { JobRef } from '../api/mutations';
 import { jobSource, nomadJobQueries } from '../api/queries';
 import { shortOf } from '../model/jobs';
@@ -57,14 +61,19 @@ function groupColumns(
       id: 'others',
       header: t('nomad.groups.column.others'),
       accessorFn: (g) => g.counts.starting + g.counts.queued + g.counts.failed + g.counts.lost,
+      // Failed or lost allocations need you; starting and queued ones are on their way.
       cell: ({ row }) => {
         const c = row.original.counts;
-        return t('nomad.groups.others', {
-          starting: c.starting,
-          queued: c.queued,
-          failed: c.failed,
-          lost: c.lost,
-        });
+        return (
+          <span className={cn('tabular-nums', c.failed + c.lost > 0 && 'text-destructive')}>
+            {t('nomad.groups.others', {
+              starting: c.starting,
+              queued: c.queued,
+              failed: c.failed,
+              lost: c.lost,
+            })}
+          </span>
+        );
       },
     },
     {
@@ -87,16 +96,24 @@ function groupColumns(
       enableSorting: false,
       cell: ({ row }) =>
         scalable && (
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={(e) => {
-              e.stopPropagation();
-              onScale(row.original);
-            }}
-          >
-            {t('nomad.groups.scale')}
-          </Button>
+          <div className="flex justify-end">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon-sm"
+                  variant="ghost"
+                  aria-label={t('nomad.scale.title', { group: row.original.counts.name })}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onScale(row.original);
+                  }}
+                >
+                  <ScalingIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('nomad.groups.scale')}</TooltipContent>
+            </Tooltip>
+          </div>
         ),
     },
   ];
@@ -127,7 +144,7 @@ function JobDetail({
   // System jobs run one allocation per eligible node: they have no count to scale.
   const scalable = !view.stopped && (view.jobType === 'service' || view.jobType === 'batch');
   return (
-    <div className="grid gap-4">
+    <div>
       <PageHeader
         title={
           <span className="flex items-center gap-3">
@@ -146,11 +163,6 @@ function JobDetail({
         })}
         actions={
           <>
-            <Button asChild variant="ghost">
-              <Link to="/nomad/jobs">
-                <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('nomad.job.back')}
-              </Link>
-            </Button>
             <Button variant="outline" disabled={loadingSource} onClick={editAndRun}>
               <PencilIcon /> {t('nomad.job.editAndRun')}
             </Button>
@@ -162,47 +174,41 @@ function JobDetail({
           </>
         }
       />
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nomad.job.settings')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <KeyValue
-            items={[
-              [t('nomad.job.type'), view.jobType],
-              [t('nomad.job.priority'), view.priority],
-              [t('nomad.job.datacenters'), detail.datacenters.join(', ') || null],
-              [t('nomad.job.nodePool'), detail.nodePool],
-              [t('nomad.job.submitted'), age(view.submitted)],
-              [t('nomad.job.parent'), view.parentId],
-              [t('nomad.job.statusDescription'), view.statusDescription],
-            ]}
-          />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nomad.job.groups')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <div className="grid grid-cols-1 gap-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>{t('nomad.job.settings')}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <KeyValue
+              items={[
+                [t('nomad.job.type'), view.jobType],
+                [t('nomad.job.priority'), view.priority],
+                [t('nomad.job.datacenters'), detail.datacenters.join(', ') || null],
+                [t('nomad.job.nodePool'), detail.nodePool],
+                [t('nomad.job.submitted'), age(view.submitted)],
+                [t('nomad.job.parent'), view.parentId],
+                [t('nomad.job.statusDescription'), view.statusDescription],
+              ]}
+            />
+          </CardContent>
+        </Card>
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold">{t('nomad.job.groups')}</h2>
           <DataTable
             columns={groupColumns(setScaling, scalable)}
             data={detail.groups}
             getRowId={(g) => g.counts.name}
           />
-        </CardContent>
-      </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nomad.job.allocations')}</CardTitle>
-        </CardHeader>
-        <CardContent>
+        </section>
+        <section className="grid gap-3">
+          <h2 className="text-base font-semibold">{t('nomad.job.allocations')}</h2>
           <AllocationsTable
             allocations={detail.allocations}
             onOpen={(a) => void navigate(`/nomad/allocations/${a.id}`)}
           />
-        </CardContent>
-      </Card>
+        </section>
+      </div>
       {stopping && (
         <StopJobDialog
           job={job}

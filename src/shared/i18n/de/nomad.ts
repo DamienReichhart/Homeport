@@ -33,7 +33,6 @@ export default {
   'nomad.jobs.run': 'Job ausführen',
 
   'nomad.job.description': '{type}-Job im Namespace {namespace}, Version {version}',
-  'nomad.job.back': 'Jobs',
   'nomad.job.stop': 'Stoppen',
   'nomad.job.editAndRun': 'Bearbeiten und ausführen',
   'nomad.job.sourceFailed': 'Homeport konnte die Spezifikation des Jobs nicht lesen',
