@@ -17,13 +17,13 @@ Die Seite **Pods** erscheint in der Seitenleiste nur, solange ein Podman-Host au
 | **Netzwerke** | Die Netzwerke, in denen der Pod ist.                                                                                          |
 | **Erstellt**  | Wann er erstellt wurde.                                                                                                       |
 
-Jede Zeile hat die Aktion, die zu ihrem Status passt – **Starten** für einen gestoppten Pod, **Stoppen** für einen laufenden – und **Entfernen**. Wählen Sie einen Pod aus, um seine Seite zu öffnen. Die Liste aktualisiert sich von selbst, wenn die Container des Pods starten und stoppen, ob aus Homeport oder aus einem Terminal.
+Jede Zeile hat die Aktion zur Hand, die zu ihrem Status passt – **Starten** für einen gestoppten Pod, **Stoppen** für einen laufenden – und **Neu starten**, **Pausieren** und **Entfernen** in ihrem Menü. Wählen Sie einen Pod aus, um seine Seite zu öffnen. Die Liste aktualisiert sich von selbst, wenn die Container des Pods starten und stoppen, ob aus Homeport oder aus einem Terminal.
 
 Auf der Seite **Container** zeigt ein Container, der in einem Pod läuft, den Namen des Pods neben seinem eigenen; wählen Sie den Namen aus, um den Pod zu öffnen.
 
 ## Die Seite eines Pods
 
-Die Kopfzeile hat **Container ausführen** und die Aktionen des Pods: **Starten**, **Stoppen**, **Neu starten**, **Pausieren**, **Fortsetzen** und **Entfernen**, wie es sein Status zulässt. Jede wirkt auf alle Container des Pods auf einmal, wie es `podman pod start` und seine Verwandten tun.
+Der Kopf hat **Container ausführen**, dann **Stoppen** (oder **Starten** oder **Fortsetzen**) und **Neu starten**; **Pausieren** und **Entfernen** stehen in seinem Menü **⋯**. Jede wirkt auf alle Container des Pods auf einmal, wie es `podman pod start` und seine Verwandten tun.
 
 - **Container** listet die Container des Pods auf, seinen Infra-Container zuletzt. Wählen Sie einen aus, um seine Container-Seite mit Logs, Terminal und Dateien zu öffnen.
 - **Einstellungen** zeigt die Ports, die der Pod veröffentlicht, die Namespaces, die sich seine Container teilen, seine Netzwerke, seinen Hostnamen und seine Labels sowie den Befehl `podman pod create`, mit dem er erstellt wurde, wenn Podman ihn aufbewahrt hat.

@@ -41,7 +41,7 @@ Nella pagina **Container**, un container creato da un’unità mostra il servizi
 
 ## La pagina di un’unità
 
-- L’intestazione ha **Avvia**, **Arresta** e **Riavvia**, **Modifica** e **Rimuovi**.
+- L’intestazione ha le azioni del servizio dell’unità: **Avvia**, **Arresta** e **Riavvia**. Quella non disponibile spiega il perché nel suo suggerimento.
 - **Servizio** mostra l’unità systemd, se è un’unità di sistema o un’unità utente (`systemctl --user`), dove si trova il suo file sull’host, e la sua applicazione e il suo pod, se li ha.
 - **File dell’unità** mostra il file come lo legge Podman, con l’evidenziazione della sintassi.
 - **Container** elenca i container che ha creato, ognuno dei quali apre la sua pagina di container.
@@ -58,9 +58,9 @@ Podman scrive i file dove vanno le unità del suo utente e ricarica systemd, cos
 
 ## Modificare e rimuovere
 
-**Modifica** apre il file dell’unità. **Salva** lo scrive al suo posto e ricarica systemd; i file installati accanto restano. Un servizio in esecuzione mantiene le vecchie impostazioni finché non scegli **Riavvia**. Se il file è cambiato sull’host da quando l’hai aperto, **Salva** viene rifiutato e lo dice, invece di sovrascrivere quella modifica: riapri l’unità per vederla, oppure scegli **Sovrascrivi**.
+**Modifica**, nella scheda **File dell’unità**, apre il file dell’unità. **Salva** lo scrive al suo posto e ricarica systemd; i file installati accanto restano. Un servizio in esecuzione mantiene le vecchie impostazioni finché non scegli **Riavvia**. Se il file è cambiato sull’host da quando l’hai aperto, **Salva** viene rifiutato e lo dice, invece di sovrascrivere quella modifica: riapri l’unità per vederla, oppure scegli **Sovrascrivi**.
 
-**Rimuovi** elimina il file dell’unità e ricarica systemd. **Arresta prima il suo servizio in esecuzione** è attivo per impostazione predefinita; senza, Podman si rifiuta di rimuovere un’unità in esecuzione. I container, i volumi e le immagini creati dall’unità vengono conservati.
+**Rimuovi**, in **Rimuovi questa unità** in fondo alla pagina dell’unità, elimina il file dell’unità e ricarica systemd. **Arresta il suo servizio se è in esecuzione** è attivo per impostazione predefinita; senza, Podman si rifiuta di rimuovere un’unità in esecuzione. I container, i volumi e le immagini creati dall’unità vengono conservati.
 
 ## Cosa esegue Homeport sull’host
 

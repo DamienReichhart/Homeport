@@ -17,13 +17,13 @@ La page **Pods** n’apparaît dans la barre latérale que lorsqu’un hôte Pod
 | **Réseaux**    | Les réseaux auxquels le pod est rattaché.                                                                                                                |
 | **Créé**       | Quand il a été créé.                                                                                                                                     |
 
-Chaque ligne a l’action qui correspond à son état — **Démarrer** pour un pod arrêté, **Arrêter** pour un pod en cours d’exécution — et **Supprimer**. Sélectionnez un pod pour ouvrir sa page. La liste se met à jour d’elle-même quand les conteneurs du pod démarrent et s’arrêtent, que ce soit depuis Homeport ou depuis un terminal.
+Chaque ligne a à portée de main l’action qui correspond à son état — **Démarrer** pour un pod arrêté, **Arrêter** pour un pod en cours d’exécution — et garde **Redémarrer**, **Mettre en pause** et **Supprimer** dans son menu. Sélectionnez un pod pour ouvrir sa page. La liste se met à jour d’elle-même quand les conteneurs du pod démarrent et s’arrêtent, que ce soit depuis Homeport ou depuis un terminal.
 
 Sur la page **Conteneurs**, un conteneur qui tourne dans un pod affiche le nom du pod à côté du sien ; sélectionnez ce nom pour ouvrir le pod.
 
 ## La page d’un pod
 
-L’en-tête propose **Exécuter un conteneur** et les actions du pod : **Démarrer**, **Arrêter**, **Redémarrer**, **Mettre en pause**, **Reprendre** et **Supprimer**, selon ce que son état permet. Chacune agit à la fois sur tous les conteneurs du pod, comme le font `podman pod start` et ses semblables.
+L’en-tête a **Exécuter un conteneur**, puis **Arrêter** (ou **Démarrer**, ou **Reprendre**) et **Redémarrer** ; **Mettre en pause** et **Supprimer** sont dans son menu **⋯**. Chacune agit à la fois sur tous les conteneurs du pod, comme le font `podman pod start` et ses semblables.
 
 - **Conteneurs** liste les conteneurs du pod, son conteneur infra en dernier. Sélectionnez-en un pour ouvrir sa page de conteneur, avec ses journaux, son terminal et ses fichiers.
 - **Paramètres** montre les ports que publie le pod, les espaces de noms que partagent ses conteneurs, ses réseaux, son nom d’hôte et ses labels, ainsi que la commande `podman pod create` avec laquelle il a été créé, quand Podman l’a conservée.

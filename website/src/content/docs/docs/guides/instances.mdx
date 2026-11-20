@@ -9,14 +9,14 @@ An **Instance** is what an [Incus Host](/docs/hosts/incus/) runs: a **system con
 
 **Instances** lists the project's Instances with their type, status, image, global addresses (IPv4 first), memory and age. Filter them by name, or show only containers or virtual machines.
 
-| Action         | What Incus does                                                                                                          |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Start**      | Boots it.                                                                                                                |
-| **Stop**       | Asks its system to shut down, and gives it 30 seconds; one that doesn't is reported, with **Force stop** as the way out. |
-| **Force stop** | Cuts it off at once, like pulling the plug.                                                                              |
-| **Restart**    | Shuts it down gracefully and boots it again.                                                                             |
-| **Freeze**     | Pauses every process in it; **Unfreeze** resumes them.                                                                   |
-| **Delete**     | Asks first, naming the snapshots deleted with it. A running Instance is only deleted once you tick **Stop it first**.    |
+| Action         | What Incus does                                                                                                                                          |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Start**      | Boots it.                                                                                                                                                |
+| **Stop**       | Asks its system to shut down, and gives it 30 seconds; one that doesn't is reported, with **Force stop** as the way out.                                 |
+| **Force stop** | Cuts it off at once, like pulling the plug.                                                                                                              |
+| **Restart**    | Shuts it down gracefully and boots it again.                                                                                                             |
+| **Freeze**     | Pauses every process in it; **Unfreeze** resumes them.                                                                                                   |
+| **Delete**     | Asks you to type the Instance's name first, and names the snapshots deleted with it. A running Instance is only deleted once you tick **Stop it first**. |
 
 The list refreshes from Incus's events within a moment, whoever made the change.
 
@@ -44,7 +44,7 @@ A name already in use, an image the server doesn't have, a full storage pool, or
 **Snapshots** lists the Instance's snapshots with when each was taken, when it expires and whether it holds the running state.
 
 - **Take snapshot** names it (or lets Incus name it `snap0`, `snap1`…) and keeps it until deleted or for a day, a week or 30 days. While the Instance runs, and when its `migration.stateful` setting allows it, the snapshot can include its memory, so a restore resumes where it was.
-- **Restore** puts the Instance back as it was when the snapshot was taken. Everything that changed since is lost, and a running Instance restarts, so Homeport asks first.
+- **Restore** puts the Instance back as it was when the snapshot was taken. Everything that changed since is lost, and a running Instance restarts, so Homeport asks you to type the Instance's name first.
 - **Delete** removes a snapshot, after asking; the Instance stays as it is.
 
 ## Images
@@ -60,13 +60,13 @@ A name already in use, an image the server doesn't have, a full storage pool, or
 
 **Profiles** lists the project's profiles with how many keys and devices each sets and the Instances using it. A profile's page edits its description, configuration and devices as YAML, as `incus profile edit` does, and links the Instances using it. **Save** applies the changes to those Instances, as Incus does. If someone changed the profile since the page loaded it, saving is refused rather than overwriting theirs: **Reload**, then make your changes again.
 
-**New profile** makes an empty one and opens it. `default`, and profiles Instances use, can't be deleted.
+**New profile** makes an empty one and opens it. `default`, and profiles Instances use, can't be deleted. A profile's page has **Delete** in a section at its foot, greyed out with the reason while something uses the profile.
 
 ## Storage
 
 **Storage** shows each storage pool with its driver and how full it is, and the selected pool's volumes in the project: the Instances' and images' own, and custom ones, with their content, size and what uses them.
 
-**New volume** makes a custom volume, a filesystem or a block device, of a size or the pool's default, to attach to Instances for data that outlives them (`incus storage volume attach`). A custom volume can be deleted once nothing uses it. Pools themselves are made with `incus storage create`.
+**New volume** makes a custom volume, a filesystem or a block device, of a size or the pool's default, to attach to Instances for data that outlives them (`incus storage volume attach`). A custom volume can be deleted once nothing uses it. Pools themselves are made with `incus storage create`. Deleting one asks you to type its name first.
 
 ## Networks
 

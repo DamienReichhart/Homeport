@@ -70,7 +70,7 @@ En containerd, un **contenedor** son solo metadatos: su imagen, su spec, su inst
 | **Enviar señal** | Envía cualquier señal, por nombre (`SIGHUP`) o número, al proceso principal de la tarea.                                                                                                                                                                                                                |
 | **Eliminar**     | Pregunta primero; mata una tarea en ejecución y elimina la tarea y el contenedor, y su instantánea con los archivos que cambió, salvo que desmarques **Eliminar también**: una instantánea conservada se marca con `containerd.io/gc.root`, para que el recolector de basura de containerd la conserve. |
 
-La página de un contenedor muestra su runtime, su instantánea, sus etiquetas y su spec OCI. Homeport no crea contenedores en containerd: containerd no tiene red propia, que la añaden nerdctl y CNI.
+Cada fila, y la página de un contenedor, tiene su acción principal a mano (**Detener**, **Iniciar** o **Reanudar**) y el resto, **Eliminar** incluido, en su menú **⋯**. La página de un contenedor muestra su runtime, su instantánea, sus etiquetas y su spec OCI. Homeport no crea contenedores en containerd: containerd no tiene red propia, que la añaden nerdctl y CNI.
 
 El **kubelet** gestiona los contenedores de Kubernetes: los vuelve a iniciar tras una parada y los vuelve a crear tras una eliminación. Sus páginas lo indican; cambia el Pod en su clúster en su lugar. Eliminar desde aquí un contenedor de nerdctl deja los registros propios de nerdctl sobre él (su nombre y su red), como haría `ctr`; `nerdctl rm` es la forma más limpia para esos.
 
@@ -104,7 +104,7 @@ Una imagen a partir de la cual se creó un contenedor del namespace no se puede 
 
 Las instantáneas son donde se va el disco de containerd: las capas de las imágenes desempaquetadas y la capa modificable de cada contenedor. La página **Instantáneas** muestra las de un snapshotter (`overlayfs` primero, o cualquier otro que haya cargado el host) como un árbol por padre, de mayor a menor, con su uso tal como lo cuenta `ctr snapshot usage` y el total arriba.
 
-Cada una indica qué la usa: un contenedor, por su instantánea, o una imagen, por sus capas. Las instantáneas que nada usa y sobre las que nada se construye —como una conservada al eliminar aquí su contenedor— se pueden mostrar solas con **Solo sin usar**, y eliminar. Las demás no se pueden eliminar desde aquí. Una instantánea a la que nada hace referencia y que nada marca como raíz, como la que deja `ctr containers rm --keep-snapshot`, no dura: el recolector de basura de containerd la elimina en su siguiente ejecución.
+Cada una indica qué la usa: un contenedor, por su instantánea, o una imagen, por sus capas. Las instantáneas que nada usa y sobre las que nada se construye —como una conservada al eliminar aquí su contenedor— se pueden mostrar solas con **Solo sin usar**, y eliminar. Las demás no se pueden eliminar desde aquí. Una instantánea a la que nada hace referencia y que nada marca como raíz, como la que deja `ctr containers rm --keep-snapshot`, no dura: el recolector de basura de containerd la elimina en su siguiente ejecución. **Eliminar las sin usar** elimina de una vez todas las instantáneas que nada usa, las cadenas sin usar enteras empezando por las hijas, tras una sola confirmación que indica cuánto espacio libera.
 
 ## Lo que se ejecuta en el host
 

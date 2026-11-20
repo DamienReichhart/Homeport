@@ -9,14 +9,14 @@ Un’**istanza** è ciò che esegue un [host Incus](/docs/hosts/incus/): un **co
 
 **Istanze** elenca le istanze del progetto con tipo, stato, immagine, indirizzi globali (prima IPv4), memoria ed età. Filtrale per nome, oppure mostra solo i container o solo le macchine virtuali.
 
-| Azione              | Cosa fa Incus                                                                                                                                     |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Avvia**           | La avvia.                                                                                                                                         |
-| **Arresta**         | Chiede al suo sistema di spegnersi e gli concede 30 secondi; se non lo fa, viene segnalato, con **Forza l’arresto** come via d’uscita.            |
-| **Forza l’arresto** | La interrompe subito, come staccare la spina.                                                                                                     |
-| **Riavvia**         | La spegne in modo ordinato e la avvia di nuovo.                                                                                                   |
-| **Congela**         | Mette in pausa tutti i suoi processi; **Scongela** li riprende.                                                                                   |
-| **Elimina**         | Chiede prima conferma, indicando gli snapshot eliminati con essa. Un’istanza in esecuzione viene eliminata solo se selezioni **Prima arrestala**. |
+| Azione              | Cosa fa Incus                                                                                                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Avvia**           | La avvia.                                                                                                                                                                         |
+| **Arresta**         | Chiede al suo sistema di spegnersi e gli concede 30 secondi; se non lo fa, viene segnalato, con **Forza l’arresto** come via d’uscita.                                            |
+| **Forza l’arresto** | La interrompe subito, come staccare la spina.                                                                                                                                     |
+| **Riavvia**         | La spegne in modo ordinato e la avvia di nuovo.                                                                                                                                   |
+| **Congela**         | Mette in pausa tutti i suoi processi; **Scongela** li riprende.                                                                                                                   |
+| **Elimina**         | Chiede prima di digitare il nome dell’istanza, e nomina gli snapshot eliminati con essa. Un’istanza in esecuzione viene eliminata solo dopo aver selezionato **Arrestala prima**. |
 
 L’elenco si aggiorna dagli eventi di Incus in un attimo, chiunque abbia fatto la modifica.
 
@@ -44,7 +44,7 @@ Un nome già in uso, un’immagine che il server non ha, un pool di archiviazion
 **Snapshot** elenca gli snapshot dell’istanza con quando è stato creato ciascuno, quando scade e se contiene lo stato di esecuzione.
 
 - **Crea snapshot** gli dà un nome (o lascia che Incus lo chiami `snap0`, `snap1`…) e lo conserva finché non viene eliminato, oppure per un giorno, una settimana o 30 giorni. Mentre l’istanza è in esecuzione, e quando la sua impostazione `migration.stateful` lo consente, lo snapshot può includere la sua memoria, così un ripristino riprende da dove era.
-- **Ripristina** riporta l’istanza com’era quando è stato creato lo snapshot. Tutto ciò che è cambiato da allora va perso, e un’istanza in esecuzione si riavvia, quindi Homeport chiede prima conferma.
+- **Ripristina** riporta l’istanza com’era quando è stato creato lo snapshot. Tutto ciò che è cambiato da allora va perso, e un’istanza in esecuzione si riavvia, quindi Homeport ti chiede prima di digitare il nome dell’istanza.
 - **Elimina** rimuove uno snapshot, dopo aver chiesto conferma; l’istanza resta com’è.
 
 ## Immagini
@@ -60,13 +60,13 @@ Un nome già in uso, un’immagine che il server non ha, un pool di archiviazion
 
 **Profili** elenca i profili del progetto con quante chiavi e quanti dispositivi imposta ciascuno e le istanze che lo usano. La pagina di un profilo ne modifica descrizione, configurazione e dispositivi in YAML, come fa `incus profile edit`, e collega le istanze che lo usano. **Salva** applica le modifiche a quelle istanze, come fa Incus. Se qualcuno ha modificato il profilo dopo che la pagina lo ha caricato, il salvataggio viene rifiutato invece di sovrascrivere le sue modifiche: **Ricarica**, poi rifai le tue modifiche.
 
-**Nuovo profilo** ne crea uno vuoto e lo apre. `default`, e i profili usati da istanze, non si possono eliminare.
+**Nuovo profilo** ne crea uno vuoto e lo apre. `default`, e i profili usati da istanze, non si possono eliminare. La pagina di un profilo ha **Elimina** in una sezione in fondo, disattivato con il motivo finché qualcosa usa il profilo.
 
 ## Archiviazione
 
 **Archiviazione** mostra ogni pool di archiviazione con il suo driver e quanto è pieno, e i volumi del pool selezionato nel progetto: quelli propri delle istanze e delle immagini, e quelli personalizzati, con contenuto, dimensione e cosa li usa.
 
-**Nuovo volume** crea un volume personalizzato, un file system o un dispositivo a blocchi, di una certa dimensione o di quella predefinita del pool, da collegare alle istanze per dati che sopravvivono a esse (`incus storage volume attach`). Un volume personalizzato si può eliminare quando nulla lo usa. I pool stessi si creano con `incus storage create`.
+**Nuovo volume** crea un volume personalizzato, un file system o un dispositivo a blocchi, di una certa dimensione o di quella predefinita del pool, da collegare alle istanze per dati che sopravvivono a esse (`incus storage volume attach`). Un volume personalizzato si può eliminare quando nulla lo usa. I pool stessi si creano con `incus storage create`. Eliminarne uno chiede prima di digitarne il nome.
 
 ## Reti
 

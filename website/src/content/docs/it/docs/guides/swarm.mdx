@@ -74,7 +74,7 @@ Il menu di ogni nodo lo modifica:
 | **Modifica le etichette** | Imposta le etichette con cui i vincoli di posizionamento scelgono i nodi, come `node.labels.zone==a`.    |
 | **Rimuovi**               | Lo fa uscire dallo Swarm.                                                                                |
 
-Homeport si rifiuta, prima di interpellare l’Engine, di retrocedere l’ultimo manager raggiungibile dello Swarm (uno Swarm senza manager non può essere gestito affatto) e di svuotare il suo ultimo nodo attivo (i suoi task non avrebbero dove andare). Rimuovere un nodo ancora attivo richiede **Forza**; un manager va prima retrocesso. Se qualcun altro ha modificato un nodo dopo la lettura dell’elenco, la modifica viene rifiutata con **Questo elemento è stato modificato altrove**: aggiorna e riprova, così nulla viene sovrascritto.
+**Svuota** e **Retrocedi a worker** dicono cosa spostano nello Swarm e chiedono prima; le altre agiscono subito. Homeport si rifiuta, prima di interpellare l’Engine, di retrocedere l’ultimo manager raggiungibile dello Swarm (uno Swarm senza manager non può essere gestito affatto) e di svuotare il suo ultimo nodo attivo (i suoi task non avrebbero dove andare). Rimuovere un nodo ancora attivo richiede **Forza**; un manager va prima retrocesso. Se qualcun altro ha modificato un nodo dopo la lettura dell’elenco, la modifica viene rifiutata con **Questo elemento è stato modificato altrove**: aggiorna e riprova, così nulla viene sovrascritto.
 
 ## Servizi
 
@@ -83,16 +83,16 @@ Homeport si rifiuta, prima di interpellare l’Engine, di retrocedere l’ultimo
   alt="La scheda Servizi di uno Swarm, che elenca ogni servizio con immagine, modalità, task in esecuzione e richiesti, porte e stack."
 />
 
-La scheda **Servizi** elenca ciò che lo Swarm esegue: per ogni servizio, il nome, l’immagine, la modalità (replicato con il suo numero di repliche, o globale: un task su ogni nodo), quanti dei suoi task sono in esecuzione rispetto a quanti dovrebbero esserlo (nel colore di avviso quando sono meno), le porte pubblicate, lo stack swarm a cui appartiene e lo stato del suo ultimo aggiornamento. L’elenco si aggiorna da solo quando i servizi cambiano.
+La scheda **Servizi** elenca ciò che lo Swarm esegue: il nome di ogni servizio, l’immagine, quante delle sue attività sono in esecuzione rispetto a quante dovrebbero, le porte pubblicate e lo stack swarm a cui appartiene. Il conteggio in esecuzione è ambra finché mancano attività e rosso quando non ne gira nessuna; un servizio globale o un job lo indica accanto. Un aggiornamento in corso appare come un badge ambra e uno bloccato come un badge rosso, mentre uno concluso resta discreto. L’elenco si aggiorna da solo quando i servizi cambiano.
 
-Il menu di ogni servizio:
+La riga di ogni servizio ha **Log** a portata di mano, e il suo menu:
 
 - **Log** apre i suoi log, uniti da tutti i task, con ogni riga contrassegnata dal suo task e dal suo nodo, come `web.2@node-b`. Durante il monitoraggio, si aggiungono anche i task che lo Swarm avvia in seguito.
 - **Ridimensiona** imposta quante repliche esegue un servizio replicato; 0 lo arresta senza rimuoverlo. I servizi globali non si ridimensionano: eseguono un task per nodo.
 - **Annulla aggiornamento** ripristina le impostazioni che il servizio aveva prima del suo ultimo aggiornamento (immagine, ambiente, repliche…), come fa `docker service rollback`. Un servizio mai aggiornato non ha nulla da ripristinare, e lo indica.
 - **Rimuovi** arresta e rimuove i suoi task. I suoi volumi vengono conservati.
 
-Seleziona un servizio per aprirlo. La sua pagina si apre sui suoi **Task**, così un rollout in corso o una replica che non si avvia si vedono subito, con **Modifica**, **Ridimensiona**, **Annulla aggiornamento** e **Rimuovi** in alto.
+Seleziona un servizio per aprirlo. La sua pagina parte dalle sue **Attività**, così un rollout in corso o una replica che non parte si vede subito, con **Modifica** e **Ridimensiona** in alto, e **Annulla aggiornamento** e **Rimuovi servizio** nel menu **Altre azioni**.
 
 <DocScreenshot
   name="swarm-service"
@@ -104,7 +104,7 @@ La scheda **Log** segue i suoi log, e **Ispeziona** mostra la sua definizione co
 
 ### Creare e aggiornare un servizio
 
-**Crea servizio**, nella scheda Servizi, avvia un servizio da un’immagine: il nome, se è replicato (e con quante repliche) o globale, quando si riavviano i suoi task, un comando che sostituisca quello dell’immagine, le variabili d’ambiente (una `KEY=value` per riga), le porte pubblicate, i volumi e i bind mount, le reti overlay a cui si unisce, e i segreti e i config che riceve, ognuno montato dove indichi (`/run/secrets/<name>` per impostazione predefinita per un segreto). Le porte passano dalla routing mesh dello Swarm, raggiungibili su ogni nodo, a meno che tu non scelga di pubblicarle solo sul nodo che esegue ciascun task. I bind mount sono percorsi su ogni nodo, non su questo computer. Homeport controlla il modulo prima di inviarlo: un nome valido, voci `KEY=value`, una porta pubblicata due volte. Il nuovo servizio si apre sulla sua scheda **Task**, dove puoi guardare le sue repliche avviarsi.
+**Crea servizio**, nella scheda Servizi, avvia un servizio da un’immagine: il nome, se è replicato (e con quante repliche) o globale, quando si riavviano i suoi task, un comando che sostituisca quello dell’immagine, le variabili d’ambiente (una `KEY=value` per riga), le porte pubblicate, i volumi e i bind mount, le reti overlay a cui si unisce, e i segreti e i config che riceve, ognuno montato dove indichi (`/run/secrets/<name>` per impostazione predefinita per un segreto). Le porte passano dalla routing mesh dello Swarm, raggiungibili su ogni nodo, a meno che tu non scelga di pubblicarle solo sul nodo che esegue ciascun task. I bind mount sono percorsi su ogni nodo, non su questo computer. Homeport controlla il modulo prima di inviarlo: un nome valido, voci `KEY=value`, una porta pubblicata due volte. Il nuovo servizio si apre sulla sua scheda **Task**, dove puoi guardare le sue repliche avviarsi. I valori dell’ambiente restano nascosti mentre li digiti, come in modifica.
 
 **Modifica**, nella pagina di un servizio, cambia la sua immagine, il suo ambiente e le sue repliche, e solo questi: le sue porte, i montaggi, le reti e tutto il resto vengono rinviati come sono. Lo Swarm poi sposta i suoi task sulle nuove impostazioni qualcuno alla volta, e la pagina mostra l’avanzamento dell’aggiornamento. **Ridistribuisci ogni task** li riavvia anche quando nulla è cambiato, scaricando di nuovo l’immagine: è così che si distribuisce un nuovo push dello stesso tag. Se qualcun altro ha aggiornato il servizio dopo che lo hai aperto, Homeport lo segnala invece di sovrascrivere la sua modifica: aggiorna e modifica di nuovo.
 
@@ -153,7 +153,7 @@ Segreti e config non si possono modificare una volta creati. Per cambiarne uno, 
 
 Uno **stack swarm** è uno stack distribuito su uno Swarm: un file compose trasformato in servizi, reti, segreti e config che condividono un namespace. Homeport li trova tutti, comunque siano stati distribuiti, grazie all’etichetta `com.docker.stack.namespace` che `docker stack deploy` applica loro. La scheda **Stack** dello Swarm li elenca, come la pagina **Stack** elenca quelli di un host: il tipo, lo stato (in esecuzione quando ogni task di ogni servizio è in esecuzione, arrestato quando ogni servizio è ridimensionato a 0) e i servizi.
 
-Uno stack distribuito da un terminale con `docker stack deploy` è **Esterno**: Homeport non ha un file compose per esso. Selezionalo per vederne i servizi, ognuno collegato alla sua pagina, e le reti, i segreti e i config. **Rimuovi** fa ciò che fa `docker stack rm`: rimuove i servizi, attende che i loro task si arrestino, poi rimuove le reti, i segreti e i config del namespace. Tutto ciò che lo Swarm si è rifiutato di rimuovere viene elencato. I volumi vengono conservati su ogni nodo.
+Uno stack distribuito da un terminale con `docker stack deploy` è **Esterno**: Homeport non ha un file compose per esso. Selezionalo per vederne i servizi, ognuno collegato alla sua pagina, e le reti, i segreti e i config. **Rimuovi**, in fondo alla pagina dello stack, fa ciò che fa `docker stack rm`: rimuove i servizi, attende che i loro task si arrestino, poi rimuove le reti, i segreti e i config del namespace. Tutto ciò che lo Swarm si è rifiutato di rimuovere viene elencato. I volumi vengono conservati su ogni nodo.
 
 <DocScreenshot
   name="swarm-stacks"

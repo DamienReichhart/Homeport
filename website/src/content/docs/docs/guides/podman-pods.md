@@ -17,13 +17,13 @@ The **Pods** page appears in the sidebar only while a Podman Host is selected. O
 | **Networks**   | The networks the pod is on.                                                                                    |
 | **Created**    | When it was created.                                                                                           |
 
-Each row has the action that fits its status — **Start** for a stopped pod, **Stop** for a running one — and **Remove**. Select a pod to open its page. The list updates on its own as the pod's containers start and stop, whether from Homeport or a terminal.
+Each row has the action that fits its status at hand — **Start** for a stopped pod, **Stop** for a running one — and keeps **Restart**, **Pause** and **Remove** in its menu. Select a pod to open its page. The list updates on its own as the pod's containers start and stop, whether from Homeport or a terminal.
 
 On the **Containers** page, a container that runs in a pod shows the pod's name next to its own; select the name to open the pod.
 
 ## A pod's page
 
-The header has **Run container** and the pod's actions: **Start**, **Stop**, **Restart**, **Pause**, **Resume** and **Remove**, as its status allows. Each acts on every container of the pod at once, as `podman pod start` and friends do.
+The header has **Run container**, then **Stop** (or **Start**, or **Resume**) and **Restart**; **Pause** and **Remove** are in its **⋯** menu. Each acts on every container of the pod at once, as `podman pod start` and friends do.
 
 - **Containers** lists the pod's containers, its infra container last. Select one to open its container page, with its logs, terminal and files.
 - **Settings** shows the ports the pod publishes, the namespaces its containers share, its networks, hostname and labels, and the `podman pod create` command it was made with when Podman kept it.

@@ -74,7 +74,7 @@ Das Menü jedes Nodes ändert ihn:
 | **Labels bearbeiten**      | Setzt die Labels, nach denen Platzierungsbedingungen Nodes auswählen, etwa `node.labels.zone==a`.                                         |
 | **Entfernen**              | Nimmt ihn aus dem Swarm heraus.                                                                                                           |
 
-Homeport lehnt es ab, noch bevor es die Engine fragt, den letzten erreichbaren Manager des Swarms herabzustufen (ein Swarm ohne Manager lässt sich überhaupt nicht verwalten) und seinen letzten aktiven Node zu leeren (seine Tasks hätten keinen Ort, an den sie gehen könnten). Das Entfernen eines Nodes, der noch läuft, braucht **Erzwingen**; ein Manager muss zuerst herabgestuft werden. Hat jemand anderes einen Node geändert, seit die Liste gelesen wurde, wird die Änderung mit **Dies wurde anderswo geändert** abgelehnt: Aktualisieren Sie und versuchen Sie es erneut, damit nichts überschrieben wird.
+**Leeren** und **Zum Worker herabstufen** sagen, was sie im Swarm verschieben, und fragen zuerst; die anderen wirken sofort. Homeport lehnt es ab, noch bevor es die Engine fragt, den letzten erreichbaren Manager des Swarms herabzustufen (ein Swarm ohne Manager lässt sich überhaupt nicht verwalten) und seinen letzten aktiven Node zu leeren (seine Tasks hätten keinen Ort, an den sie gehen könnten). Das Entfernen eines Nodes, der noch läuft, braucht **Erzwingen**; ein Manager muss zuerst herabgestuft werden. Hat jemand anderes einen Node geändert, seit die Liste gelesen wurde, wird die Änderung mit **Dies wurde anderswo geändert** abgelehnt: Aktualisieren Sie und versuchen Sie es erneut, damit nichts überschrieben wird.
 
 ## Services
 
@@ -83,16 +83,16 @@ Homeport lehnt es ab, noch bevor es die Engine fragt, den letzten erreichbaren M
   alt="Der Tab Services eines Swarms, der jeden Service mit Image, Modus, laufenden und gewünschten Tasks, Ports und Stack auflistet."
 />
 
-Der Tab **Services** listet auf, was der Swarm ausführt: Name, Image und Modus jedes Services (repliziert mit seiner Anzahl an Replikaten oder global: ein Task auf jedem Node), wie viele seiner Tasks laufen gegenüber wie vielen laufen sollten (in Warnfarbe, solange weniger laufen), seine veröffentlichten Ports, den Swarm-Stack, zu dem er gehört, und den Zustand seines letzten Updates. Die Liste aktualisiert sich von selbst, wenn sich Services ändern.
+Der Tab **Services** listet auf, was der Swarm ausführt: Name und Image jedes Services, wie viele seiner Tasks laufen im Vergleich dazu, wie viele laufen sollten, seine veröffentlichten Ports und den Swarm-Stack, zu dem er gehört. Die Zahl der laufenden ist bernsteinfarben, solange Tasks fehlen, und rot, wenn keiner läuft; ein globaler Service oder ein Job sagt es daneben. Ein laufendes Update erscheint als bernsteinfarbenes Abzeichen, ein hängendes als rotes, ein abgeschlossenes bleibt unauffällig. Die Liste aktualisiert sich von selbst, wenn sich Services ändern.
 
-Das Menü jedes Services:
+Die Zeile jedes Services hat **Logs** zur Hand, und sein Menü:
 
 - **Logs** öffnet seine Logs, zusammengeführt aus allen Tasks, jede Zeile mit ihrem Task und Node beschriftet, etwa `web.2@node-b`. Beim Mitverfolgen kommen die Tasks hinzu, die der Swarm später startet.
 - **Skalieren** legt fest, wie viele Replikate ein replizierter Service ausführt; 0 stoppt ihn, ohne ihn zu entfernen. Globale Services werden nicht skaliert: Sie führen einen Task pro Node aus.
 - **Zurücksetzen** stellt die Einstellungen wieder her, die der Service vor seinem letzten Update hatte (Image, Umgebung, Replikate…), so wie es `docker service rollback` tut. Ein Service, der nie aktualisiert wurde, hat nichts, worauf er zurückgesetzt werden könnte, und sagt das.
 - **Entfernen** stoppt und entfernt seine Tasks. Seine Volumes bleiben erhalten.
 
-Wählen Sie einen Service aus, um ihn zu öffnen. Seine Seite beginnt mit seinen **Tasks**, sodass ein laufender Rollout oder ein Replikat, das nicht startet, sofort sichtbar ist, mit **Bearbeiten**, **Skalieren**, **Zurücksetzen** und **Entfernen** oben.
+Wählen Sie einen Service aus, um ihn zu öffnen. Seine Seite beginnt mit seinen **Tasks**, sodass ein laufender Rollout oder ein Replikat, das nicht startet, sofort zu sehen ist, mit **Bearbeiten** und **Skalieren** oben und **Zurücksetzen** und **Service entfernen** im Menü **Weitere Aktionen**.
 
 <DocScreenshot
   name="swarm-service"
@@ -104,7 +104,7 @@ Der Tab **Logs** verfolgt seine Logs, und **Untersuchen** zeigt seine vollständ
 
 ### Einen Service erstellen und aktualisieren
 
-**Service erstellen** im Tab Services startet einen Service aus einem Image: sein Name, ob er repliziert (und mit wie vielen Replikaten) oder global ist, wann seine Tasks neu starten, ein Befehl, der den des Images ersetzt, Umgebungsvariablen (ein `KEY=value` pro Zeile), veröffentlichte Ports, Volumes und Bind-Mounts, die Overlay-Netzwerke, denen er beitritt, und die Secrets und Configs, die er erhält, jeweils dort eingehängt, wo Sie es angeben (bei einem Secret standardmäßig `/run/secrets/<name>`). Ports laufen über das Routing-Mesh des Swarms und sind auf jedem Node erreichbar, sofern Sie nicht wählen, sie nur auf dem Node zu veröffentlichen, auf dem der jeweilige Task läuft. Bind-Mounts sind Pfade auf jedem Node, nicht auf diesem Computer. Homeport prüft das Formular, bevor es gesendet wird: ein gültiger Name, `KEY=value`-Einträge, ein doppelt veröffentlichter Port. Der neue Service öffnet sich in seinem Tab **Tasks**, wo Sie den Start seiner Replikate verfolgen.
+**Service erstellen** im Tab Services startet einen Service aus einem Image: sein Name, ob er repliziert (und mit wie vielen Replikaten) oder global ist, wann seine Tasks neu starten, ein Befehl, der den des Images ersetzt, Umgebungsvariablen (ein `KEY=value` pro Zeile), veröffentlichte Ports, Volumes und Bind-Mounts, die Overlay-Netzwerke, denen er beitritt, und die Secrets und Configs, die er erhält, jeweils dort eingehängt, wo Sie es angeben (bei einem Secret standardmäßig `/run/secrets/<name>`). Ports laufen über das Routing-Mesh des Swarms und sind auf jedem Node erreichbar, sofern Sie nicht wählen, sie nur auf dem Node zu veröffentlichen, auf dem der jeweilige Task läuft. Bind-Mounts sind Pfade auf jedem Node, nicht auf diesem Computer. Homeport prüft das Formular, bevor es gesendet wird: ein gültiger Name, `KEY=value`-Einträge, ein doppelt veröffentlichter Port. Der neue Service öffnet sich in seinem Tab **Tasks**, wo Sie den Start seiner Replikate verfolgen. Umgebungswerte bleiben beim Eintippen verborgen, wie beim Bearbeiten.
 
 **Bearbeiten** auf der Seite eines Services ändert sein Image, seine Umgebung und seine Replikate, und nur diese: Seine Ports, Mounts, Netzwerke und alles andere werden unverändert zurückgesendet. Der Swarm überführt dann seine Tasks nach und nach in die neuen Einstellungen, und die Seite zeigt den Fortschritt des Updates. **Alle Tasks neu bereitstellen** startet sie neu, auch wenn sich nichts geändert hat, und pullt das Image erneut; so wird ein neuer Push desselben Tags ausgerollt. Hat jemand anderes den Service aktualisiert, seit Sie ihn geöffnet haben, sagt Homeport das, statt dessen Änderung zu überschreiben: Aktualisieren Sie und bearbeiten Sie erneut.
 
@@ -153,7 +153,7 @@ Secrets und Configs lassen sich nach dem Erstellen nicht ändern. Um eines zu ä
 
 Ein **Swarm-Stack** ist ein Stack, der in einem Swarm bereitgestellt ist: eine Compose-Datei, die in Services, Netzwerke, Secrets und Configs umgesetzt wurde, die sich einen Namespace teilen. Homeport findet jeden davon, wie auch immer er bereitgestellt wurde, über das Label `com.docker.stack.namespace`, das `docker stack deploy` an sie setzt. Der Tab **Stacks** des Swarms listet sie auf, wie die Seite **Stacks** die eines Hosts: ihre Art, ihren Zustand (laufend, wenn jeder Task jedes Services läuft, gestoppt, wenn jeder Service auf 0 skaliert ist) und ihre Services.
 
-Ein Stack, der aus einem Terminal mit `docker stack deploy` bereitgestellt wurde, ist **Extern**: Homeport hat keine Compose-Datei für ihn. Wählen Sie ihn aus, um seine Services zu sehen, jeder mit einem Link auf seine Seite, sowie seine Netzwerke, Secrets und Configs. **Entfernen** tut, was `docker stack rm` tut: Es entfernt die Services, wartet, bis ihre Tasks gestoppt sind, und entfernt dann die Netzwerke, Secrets und Configs des Namespace. Alles, dessen Entfernung der Swarm abgelehnt hat, wird aufgelistet. Volumes bleiben auf jedem Node erhalten.
+Ein Stack, der aus einem Terminal mit `docker stack deploy` bereitgestellt wurde, ist **Extern**: Homeport hat keine Compose-Datei für ihn. Wählen Sie ihn aus, um seine Services zu sehen, jeder mit einem Link auf seine Seite, sowie seine Netzwerke, Secrets und Configs. **Entfernen** am Fuß der Seite des Stacks tut, was `docker stack rm` tut: Es entfernt die Services, wartet, bis ihre Tasks gestoppt sind, und entfernt dann die Netzwerke, Secrets und Configs des Namespace. Alles, dessen Entfernung der Swarm abgelehnt hat, wird aufgelistet. Volumes bleiben auf jedem Node erhalten.
 
 <DocScreenshot
   name="swarm-stacks"

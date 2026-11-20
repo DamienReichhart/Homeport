@@ -74,7 +74,7 @@ O menu de cada nó o altera:
 | **Editar rótulos**     | Define os rótulos pelos quais as restrições de posicionamento escolhem nós, como `node.labels.zone==a`.          |
 | **Remover**            | Tira-o do Swarm.                                                                                                 |
 
-O Homeport se recusa, antes de perguntar ao Engine, a rebaixar o último manager acessível do Swarm (um Swarm sem nenhum não pode mais ser gerenciado) e a drenar o último nó ativo dele (as tarefas dele não teriam para onde ir). Remover um nó que ainda está ativo precisa de **Forçar**; um manager precisa ser rebaixado antes. Se outra pessoa mudou um nó desde que a lista foi lida, a mudança é recusada com **Isto foi alterado em outro lugar**: atualize e tente de novo, para que nada seja sobrescrito.
+**Drenar** e **Rebaixar a worker** dizem o que movem pelo Swarm e perguntam antes; as outras agem na hora. O Homeport se recusa, antes de perguntar ao Engine, a rebaixar o último manager acessível do Swarm (um Swarm sem nenhum não pode mais ser gerenciado) e a drenar o último nó ativo dele (as tarefas dele não teriam para onde ir). Remover um nó que ainda está ativo precisa de **Forçar**; um manager precisa ser rebaixado antes. Se outra pessoa mudou um nó desde que a lista foi lida, a mudança é recusada com **Isto foi alterado em outro lugar**: atualize e tente de novo, para que nada seja sobrescrito.
 
 ## Serviços
 
@@ -83,16 +83,16 @@ O Homeport se recusa, antes de perguntar ao Engine, a rebaixar o último manager
   alt="A aba Serviços de um Swarm, listando cada serviço com a imagem, o modo, as tarefas em execução e as desejadas, as portas e a stack."
 />
 
-A aba **Serviços** lista o que o Swarm executa: o nome de cada serviço, a imagem, o modo (replicado, com o número de réplicas, ou global: uma tarefa em cada nó), quantas das suas tarefas rodam em relação a quantas deveriam (na cor de aviso enquanto rodam menos), as portas publicadas, a stack do swarm a que ele pertence e o estado da sua última atualização. A lista se atualiza sozinha conforme os serviços mudam.
+A aba **Serviços** lista o que o Swarm roda: o nome de cada serviço, a imagem, quantas das suas tarefas rodam em relação a quantas deveriam, as portas publicadas e a stack swarm a que pertence. A contagem em execução fica âmbar enquanto faltam tarefas e vermelha quando nenhuma roda; um serviço global ou um job diz isso ao lado. Uma atualização em andamento aparece como um selo âmbar e uma travada como um selo vermelho, enquanto uma concluída fica discreta. A lista se atualiza sozinha quando os serviços mudam.
 
-O menu de cada serviço:
+A linha de cada serviço tem **Logs** à mão, e o menu dele:
 
 - **Logs** abre os logs dele, mesclados de todas as tarefas, com cada linha marcada com a sua tarefa e o seu nó, como `web.2@node-b`. Enquanto você acompanha, as tarefas que o Swarm inicia depois entram também.
 - **Escalar** define quantas réplicas um serviço replicado executa; 0 o para sem removê-lo. Os serviços globais não são escalados: eles executam uma tarefa por nó.
 - **Reverter** devolve as configurações que o serviço tinha antes da última atualização (imagem, ambiente, réplicas…), da mesma forma que `docker service rollback`. Um serviço que nunca foi atualizado não tem para onde reverter, e avisa.
 - **Remover** para e remove as tarefas dele. Os volumes dele são mantidos.
 
-Selecione um serviço para abri-lo. A página dele começa nas **Tarefas**, para que uma atualização em andamento ou uma réplica que não inicia apareça na hora, com **Editar**, **Escalar**, **Reverter** e **Remover** no topo.
+Selecione um serviço para abri-lo. A página dele começa nas **Tarefas**, então uma atualização em andamento ou uma réplica que não inicia aparece na hora, com **Editar** e **Escalar** no topo, e **Reverter** e **Remover serviço** no menu **Mais ações**.
 
 <DocScreenshot
   name="swarm-service"
@@ -104,7 +104,7 @@ A aba **Logs** acompanha os logs dele, e **Inspecionar** mostra a definição co
 
 ### Criar e atualizar um serviço
 
-**Criar serviço**, na aba Serviços, inicia um serviço a partir de uma imagem: o nome, se é replicado (e quantas réplicas) ou global, quando as tarefas dele reiniciam, um comando para substituir o da própria imagem, variáveis de ambiente (um `KEY=value` por linha), portas publicadas, volumes e bind mounts, as redes overlay em que ele entra, e os secrets e configs que ele recebe, cada um montado onde você indicar (`/run/secrets/<name>` para um secret, por padrão). As portas passam pela routing mesh do Swarm, acessíveis em todos os nós, a menos que você escolha publicá-las somente no nó que executa cada tarefa. Os bind mounts são caminhos em cada nó, não neste computador. O Homeport verifica o formulário antes de enviá-lo: um nome válido, entradas `KEY=value`, uma porta publicada duas vezes. O novo serviço abre na aba **Tarefas**, onde você acompanha as réplicas dele iniciarem.
+**Criar serviço**, na aba Serviços, inicia um serviço a partir de uma imagem: o nome, se é replicado (e quantas réplicas) ou global, quando as tarefas dele reiniciam, um comando para substituir o da própria imagem, variáveis de ambiente (um `KEY=value` por linha), portas publicadas, volumes e bind mounts, as redes overlay em que ele entra, e os secrets e configs que ele recebe, cada um montado onde você indicar (`/run/secrets/<name>` para um secret, por padrão). As portas passam pela routing mesh do Swarm, acessíveis em todos os nós, a menos que você escolha publicá-las somente no nó que executa cada tarefa. Os bind mounts são caminhos em cada nó, não neste computador. O Homeport verifica o formulário antes de enviá-lo: um nome válido, entradas `KEY=value`, uma porta publicada duas vezes. O novo serviço abre na aba **Tarefas**, onde você acompanha as réplicas dele iniciarem. Os valores do ambiente ficam ocultos enquanto você os digita, como na edição.
 
 **Editar**, na página de um serviço, muda a imagem, o ambiente e as réplicas dele, e só isso: as portas, as montagens, as redes e todo o resto são enviados de volta como estão. O Swarm então passa as tarefas dele para as novas configurações algumas de cada vez, e a página mostra o progresso da atualização. **Reimplantar todas as tarefas** as reinicia mesmo quando nada mudou, baixando a imagem de novo, que é como um novo envio da mesma tag é distribuído. Se outra pessoa atualizou o serviço desde que você o abriu, o Homeport avisa em vez de sobrescrever a mudança dela: atualize e edite de novo.
 
@@ -153,7 +153,7 @@ Os secrets e os configs não podem ser alterados depois de criados. Para mudar u
 
 Uma **stack do swarm** é uma stack implantada em um Swarm: um arquivo compose transformado em serviços, redes, secrets e configs que compartilham um namespace. O Homeport encontra todas elas, seja como forem implantadas, pelo rótulo `com.docker.stack.namespace` que `docker stack deploy` coloca nelas. A aba **Stacks** do Swarm as lista, como a página **Stacks** lista as de um host: o tipo, o estado (em execução quando todas as tarefas de todos os serviços rodam, parada quando todos os serviços estão escalados para 0) e os serviços.
 
-Uma stack implantada por um terminal com `docker stack deploy` é **Externa**: o Homeport não tem nenhum arquivo compose para ela. Selecione-a para ver os serviços dela, cada um com link para a sua página, e as redes, os secrets e os configs dela. **Remover** faz o que `docker stack rm` faz: remove os serviços, espera as tarefas deles pararem e depois remove as redes, os secrets e os configs do namespace. Tudo o que o Swarm se recusou a remover é listado. Os volumes são mantidos em cada nó.
+Uma stack implantada por um terminal com `docker stack deploy` é **Externa**: o Homeport não tem nenhum arquivo compose para ela. Selecione-a para ver os serviços dela, cada um com link para a sua página, e as redes, os secrets e os configs dela. **Remover**, no rodapé da página da stack, faz o que `docker stack rm` faz: remove os serviços, espera as tarefas deles pararem e depois remove as redes, os secrets e os configs do namespace. Tudo o que o Swarm se recusou a remover é listado. Os volumes são mantidos em cada nó.
 
 <DocScreenshot
   name="swarm-stacks"

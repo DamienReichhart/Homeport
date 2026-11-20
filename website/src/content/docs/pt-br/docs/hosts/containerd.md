@@ -70,7 +70,7 @@ No containerd, um **contêiner** é apenas metadados: a imagem, a spec, o snapsh
 | **Enviar sinal** | Envia qualquer sinal, por nome (`SIGHUP`) ou número, ao processo principal da tarefa.                                                                                                                                                                                                            |
 | **Remover**      | Pergunta antes; encerra uma tarefa em execução, remove a tarefa e o contêiner, e o snapshot dele com os arquivos que ele alterou, a menos que você desmarque **Remover também**: um snapshot mantido é marcado com `containerd.io/gc.root`, para que o coletor de lixo do containerd o mantenha. |
 
-A página de um contêiner mostra o runtime, o snapshot, os rótulos e a spec OCI dele. O Homeport não cria contêineres no containerd: o containerd não tem rede própria, que o nerdctl e o CNI adicionam.
+Cada linha, e a página de um contêiner, tem a ação principal à mão (**Parar**, **Iniciar** ou **Retomar**) e o resto, **Remover** incluído, no menu **⋯**. A página de um contêiner mostra o runtime, o snapshot, os rótulos e a spec OCI dele. O Homeport não cria contêineres no containerd: o containerd não tem rede própria, que o nerdctl e o CNI adicionam.
 
 O **kubelet** gerencia os contêineres do Kubernetes: ele os inicia de novo depois de uma parada e os recria depois de uma remoção. As páginas deles dizem isso; altere o Pod no cluster dele. Remover daqui um contêiner do nerdctl deixa os registros próprios do nerdctl sobre ele (o nome e a rede), como o `ctr` faria; `nerdctl rm` é a forma mais limpa para esses.
 
@@ -104,7 +104,7 @@ Uma imagem a partir da qual um contêiner do namespace foi criado não pode ser 
 
 Os snapshots são onde vai o disco do containerd: as camadas das imagens descompactadas e a camada gravável de cada contêiner. A página **Snapshots** mostra os de um snapshotter (`overlayfs` primeiro, ou qualquer outro que o host tenha carregado) como uma árvore por pai, os maiores primeiro, com o uso deles como `ctr snapshot usage` o calcula e o total no topo.
 
-Cada um diz o que o usa: um contêiner, pelo seu snapshot, ou uma imagem, pelas suas camadas. Os snapshots que nada usa e sobre os quais nada é construído — como um mantido quando o seu contêiner foi removido daqui — podem ser mostrados sozinhos com **Somente sem uso** e removidos. Os outros não podem ser removidos daqui. Um snapshot que nada referencia e que nada marca como raiz, como um que `ctr containers rm --keep-snapshot` deixa, não dura: o coletor de lixo do containerd o remove na próxima execução.
+Cada um diz o que o usa: um contêiner, pelo seu snapshot, ou uma imagem, pelas suas camadas. Os snapshots que nada usa e sobre os quais nada é construído — como um mantido quando o seu contêiner foi removido daqui — podem ser mostrados sozinhos com **Somente sem uso** e removidos. Os outros não podem ser removidos daqui. Um snapshot que nada referencia e que nada marca como raiz, como um que `ctr containers rm --keep-snapshot` deixa, não dura: o coletor de lixo do containerd o remove na próxima execução. **Remover os sem uso** remove de uma vez todos os snapshots que nada usa, cadeias inteiras sem uso a começar pelos filhos, depois de uma única confirmação que diz quanto espaço libera.
 
 ## O que roda no host
 

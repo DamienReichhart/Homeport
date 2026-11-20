@@ -17,13 +17,13 @@ A página **Pods** só aparece na barra lateral enquanto um host Podman está se
 | **Redes**       | As redes em que o pod está.                                                                                                    |
 | **Criado**      | Quando ele foi criado.                                                                                                         |
 
-Cada linha tem a ação que corresponde ao seu status — **Iniciar** para um pod parado, **Parar** para um em execução — e **Remover**. Selecione um pod para abrir a página dele. A lista se atualiza sozinha conforme os contêineres do pod iniciam e param, seja pelo Homeport ou por um terminal.
+Cada linha tem à mão a ação que combina com o status — **Iniciar** para um pod parado, **Parar** para um em execução — e guarda **Reiniciar**, **Pausar** e **Remover** no menu. Selecione um pod para abrir a página dele. A lista se atualiza sozinha conforme os contêineres do pod iniciam e param, seja pelo Homeport ou por um terminal.
 
 Na página **Contêineres**, um contêiner que roda em um pod mostra o nome do pod ao lado do seu; selecione o nome para abrir o pod.
 
 ## A página de um pod
 
-O cabeçalho tem **Executar contêiner** e as ações do pod: **Iniciar**, **Parar**, **Reiniciar**, **Pausar**, **Retomar** e **Remover**, conforme o status permitir. Cada uma age sobre todos os contêineres do pod de uma vez, como fazem `podman pod start` e companhia.
+O cabeçalho tem **Executar contêiner**, depois **Parar** (ou **Iniciar**, ou **Retomar**) e **Reiniciar**; **Pausar** e **Remover** ficam no menu **⋯**. Cada uma age sobre todos os contêineres do pod de uma vez, como fazem `podman pod start` e companhia.
 
 - **Contêineres** lista os contêineres do pod, com o contêiner infra por último. Selecione um para abrir a página dele, com os seus logs, terminal e arquivos.
 - **Configurações** mostra as portas que o pod publica, os namespaces que os seus contêineres compartilham, as suas redes, o hostname e os rótulos, e o comando `podman pod create` com que ele foi criado, quando o Podman o guardou.
