@@ -13,17 +13,17 @@ The **Images** page lists the images stored on the selected Host, with their tot
   alt="The Images page, listing images with their size and whether they're in use."
 />
 
-| Column      | Shows                                                                    |
-| ----------- | ------------------------------------------------------------------------ |
-| **Name**    | The first tag, and how many more it has; `<none>` for untagged images.   |
-| **ID**      | The short image ID.                                                      |
-| **Created** | How long ago the image was built.                                        |
-| **Size**    | Its size on disk.                                                        |
-| **Status**  | **In use** with the number of containers created from it, or **Unused**. |
+| Column      | Shows                                                                        |
+| ----------- | ---------------------------------------------------------------------------- |
+| **Name**    | The first tag, and how many more it has; `<none>` for untagged images.       |
+| **ID**      | The short image ID.                                                          |
+| **Created** | How long ago the image was built.                                            |
+| **Size**    | Its size on disk.                                                            |
+| **Status**  | How many containers use it, such as **Used by 3 containers**, or **Unused**. |
 
 Stopped containers count as using an image. Select a column header to sort, and search with **Search images**.
 
-A ⬆ next to the name means one of the image's tags points to a newer image in its registry; hover it to see which. Pull the tag to fetch it. **Check for newer images** asks the registries again instead of using the answers kept for 6 hours. See [newer images](/docs/guides/containers/#newer-images) for how the check works.
+**Newer version**, an amber badge next to the name, means one of the image's tags points to a newer image in its registry; hover it to see which. Those images are listed first, and the row's menu offers **Pull the newer …** with the reference filled in. **Check for newer images**, in the page's **More actions** menu, asks the registries again instead of using the answers kept for 6 hours. See [newer images](/docs/guides/containers/#newer-images) for how the check works.
 
 ## Pulling an image
 
@@ -86,14 +86,14 @@ If the registry refuses, the message says whether to add a login or to check tha
 
 To move images to a Host that can't reach a registry — an air-gapped server, a Raspberry Pi on a home network — save them to a file on this computer and load the file into the other Host.
 
-- **Save…** in an image's **⋮** menu writes it, with all its names, to one `.tar` file you choose. To save several at once, tick them in the list and choose **Save N images…** at the top of the page.
-- **Load…** at the top of the page reads a `.tar` made by **Save…** or `docker save` — compressed `.tar.gz` too — into the selected Host. When it's done, the dialog names the images it loaded, with their tags.
+- **Save…** in an image's **⋮** menu writes it, with all its names, to one `.tar` file you choose. To save several at once, tick them in the list and choose **Save N images…** next to the search.
+- **Load…** (in the page's **More actions** menu) reads a `.tar` made by **Save…** or `docker save` — compressed `.tar.gz` too — into the selected Host. When it's done, the dialog names the images it loaded, with their tags.
 
 The file travels between this computer and the Host over the Host's own connection, so this works for remote Hosts too. Progress shows the bytes written or sent; **Cancel** stops it, and a cancelled or failed save leaves no partial file behind. Homeport never holds the whole archive in memory, so images of several gigabytes are fine.
 
 ### Importing a filesystem
 
-**Import from tar…** at the top of the page turns a tar of a root filesystem into an image, like `docker import`: one made by a container's [**Export filesystem…**](/docs/guides/containers/#exporting-a-containers-filesystem) or `docker export`, a `debootstrap` or Buildroot output, or a vendor appliance. Choose the file (plain or compressed with gzip, xz or bzip2), give the image a **name** — it starts from the file name — and optionally **Changes**: Dockerfile instructions such as `CMD ["/bin/sh"]` or `ENV LANG=C.UTF-8`, since an imported image has no command of its own. Progress shows the bytes sent; the image then appears in the list.
+**Import from tar…** (in the page's **More actions** menu) turns a tar of a root filesystem into an image, like `docker import`: one made by a container's [**Export filesystem…**](/docs/guides/containers/#exporting-a-containers-filesystem) or `docker export`, a `debootstrap` or Buildroot output, or a vendor appliance. Choose the file (plain or compressed with gzip, xz or bzip2), give the image a **name** — it starts from the file name — and optionally **Changes**: Dockerfile instructions such as `CMD ["/bin/sh"]` or `ENV LANG=C.UTF-8`, since an imported image has no command of its own. Progress shows the bytes sent; the image then appears in the list.
 
 ### Save and load, or export and import?
 
@@ -113,7 +113,7 @@ The file travels between this computer and the Host over the Host's own connecti
 
 ## Cleaning up
 
-**Clean up** offers two levels:
+**Clean up** (in the page's **More actions** menu) offers two levels:
 
 - **Dangling images** — untagged images left behind by builds and pulls. Safe to remove.
 - **All unused images** — every image no container uses, tagged ones included. They can be pulled again, but that takes time and bandwidth.

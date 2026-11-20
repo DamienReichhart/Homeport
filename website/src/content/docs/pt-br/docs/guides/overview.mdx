@@ -130,15 +130,15 @@ Enquanto o Homeport roda, mesmo escondido na bandeja, ele avisa pelas notificaç
 
 A página **Eventos** lista o que o Engine do host selecionado informou, do mais recente ao mais antigo: contêineres iniciando e parando, imagens baixadas, volumes criados, redes conectadas e assim por diante. O Homeport os guarda, então eles continuam lá depois que ele reinicia — "o que reiniciou durante a noite?" tem resposta.
 
-| Coluna     | Mostra                                     |
-| ---------- | ------------------------------------------ |
-| **Hora**   | Quando aconteceu, no seu horário local.    |
-| **Tipo**   | `container`, `image`, `volume`, `network`… |
-| **Ação**   | `start`, `die`, `pull`, `create`…          |
-| **Objeto** | O nome daquilo com que aconteceu.          |
-| **Stack**  | A stack a que pertence, se houver.         |
+| Coluna     | Mostra                                                  |
+| ---------- | ------------------------------------------------------- |
+| **Hora**   | Há quanto tempo, com a hora exata ao passar o ponteiro. |
+| **Tipo**   | `container`, `image`, `volume`, `network`…              |
+| **Ação**   | `start`, `die`, `pull`, `create`…                       |
+| **Objeto** | O nome daquilo com que aconteceu.                       |
+| **Stack**  | A stack a que pertence, se houver.                      |
 
-Pesquise pela ação ou pelo nome do objeto, ou filtre pelo tipo. A lista se atualiza ao vivo.
+Pesquise pela ação ou pelo nome do objeto, ou filtre pelo tipo. A lista se atualiza ao vivo. Um encerramento por falta de memória, um contêiner que saiu com um código de erro e uma verificação de integridade que passa a não íntegra aparecem em âmbar, com um triângulo de aviso.
 
 <DocScreenshot
   name="events"
@@ -151,6 +151,6 @@ Pesquise pela ação ou pelo nome do objeto, ou filtre pelo tipo. A lista se atu
 - **Enquanto o Homeport estava fechado.** Quando o Homeport se conecta a um host de novo, ele pede ao Engine os eventos desde o último que guardou, então o que aconteceu nesse meio-tempo é preenchido — até onde o Engine se lembra, que são as suas últimas centenas de eventos. Nada é listado duas vezes.
 - **Por 30 dias**, ou pelo tempo que **Manter eventos do Engine por** em [Configurações → Dados](/docs/guides/settings/#dados) indicar, e no máximo 10.000 por host. Os eventos mais antigos são removidos a cada hora.
 
-**Limpar histórico** esquece todos os eventos guardados para o host selecionado; os novos continuam aparecendo. Remover um host remove os eventos dele. Os eventos do próprio Engine nunca são alterados.
+**Limpar histórico** (no menu **Mais ações** da página) esquece todos os eventos guardados para o host selecionado; os novos continuam aparecendo. Remover um host remove os eventos dele. Os eventos do próprio Engine nunca são alterados.
 
 Os [contêineres auxiliares](/docs/guides/volumes-networks/#o-contêiner-auxiliar) do próprio Homeport, que abrem volumes, nunca aparecem aqui.

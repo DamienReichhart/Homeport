@@ -130,15 +130,15 @@ Tant que Homeport tourne, même masqué dans la zone de notification, il vous pr
 
 La page **Événements** liste ce que le moteur de l’hôte sélectionné a signalé, du plus récent au plus ancien : des conteneurs qui démarrent et s’arrêtent, des images récupérées, des volumes créés, des réseaux connectés, etc. Homeport les conserve, si bien qu’ils sont toujours là après son redémarrage — « qu’est-ce qui a redémarré cette nuit ? » a une réponse.
 
-| Colonne    | Affiche                                            |
-| ---------- | -------------------------------------------------- |
-| **Heure**  | Le moment où c’est arrivé, à votre heure.          |
-| **Type**   | `container`, `image`, `volume`, `network`…         |
-| **Action** | `start`, `die`, `pull`, `create`…                  |
-| **Objet**  | Le nom de ce à quoi c’est arrivé.                  |
-| **Stack**  | La stack à laquelle il appartient, le cas échéant. |
+| Colonne    | Affiche                                                 |
+| ---------- | ------------------------------------------------------- |
+| **Heure**  | Il y a combien de temps, avec l’heure exacte au survol. |
+| **Type**   | `container`, `image`, `volume`, `network`…              |
+| **Action** | `start`, `die`, `pull`, `create`…                       |
+| **Objet**  | Le nom de ce à quoi c’est arrivé.                       |
+| **Stack**  | La stack à laquelle il appartient, le cas échéant.      |
 
-Cherchez par action ou par nom d’objet, ou filtrez par type. La liste se met à jour en direct.
+Cherchez par action ou par nom d’objet, ou filtrez par type. La liste se met à jour en direct. Un arrêt pour manque de mémoire, un conteneur terminé avec un code d’erreur et un health check qui passe en mauvaise santé sont marqués en ambre, avec un triangle d’avertissement.
 
 <DocScreenshot
   name="events"
@@ -151,6 +151,6 @@ Cherchez par action ou par nom d’objet, ou filtrez par type. La liste se met �
 - **Pendant que Homeport était fermé.** Quand Homeport se reconnecte à un hôte, il demande au moteur les événements survenus depuis le dernier qu’il a conservé, si bien que ce qui s’est passé entre-temps est complété — aussi loin que le moteur s’en souvient, c’est-à-dire ses quelques centaines d’événements les plus récents. Rien n’est listé deux fois.
 - **Pendant 30 jours**, ou la durée indiquée par **Conserver les événements des moteurs pendant** dans [Paramètres → Données](/docs/guides/settings/#données), et au plus 10 000 par hôte. Les événements plus anciens sont supprimés toutes les heures.
 
-**Effacer l’historique** oublie tous les événements conservés pour l’hôte sélectionné ; les nouveaux continuent d’apparaître. Supprimer un hôte supprime ses événements. Les événements propres au moteur ne sont jamais modifiés.
+**Effacer l’historique** (dans le menu **Plus d’actions** de la page) oublie tous les événements conservés pour l’hôte sélectionné ; les nouveaux continuent d’apparaître. Supprimer un hôte supprime ses événements. Les événements propres au moteur ne sont jamais modifiés.
 
 Les [conteneurs auxiliaires](/docs/guides/volumes-networks/#le-conteneur-auxiliaire) de Homeport, qui ouvrent les volumes, n’apparaissent jamais ici.

@@ -129,15 +129,15 @@ While Homeport runs, even hidden in the tray, it tells you through your operatin
 
 The **Events** page lists what the selected Host's Engine reported, newest first: containers starting and stopping, images pulled, volumes created, networks connected, and so on. Homeport keeps them, so they're still there after it restarts — "what restarted overnight?" has an answer.
 
-| Column     | Shows                                      |
-| ---------- | ------------------------------------------ |
-| **Time**   | When it happened, in your local time.      |
-| **Type**   | `container`, `image`, `volume`, `network`… |
-| **Action** | `start`, `die`, `pull`, `create`…          |
-| **Object** | The name of what it happened to.           |
-| **Stack**  | The Stack it belongs to, if any.           |
+| Column     | Shows                                       |
+| ---------- | ------------------------------------------- |
+| **Time**   | How long ago, with the exact time on hover. |
+| **Type**   | `container`, `image`, `volume`, `network`…  |
+| **Action** | `start`, `die`, `pull`, `create`…           |
+| **Object** | The name of what it happened to.            |
+| **Stack**  | The Stack it belongs to, if any.            |
 
-Search by action or object name, or filter by type. The list updates live.
+Search by action or object name, or filter by type. The list updates live. An out-of-memory kill, a container that exited with an error code and a health check turning unhealthy are set in amber, with a warning triangle.
 
 <DocScreenshot
   name="events"
@@ -150,6 +150,6 @@ Search by action or object name, or filter by type. The list updates live.
 - **While Homeport was closed.** When Homeport connects to a Host again, it asks the Engine for the events since the last one it kept, so what happened meanwhile is filled in — as far back as the Engine remembers, which is its latest few hundred events. Nothing is listed twice.
 - **For 30 days**, or as long as **Keep Engine events for** in [Settings → Data](/docs/guides/settings/#data) says, and at most 10,000 per Host. Older events are removed every hour.
 
-**Clear history** forgets every event kept for the selected Host; new ones keep appearing. Removing a Host removes its events. The Engine's own events are never changed.
+**Clear history** (in the page's **More actions** menu) forgets every event kept for the selected Host; new ones keep appearing. Removing a Host removes its events. The Engine's own events are never changed.
 
 Homeport's own [helper containers](/docs/guides/volumes-networks/#the-helper-container), which open volumes, never show up here.

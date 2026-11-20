@@ -12,23 +12,22 @@ Die Seite **Volumes** listet die Volumes des ausgewählten Hosts auf und wie vie
 
 <DocScreenshot
   name="volumes"
-  alt="Die Seite Volumes mit dem Stack, dem Treiber und den Containern, die jedes Volume verwenden."
+  alt="Die Seite Volumes mit dem Stack, der Größe und den Containern, die jedes Volume verwenden."
 />
 
-| Spalte            | Zeigt                                                                                  |
-| ----------------- | -------------------------------------------------------------------------------------- |
-| **Name**          | Den Namen des Volumes; eine lange ID bei anonymen Volumes.                             |
-| **Stack**         | Den Stack, der es erstellt hat, falls vorhanden.                                       |
-| **Treiber**       | Meist `local`.                                                                         |
-| **Größe**         | Wie viel Festplattenplatz seine Daten belegen, so wie `docker system df -v` es angibt. |
-| **Verwendet von** | Die Container, die es einhängen, oder **Unbenutzt**.                                   |
-| **Erstellt**      | Wann es erstellt wurde.                                                                |
+| Spalte            | Zeigt                                                                                                                      |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| **Name**          | Den Namen des Volumes; eine lange ID bei anonymen Volumes. Ein ungewöhnlicher Treiber, alles außer `local`, steht daneben. |
+| **Stack**         | Den Stack, der es erstellt hat, falls vorhanden.                                                                           |
+| **Größe**         | Wie viel Festplattenplatz seine Daten belegen, so wie `docker system df -v` es angibt.                                     |
+| **Verwendet von** | Die Container, die es einhängen, oder **Unbenutzt**.                                                                       |
+| **Erstellt**      | Wann es erstellt wurde.                                                                                                    |
 
-Ein Volume gilt als verwendet, wenn irgendein Container es einhängt, laufend oder gestoppt. Wählen Sie ein Volume aus, um seine Größe, die Container, die es verwenden, und alle Details zu sehen, einschließlich des Orts, an dem seine Daten auf dem Host liegen (`Mountpoint`).
+Ein Volume gilt als verwendet, wenn irgendein Container es einhängt, laufend oder gestoppt. Wählen Sie ein Volume aus, um seine Größe, die Container, die es verwenden, und alle Details zu sehen, einschließlich des Orts, an dem seine Daten auf dem Host liegen (**Einhängepunkt**).
 
 ### Größen
 
-Die Engine misst jedes Volume, um die Größen anzugeben, was auf einem Host mit vielen Daten einige Sekunden dauern kann; die Liste erscheint daher sofort, und die Spalte **Größe** füllt sich danach. Sortieren Sie nach **Größe**, um das Volume zu finden, das eine Festplatte füllt. Größen werden erneut gemessen, wenn ein Volume erstellt oder entfernt wird und wenn Sie **Größen aktualisieren** wählen – nicht bei jedem Schreibvorgang eines Containers, daher kann eine Größe etwas hinterherhinken.
+Die Engine misst jedes Volume, um die Größen anzugeben, was auf einem Host mit vielen Daten einige Sekunden dauern kann; die Liste erscheint daher sofort, und die Spalte **Größe** füllt sich danach. Sortieren Sie nach **Größe**, um das Volume zu finden, das eine Festplatte füllt. Größen werden erneut gemessen, wenn ein Volume erstellt oder entfernt wird und wenn Sie **Größen aktualisieren** (im Menü **Weitere Aktionen** der Seite) wählen – nicht bei jedem Schreibvorgang eines Containers, daher kann eine Größe etwas hinterherhinken.
 
 Nur Volumes des Treibers `local` haben eine Größe; andere Treiber (NFS, Cloud-Speicher-Plugins) zeigen **—**.
 
@@ -90,12 +89,12 @@ Schlägt die Kopie fehl – etwa weil die Festplatte voll ist –, entfernt Home
 
 <Aside type="danger">Das Löschen eines Volumes löscht die Daten darin dauerhaft.</Aside>
 
-Die Löschen-Schaltfläche in jeder Zeile fragt nach einer Bestätigung und nennt die Container, die das Volume noch einhängen. Die Engine weigert sich, ein Volume zu löschen, das irgendein Container verwendet, auch ein gestoppter – entfernen Sie zuerst diese Container.
+**Löschen…** im Menü **⋯** eines Volumes nennt den Host und die Container, die das Volume noch einhängen, und verlangt, dass Sie den Namen des Volumes eintippen, bevor **Volume und Daten löschen** funktioniert. Die Engine weigert sich, ein Volume zu löschen, das ein Container verwendet, selbst ein gestoppter – entfernen Sie diese Container zuerst.
 
-**Aufräumen** entfernt mehrere auf einmal:
+**Aufräumen** (im Menü **Weitere Aktionen** der Seite) entfernt mehrere auf einmal:
 
 - **Unbenutzte anonyme Volumes** – unbenannte Volumes, die kein Container verwendet.
-- **Alle unbenutzten Volumes** – jedes Volume, das kein Container verwendet, benannte eingeschlossen.
+- **Alle unbenutzten Volumes** – jedes Volume, das kein Container verwendet, benannte eingeschlossen. Homeport fragt zuerst nach dem Namen des Hosts.
 
 ## Netzwerke
 
@@ -132,6 +131,6 @@ Die integrierten Netzwerke lassen sich hier nicht ändern.
 
 ### Netzwerke entfernen
 
-Integrierte Netzwerke lassen sich nicht entfernen. Bei anderen Netzwerken sagt die Bestätigung, wie viele Container noch verbunden sind; die Engine weigert sich, ein Netzwerk mit laufenden Containern darin zu entfernen. Container, die ein entferntes Netzwerk über seinen Namen referenzieren, starten erst wieder, wenn es wieder existiert.
+Das Menü **⋯** jeder Zeile bietet **Untersuchen** und, für Netzwerke, die entfernt werden können, **Entfernen**; das Entfernen nennt den Host. Integrierte Netzwerke lassen sich nicht entfernen. Bei anderen Netzwerken sagt die Bestätigung, wie viele Container noch verbunden sind; die Engine weigert sich, ein Netzwerk mit laufenden Containern darin zu entfernen. Container, die ein entferntes Netzwerk über seinen Namen referenzieren, starten erst wieder, wenn es wieder existiert.
 
 **Aufräumen** entfernt alle benutzerdefinierten Netzwerke, mit denen kein Container verbunden ist.

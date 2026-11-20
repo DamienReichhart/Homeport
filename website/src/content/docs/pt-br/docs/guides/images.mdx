@@ -13,17 +13,17 @@ A página **Imagens** lista as imagens guardadas no host selecionado, com o tama
   alt="A página Imagens, listando as imagens com o tamanho delas e se estão em uso."
 />
 
-| Coluna      | Mostra                                                                           |
-| ----------- | -------------------------------------------------------------------------------- |
-| **Nome**    | A primeira tag e quantas mais ela tem; `<none>` para as imagens sem tag.         |
-| **ID**      | O ID curto da imagem.                                                            |
-| **Criada**  | Há quanto tempo a imagem passou pela build.                                      |
-| **Tamanho** | O tamanho dela em disco.                                                         |
-| **Status**  | **Em uso**, com o número de contêineres criados a partir dela, ou **Não usada**. |
+| Coluna      | Mostra                                                                          |
+| ----------- | ------------------------------------------------------------------------------- |
+| **Nome**    | A primeira tag e quantas mais ela tem; `<none>` para as imagens sem tag.        |
+| **ID**      | O ID curto da imagem.                                                           |
+| **Criada**  | Há quanto tempo a imagem passou pela build.                                     |
+| **Tamanho** | O tamanho dela em disco.                                                        |
+| **Status**  | Quantos contêineres a usam, como **Usada por 3 contêineres**, ou **Não usada**. |
 
 Os contêineres parados contam como usando uma imagem. Selecione o cabeçalho de uma coluna para ordenar e pesquise com **Pesquisar imagens**.
 
-Um ⬆ ao lado do nome significa que uma das tags da imagem aponta para uma imagem mais recente no registro dela; passe o ponteiro sobre ele para ver qual. Baixe a tag para buscá-la. **Verificar imagens mais recentes** pergunta de novo aos registros em vez de usar as respostas guardadas por 6 horas. Veja [imagens mais recentes](/docs/guides/containers/#imagens-mais-recentes) para saber como a verificação funciona.
+**Versão mais recente**, um selo âmbar ao lado do nome, significa que uma das tags da imagem aponta para uma imagem mais recente no registro dela; passe o ponteiro sobre ele para ver qual. Essas imagens aparecem primeiro, e o menu da linha oferece **Baixar a nova versão de …** com a referência já preenchida. **Verificar imagens mais recentes**, no menu **Mais ações** da página, pergunta de novo aos registros em vez de usar as respostas guardadas por 6 horas. Veja [imagens mais recentes](/docs/guides/containers/#imagens-mais-recentes) para saber como a verificação funciona.
 
 ## Baixando uma imagem
 
@@ -87,14 +87,14 @@ Se o registro recusar, a mensagem diz se é preciso adicionar um login ou verifi
 
 Para levar imagens a um host que não alcança um registro — um servidor isolado da rede, um Raspberry Pi em uma rede doméstica —, salve-as em um arquivo neste computador e carregue o arquivo no outro host.
 
-- **Salvar…**, no menu **⋮** de uma imagem, a grava, com todos os nomes dela, em um arquivo `.tar` que você escolhe. Para salvar várias de uma vez, marque-as na lista e escolha **Salvar N imagens…** no topo da página.
-- **Carregar…**, no topo da página, lê um `.tar` feito por **Salvar…** ou `docker save` — também um `.tar.gz` compactado — para o host selecionado. Quando termina, a caixa de diálogo cita as imagens que carregou, com as tags delas.
+- **Salvar…**, no menu **⋮** de uma imagem, a grava, com todos os nomes dela, em um arquivo `.tar` que você escolhe. Para salvar várias de uma vez, marque-as na lista e escolha **Salvar N imagens…** ao lado da pesquisa.
+- **Carregar…** (no menu **Mais ações** da página) lê um `.tar` feito por **Salvar…** ou `docker save` — também um `.tar.gz` compactado — para o host selecionado. Quando termina, a caixa de diálogo cita as imagens que carregou, com as tags delas.
 
 O arquivo trafega entre este computador e o host pela própria conexão do host, então isso também funciona para hosts remotos. O progresso mostra os bytes gravados ou enviados; **Cancelar** o interrompe, e um salvamento cancelado ou que falhou não deixa nenhum arquivo parcial para trás. O Homeport nunca guarda o arquivo inteiro na memória, então imagens de vários gigabytes não são problema.
 
 ### Importando um sistema de arquivos
 
-**Importar de tar…**, no topo da página, transforma um tar de um sistema de arquivos raiz em uma imagem, como `docker import`: um feito por [**Exportar sistema de arquivos…**](/docs/guides/containers/#exportando-o-sistema-de-arquivos-de-um-contêiner) de um contêiner ou por `docker export`, uma saída do `debootstrap` ou do Buildroot, ou um appliance de um fornecedor. Escolha o arquivo (simples ou compactado com gzip, xz ou bzip2), dê à imagem um **nome** — ele parte do nome do arquivo — e, opcionalmente, **Alterações**: instruções de Dockerfile como `CMD ["/bin/sh"]` ou `ENV LANG=C.UTF-8`, já que uma imagem importada não tem um comando próprio. O progresso mostra os bytes enviados; depois a imagem aparece na lista.
+**Importar de tar…** (no menu **Mais ações** da página) transforma um tar de um sistema de arquivos raiz em uma imagem, como `docker import`: um feito por [**Exportar sistema de arquivos…**](/docs/guides/containers/#exportando-o-sistema-de-arquivos-de-um-contêiner) de um contêiner ou por `docker export`, uma saída do `debootstrap` ou do Buildroot, ou um appliance de um fornecedor. Escolha o arquivo (simples ou compactado com gzip, xz ou bzip2), dê à imagem um **nome** — ele parte do nome do arquivo — e, opcionalmente, **Alterações**: instruções de Dockerfile como `CMD ["/bin/sh"]` ou `ENV LANG=C.UTF-8`, já que uma imagem importada não tem um comando próprio. O progresso mostra os bytes enviados; depois a imagem aparece na lista.
 
 ### Salvar e carregar, ou exportar e importar?
 
@@ -114,7 +114,7 @@ O arquivo trafega entre este computador e o host pela própria conexão do host,
 
 ## Fazendo limpeza
 
-**Limpar** oferece dois níveis:
+**Limpar** (no menu **Mais ações** da página) oferece dois níveis:
 
 - **Imagens órfãs** — imagens sem tag deixadas por builds e downloads. Podem ser removidas com segurança.
 - **Todas as imagens não usadas** — todas as imagens que nenhum contêiner usa, incluindo as com tag. Elas podem ser baixadas de novo, mas isso leva tempo e consome banda.

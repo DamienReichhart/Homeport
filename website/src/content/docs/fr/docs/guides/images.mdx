@@ -13,17 +13,17 @@ La page **Images** liste les images stockées sur l’hôte sélectionné, avec 
   alt="La page Images, qui liste les images avec leur taille et indique si elles sont utilisées."
 />
 
-| Colonne    | Affiche                                                                             |
-| ---------- | ----------------------------------------------------------------------------------- |
-| **Nom**    | Le premier tag, et combien elle en a d’autres ; `<none>` pour les images sans tag.  |
-| **ID**     | L’ID court de l’image.                                                              |
-| **Créée**  | Il y a combien de temps l’image a été construite.                                   |
-| **Taille** | Sa taille sur le disque.                                                            |
-| **État**   | **Utilisée** avec le nombre de conteneurs créés à partir d’elle, ou **Inutilisée**. |
+| Colonne    | Affiche                                                                                    |
+| ---------- | ------------------------------------------------------------------------------------------ |
+| **Nom**    | Le premier tag, et combien elle en a d’autres ; `<none>` pour les images sans tag.         |
+| **ID**     | L’ID court de l’image.                                                                     |
+| **Créée**  | Il y a combien de temps l’image a été construite.                                          |
+| **Taille** | Sa taille sur le disque.                                                                   |
+| **État**   | Combien de conteneurs l’utilisent, comme **Utilisée par 3 conteneurs**, ou **Inutilisée**. |
 
 Les conteneurs arrêtés comptent comme utilisant une image. Sélectionnez un en-tête de colonne pour trier, et cherchez avec **Rechercher des images**.
 
-Un ⬆ à côté du nom signifie que l’un des tags de l’image pointe vers une image plus récente dans son registre ; survolez-le pour savoir lequel. Récupérez le tag pour l’obtenir. **Rechercher des images plus récentes** interroge à nouveau les registres au lieu d’utiliser les réponses gardées 6 heures. Voir [images plus récentes](/docs/guides/containers/#images-plus-récentes) pour le fonctionnement de la vérification.
+**Version plus récente**, un badge ambre à côté du nom, signifie que l’un des tags de l’image pointe vers une image plus récente dans son registre ; survolez-le pour savoir lequel. Ces images sont listées en premier, et le menu de la ligne propose **Récupérer la nouvelle version de …** avec la référence déjà remplie. **Rechercher des images plus récentes**, dans le menu **Plus d’actions** de la page, interroge à nouveau les registres au lieu d’utiliser les réponses gardées 6 heures. Voir [images plus récentes](/docs/guides/containers/#images-plus-récentes) pour le fonctionnement de la vérification.
 
 ## Récupérer une image
 
@@ -87,14 +87,14 @@ Si le registre refuse, le message indique s’il faut ajouter des identifiants o
 
 Pour transférer des images vers un hôte qui ne peut pas joindre de registre — un serveur isolé du réseau, un Raspberry Pi sur un réseau domestique —, enregistrez-les dans un fichier sur cet ordinateur et chargez le fichier sur l’autre hôte.
 
-- **Enregistrer…**, dans le menu **⋮** d’une image, l’écrit, avec tous ses noms, dans un seul fichier `.tar` de votre choix. Pour en enregistrer plusieurs à la fois, cochez-les dans la liste et choisissez **Enregistrer N images…** en haut de la page.
-- **Charger…**, en haut de la page, lit un `.tar` produit par **Enregistrer…** ou `docker save` — compressé en `.tar.gz` aussi — dans l’hôte sélectionné. Une fois terminé, la boîte de dialogue nomme les images chargées, avec leurs tags.
+- **Enregistrer…**, dans le menu **⋮** d’une image, l’écrit, avec tous ses noms, dans un seul fichier `.tar` de votre choix. Pour en enregistrer plusieurs à la fois, cochez-les dans la liste et choisissez **Enregistrer N images…** à côté de la recherche.
+- **Charger…** (dans le menu **Plus d’actions** de la page) lit un `.tar` produit par **Enregistrer…** ou `docker save` — compressé en `.tar.gz` aussi — dans l’hôte sélectionné. Une fois terminé, la boîte de dialogue nomme les images chargées, avec leurs tags.
 
 Le fichier voyage entre cet ordinateur et l’hôte par la propre connexion de l’hôte, si bien que cela fonctionne aussi pour les hôtes distants. La progression indique les octets écrits ou envoyés ; **Annuler** l’arrête, et un enregistrement annulé ou échoué ne laisse aucun fichier partiel. Homeport ne garde jamais toute l’archive en mémoire, si bien que des images de plusieurs gigaoctets ne posent pas de problème.
 
 ### Importer un système de fichiers
 
-**Importer depuis un tar…**, en haut de la page, transforme le tar d’un système de fichiers racine en image, comme `docker import` : un tar produit par [**Exporter le système de fichiers…**](/docs/guides/containers/#exporter-le-système-de-fichiers-dun-conteneur) d’un conteneur ou par `docker export`, la sortie de `debootstrap` ou de Buildroot, ou une appliance de fabricant. Choisissez le fichier (brut ou compressé avec gzip, xz ou bzip2), donnez à l’image un **Nom** — il part du nom du fichier — et, si vous le souhaitez, des **Modifications** : des instructions Dockerfile comme `CMD ["/bin/sh"]` ou `ENV LANG=C.UTF-8`, puisqu’une image importée n’a pas de commande à elle. La progression indique les octets envoyés ; l’image apparaît ensuite dans la liste.
+**Importer depuis un tar…** (dans le menu **Plus d’actions** de la page) transforme le tar d’un système de fichiers racine en image, comme `docker import` : un tar produit par [**Exporter le système de fichiers…**](/docs/guides/containers/#exporter-le-système-de-fichiers-dun-conteneur) d’un conteneur ou par `docker export`, la sortie de `debootstrap` ou de Buildroot, ou une appliance de fabricant. Choisissez le fichier (brut ou compressé avec gzip, xz ou bzip2), donnez à l’image un **Nom** — il part du nom du fichier — et, si vous le souhaitez, des **Modifications** : des instructions Dockerfile comme `CMD ["/bin/sh"]` ou `ENV LANG=C.UTF-8`, puisqu’une image importée n’a pas de commande à elle. La progression indique les octets envoyés ; l’image apparaît ensuite dans la liste.
 
 ### Enregistrer et charger, ou exporter et importer ?
 
@@ -114,7 +114,7 @@ Le fichier voyage entre cet ordinateur et l’hôte par la propre connexion de l
 
 ## Nettoyage
 
-**Nettoyer** propose deux niveaux :
+**Nettoyer** (dans le menu **Plus d’actions** de la page) propose deux niveaux :
 
 - **Images orphelines** — les images sans tag laissées par les builds et les récupérations. Leur suppression est sans risque.
 - **Toutes les images inutilisées** — toutes les images qu’aucun conteneur n’utilise, y compris celles qui ont un tag. Elles peuvent être récupérées à nouveau, mais cela prend du temps et de la bande passante.

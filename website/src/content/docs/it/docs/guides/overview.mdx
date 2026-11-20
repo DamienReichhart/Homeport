@@ -129,15 +129,15 @@ Finché Homeport è in esecuzione, anche se nascosto nell’area di notifica, ti
 
 La pagina **Eventi** elenca ciò che l’Engine dell’host selezionato ha segnalato, dal più recente: container avviati e arrestati, immagini scaricate, volumi creati, reti collegate e così via. Homeport li conserva, quindi ci sono ancora dopo un riavvio: «cosa si è riavviato stanotte?» ha una risposta.
 
-| Colonna     | Mostra                                     |
-| ----------- | ------------------------------------------ |
-| **Ora**     | Quando è successo, nella tua ora locale.   |
-| **Tipo**    | `container`, `image`, `volume`, `network`… |
-| **Azione**  | `start`, `die`, `pull`, `create`…          |
-| **Oggetto** | Il nome di ciò a cui è successo.           |
-| **Stack**   | Lo stack a cui appartiene, se esiste.      |
+| Colonna     | Mostra                                                        |
+| ----------- | ------------------------------------------------------------- |
+| **Ora**     | Quanto tempo fa, con l’ora esatta al passaggio del puntatore. |
+| **Tipo**    | `container`, `image`, `volume`, `network`…                    |
+| **Azione**  | `start`, `die`, `pull`, `create`…                             |
+| **Oggetto** | Il nome di ciò a cui è successo.                              |
+| **Stack**   | Lo stack a cui appartiene, se esiste.                         |
 
-Cerca per azione o nome dell’oggetto, oppure filtra per tipo. L’elenco si aggiorna in tempo reale.
+Cerca per azione o nome dell’oggetto, oppure filtra per tipo. L’elenco si aggiorna in tempo reale. Un’interruzione per memoria esaurita, un container uscito con un codice di errore e un controllo di integrità che diventa non integro sono segnati in ambra, con un triangolo di avviso.
 
 <DocScreenshot
   name="events"
@@ -150,6 +150,6 @@ Cerca per azione o nome dell’oggetto, oppure filtra per tipo. L’elenco si ag
 - **Mentre Homeport era chiuso.** Quando Homeport si riconnette a un host, chiede all’Engine gli eventi successivi all’ultimo conservato, così ciò che è successo nel frattempo viene recuperato, fin dove l’Engine se lo ricorda, cioè i suoi ultimi qualche centinaio di eventi. Nulla viene elencato due volte.
 - **Per 30 giorni**, o per il tempo indicato da **Conserva gli eventi degli Engine per** in [Impostazioni → Dati](/docs/guides/settings/#dati), e al massimo 10.000 per host. Gli eventi più vecchi vengono rimossi ogni ora.
 
-**Cancella la cronologia** dimentica tutti gli eventi conservati per l’host selezionato; quelli nuovi continuano ad apparire. Rimuovere un host rimuove i suoi eventi. Gli eventi dell’Engine stesso non vengono mai modificati.
+**Cancella la cronologia** (nel menu **Altre azioni** della pagina) dimentica tutti gli eventi conservati per l’host selezionato; quelli nuovi continuano ad apparire. Rimuovere un host rimuove i suoi eventi. Gli eventi dell’Engine stesso non vengono mai modificati.
 
 I [container ausiliari](/docs/guides/volumes-networks/#il-container-ausiliario) di Homeport, che aprono i volumi, non compaiono mai qui.

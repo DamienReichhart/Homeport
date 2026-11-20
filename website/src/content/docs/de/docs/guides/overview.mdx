@@ -130,15 +130,15 @@ Während Homeport läuft, auch im Infobereich verborgen, informiert es Sie über
 
 Die Seite **Ereignisse** listet auf, was die Engine des ausgewählten Hosts gemeldet hat, die neuesten zuerst: Container, die starten und stoppen, gepullte Images, erstellte Volumes, verbundene Netzwerke und so weiter. Homeport bewahrt sie auf, sodass sie nach einem Neustart noch da sind – „was wurde über Nacht neu gestartet?“ lässt sich beantworten.
 
-| Spalte     | Zeigt                                         |
-| ---------- | --------------------------------------------- |
-| **Zeit**   | Wann es passiert ist, in Ihrer Ortszeit.      |
-| **Typ**    | `container`, `image`, `volume`, `network`…    |
-| **Aktion** | `start`, `die`, `pull`, `create`…             |
-| **Objekt** | Der Name dessen, dem es passiert ist.         |
-| **Stack**  | Der Stack, zu dem es gehört, falls vorhanden. |
+| Spalte     | Zeigt                                                             |
+| ---------- | ----------------------------------------------------------------- |
+| **Zeit**   | Wie lange es her ist, mit der genauen Uhrzeit beim Darüberfahren. |
+| **Typ**    | `container`, `image`, `volume`, `network`…                        |
+| **Aktion** | `start`, `die`, `pull`, `create`…                                 |
+| **Objekt** | Der Name dessen, dem es passiert ist.                             |
+| **Stack**  | Der Stack, zu dem es gehört, falls vorhanden.                     |
 
-Suchen Sie nach Aktion oder Objektname, oder filtern Sie nach Typ. Die Liste wird live aktualisiert.
+Suchen Sie nach Aktion oder Objektname, oder filtern Sie nach Typ. Die Liste wird live aktualisiert. Ein Abbruch wegen Speichermangels, ein Container, der mit einem Fehlercode beendet wurde, und ein Healthcheck, der fehlerhaft wird, sind bernsteinfarben markiert, mit einem Warndreieck.
 
 <DocScreenshot
   name="events"
@@ -151,6 +151,6 @@ Suchen Sie nach Aktion oder Objektname, oder filtern Sie nach Typ. Die Liste wir
 - **Während Homeport geschlossen war.** Wenn Homeport sich erneut mit einem Host verbindet, fragt es die Engine nach den Ereignissen seit dem letzten aufbewahrten, sodass ergänzt wird, was in der Zwischenzeit passiert ist – so weit zurück, wie die Engine sich erinnert, also ihre letzten paar hundert Ereignisse. Nichts wird doppelt aufgelistet.
 - **30 Tage lang** oder so lange, wie **Engine-Ereignisse aufbewahren für** in [Einstellungen → Daten](/docs/guides/settings/#daten) angibt, und höchstens 10.000 pro Host. Ältere Ereignisse werden stündlich entfernt.
 
-**Verlauf löschen** vergisst alle für den ausgewählten Host aufbewahrten Ereignisse; neue erscheinen weiterhin. Das Entfernen eines Hosts entfernt seine Ereignisse. Die eigenen Ereignisse der Engine werden nie verändert.
+**Verlauf löschen** (im Menü **Weitere Aktionen** der Seite) vergisst alle für den ausgewählten Host aufbewahrten Ereignisse; neue erscheinen weiterhin. Das Entfernen eines Hosts entfernt seine Ereignisse. Die eigenen Ereignisse der Engine werden nie verändert.
 
 Die eigenen [Hilfscontainer](/docs/guides/volumes-networks/#der-hilfscontainer) von Homeport, die Volumes öffnen, erscheinen hier nie.

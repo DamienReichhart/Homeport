@@ -19,7 +19,7 @@ I container che appartengono a uno [stack](/docs/guides/stacks/) sono raggruppat
 
 | Colonna      | Mostra                                                                                                                         |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| **Nome**     | Un punto di stato, il nome (il nome del servizio all’interno di uno stack) e l’ID breve.                                       |
+| **Nome**     | Un pallino di stato e il nome (il nome del servizio dentro uno stack); passa il puntatore sul nome per l’ID breve.             |
 | **Immagine** | L’immagine da cui è stato creato, con un segno ⬆ quando è pubblicata un’[immagine più recente](#immagini-più-recenti).         |
 | **Stato**    | Come lo riporta l’Engine, per esempio _Up 3 hours (healthy)_, con un indicatore di integrità se c’è un controllo di integrità. |
 | **Porte**    | Fino a tre porte, prima quelle pubblicate. Una porta pubblicata è un collegamento che la apre nel browser.                     |
@@ -39,7 +39,7 @@ Homeport interroga il registro tramite l’Engine dell’host, che confronta i d
 
 ### Azioni
 
-Il pulsante alla fine di ogni riga avvia o arresta il container. Il menu **⋮** contiene il resto: **Log**, **Apri terminale**, **Riavvia**, **Sospendi** o **Riprendi**, **Termina**, **Rinomina**, [**Modifica**](#modificare-un-container), [**Duplica**](#duplicare-un-container), [**Commit in un’immagine…**](#eseguire-il-commit-di-un-container), [**Esporta il filesystem…**](#esportare-il-filesystem-di-un-container) e **Rimuovi**.
+Alla fine di ogni riga, **Riavvia** (mentre è in esecuzione) e **Arresta** o **Avvia** agiscono subito. Il menu **⋮** contiene il resto: **Log**, **Apri terminale**, **Riavvia**, **Sospendi** o **Riprendi**, **Termina**, **Rinomina**, [**Modifica**](#modificare-un-container), [**Duplica**](#duplicare-un-container), [**Commit in un’immagine…**](#eseguire-il-commit-di-un-container), [**Esporta il filesystem…**](#esportare-il-filesystem-di-un-container) e **Rimuovi**.
 
 Seleziona più container per agire su tutti insieme con **Avvia**, **Arresta**, **Riavvia** o **Rimuovi**. La casella di selezione nella riga di uno stack seleziona tutti i suoi container.
 
@@ -53,7 +53,7 @@ Seleziona più container per agire su tutti insieme con **Avvia**, **Arresta**, 
 
 ## La pagina di un container
 
-L’intestazione mostra l’immagine e lo stato, con **Avvia** o **Arresta**, **Riavvia**, **Sospendi** o **Riprendi**, e **Rimuovi**; il suo menu **⋮** contiene **Rinomina**, **Modifica**, **Duplica**, **Commit in un’immagine…** ed **Esporta il filesystem…**. Le schede sottostanti contengono tutto il resto.
+L’intestazione mostra l’immagine e lo stato, con **Riavvia** e **Arresta**, oppure solo **Avvia** per un container arrestato. Il suo menu **⋮** ha **Sospendi** o **Riprendi**, **Termina**, **Rinomina**, **Modifica**, **Duplica**, **Commit in un’immagine…**, **Esporta il filesystem…** e, per ultimo e a parte, **Rimuovi**, che chiede una volta nominando l’host. Le schede sotto contengono tutto il resto.
 
 <Aside>
   Lasciare una scheda chiude ciò che stava facendo: i terminali si chiudono quando lasci **Exec**, i
@@ -71,8 +71,7 @@ I log arrivano in tempo reale man mano che il container li scrive. La barra degl
 
 - **Cronologia**: quante righe passate caricare: le ultime 100, 1.000 (il valore predefinito) o 10.000, oppure tutte.
 - **Da**: qualsiasi momento, oppure gli ultimi 5 minuti, l’ultima ora o le ultime 24 ore.
-- **Orari**: mostra l’orario dell’Engine prima di ogni riga.
-- **stdout** e **stderr**: mostra o nasconde l’uno o l’altro flusso.
+- **Mostra**: un menu per attivare **Orari** e mostrare o nascondere **stdout** e **stderr**. Il suo pulsante conta i flussi nascosti, così una vista filtrata non passa inosservata.
 - **Segui**: continua a scorrere fino alla riga più recente. Le nuove righe continuano ad arrivare anche quando è disattivato.
 - **Trova nei log**: evidenzia le corrispondenze. Premi <kbd>Enter</kbd> per la corrispondenza successiva e <kbd>Shift</kbd>+<kbd>Enter</kbd> per quella precedente.
 - **Cancella** svuota la vista; **Scarica i log** salva ciò che hai caricato come file di testo, fino alle ultime 100.000 righe.
@@ -84,8 +83,9 @@ Quando il container si arresta, il log termina con _— fine dei log —_.
 **Dettagli** riassume il container in schede: stato e codice di uscita, comando, criterio di riavvio, controlli di integrità, ambiente, montaggi, porte, reti ed etichette. **JSON originale** mostra il documento di ispezione completo dell’Engine.
 
 <Aside type="caution">
-  Le variabili d’ambiente sono mostrate in chiaro, come le memorizza l’Engine. Tienilo presente
-  prima di condividere lo schermo.
+  I valori dell’ambiente appaiono come puntini finché non scegli **Mostra i valori**. **JSON
+  grezzo** li mostra in chiaro, come li memorizza l’Engine: tienilo presente prima di condividere lo
+  schermo.
 </Aside>
 
 ### Integrità
@@ -133,17 +133,17 @@ I processi in esecuzione nel container, come li mostra `ps aux`, aggiornati ogni
 
 **Esegui container** nella pagina Container, o il pulsante ▶ accanto a un’immagine, apre **Esegui un container**:
 
-| Campo                                   | Note                                                                                                                                                                                      |
-| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Immagine**                            | Obbligatoria. Suggerisce le immagini dell’host. Viene prima scaricata se l’host non ce l’ha, con l’[accesso al registro](/docs/guides/settings/#registri) memorizzato.                    |
-| **Nome**                                | Facoltativo; se vuoto, l’Engine ne genera uno.                                                                                                                                            |
-| **Comando**                             | Sostituisce il comando predefinito dell’immagine (non il suo entrypoint). Metti gli argomenti tra virgolette come in una shell.                                                           |
-| **Porte**                               | **Porta dell’host** → **Porta del container**, `tcp` o `udp`. Lascia vuota la porta dell’host perché l’Engine ne scelga una libera. Le porte vengono pubblicate su ogni interfaccia.      |
-| **Volumi**                              | Un nome di volume o un percorso assoluto `/host/path`, montato in un percorso assoluto del container, facoltativamente in **sola lettura**. Un nome che non esiste ancora crea un volume. |
-| **Ambiente**                            | Una `KEY=value` per riga. Le righe vuote e quelle che iniziano con `#` vengono ignorate.                                                                                                  |
-| **Rete**                                | **Predefinita (bridge)**, o qualsiasi rete dell’host.                                                                                                                                     |
-| **Riavvio**                             | **Mai**, **In caso di errore**, **Se non arrestato** o **Sempre**.                                                                                                                        |
-| **Rimuovi il container quando termina** | Come `docker run --rm`. Un container rimosso all’uscita non può anche riavviarsi.                                                                                                         |
+| Campo                                   | Note                                                                                                                                                                                                |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Immagine**                            | Obbligatoria. Suggerisce le immagini dell’host. Viene prima scaricata se l’host non ce l’ha, con l’[accesso al registro](/docs/guides/settings/#registri) memorizzato.                              |
+| **Nome**                                | Facoltativo; se vuoto, l’Engine ne genera uno.                                                                                                                                                      |
+| **Porte**                               | **Porta dell’host** → **Porta del container**, `tcp` o `udp`. Lascia vuota la porta dell’host perché l’Engine ne scelga una libera. Le porte vengono pubblicate su ogni interfaccia.                |
+| **Volumi**                              | Un nome di volume o un percorso assoluto `/host/path`, montato in un percorso assoluto del container, facoltativamente in **sola lettura**. Un nome che non esiste ancora crea un volume.           |
+| **Ambiente**                            | Una `KEY=value` per riga. Le righe vuote e quelle che iniziano con `#` vengono ignorate. Quando **Duplica** o **Modifica** lo compilano, i suoi valori restano nascosti fino a **Mostra i valori**. |
+| **Comando**                             | Sostituisce il comando predefinito dell’immagine (non il suo entrypoint). Metti gli argomenti tra virgolette come in una shell.                                                                     |
+| **Rete**                                | **Predefinita (bridge)**, o qualsiasi rete dell’host.                                                                                                                                               |
+| **Riavvio**                             | **Mai**, **In caso di errore**, **Se non arrestato** o **Sempre**.                                                                                                                                  |
+| **Rimuovi il container quando termina** | Come `docker run --rm`. Un container rimosso all’uscita non può anche riavviarsi.                                                                                                                   |
 
 Scegli **Esegui**: Homeport crea e avvia il container, poi ne apre i log.
 
