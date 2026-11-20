@@ -33,7 +33,7 @@ export default {
   'podmanpods.actionOne.restart': 'Reiniciar {name}',
   'podmanpods.actionOne.pause': 'Pausar {name}',
   'podmanpods.actionOne.unpause': 'Retomar {name}',
-  'podmanpods.removeOne': 'Remover {name}',
+  'podmanpods.actionsFor': 'Ações de {name}',
   'podmanpods.done.start': '{name} iniciado',
   'podmanpods.done.stop': '{name} parado',
   'podmanpods.done.restart': '{name} reiniciado',

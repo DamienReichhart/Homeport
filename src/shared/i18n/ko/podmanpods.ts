@@ -33,7 +33,7 @@ export default {
   'podmanpods.actionOne.restart': '{name} 다시 시작',
   'podmanpods.actionOne.pause': '{name} 일시 중지',
   'podmanpods.actionOne.unpause': '{name} 재개',
-  'podmanpods.removeOne': '{name} 삭제',
+  'podmanpods.actionsFor': '{name} 작업',
   'podmanpods.done.start': '{name} 시작됨',
   'podmanpods.done.stop': '{name} 중지됨',
   'podmanpods.done.restart': '{name} 다시 시작됨',

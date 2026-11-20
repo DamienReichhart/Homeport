@@ -33,7 +33,7 @@ export default {
   'podmanpods.actionOne.restart': '{name} फिर से शुरू करें',
   'podmanpods.actionOne.pause': '{name} को विराम दें',
   'podmanpods.actionOne.unpause': '{name} जारी रखें',
-  'podmanpods.removeOne': '{name} हटाएँ',
+  'podmanpods.actionsFor': '{name} के लिए कार्रवाइयाँ',
   'podmanpods.done.start': '{name} शुरू हुआ',
   'podmanpods.done.stop': '{name} रुका',
   'podmanpods.done.restart': '{name} फिर से शुरू हुआ',

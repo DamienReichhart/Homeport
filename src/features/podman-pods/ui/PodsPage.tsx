@@ -44,14 +44,21 @@ function PodsList({ hostId }: { hostId: string }) {
           </WithShortcut>
         }
       />
-      <div className="mb-3">
-        <SearchInput value={query} onChange={setQuery} placeholder={t('podmanpods.search')} />
-      </div>
+      {pods.data.length > 0 && (
+        <div className="mb-3">
+          <SearchInput value={query} onChange={setQuery} placeholder={t('podmanpods.search')} />
+        </div>
+      )}
       {pods.data.length === 0 ? (
         <EmptyState
           icon={GroupIcon}
           title={t('podmanpods.empty')}
           description={t('podmanpods.emptyDescription')}
+          action={
+            <Button onClick={() => setCreating(true)}>
+              <PlusIcon /> {t('podmanpods.new')}
+            </Button>
+          }
         />
       ) : (
         <DataTable

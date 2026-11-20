@@ -33,7 +33,7 @@ export default {
   'podmanpods.actionOne.restart': '重启 {name}',
   'podmanpods.actionOne.pause': '暂停 {name}',
   'podmanpods.actionOne.unpause': '恢复 {name}',
-  'podmanpods.removeOne': '删除 {name}',
+  'podmanpods.actionsFor': '{name} 的操作',
   'podmanpods.done.start': '{name} 已启动',
   'podmanpods.done.stop': '{name} 已停止',
   'podmanpods.done.restart': '{name} 已重启',

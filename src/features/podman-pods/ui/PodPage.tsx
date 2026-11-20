@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { HostGate } from '@/core/host';
 import { RunContainerDialog } from '@/features/containers';
 import type { PodmanPodDetail } from '@/shared/api';
-import { formatRelative, shortId } from '@/shared/lib';
+import { formatDateTime, formatRelative, shortId } from '@/shared/lib';
 import {
   Badge,
   Button,
@@ -54,7 +54,7 @@ function Containers({ pod }: { pod: PodmanPodDetail }) {
             <StatusDot tone={c.state === 'running' ? 'success' : 'muted'} />
             <span className="font-medium">{c.name}</span>
             <span className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</span>
-            {c.infra && <Badge variant="secondary">{t('podmanpods.detail.infra')}</Badge>}
+            {c.infra && <Badge variant="outline">{t('podmanpods.detail.infra')}</Badge>}
             <span className="text-muted-foreground ms-auto">{c.state}</span>
           </Link>
         ))}
@@ -90,7 +90,11 @@ function Details({ pod }: { pod: PodmanPodDetail }) {
           <Row label={t('podmanpods.detail.shared')}>{pod.sharedNamespaces.join(', ') || '—'}</Row>
           <Row label={t('podmanpods.detail.networks')}>{pod.networks.join(', ') || '—'}</Row>
           <Row label={t('podmanpods.detail.hostname')}>{pod.hostname || '—'}</Row>
-          <Row label={t('podmanpods.detail.created')}>{formatRelative(createdSeconds(pod))}</Row>
+          <Row label={t('podmanpods.detail.created')}>
+            <span title={formatDateTime(createdSeconds(pod))}>
+              {formatRelative(createdSeconds(pod))}
+            </span>
+          </Row>
           <Row label={t('podmanpods.detail.labels')}>
             {labels.length === 0 ? (
               '—'
@@ -127,28 +131,26 @@ function PodDetailView({ hostId, id }: { hostId: string; id: string }) {
   const p = pod.data;
   return (
     <div className="grid gap-4">
-      <div>
-        <Button variant="ghost" size="sm" className="-ms-2 mb-2" onClick={back}>
-          <ArrowLeftIcon className="rtl:-scale-x-100" /> {t('podmanpods.title')}
-        </Button>
-        <PageHeader
-          title={
-            <span className="flex items-center gap-2">
-              <StatusDot tone={podTone(p.status)} />
-              {p.name}
-            </span>
-          }
-          description={t(podStatusLabel(p.status))}
-          actions={
-            <>
-              <Button onClick={() => setRunning(true)}>
-                <PlusIcon /> {t('podmanpods.detail.runContainer')}
-              </Button>
-              <PodActions hostId={hostId} pod={p} confirm={confirm} onRemoved={back} />
-            </>
-          }
-        />
-      </div>
+      <PageHeader
+        title={
+          <span className="flex items-center gap-2">
+            <Button variant="ghost" size="icon-sm" aria-label={t('common.back')} onClick={back}>
+              <ArrowLeftIcon className="rtl:-scale-x-100" />
+            </Button>
+            <StatusDot tone={podTone(p.status)} />
+            {p.name}
+          </span>
+        }
+        description={t(podStatusLabel(p.status))}
+        actions={
+          <>
+            <Button onClick={() => setRunning(true)}>
+              <PlusIcon /> {t('podmanpods.detail.runContainer')}
+            </Button>
+            <PodActions hostId={hostId} pod={p} confirm={confirm} onRemoved={back} />
+          </>
+        }
+      />
       <Containers pod={p} />
       <Details pod={p} />
       <RunContainerDialog
