@@ -1,98 +1,120 @@
 /*
- * Homeport's palette (docs/BRAND.md), shared by the marketing pages and the
- * Starlight docs. Starlight's `data-theme` attribute drives both, so the theme a
- * visitor picks follows them across the whole site.
+ * The website's palette, shared by the marketing pages and the Starlight docs.
+ * Starlight's `data-theme` attribute drives both, so the theme a visitor picks
+ * follows them across the whole site. docs/BRAND.md § Website explains it.
  *
- *   Ink     #141414  text, primary buttons, the board
- *   Paper   #f7f7f4  surfaces, text on dark
- *   Signal  #c8102e  one meaning only: this needs you (#ff5c5c on dark)
+ * The site is drawn as a line diagram: your machine is the terminus, each way
+ * of reaching an Engine is a line, each Engine a station.
  *
- * Nothing else is coloured. No gradients, no glows, no blur: flat surfaces,
- * hairline borders and small radii.
+ *   Ink      text, primary buttons, the socket line
+ *   Map      the ground: map white by day, the night map in dark
+ *   Lines    five colours, only ever on a line or its key, never on text or a surface
+ *   Signal   one meaning only: this needs you
+ *
+ * Flat surfaces, hairline rules, 2 px corners. No gradients, glows or blur.
  */
 
 :root {
-  --sl-font:
-    'Host Grotesk Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --sl-font-mono:
-    'Fragment Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+  --sl-font: 'Fira Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sl-font-mono: 'Fira Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-  --hp-ink: #141414;
-  --hp-paper: #f7f7f4;
-  --hp-radius: 0.25rem;
-  --hp-radius-lg: 0.375rem;
-  --hp-max: 72rem;
+  --hp-radius: 2px;
+  --hp-radius-lg: 3px;
+  --hp-max: 76rem;
+  --hp-gutter: 1.25rem;
+  /* A line's weight on the map, and on the rails that borrow it. */
+  --hp-line-weight: 6px;
+  --hp-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+@media (min-width: 48rem) {
+  :root {
+    --hp-gutter: 2rem;
+  }
 }
 
-/* Dark is Starlight's default theme (no attribute, or data-theme="dark"). */
+/* Dark is Starlight's default theme (no attribute, or data-theme="dark"): the night map. */
 :root,
 ::backdrop {
-  --sl-color-accent-low: #2a2a28;
-  --sl-color-accent: #bdbdb7;
-  --sl-color-accent-high: #f7f7f4;
-  --sl-color-white: #f7f7f4;
-  --sl-color-gray-1: #e6e6e0;
-  --sl-color-gray-2: #c8c8c2;
-  --sl-color-gray-3: #a6a6a0;
-  --sl-color-gray-4: #6e6e69;
-  --sl-color-gray-5: #3a3a37;
-  --sl-color-gray-6: #232322;
-  --sl-color-black: #141414;
+  --sl-color-accent-low: #1d2127;
+  --sl-color-accent: #b3b8bf;
+  --sl-color-accent-high: #eceef0;
+  --sl-color-white: #eceef0;
+  --sl-color-gray-1: #dfe2e6;
+  --sl-color-gray-2: #c3c8ce;
+  --sl-color-gray-3: #9aa0a8;
+  --sl-color-gray-4: #6b717a;
+  --sl-color-gray-5: #343940;
+  --sl-color-gray-6: #1d2127;
+  --sl-color-black: #0e1013;
 
-  --hp-bg: #141414;
-  --hp-bg-raised: #1a1a19;
-  --hp-surface: #1c1c1b;
-  --hp-border: rgb(247 247 244 / 0.1);
-  --hp-border-strong: rgb(247 247 244 / 0.2);
-  --hp-text: #f7f7f4;
-  --hp-text-muted: #bdbdb7;
-  --hp-text-faint: #a6a6a0;
-  --hp-primary: #f7f7f4;
+  --hp-bg: #0e1013;
+  --hp-bg-raised: #15181c;
+  --hp-surface: #181b20;
+  --hp-border: rgb(236 238 240 / 0.1);
+  --hp-border-strong: rgb(236 238 240 / 0.22);
+  --hp-text: #eceef0;
+  --hp-text-muted: #b3b8bf;
+  --hp-text-faint: #9aa0a8;
+  --hp-primary: #eceef0;
   --hp-primary-strong: #ffffff;
-  --hp-on-primary: #141414;
+  --hp-on-primary: #0e1013;
   --hp-signal: #ff5c5c;
-  --hp-board: #0f0f0f;
-  --hp-board-text: #f7f7f4;
-  --hp-board-muted: #a6a6a0;
-  --hp-board-rule: rgb(247 247 244 / 0.12);
-  --hp-board-signal: #ff5c5c;
-  --hp-board-edge: rgb(247 247 244 / 0.14);
-  --hp-code-bg: #1c1c1b;
+  --hp-code-bg: #15181c;
+  /* The ink band: the darkest surface, for the part of a page that holds keys. */
+  --hp-band: #07080a;
+  --hp-band-text: #eceef0;
+  --hp-band-muted: #a9aeb5;
+  --hp-band-rule: rgb(236 238 240 / 0.14);
+
+  /* The lines. */
+  --hp-line-socket: #eceef0;
+  --hp-line-ssh: #3fbf7f;
+  --hp-line-tls: #6f93ff;
+  --hp-line-tcp: #e0a043;
+  --hp-line-cluster: #33b9bf;
+  /* A station: a ring on the ground. */
+  --hp-station: #0e1013;
+  --hp-station-ring: #eceef0;
 }
 
 :root[data-theme='light'],
 [data-theme='light'] ::backdrop {
-  --sl-color-accent-low: #e6e6e0;
-  --sl-color-accent: #141414;
-  --sl-color-accent-high: #141414;
-  --sl-color-white: #141414;
-  --sl-color-gray-1: #232322;
-  --sl-color-gray-2: #3a3a37;
-  --sl-color-gray-3: #5c5c57;
-  --sl-color-gray-4: #8c8c86;
-  --sl-color-gray-5: #cacac2;
-  --sl-color-gray-6: #ebebe6;
-  --sl-color-gray-7: #f2f2ee;
-  --sl-color-black: #f7f7f4;
+  --sl-color-accent-low: #e6e8e4;
+  --sl-color-accent: #16181b;
+  --sl-color-accent-high: #16181b;
+  --sl-color-white: #16181b;
+  --sl-color-gray-1: #23262a;
+  --sl-color-gray-2: #3a3e44;
+  --sl-color-gray-3: #5e636b;
+  --sl-color-gray-4: #8b9098;
+  --sl-color-gray-5: #c9cbc7;
+  --sl-color-gray-6: #eceeea;
+  --sl-color-gray-7: #f4f5f2;
+  --sl-color-black: #fbfbf8;
 
-  --hp-bg: #f7f7f4;
-  --hp-bg-raised: #efefea;
+  --hp-bg: #fbfbf8;
+  --hp-bg-raised: #f1f2ef;
   --hp-surface: #ffffff;
-  --hp-border: #dadad3;
-  --hp-border-strong: #c2c2ba;
-  --hp-text: #141414;
-  --hp-text-muted: #4a4a46;
-  --hp-text-faint: #5c5c57;
-  --hp-primary: #141414;
+  --hp-border: #e0e1dd;
+  --hp-border-strong: #c4c6c2;
+  --hp-text: #16181b;
+  --hp-text-muted: #4b5058;
+  --hp-text-faint: #5e636b;
+  --hp-primary: #16181b;
   --hp-primary-strong: #000000;
-  --hp-on-primary: #f7f7f4;
+  --hp-on-primary: #fbfbf8;
   --hp-signal: #c8102e;
-  /* The board stays dark in both themes, like the real thing on a platform. */
-  --hp-board: #141414;
-  --hp-board-text: #f7f7f4;
-  --hp-board-muted: #a6a6a0;
-  --hp-board-rule: rgb(247 247 244 / 0.12);
-  --hp-board-signal: #ff5c5c;
-  --hp-board-edge: transparent;
-  --hp-code-bg: #efefea;
+  --hp-code-bg: #f1f2ef;
+  --hp-band: #16181b;
+  --hp-band-text: #eceef0;
+  --hp-band-muted: #a9aeb5;
+  --hp-band-rule: rgb(236 238 240 / 0.16);
+
+  --hp-line-socket: #16181b;
+  --hp-line-ssh: #0b7a4b;
+  --hp-line-tls: #1e4bb8;
+  --hp-line-tcp: #a8650a;
+  --hp-line-cluster: #0f7a80;
+  --hp-station: #ffffff;
+  --hp-station-ring: #16181b;
 }

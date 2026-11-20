@@ -21,7 +21,6 @@ export default {
   'download.note.linux': '.deb, .rpm et AppImage',
 
   // The hero.
-  'download.hero.eyebrow': 'Télécharger',
   'download.hero.title': 'Obtenir Homeport',
   'download.hero.release': 'Version {version}, publiée le {date}.',
   'download.hero.whatsNew': 'Nouveautés',
@@ -78,7 +77,7 @@ export default {
   // What to know around the install.
   'download.before.title': 'Avant d’installer',
   'download.before.body':
-    'Homeport gère des Docker Engines — il n’en inclut pas. Exécutez-le à côté de Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop ou Podman, ou pointez-le vers un serveur distant via SSH, TLS ou TCP.',
+    'Homeport n’inclut pas de moteur : il joint ceux que vous avez. Exécutez-le à côté de Docker Desktop, Colima, OrbStack, Rancher Desktop ou Podman, pointez-le vers un serveur via SSH, TLS ou TCP, ou vers un cluster depuis votre kubeconfig.',
   'download.before.keychain':
     '{keychain} (le trousseau de macOS, le Gestionnaire d’identification de Windows, ou un Secret Service comme GNOME Keyring) pour stocker les clés SSH, les certificats TLS, les environnements de stacks ainsi que les clés de déploiement et les jetons des dépôts.',
   'download.before.keychainName': 'Le trousseau du système',

@@ -29,7 +29,6 @@ const link = (url: string, text: string) => `<a href="${url}">${escapeHtml(text)
 
 <section class="download-hero">
   <div class="container">
-    <span class="eyebrow">{s['download.hero.eyebrow']}</span>
     <h1>{s['download.hero.title']}</h1>
     {release ? (
       <p class="lead">
@@ -76,32 +75,30 @@ const link = (url: string, text: string) => `<a href="${url}">${escapeHtml(text)
 
 <style>
   .download-hero {
-    padding: 4.5rem 0 2.5rem;
+    padding: 4rem 0 3rem;
   }
   .download-hero .container {
     display: grid;
-    gap: 0.85rem;
-    justify-items: center;
-    text-align: center;
+    gap: 1rem;
+    justify-items: start;
   }
   .download-hero h1 {
-    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+    font-size: clamp(2.6rem, 1.6rem + 4vw, 4.25rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
   }
   .lead {
     color: var(--hp-text-muted);
-    font-size: 1.15rem;
+    font-size: 1.2rem;
   }
   .recommend {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    color: var(--hp-text-muted);
-    font-size: 0.9rem;
+    gap: 0.5rem;
+    color: var(--hp-text);
+    font-size: 1rem;
   }
   .recommend[hidden] {
     display: none;
-  }
-  .recommend :global(svg) {
-    color: var(--hp-primary);
   }
 </style>

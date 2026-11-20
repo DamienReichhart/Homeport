@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Russian. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': 'Все Docker Engine на одной доске.',
+  'site.tagline': 'Одно приложение для любого движка контейнеров.',
   'site.description':
-    'Homeport — бесплатное настольное приложение с открытым исходным кодом для управления Docker Engine где угодно: на этом компьютере или на удалённых серверах по SSH, TLS или TCP. Для Windows, macOS и Linux.',
-  'site.ogImageAlt': 'Homeport — все Docker Engine на одной доске.',
+    'Homeport — бесплатное настольное приложение с открытым исходным кодом для Docker, Podman, containerd, Incus, Kubernetes и Nomad. Оно работает на вашем компьютере и подключается к серверам по SSH, TLS или через ваш kubeconfig, ничего на них не устанавливая. Для Windows, macOS и Linux.',
+  'site.ogImageAlt': 'Homeport — одно приложение для любого движка контейнеров.',
   'site.skipToContent': 'Перейти к содержимому',
 
   // The header, the language menu and the theme switch.
   'header.home': 'Главная страница Homeport',
   'header.logo': 'Homeport',
   'header.nav': 'Основное',
-  'header.features': 'Возможности',
+  'header.engines': 'Движки',
   'header.docs': 'Документация',
   'header.changelog': 'Изменения',
   'header.download': 'Скачать',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': 'Продукт',
-  'footer.features': 'Возможности',
+  'footer.engines': 'Движки',
   'footer.download': 'Скачать',
   'footer.changelog': 'Список изменений',
   'footer.releases': 'Все выпуски',

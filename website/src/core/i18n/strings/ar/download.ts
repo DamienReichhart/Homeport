@@ -21,7 +21,6 @@ export default {
   'download.note.linux': '.deb و.rpm وAppImage',
 
   // The hero.
-  'download.hero.eyebrow': 'التنزيل',
   'download.hero.title': 'احصل على Homeport',
   'download.hero.release': 'الإصدار {version}، صدر في {date}.',
   'download.hero.whatsNew': 'ما الجديد',
@@ -78,7 +77,7 @@ export default {
   // What to know around the install.
   'download.before.title': 'قبل التثبيت',
   'download.before.body':
-    'يدير Homeport محركات Docker — ولا يتضمن محركًا. شغّله بجانب Docker Engine أو Docker Desktop أو Colima أو OrbStack أو Rancher Desktop أو Podman، أو وجّهه إلى خادم بعيد عبر SSH أو TLS أو TCP.',
+    'لا يتضمن Homeport محركًا: بل يصل إلى المحركات الموجودة لديك. شغّله بجانب Docker Desktop أو Colima أو OrbStack أو Rancher Desktop أو Podman، أو وجّهه إلى خادم عبر SSH أو TLS أو TCP، أو إلى عنقود من ملف kubeconfig لديك.',
   'download.before.keychain':
     '{keychain} (سلسلة مفاتيح macOS، أو مدير بيانات الاعتماد في Windows، أو خدمة Secret Service مثل GNOME Keyring) لتخزين مفاتيح SSH وشهادات TLS وبيئات المكدسات ومفاتيح النشر والرموز الخاصة بالمستودعات.',
   'download.before.keychainName': 'سلسلة مفاتيح نظام التشغيل',

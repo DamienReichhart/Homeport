@@ -1,0 +1,159 @@
+---
+/**
+ * The map's key, written out: each line, what it reaches, and what it needs on
+ * the server, honestly. This is the position: Homeport stays on your machine
+ * and visits your servers.
+ */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { fillHtml } from '@/shared/lib/template';
+import { KEY_ORDER, type LineId, lineById, lineName } from '../../model/fleet';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+const needs: Record<LineId, string> = {
+  socket: s['home.lines.socket.needs'],
+  ssh: fillHtml(s['home.lines.ssh.needs'], { file: '<code>authorized_keys</code>' }),
+  tls: fillHtml(s['home.lines.tls.needs'], { port: '<code>2376</code>' }),
+  tcp: fillHtml(s['home.lines.tcp.needs'], { port: '<code>2375</code>' }),
+  cluster: s['home.lines.cluster.needs'],
+};
+const rows = KEY_ORDER.map((id) => ({
+  id,
+  name: lineName(id, s),
+  colour: lineById(id).colour,
+  reaches: s[`home.lines.${id}.reaches`],
+  needs: needs[id],
+}));
+---
+
+<section class="section section--ruled" id="lines">
+  <div class="container">
+    <div class="section-head">
+      <h2>{s['home.lines.title']}</h2>
+      <p>{s['home.lines.lead']}</p>
+    </div>
+
+    <table class="key-table">
+      <thead>
+        <tr>
+          <th scope="col">{s['home.lines.line']}</th>
+          <th scope="col">{s['home.lines.reaches']}</th>
+          <th scope="col">{s['home.lines.needs']}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row) => (
+          <tr>
+            <th scope="row">
+              <span class="line-key" style={`--line: var(${row.colour})`} aria-hidden="true" />
+              {row.name}
+            </th>
+            <td>{row.reaches}</td>
+            <td set:html={row.needs} />
+          </tr>
+        ))}
+      </tbody>
+    </table>
+
+    <div class="key-notes">
+      <p>{s['home.lines.advice']}</p>
+      <p set:html={fillHtml(s['home.lines.import'], { file: '<code>~/.ssh/config</code>' })} />
+      <a class="more-link" href={href(localePath('/docs/hosts/', locale))}>
+        {s['home.lines.link']}
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .key-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 1rem;
+  }
+  .key-table thead th {
+    padding: 0 1rem 0.85rem 0;
+    padding-inline: 0 1.5rem;
+    border-bottom: 2px solid var(--hp-text);
+    color: var(--hp-text-muted);
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: start;
+  }
+  .key-table tbody > tr > * {
+    padding: 1.25rem 1.5rem 1.25rem 0;
+    padding-inline: 0 1.5rem;
+    border-bottom: 1px solid var(--hp-border);
+    text-align: start;
+    vertical-align: top;
+  }
+  .key-table tbody th {
+    width: 14rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .key-table tbody th .line-key {
+    margin-inline-end: 0.85rem;
+    vertical-align: 0.2em;
+  }
+  .key-table td {
+    color: var(--hp-text-muted);
+  }
+  .key-table td:last-child {
+    color: var(--hp-text);
+  }
+  .key-table code {
+    font-size: 0.9em;
+  }
+
+  /* Narrow screens: each line becomes a block, its two facts under its name. */
+  @media (max-width: 48rem) {
+    .key-table thead {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+    }
+    .key-table,
+    .key-table tbody,
+    .key-table tr,
+    .key-table th,
+    .key-table td {
+      display: block;
+    }
+    .key-table tr {
+      padding-block: 1.25rem;
+      border-bottom: 1px solid var(--hp-border);
+    }
+    .key-table tbody > tr > * {
+      padding: 0;
+      border: 0;
+    }
+    .key-table tbody th {
+      width: auto;
+      margin-bottom: 0.5rem;
+    }
+    .key-table td + td {
+      margin-top: 0.4rem;
+    }
+  }
+
+  .key-notes {
+    display: grid;
+    gap: 0.75rem;
+    max-width: 44rem;
+    margin-top: 2.5rem;
+    color: var(--hp-text-muted);
+  }
+  .key-notes .more-link {
+    margin-top: 0.5rem;
+  }
+</style>

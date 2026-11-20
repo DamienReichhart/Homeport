@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Korean. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': '모든 Docker Engine을 하나의 보드에서.',
+  'site.tagline': '모든 컨테이너 엔진을 하나의 앱에서.',
   'site.description':
-    'Homeport는 어디에 있든 Docker Engine을 관리하는 무료 오픈 소스 데스크톱 앱입니다. 이 컴퓨터의 엔진은 물론, SSH, TLS 또는 TCP로 원격 엔진도 관리할 수 있으며 Windows, macOS, Linux를 지원합니다.',
-  'site.ogImageAlt': 'Homeport — 모든 Docker Engine을 하나의 보드에서.',
+    'Homeport는 Docker, Podman, containerd, Incus, Kubernetes, Nomad용 무료 오픈 소스 데스크톱 앱입니다. 사용자의 컴퓨터에서 실행되며 SSH, TLS 또는 kubeconfig로 서버에 연결하고, 서버에는 아무것도 설치하지 않습니다. Windows, macOS, Linux용입니다.',
+  'site.ogImageAlt': 'Homeport — 모든 컨테이너 엔진을 하나의 앱에서.',
   'site.skipToContent': '본문으로 건너뛰기',
 
   // The header, the language menu and the theme switch.
   'header.home': 'Homeport 홈',
   'header.logo': 'Homeport',
   'header.nav': '기본',
-  'header.features': '기능',
+  'header.engines': '엔진',
   'header.docs': '문서',
   'header.changelog': '변경 내역',
   'header.download': '다운로드',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': '제품',
-  'footer.features': '기능',
+  'footer.engines': '엔진',
   'footer.download': '다운로드',
   'footer.changelog': '변경 내역',
   'footer.releases': '모든 릴리스',

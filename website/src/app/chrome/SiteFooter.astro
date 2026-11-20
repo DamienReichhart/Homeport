@@ -26,7 +26,7 @@ const columns = [
   {
     title: s['footer.product'],
     links: [
-      { label: s['footer.features'], url: url('/#features') },
+      { label: s['footer.engines'], url: url('/#engines') },
       { label: s['footer.download'], url: url('/download/') },
       { label: s['footer.changelog'], url: url('/changelog/') },
       { label: s['footer.releases'], url: RELEASES_URL },
@@ -67,12 +67,14 @@ const licence = fillHtml(s['footer.licence'], {
 ---
 
 <footer class="site-footer">
+  <div class="site-footer__line" aria-hidden="true">
+    <span></span>
+  </div>
   <div class="site-footer__inner">
     <div class="site-footer__brand">
-      <img src={mark.src} alt="" width="36" height="36" />
+      <img src={mark.src} alt="" width="40" height="40" />
       <p>
         <strong>Homeport</strong>
-        <br />
         {s['site.tagline']}
       </p>
     </div>

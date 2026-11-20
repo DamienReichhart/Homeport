@@ -2,8 +2,8 @@
  * Generates the site's raster brand images into public/:
  *
  *   og.png                 1200×630 social card (rendered by headless Firefox, so it
- *                          uses Host Grotesk and Fragment Mono): the headline and a
- *                          departure board of Hosts, as on the home page
+ *                          uses Fira Sans): the headline and a small line map of
+ *                          Hosts, as on the home page
  *   apple-touch-icon.png   180×180, and icon-192.png / icon-512.png for the manifest
  *
  *   bun scripts/brand-images.ts        (from website/)
@@ -36,50 +36,78 @@ async function icons() {
   console.log('✓ favicon.svg');
 }
 
-const BOARD = [
-  ['laptop', 'socket', 'All running', false],
-  ['homelab', 'ssh', 'All running', false],
-  ['vps-fra-1', 'tls', '1 Stack needs you', true],
-  ['client-prod', 'ssh', 'All running', false],
+/*
+ * The card is the home page's line map, small: this machine at the terminus,
+ * four lines out to their stations, and one red station where something needs you.
+ */
+const LINES = [
+  {
+    colour: '#0b7a4b',
+    d: 'M640 300 H780 L880 200 H1128',
+    stations: [
+      [960, 200, 'prod-eu-1'],
+      [1128, 200, 'nas'],
+    ],
+  },
+  {
+    colour: '#1e4bb8',
+    d: 'M640 318 H800 L842 276 H1128',
+    stations: [
+      [960, 276, 'staging'],
+      [1128, 276, 'vps-fra-1', true],
+    ],
+  },
+  { colour: '#a8650a', d: 'M640 336 H1040', stations: [[1040, 336, 'lan-box']] },
+  {
+    colour: '#0f7a80',
+    d: 'M640 354 H780 L850 424 H1128',
+    stations: [
+      [960, 424, 'k8s-prod'],
+      [1128, 424, 'jobs'],
+    ],
+  },
 ] as const;
+
+const MAP = LINES.map(
+  (line) =>
+    `<path d="${line.d}" fill="none" stroke="${line.colour}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>` +
+    line.stations
+      .map(([x, y, name, signal]) => {
+        const above = y < 330;
+        return (
+          `<circle cx="${x}" cy="${y}" r="${signal ? 12 : 10}" fill="${signal ? '#c8102e' : '#fff'}" stroke="${signal ? '#c8102e' : '#16181b'}" stroke-width="4.5"/>` +
+          `<text x="${x}" y="${above ? y - 22 : y + 38}" text-anchor="${x > 1100 ? 'end' : 'middle'}" class="${signal ? 'signal' : ''}">${name}</text>`
+        );
+      })
+      .join(''),
+).join('');
 
 const CARD = /* html */ `<!doctype html>
 <html>
 <head>
 <meta charset="utf-8" />
 <style>
-  @font-face { font-family: 'Host Grotesk'; src: url(host-grotesk.woff2) format('woff2'); font-weight: 300 800; }
-  @font-face { font-family: 'Fragment Mono'; src: url(fragment-mono.woff2) format('woff2'); }
+  @font-face { font-family: 'Fira Sans'; src: url(fira-sans-400.woff2) format('woff2'); font-weight: 400; }
+  @font-face { font-family: 'Fira Sans'; src: url(fira-sans-600.woff2) format('woff2'); font-weight: 600; }
   * { margin: 0; box-sizing: border-box; }
   html, body { width: 1200px; height: 630px; overflow: hidden; }
-  body { position: relative; font-family: 'Host Grotesk', sans-serif; color: #141414; background: #f7f7f4; }
+  body { position: relative; font-family: 'Fira Sans', sans-serif; color: #16181b; background: #fbfbf8; }
   .lockup { position: absolute; left: 72px; top: 72px; height: 34px; }
-  h1 { position: absolute; left: 72px; top: 168px; width: 520px; font-size: 68px; font-weight: 700; line-height: 1; letter-spacing: -0.035em; }
-  p { position: absolute; left: 72px; top: 410px; width: 480px; font-size: 24px; line-height: 1.35; color: #4a4a46; }
-  .meta { position: absolute; left: 72px; bottom: 64px; font-family: 'Fragment Mono', monospace; font-size: 17px; color: #5c5c57; letter-spacing: 0.02em; }
-  table { position: absolute; left: 640px; top: 150px; width: 488px; border-collapse: collapse; background: #141414; color: #f7f7f4; border-radius: 6px; overflow: hidden; font-size: 22px; }
-  th, td { padding: 22px 24px; border-bottom: 1px solid rgb(247 247 244 / 0.12); text-align: left; white-space: nowrap; }
-  tr:last-child td { border-bottom: 0; }
-  th { padding-block: 16px; font-family: 'Fragment Mono', monospace; font-weight: 400; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: #a6a6a0; }
-  td.host { font-weight: 600; }
-  td.via { font-family: 'Fragment Mono', monospace; font-size: 18px; color: #a6a6a0; }
-  td.status span { display: inline-flex; align-items: center; gap: 12px; }
-  td.status i { width: 11px; height: 11px; border-radius: 50%; background: currentColor; }
-  tr.signal td.status { color: #ff5c5c; }
+  h1 { position: absolute; left: 72px; top: 168px; width: 520px; font-size: 70px; font-weight: 600; line-height: 1; letter-spacing: -0.03em; }
+  p { position: absolute; left: 72px; top: 418px; width: 470px; font-size: 25px; line-height: 1.35; color: #4b5058; }
+  svg { position: absolute; inset: 0; }
+  text { font-family: 'Fira Sans', sans-serif; font-size: 20px; font-weight: 600; fill: #16181b; }
+  text.signal { fill: #c8102e; }
 </style>
 </head>
 <body>
   <img class="lockup" src="lockup-light.svg" alt="" />
-  <h1>Every Docker Engine, on one board.</h1>
-  <p>Your local and remote Engines over SSH, TLS or TCP. No agent on the server.</p>
-  <div class="meta">Free · Open source · Windows · macOS · Linux</div>
-  <table>
-    <tr><th>Host</th><th>Via</th><th>Status</th></tr>
-    ${BOARD.map(
-      ([host, via, status, signal]) =>
-        `<tr class="${signal ? 'signal' : ''}"><td class="host">${host}</td><td class="via">${via}</td><td class="status"><span><i></i>${status}</span></td></tr>`,
-    ).join('')}
-  </table>
+  <h1>One app for every container Engine.</h1>
+  <p>Runs on your machine. Installs nothing on your servers.</p>
+  <svg width="1200" height="630" viewBox="0 0 1200 630">
+    <rect x="612" y="288" width="30" height="78" rx="3" fill="#16181b"/>
+    ${MAP}
+  </svg>
 </body>
 </html>`;
 
@@ -93,14 +121,12 @@ async function socialCard() {
   const work = workDir();
   try {
     const fonts = join(SITE, 'node_modules/@fontsource');
-    copyFileSync(
-      join(fonts + '-variable', 'host-grotesk/files/host-grotesk-latin-wght-normal.woff2'),
-      join(work, 'host-grotesk.woff2'),
-    );
-    copyFileSync(
-      join(fonts, 'fragment-mono/files/fragment-mono-latin-400-normal.woff2'),
-      join(work, 'fragment-mono.woff2'),
-    );
+    for (const weight of [400, 600]) {
+      copyFileSync(
+        join(fonts, `fira-sans/files/fira-sans-latin-${weight}-normal.woff2`),
+        join(work, `fira-sans-${weight}.woff2`),
+      );
+    }
     copyFileSync(join(REPO, 'assets/brand/lockup-light.svg'), join(work, 'lockup-light.svg'));
     writeFileSync(join(work, 'card.html'), CARD);
     const profile = join(work, 'profile');

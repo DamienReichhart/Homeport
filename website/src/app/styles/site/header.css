@@ -1,4 +1,7 @@
-/* The site header (app/chrome/SiteHeader.astro). */
+/*
+ * The site header (app/chrome/SiteHeader.astro): the lockup, the pages, and the
+ * one action. A hairline under it, like the rule under a map's title strip.
+ */
 
 .site-header {
   position: sticky;
@@ -10,16 +13,15 @@
 .site-header__inner {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 2.5rem;
   max-width: var(--hp-max);
   height: 4rem;
   margin-inline: auto;
-  padding-inline: 1.25rem;
+  padding-inline: var(--hp-gutter);
 }
-@media (min-width: 48rem) {
-  .site-header__inner {
-    padding-inline: 2rem;
-  }
+.site-header__brand {
+  display: block;
+  flex: none;
 }
 .site-header__brand img {
   height: 1.375rem;
@@ -27,26 +29,36 @@
 }
 .site-header__nav {
   display: none;
-  gap: 1.75rem;
-  font-size: 0.925rem;
-  font-weight: 500;
+  align-self: stretch;
+  gap: 2rem;
+  font-size: 0.975rem;
 }
 .site-header__nav a {
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid transparent;
+  padding-top: 3px;
   color: var(--hp-text-muted);
   text-decoration: none;
+  transition:
+    color 150ms ease,
+    border-color 150ms ease;
 }
-.site-header__nav a:hover,
+.site-header__nav a:hover {
+  color: var(--hp-text);
+}
 .site-header__nav a[aria-current='page'] {
+  border-color: var(--hp-text);
   color: var(--hp-text);
 }
 .site-header__actions {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.25rem;
   margin-inline-start: auto;
 }
 .site-header__actions .button {
-  margin-inline-start: 0.5rem;
+  margin-inline-start: 0.75rem;
 }
 .site-header__menu {
   position: relative;
@@ -54,16 +66,19 @@
 .site-header__sheet {
   position: absolute;
   inset-inline-end: 0;
-  top: calc(100% + 0.6rem);
+  top: calc(100% + 0.75rem);
   display: grid;
-  min-width: 12rem;
-  padding: 0.5rem;
+  min-width: 13rem;
+  padding: 0.4rem;
   border: 1px solid var(--hp-border-strong);
   border-radius: var(--hp-radius);
   background: var(--hp-surface);
 }
 .site-header__sheet a {
-  padding: 0.6rem 0.75rem;
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  padding: 0 0.85rem;
   border-radius: var(--hp-radius);
   color: var(--hp-text);
   text-decoration: none;
@@ -72,11 +87,12 @@
   background: var(--hp-bg-raised);
 }
 @media (max-width: 30rem) {
-  .site-header__actions > .button {
+  .site-header__actions > .button,
+  .site-header__actions > .site-header__github {
     display: none;
   }
 }
-@media (min-width: 52rem) {
+@media (min-width: 54rem) {
   .site-header__nav {
     display: flex;
   }

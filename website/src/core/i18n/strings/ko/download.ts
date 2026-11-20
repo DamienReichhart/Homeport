@@ -21,7 +21,6 @@ export default {
   'download.note.linux': '.deb, .rpm, AppImage',
 
   // The hero.
-  'download.hero.eyebrow': '다운로드',
   'download.hero.title': 'Homeport 받기',
   'download.hero.release': '버전 {version}, {date} 출시.',
   'download.hero.whatsNew': '새로운 내용',
@@ -78,7 +77,7 @@ export default {
   // What to know around the install.
   'download.before.title': '설치하기 전에',
   'download.before.body':
-    'Homeport는 Docker Engine을 관리하지만 Docker Engine을 포함하지는 않습니다. Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop 또는 Podman과 함께 실행하거나, SSH, TLS 또는 TCP로 원격 서버에 연결하세요.',
+    'Homeport에는 엔진이 포함되어 있지 않으며, 이미 있는 엔진에 연결합니다. Docker Desktop, Colima, OrbStack, Rancher Desktop 또는 Podman과 함께 실행하거나, SSH, TLS 또는 TCP로 서버에, 또는 kubeconfig의 클러스터에 연결하세요.',
   'download.before.keychain':
     'SSH 키, TLS 인증서, 스택 환경, 저장소의 배포 키와 토큰을 저장할 {keychain}(macOS 키체인, Windows 자격 증명 관리자 또는 GNOME Keyring 같은 Secret Service)',
   'download.before.keychainName': 'OS 키체인',

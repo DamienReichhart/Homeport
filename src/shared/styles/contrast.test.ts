@@ -104,17 +104,30 @@ const APP_PAIRS: Pair[] = [
 const SITE_PAIRS: Pair[] = [
   ['hp-text', 'hp-bg', TEXT],
   ['hp-text', 'hp-surface', TEXT],
+  ['hp-text', 'hp-bg-raised', TEXT],
   ['hp-text-muted', 'hp-bg', TEXT],
   ['hp-text-muted', 'hp-surface', TEXT],
+  ['hp-text-muted', 'hp-bg-raised', TEXT],
   ['hp-text-faint', 'hp-bg', TEXT],
   ['hp-text-faint', 'hp-surface', TEXT],
   ['hp-text-faint', 'hp-bg-raised', TEXT],
   ['hp-text', 'hp-code-bg', TEXT],
   ['hp-on-primary', 'hp-primary', TEXT],
   ['hp-signal', 'hp-bg', TEXT],
-  ['hp-board-text', 'hp-board', TEXT],
-  ['hp-board-muted', 'hp-board', TEXT],
-  ['hp-board-signal', 'hp-board', TEXT],
+  ['hp-signal', 'hp-surface', TEXT],
+  ['hp-band-text', 'hp-band', TEXT],
+  ['hp-band-muted', 'hp-band', TEXT],
+  // The lines of the map and their key, and a station's ring: graphics that must be seen.
+  ['hp-line-socket', 'hp-bg', UI],
+  ['hp-line-ssh', 'hp-bg', UI],
+  ['hp-line-tls', 'hp-bg', UI],
+  ['hp-line-tcp', 'hp-bg', UI],
+  ['hp-line-cluster', 'hp-bg', UI],
+  ['hp-line-ssh', 'hp-surface', UI],
+  ['hp-line-tls', 'hp-surface', UI],
+  ['hp-line-tcp', 'hp-surface', UI],
+  ['hp-line-cluster', 'hp-surface', UI],
+  ['hp-station-ring', 'hp-station', UI],
   // --hp-border-strong outlines buttons and panels whose text already
   // identifies them, so 1.4.11 doesn't ask it for 3:1.
 ];

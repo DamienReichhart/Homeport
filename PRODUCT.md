@@ -33,7 +33,7 @@ Used alongside a terminal and an editor, often at odd hours when something broke
 
 ## Brand Commitments
 
-`docs/BRAND.md` is binding: Ink, Paper and one Signal red that only means "this needs you"; healthy gets no loud colour; flat surfaces, hairline borders, 4 px radius, no gradients, glows or depth shadows; Host Grotesk for the interface and Fragment Mono for machine text; the mark and lockup as drawn. Voice: plain, specific, calm, British spelling, no exclamation marks, named by the glossary. Status marks may be made easier to tell apart at a glance, including the muted green for `--success` that `BRAND.md` already allows.
+`docs/BRAND.md` is binding (the website draws its own line-map world inside it, § Website and ADR 0022): Ink, Paper and one Signal red that only means "this needs you"; healthy gets no loud colour; flat surfaces, hairline borders, 4 px radius, no gradients, glows or depth shadows; Host Grotesk for the interface and Fragment Mono for machine text; the mark and lockup as drawn. Voice: plain, specific, calm, British spelling, no exclamation marks, named by the glossary. Status marks may be made easier to tell apart at a glance, including the muted green for `--success` that `BRAND.md` already allows.
 
 ## Evidence on Hand
 

@@ -25,15 +25,15 @@ const later: Record<string, StringKey> = {
 <section class="more">
   <h2>{s['download.other.title']}</h2>
   <div class="more__grid">
-    <a class="card more__item" href={RELEASES_URL}>
+    <a class="more__item" href={RELEASES_URL}>
       <strong>{s['download.other.previous.title']}</strong>
       <span>{s['download.other.previous.body']}</span>
     </a>
-    <a class="card more__item" href={href(localePath('/docs/project/building/', locale))}>
+    <a class="more__item" href={href(localePath('/docs/project/building/', locale))}>
       <strong>{s['download.other.build.title']}</strong>
       <span>{s['download.other.build.body']}</span>
     </a>
-    <a class="card more__item" href={REPO_URL}>
+    <a class="more__item" href={REPO_URL}>
       <strong>{s['download.other.source.title']}</strong>
       <span>{s['download.other.source.body']}</span>
     </a>
@@ -51,51 +51,65 @@ const later: Record<string, StringKey> = {
 
 <style>
   .more {
-    margin-top: 4rem;
-  }
-  .more__later {
-    margin: 2rem 0 0.75rem;
-    font-size: 1.05rem;
-  }
-  .later {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 1.5rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-  .later li {
-    display: grid;
-    gap: 0.1rem;
-    font-size: 0.9rem;
-  }
-  .later span {
-    color: var(--hp-text-muted);
-    font-size: 0.8rem;
+    margin-top: 5rem;
   }
   .more h2 {
     margin-bottom: 1.25rem;
-    font-size: 1.35rem;
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
   }
   .more__grid {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+    border-top: 2px solid var(--hp-text);
+  }
+  @media (min-width: 52rem) {
+    .more__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      column-gap: 2rem;
+    }
   }
   .more__item {
     display: grid;
     gap: 0.25rem;
-    padding: 1.25rem 1.5rem;
+    padding-block: 1.25rem;
+    border-bottom: 1px solid var(--hp-border);
     color: var(--hp-text);
     text-decoration: none;
   }
-  .more__item:hover {
-    border-color: var(--hp-primary);
-    color: var(--hp-text);
+  .more__item strong {
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--hp-border-strong);
+    text-underline-offset: 0.22em;
+  }
+  .more__item:hover strong {
+    text-decoration-color: currentColor;
   }
   .more__item span {
     color: var(--hp-text-muted);
-    font-size: 0.9rem;
+  }
+  .more__later {
+    margin: 2.5rem 0 1rem;
+    font-size: 1.15rem;
+  }
+  .later {
+    display: grid;
+    gap: 0.75rem 2rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 40rem) {
+    .later {
+      grid-template-columns: repeat(auto-fill, minmax(14rem, 1fr));
+    }
+  }
+  .later li {
+    display: grid;
+    gap: 0.1rem;
+  }
+  .later span {
+    color: var(--hp-text-muted);
+    font-size: 0.925rem;
   }
 </style>

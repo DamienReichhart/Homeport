@@ -1,4 +1,4 @@
-/* The app's window: screenshots sit in a plain hairline frame. */
+/* The app's window: a screenshot sits in a hairline frame on the raised ground. */
 .window {
   position: relative;
   overflow: hidden;

@@ -1,10 +1,10 @@
 /* Running text (.prose) and copyable commands (.code-block). */
 
 .prose {
-  max-width: 46rem;
+  max-width: 44rem;
 }
 .prose h2 {
-  margin: 2.5rem 0 0.75rem;
+  margin: 2.75rem 0 0.75rem;
   font-size: 1.5rem;
 }
 .prose h3 {
@@ -20,9 +20,16 @@
 .prose li + li {
   margin-top: 0.3rem;
 }
+.prose li::marker {
+  color: var(--hp-text-faint);
+}
+.prose strong {
+  color: var(--hp-text);
+  font-weight: 600;
+}
 .prose code {
   padding: 0.1rem 0.35rem;
-  border-radius: 2px;
+  border-radius: var(--hp-radius);
   background: var(--hp-code-bg);
   color: var(--hp-text);
 }
@@ -34,7 +41,7 @@
   position: relative;
   overflow-x: auto;
   margin: 0;
-  padding: 1rem 1.15rem;
+  padding: 0.95rem 1.1rem;
   border: 1px solid var(--hp-border);
   border-radius: var(--hp-radius);
   background: var(--hp-code-bg);

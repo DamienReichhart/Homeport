@@ -1,10 +1,9 @@
 ---
-/** How Homeport keeps the credentials it holds. */
+/** How Homeport keeps the credentials it holds: an ink band, three plain statements. */
 import { strings } from '@/core/i18n';
 import { type Locale, localePath } from '@/core/site';
 import { href } from '@/shared/lib/href';
 import { fillHtml } from '@/shared/lib/template';
-import { Icon, TextLink } from '@/shared/ui';
 
 interface Props {
   locale: Locale;
@@ -12,69 +11,103 @@ interface Props {
 
 const { locale } = Astro.props;
 const s = strings(locale);
+const points = [
+  { title: s['home.security.rest.title'], body: s['home.security.rest.body'] },
+  {
+    title: s['home.security.disk.title'],
+    body: fillHtml(s['home.security.disk.body'], { dir: '<code>~/.ssh</code>' }),
+  },
+  { title: s['home.security.home.title'], body: s['home.security.home.body'] },
+];
 ---
 
-<section class="section">
-  <div class="container">
-    <div class="section-heading section-heading--center" data-reveal>
-      <span class="eyebrow">{s['home.security.eyebrow']}</span>
+<section class="band" id="security">
+  <div class="container band__inner">
+    <div class="band__head">
       <h2>{s['home.security.title']}</h2>
       <p>{s['home.security.lead']}</p>
-    </div>
-    <div class="security-grid">
-      <article class="card security" data-reveal>
-        <Icon name="lock" />
-        <h3>{s['home.security.rest.title']}</h3>
-        <p>{s['home.security.rest.body']}</p>
-      </article>
-      <article class="card security" data-reveal>
-        <Icon name="key" />
-        <h3>{s['home.security.disk.title']}</h3>
-        <p set:html={fillHtml(s['home.security.disk.body'], { dir: '<code>~/.ssh</code>' })} />
-      </article>
-      <article class="card security" data-reveal>
-        <Icon name="shield" />
-        <h3>{s['home.security.home.title']}</h3>
-        <p>{s['home.security.home.body']}</p>
-      </article>
-    </div>
-    <p class="center-link">
-      <TextLink href={href(localePath('/docs/reference/security/', locale))}>
+      <a class="more-link" href={href(localePath('/docs/reference/security/', locale))}>
         {s['home.security.link']}
-      </TextLink>
-    </p>
+      </a>
+    </div>
+    <dl class="band__points">
+      {points.map((point) => (
+        <div>
+          <dt>{point.title}</dt>
+          <dd set:html={point.body} />
+        </div>
+      ))}
+    </dl>
   </div>
 </section>
 
 <style>
-  .center-link {
-    margin-top: 2rem;
-    text-align: center;
+  .band {
+    padding-block: 5.5rem;
+    background: var(--hp-band);
+    color: var(--hp-band-text);
   }
-  .center-link :global(.text-link) {
-    margin-inline: auto;
+  @media (min-width: 64rem) {
+    .band {
+      padding-block: 7rem;
+    }
   }
-  .security-grid {
+  .band__inner {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+    gap: 3rem;
   }
-  .security {
+  @media (min-width: 64rem) {
+    .band__inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 4rem;
+    }
+  }
+  .band__head {
     display: grid;
-    gap: 0.75rem;
     align-content: start;
-    padding: 1.75rem;
+    gap: 1rem;
   }
-  .security > :global(svg) {
-    color: var(--hp-text);
+  .band h2 {
+    font-size: clamp(2rem, 1.35rem + 2.4vw, 3.25rem);
+    letter-spacing: -0.025em;
+    line-height: 1.04;
   }
-  .security h3 {
+  .band__head p {
+    color: var(--hp-band-muted);
     font-size: 1.15rem;
   }
-  .security p {
-    color: var(--hp-text-muted);
+  .band .more-link {
+    margin-top: 0.5rem;
+    color: var(--hp-band-text);
+    text-decoration-color: var(--hp-band-muted);
   }
-  .security code {
-    font-size: 0.85em;
+  .band .more-link:focus-visible {
+    outline-color: var(--hp-band-text);
+  }
+  .band__points {
+    display: grid;
+    margin: 0;
+  }
+  .band__points div {
+    display: grid;
+    gap: 0.4rem;
+    padding-block: 1.4rem;
+    border-top: 1px solid var(--hp-band-rule);
+  }
+  @media (min-width: 40rem) {
+    .band__points div {
+      grid-template-columns: 12rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+  .band__points dt {
+    font-weight: 600;
+  }
+  .band__points dd {
+    margin: 0;
+    color: var(--hp-band-muted);
+  }
+  .band__points :global(code) {
+    color: var(--hp-band-text);
   }
 </style>

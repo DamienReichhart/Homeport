@@ -70,6 +70,9 @@ const current = Astro.url.pathname;
     gap: 1rem;
     align-items: center;
   }
+  .right-group {
+    align-self: stretch;
+  }
   .social-icons::after {
     content: '';
     height: 2rem;
@@ -78,17 +81,27 @@ const current = Astro.url.pathname;
 
   .site-nav {
     display: flex;
-    gap: 1.25rem;
-    font-size: var(--sl-text-sm);
-    font-weight: 500;
+    align-self: stretch;
+    gap: 1.5rem;
+    font-size: 0.975rem;
   }
   .site-nav a {
-    color: var(--sl-color-gray-2);
+    display: flex;
+    align-items: center;
+    padding-top: 3px;
+    border-bottom: 3px solid transparent;
+    color: var(--hp-text-muted);
     text-decoration: none;
+    transition:
+      color 150ms ease,
+      border-color 150ms ease;
   }
-  .site-nav a:hover,
+  .site-nav a:hover {
+    color: var(--hp-text);
+  }
   .site-nav a[aria-current='page'] {
-    color: var(--sl-color-white);
+    border-color: var(--hp-text);
+    color: var(--hp-text);
   }
 
   @media (min-width: 50rem) {

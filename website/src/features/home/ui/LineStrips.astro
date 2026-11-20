@@ -1,0 +1,133 @@
+---
+/**
+ * The line map for narrow screens: this machine, then each line as a coloured
+ * rail with its stations under it. LineMap.astro shows it under 64rem.
+ */
+import { strings } from '@/core/i18n';
+import type { Locale } from '@/core/site';
+import { KEY_ORDER, lineById, lineName } from '../model/fleet';
+
+interface Props {
+  locale: Locale;
+}
+
+const s = strings(Astro.props.locale);
+---
+
+<ol class="line-map__strips" aria-label={s['home.map.label']}>
+  <li class="line-map__home">
+    <span class="line-map__home-mark" aria-hidden="true"></span>
+    {s['home.map.thisMachine']}
+  </li>
+  {KEY_ORDER.map((id) => {
+    const line = lineById(id);
+    return (
+      <li class="strip" style={`--line: var(${line.colour})`}>
+        <span class="strip__name">{lineName(id, s)}</span>
+        <ol>
+          {line.stations.map((station) => (
+            <li class:list={[station.signal && 'is-signal']}>
+              <span
+                class:list={['station', station.signal && 'station--signal']}
+                aria-hidden="true"
+              />
+              <span class="strip__host">{station.host}</span>
+              <span class="strip__engine">{station.engine}</span>
+              {station.signal && <span class="strip__signal">{s['home.map.needsYou']}</span>}
+            </li>
+          ))}
+        </ol>
+      </li>
+    );
+  })}
+</ol>
+
+<style>
+  /* The strips, under 64rem: each line a coloured rail with its stations. */
+  .line-map__strips {
+    display: grid;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @media (min-width: 40rem) {
+    .line-map__strips {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: 2rem;
+    }
+  }
+  .line-map__home {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+  }
+  @media (min-width: 40rem) {
+    .line-map__home {
+      grid-column: 1 / -1;
+    }
+  }
+  .line-map__home-mark {
+    width: 2.25rem;
+    height: 1.1rem;
+    border-radius: 2px;
+    background: var(--hp-line-socket);
+  }
+  .strip {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .strip__name {
+    color: var(--hp-text-muted);
+    font-size: 0.95rem;
+  }
+  .strip ol {
+    position: relative;
+    display: grid;
+    gap: 0.9rem;
+    margin: 0;
+    padding: 0;
+    padding-inline-start: 2rem;
+    list-style: none;
+  }
+  /* The rail runs through the centre of every station. */
+  .strip ol::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(0.475rem - 3px);
+    top: 0.4rem;
+    bottom: 0.4rem;
+    width: 6px;
+    border-radius: 1px;
+    background: var(--line);
+  }
+  .strip li {
+    position: relative;
+    display: grid;
+    line-height: 1.35;
+  }
+  .strip .station {
+    position: absolute;
+    inset-inline-start: -2rem;
+    top: 0.2rem;
+  }
+  .strip__host {
+    font-weight: 600;
+  }
+  .strip__engine {
+    color: var(--hp-text-muted);
+    font-size: 0.95rem;
+  }
+  .strip__signal {
+    color: var(--hp-signal);
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+
+  @media (min-width: 64rem) {
+    .line-map__strips {
+      display: none;
+    }
+  }
+</style>

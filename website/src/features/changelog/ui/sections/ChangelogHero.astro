@@ -16,7 +16,6 @@ const downloadPage = `<a href="${href(localePath('/download/', locale))}">${esca
 
 <section class="changelog-hero">
   <div class="container">
-    <span class="eyebrow">{s['changelog.eyebrow']}</span>
     <h1>{s['changelog.heading']}</h1>
     <p set:html={fillHtml(s['changelog.lead'], { link: downloadPage })} />
     {locale !== ROOT_LOCALE && <p class="changelog-hero__note">{s['changelog.notesInEnglish']}</p>}
@@ -25,22 +24,24 @@ const downloadPage = `<a href="${href(localePath('/download/', locale))}">${esca
 
 <style>
   .changelog-hero {
-    padding: 4.5rem 0 3rem;
+    padding: 4rem 0 3.5rem;
   }
   .changelog-hero .container {
     display: grid;
-    gap: 0.85rem;
-    max-width: 52rem;
+    gap: 1rem;
   }
   .changelog-hero h1 {
-    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.5rem);
+    font-size: clamp(2.6rem, 1.6rem + 4vw, 4.25rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
   }
   .changelog-hero p {
+    max-width: 40rem;
     color: var(--hp-text-muted);
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
   .changelog-hero .changelog-hero__note {
     color: var(--hp-text-faint);
-    font-size: 0.9rem;
+    font-size: 1rem;
   }
 </style>

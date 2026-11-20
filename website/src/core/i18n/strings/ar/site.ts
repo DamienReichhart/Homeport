@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Arabic. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': 'كل محركات Docker، على لوحة واحدة.',
+  'site.tagline': 'تطبيق واحد لكل محركات الحاويات.',
   'site.description':
-    'Homeport تطبيق سطح مكتب مجاني ومفتوح المصدر لإدارة محركات Docker أينما كانت — محرك هذا الجهاز، أو المحركات البعيدة عبر SSH أو TLS أو TCP — لأنظمة Windows وmacOS وLinux.',
-  'site.ogImageAlt': 'Homeport — كل محركات Docker، على لوحة واحدة.',
+    'Homeport تطبيق سطح مكتب مجاني ومفتوح المصدر لـ Docker وPodman وcontainerd وIncus وKubernetes وNomad. يعمل على جهازك ويصل إلى خوادمك عبر SSH أو TLS أو ملف kubeconfig لديك، دون تثبيت أي شيء عليها. لأنظمة Windows وmacOS وLinux.',
+  'site.ogImageAlt': 'Homeport — تطبيق واحد لكل محركات الحاويات.',
   'site.skipToContent': 'الانتقال إلى المحتوى',
 
   // The header, the language menu and the theme switch.
   'header.home': 'الصفحة الرئيسية لـ Homeport',
   'header.logo': 'Homeport',
   'header.nav': 'التنقل الرئيسي',
-  'header.features': 'الميزات',
+  'header.engines': 'المحركات',
   'header.docs': 'التوثيق',
   'header.changelog': 'سجل التغييرات',
   'header.download': 'التنزيل',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': 'المنتج',
-  'footer.features': 'الميزات',
+  'footer.engines': 'المحركات',
   'footer.download': 'التنزيل',
   'footer.changelog': 'سجل التغييرات',
   'footer.releases': 'كل الإصدارات',

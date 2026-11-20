@@ -32,9 +32,8 @@ const archLabel = (os: Os, arch: Arch) =>
           <strong>
             {label(format)} <code>{FORMATS[format].ext}</code>
           </strong>
-          <span>
-            {s[`download.format.${format}.hint`]} · {formatSize(files[0]!.size, locale.lang)}
-          </span>
+          <span>{s[`download.format.${format}.hint`]}</span>
+          <span class="files__size">{formatSize(files[0]!.size, locale.lang)}</span>
         </div>
         <div class="files__buttons">
           {files.map((file) => (
@@ -76,25 +75,28 @@ const archLabel = (os: Os, arch: Arch) =>
 )}
 
 <style>
+  /* One row per format, like a timetable: what it is on the start side, its files on the end. */
   .files {
     display: grid;
-    gap: 0.5rem;
     margin: 0;
     padding: 0;
+    border-top: 1px solid var(--hp-border);
     list-style: none;
   }
   .files li {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.6rem 1rem;
+    gap: 0.75rem 1.5rem;
     align-items: center;
-    padding: 0.85rem 0.95rem;
-    border: 1px solid var(--hp-border);
-    border-radius: var(--hp-radius);
-    background: var(--hp-bg-raised);
+    padding-block: 1rem;
+    border-bottom: 1px solid var(--hp-border);
   }
-  .files li.is-best {
-    border-color: color-mix(in srgb, var(--hp-primary) 60%, transparent);
+  @media (min-width: 40rem) {
+    .files li {
+      grid-template-columns: minmax(0, 1fr) auto;
+    }
+    .files__sum {
+      grid-column: 1 / -1;
+    }
   }
   .files__info {
     display: grid;
@@ -102,38 +104,46 @@ const archLabel = (os: Os, arch: Arch) =>
     min-width: 0;
   }
   .files__info strong {
-    font-size: 0.95rem;
+    font-weight: 600;
   }
   .files__info code {
+    margin-inline-start: 0.35rem;
     color: var(--hp-text-faint);
-    font-size: 0.75rem;
-    font-weight: 500;
+    font-size: 0.8rem;
+    font-weight: 400;
   }
   .files__info > span {
     color: var(--hp-text-muted);
-    font-size: 0.825rem;
+    font-size: 0.925rem;
     line-height: 1.45;
+  }
+  .files__info > .files__size {
+    color: var(--hp-text-faint);
+    font-variant-numeric: tabular-nums;
   }
   .files__buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
   .files__buttons .button {
     white-space: nowrap;
   }
   .files__sum summary {
     width: fit-content;
-    color: var(--hp-text-faint);
-    font-size: 0.75rem;
+    color: var(--hp-text-muted);
+    font-size: 0.85rem;
     cursor: pointer;
+  }
+  .files__sum summary:hover {
+    color: var(--hp-text);
   }
   .files__sum p {
     display: grid;
-    grid-template-columns: 6.5rem 1fr;
+    grid-template-columns: 7rem minmax(0, 1fr);
     gap: 0.5rem;
-    margin-top: 0.35rem;
-    font-size: 0.7rem;
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
   }
   .files__sum span {
     color: var(--hp-text-faint);

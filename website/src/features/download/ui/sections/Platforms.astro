@@ -59,18 +59,15 @@ const prerelease = newerPrerelease(await getReleases(), release);
 
 <style>
   .notice {
-    margin-bottom: 1.5rem;
-    padding: 0.9rem 1.15rem;
+    margin-bottom: 2rem;
+    padding: 1rem 1.25rem;
     border: 1px solid var(--hp-border-strong);
-    border-inline-start: 3px solid var(--hp-text);
     border-radius: var(--hp-radius);
     background: var(--hp-bg-raised);
   }
 
   .platforms {
     display: grid;
-    gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
-    align-items: start;
+    border-bottom: 1px solid var(--hp-border);
   }
 </style>
