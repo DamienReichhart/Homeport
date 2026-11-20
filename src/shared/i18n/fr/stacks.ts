@@ -278,7 +278,6 @@ export default {
   'stacks.linked.reload': 'Recharger',
   'stacks.linked.overwrite': 'Écraser',
   'stacks.linked.saved': 'Fichiers compose enregistrés',
-  'stacks.linked.saveAndRedeploy': 'Enregistrer et redéployer',
   'stacks.linked.envNote':
     'Compose lit le .env du dossier quand il s’exécute. Homeport ne l’affiche ni ne le modifie.',
   'stacks.linked.files': 'Fichiers compose',

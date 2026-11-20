@@ -159,6 +159,8 @@ describe('a Synced Stack', () => {
     expect(screen.getByText('deploy/Dockerfile')).toBeInTheDocument();
     expect(screen.getByText(/Edit it in git/)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Open on the forge' })).toBeInTheDocument();
+    // It deploys by syncing, with saving the environment alone one step away.
+    expect(screen.getByRole('button', { name: 'More ways to save' })).toBeInTheDocument();
     for (const name of ['Deploy', 'Forget definition', 'Adopt']) {
       expect(screen.queryByRole('button', { name })).not.toBeInTheDocument();
     }

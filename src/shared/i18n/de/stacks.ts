@@ -278,7 +278,6 @@ export default {
   'stacks.linked.reload': 'Neu laden',
   'stacks.linked.overwrite': 'Überschreiben',
   'stacks.linked.saved': 'Compose-Dateien gespeichert',
-  'stacks.linked.saveAndRedeploy': 'Speichern und neu bereitstellen',
   'stacks.linked.envNote':
     'Compose liest die .env des Ordners, wenn es läuft. Homeport zeigt oder ändert sie nicht.',
   'stacks.linked.files': 'Compose-Dateien',

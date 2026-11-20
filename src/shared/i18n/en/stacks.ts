@@ -268,7 +268,6 @@ export default {
   'stacks.linked.reload': 'Reload',
   'stacks.linked.overwrite': 'Overwrite',
   'stacks.linked.saved': 'Compose files saved',
-  'stacks.linked.saveAndRedeploy': 'Save and redeploy',
   'stacks.linked.envNote':
     'Compose reads the folder’s .env when it runs. Homeport doesn’t show or change it.',
   'stacks.linked.files': 'Compose files',

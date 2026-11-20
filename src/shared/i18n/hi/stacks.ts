@@ -273,7 +273,6 @@ export default {
   'stacks.linked.reload': 'फिर से लोड करें',
   'stacks.linked.overwrite': 'ओवरराइट करें',
   'stacks.linked.saved': 'Compose फ़ाइलें सहेजी गईं',
-  'stacks.linked.saveAndRedeploy': 'सहेजें और फिर से डिप्लॉय करें',
   'stacks.linked.envNote':
     'Compose चलते समय फ़ोल्डर की .env पढ़ता है। Homeport इसे न दिखाता है न बदलता है।',
   'stacks.linked.files': 'Compose फ़ाइलें',

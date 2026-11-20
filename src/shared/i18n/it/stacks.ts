@@ -273,7 +273,6 @@ export default {
   'stacks.linked.reload': 'Ricarica',
   'stacks.linked.overwrite': 'Sovrascrivi',
   'stacks.linked.saved': 'File compose salvati',
-  'stacks.linked.saveAndRedeploy': 'Salva e ridistribuisci',
   'stacks.linked.envNote':
     'Compose legge il file .env della cartella quando viene eseguito. Homeport non lo mostra né lo modifica.',
   'stacks.linked.files': 'File compose',

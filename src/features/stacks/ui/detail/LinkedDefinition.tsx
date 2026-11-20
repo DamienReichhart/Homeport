@@ -35,6 +35,7 @@ import type { ComposeJob } from '../../model/composeJob';
 import { changedOutside, dirtyFiles, fileName, textOf, type Drafts } from '../../model/linkedEdit';
 import { ComposeChecks } from '../ComposeChecks';
 import { ReviewDialog } from '../dialogs/ReviewDialog';
+import { DeployButton } from './DeployButton';
 import { LinkedFileList } from './LinkedFileList';
 import { ProfilesControl } from './ProfilesControl';
 import { t, tRich } from '@/shared/i18n';
@@ -233,27 +234,20 @@ function LinkedEditor({
         </div>
       </div>
       {write.error && <ErrorMessage error={write.error} />}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          disabled={write.isPending || !canDeploy}
-          onClick={() =>
-            deployed && dirty.length > 0
-              ? setReview({
-                  files: base.files.map((f) => ({ name: f.path, content: textOf(f, drafts) })),
-                  env: null,
-                })
-              : save(false, true)
-          }
-        >
-          {t('stacks.linked.saveAndRedeploy')}
-        </Button>
-        <Button
-          variant="outline"
-          disabled={write.isPending || dirty.length === 0}
-          onClick={() => save(false, false)}
-        >
-          {t('common.save')}
-        </Button>
+      <DeployButton
+        canDeploy={canDeploy}
+        dirty={dirty.length > 0}
+        pending={write.isPending}
+        onDeploy={() =>
+          deployed && dirty.length > 0
+            ? setReview({
+                files: base.files.map((f) => ({ name: f.path, content: textOf(f, drafts) })),
+                env: null,
+              })
+            : save(false, true)
+        }
+        onSave={() => save(false, false)}
+      >
         {conflict && (
           <Button
             variant="destructive"
@@ -263,8 +257,18 @@ function LinkedEditor({
             {t('stacks.linked.overwrite')}
           </Button>
         )}
-        <span className="ms-auto">{forget}</span>
-      </div>
+      </DeployButton>
+      {/* Forgetting only unlinks the folder, so it's set apart without alarm. */}
+      <section
+        aria-label={t('stacks.forget.sectionTitle')}
+        className="flex flex-wrap items-center justify-between gap-3 rounded-md border p-4"
+      >
+        <div className="grid max-w-prose gap-0.5">
+          <h2 className="text-sm font-semibold">{t('stacks.forget.sectionTitle')}</h2>
+          <p className="text-muted-foreground text-sm">{t('stacks.linked.forgetDescription')}</p>
+        </div>
+        {forget}
+      </section>
       <ReviewDialog
         kind="linked"
         stackId={linkedId}
@@ -292,7 +296,7 @@ function ForgetButton({
   return (
     <>
       <Button
-        variant="ghost"
+        variant="outline"
         onClick={() =>
           confirm({
             title: t('stacks.linked.forgetTitle', { name: stack.name }),

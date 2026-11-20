@@ -269,7 +269,6 @@ export default {
   'stacks.linked.reload': '再読み込み',
   'stacks.linked.overwrite': '上書き',
   'stacks.linked.saved': 'compose ファイルを保存しました',
-  'stacks.linked.saveAndRedeploy': '保存して再デプロイ',
   'stacks.linked.envNote':
     'Compose は実行時にフォルダーの .env を読み込みます。Homeport はそれを表示も変更もしません。',
   'stacks.linked.files': 'compose ファイル',

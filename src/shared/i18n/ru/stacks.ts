@@ -274,7 +274,6 @@ export default {
   'stacks.linked.reload': 'Перезагрузить',
   'stacks.linked.overwrite': 'Перезаписать',
   'stacks.linked.saved': 'Файлы compose сохранены',
-  'stacks.linked.saveAndRedeploy': 'Сохранить и развернуть заново',
   'stacks.linked.envNote':
     'Compose читает файл .env из папки при запуске. Homeport его не показывает и не изменяет.',
   'stacks.linked.files': 'Файлы compose',

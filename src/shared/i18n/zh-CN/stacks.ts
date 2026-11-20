@@ -254,7 +254,6 @@ export default {
   'stacks.linked.reload': '重新加载',
   'stacks.linked.overwrite': '覆盖',
   'stacks.linked.saved': 'Compose 文件已保存',
-  'stacks.linked.saveAndRedeploy': '保存并重新部署',
   'stacks.linked.envNote': 'Compose 运行时会读取该文件夹中的 .env。Homeport 不会显示或更改它。',
   'stacks.linked.files': 'Compose 文件',
   'stacks.linked.order': 'Compose 文件，按此顺序合并',

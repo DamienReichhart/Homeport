@@ -266,7 +266,6 @@ export default {
   'stacks.linked.reload': 'إعادة التحميل',
   'stacks.linked.overwrite': 'الكتابة فوقها',
   'stacks.linked.saved': 'تم حفظ ملفات compose',
-  'stacks.linked.saveAndRedeploy': 'حفظ وإعادة النشر',
   'stacks.linked.envNote':
     'يقرأ Compose ملف .env الخاص بالمجلد عند تشغيله. لا يعرضه Homeport ولا يغيّره.',
   'stacks.linked.files': 'ملفات compose',

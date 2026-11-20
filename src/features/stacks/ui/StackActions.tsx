@@ -145,7 +145,8 @@ export function StackActions({
     source === 'synced' && deployed
       ? ['update', 'sync', 'deploy', 'adopt']
       : ['update', 'deploy', 'sync', 'adopt'];
-  const lead = order.find((key) => actions[key]);
+  // A page's first deploy is its definition's own button, which opens first.
+  const lead = order.find((key) => actions[key] && (row || deployed || key !== 'deploy'));
   const rest = order.filter((key) => key !== lead && actions[key]);
 
   const lifecycle: Action | null = !deployed

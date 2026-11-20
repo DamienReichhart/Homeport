@@ -6,22 +6,13 @@ import {
   type ManagedStack,
   useCapabilities,
 } from '@/shared/api';
-import { ChevronDownIcon, RocketIcon } from 'lucide-react';
-import {
-  Button,
-  DangerZone,
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  ErrorMessage,
-  useConfirm,
-} from '@/shared/ui';
+import { Button, DangerZone, ErrorMessage, useConfirm } from '@/shared/ui';
 import { useForgetDefinition, useSaveDefinition } from '../../api/mutations';
 import { sameFiles } from '../../model/composeFiles';
 import type { ComposeJob } from '../../model/composeJob';
 import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { StackEditor } from '../StackEditor';
+import { DeployButton } from './DeployButton';
 import { ProfilesControl } from './ProfilesControl';
 import type { StackOwner } from '@/shared/api';
 import { deployTool } from '../../model/deployTool';
@@ -85,42 +76,15 @@ export function ManagedDefinition({
         }
       />
       {save.error && <ErrorMessage error={save.error} />}
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex">
-          <Button
-            className="rounded-e-none"
-            disabled={save.isPending || !canDeploy}
-            onClick={() =>
-              deployed ? setReview({ files, env }) : save.mutate({ files, env, deploy: true })
-            }
-          >
-            <RocketIcon /> {t('stacks.managed.deploy')}
-          </Button>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                size="icon"
-                className="border-primary-foreground/20 rounded-s-none border-s"
-                aria-label={t('stacks.managed.moreSave')}
-                disabled={save.isPending}
-              >
-                <ChevronDownIcon />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56">
-              <DropdownMenuItem
-                disabled={!dirty}
-                onSelect={() => save.mutate({ files, env, deploy: false })}
-              >
-                {t('stacks.managed.saveOnly')}
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        {dirty && (
-          <span className="text-muted-foreground text-sm">{t('stacks.managed.unsaved')}</span>
-        )}
-      </div>
+      <DeployButton
+        canDeploy={canDeploy}
+        dirty={dirty}
+        pending={save.isPending}
+        onDeploy={() =>
+          deployed ? setReview({ files, env }) : save.mutate({ files, env, deploy: true })
+        }
+        onSave={() => save.mutate({ files, env, deploy: false })}
+      />
       <DangerZone
         title={t('stacks.forget.sectionTitle')}
         description={t('stacks.forget.description')}

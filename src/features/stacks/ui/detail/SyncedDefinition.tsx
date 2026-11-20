@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { RefreshCwIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCapabilities, type Stack, type SyncedStack } from '@/shared/api';
@@ -14,6 +15,8 @@ import {
 import { syncedQueries, useForgetSynced, useSaveSyncedEnv } from '../../api/synced';
 import type { ComposeJob } from '../../model/composeJob';
 import { repositoryQueries } from '@/features/repositories';
+import { SyncDialog } from '../dialogs/SyncDialog';
+import { DeployButton } from './DeployButton';
 import { SyncedFilesView } from './SyncedFilesView';
 import { SyncedSource } from './SyncedSource';
 import type { StackOwner } from '@/shared/api';
@@ -74,15 +77,13 @@ function Loaded({
   const forget = useForgetSynced(owner, synced.id);
   const repositories = useQuery(repositoryQueries.list());
   const url = repositories.data?.find((r) => r.id === synced.repositoryId)?.url ?? null;
+  const [syncing, setSyncing] = useState(false);
+  const canDeploy = deployTool(capabilities.data, owner)?.state === 'available';
+  const dirty = env !== initialEnv;
   return (
     <div className="grid gap-4">
       <SyncedSource owner={owner} synced={synced} />
-      <SyncedFilesView
-        synced={synced}
-        url={url}
-        canDeploy={deployTool(capabilities.data, owner)?.state === 'available'}
-        onDeploy={onDeploy}
-      />
+      <SyncedFilesView synced={synced} url={url} canDeploy={canDeploy} onDeploy={onDeploy} />
       <div className="grid gap-1.5">
         <Label htmlFor="synced-env-edit">{t('stacks.newSynced.env')}</Label>
         <EnvTextarea
@@ -95,15 +96,17 @@ function Loaded({
         <p className="text-muted-foreground text-xs">{t('stacks.newSynced.envHelp')}</p>
       </div>
       {save.error && <ErrorMessage error={save.error} />}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant="outline"
-          disabled={save.isPending || env === initialEnv}
-          onClick={() => save.mutate(env)}
-        >
-          {t('common.save')}
-        </Button>
-      </div>
+      <DeployButton
+        label={t('stacks.action.sync')}
+        icon={RefreshCwIcon}
+        canDeploy={canDeploy}
+        dirty={dirty}
+        pending={save.isPending}
+        onDeploy={() =>
+          dirty ? save.mutate(env, { onSuccess: () => setSyncing(true) }) : setSyncing(true)
+        }
+        onSave={() => save.mutate(env)}
+      />
       <DangerZone
         title={t('stacks.forget.sectionTitle')}
         description={t('stacks.synced.forgetDescription')}
@@ -127,6 +130,14 @@ function Loaded({
           </Button>
         }
       />
+      {syncing && (
+        <SyncDialog
+          stackId={synced.id}
+          name={stack.name}
+          onDeploy={onDeploy}
+          onClose={() => setSyncing(false)}
+        />
+      )}
       {dialog}
     </div>
   );
