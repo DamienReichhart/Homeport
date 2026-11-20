@@ -30,18 +30,22 @@ export function UpdatesCard({
     <Card>
       <CardHeader>
         <CardTitle>{t('updates.title')}</CardTitle>
-        <CardDescription>
-          {check.data ? describeMethod(check.data) : t('updates.description')}
-        </CardDescription>
+        {check.data && <CardDescription>{describeMethod(check.data)}</CardDescription>}
       </CardHeader>
       <CardContent className="grid gap-4">
-        <div className="flex items-center gap-2">
-          <Switch
-            id="check-for-updates"
-            checked={enabled}
-            onCheckedChange={(checkForUpdates) => onChange({ ...settings, checkForUpdates })}
-          />
-          <Label htmlFor="check-for-updates">{t('updates.automatic')}</Label>
+        <div className="grid gap-1.5">
+          <div className="flex items-center gap-2">
+            <Switch
+              id="check-for-updates"
+              checked={enabled}
+              aria-describedby="check-for-updates-hint"
+              onCheckedChange={(checkForUpdates) => onChange({ ...settings, checkForUpdates })}
+            />
+            <Label htmlFor="check-for-updates">{t('updates.automatic')}</Label>
+          </div>
+          <p id="check-for-updates-hint" className="text-muted-foreground text-sm">
+            {t('updates.description')}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <Button
