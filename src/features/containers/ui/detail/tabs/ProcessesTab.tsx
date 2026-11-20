@@ -30,13 +30,20 @@ export function ProcessesTab({
     return <p className="text-muted-foreground text-sm">{t('containers.notRunning')}</p>;
   if (top.isPending) return <Spinner />;
   if (top.error) return <ErrorMessage error={top.error} onRetry={() => void top.refetch()} />;
+  // Columns that only hold numbers (PID, PPID, C, %CPU…) line up on the end.
+  const numeric = top.data.titles.map((_, j) =>
+    top.data.processes.every((p) => /^\d+(\.\d+)?$/.test(p[j] ?? '')),
+  );
+  const last = top.data.titles.length - 1;
   return (
-    <div className="rounded-md border">
+    <div className="bg-card rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            {top.data.titles.map((title) => (
-              <TableHead key={title}>{title}</TableHead>
+            {top.data.titles.map((title, j) => (
+              <TableHead key={title} className={numeric[j] ? 'text-end' : undefined}>
+                {title}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
@@ -46,7 +53,14 @@ export function ProcessesTab({
               {p.map((cell, j) => (
                 <TableCell
                   key={j}
-                  className={j === p.length - 1 ? 'font-mono text-xs' : 'tabular-nums'}
+                  title={j === last ? cell : undefined}
+                  className={
+                    j === last
+                      ? 'max-w-md truncate font-mono text-xs'
+                      : numeric[j]
+                        ? 'text-end tabular-nums'
+                        : 'tabular-nums'
+                  }
                 >
                   {cell}
                 </TableCell>
