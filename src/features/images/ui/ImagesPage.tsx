@@ -2,14 +2,23 @@ import { useQuery } from '@tanstack/react-query';
 import {
   BrushCleaningIcon,
   DownloadIcon,
+  EllipsisIcon,
   FileArchiveIcon,
   FileUpIcon,
   HammerIcon,
   LayersIcon,
+  RefreshCwIcon,
   SaveIcon,
+  Trash2Icon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { CheckNewerImages, HostGate, indexFreshness, resourceQueries } from '@/core/host';
+import {
+  HostGate,
+  hostQueries,
+  indexFreshness,
+  resourceQueries,
+  useCheckForNewerImages,
+} from '@/core/host';
 import { RunContainerDialog } from '@/features/containers';
 import type { Image } from '@/shared/api';
 import { formatBytes } from '@/shared/lib';
@@ -19,6 +28,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   EmptyState,
   ErrorMessage,
@@ -49,9 +60,13 @@ function ImagesList({ hostId }: { hostId: string }) {
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const removeImage = useRemoveImage(hostId);
   const pruneImages = usePruneImages(hostId);
+  const checkNewer = useCheckForNewerImages(hostId);
+  const host =
+    useQuery(hostQueries.list()).data?.find((h) => h.host.id === hostId)?.host.name ?? hostId;
   const [dialog, confirm] = useConfirmedAction();
   const [query, setQuery] = usePageQuery();
-  const [pulling, setPulling] = useState(false);
+  /** The pull dialog's starting reference while it's open: empty, or a tag with a newer version. */
+  const [pulling, setPulling] = useState<string | null>(null);
   const [building, setBuilding] = useState(false);
   const [running, setRunning] = useState<Image | null>(null);
   const [tagging, setTagging] = useState<Image | null>(null);
@@ -73,13 +88,13 @@ function ImagesList({ hostId }: { hostId: string }) {
     if (path) setImporting(path);
   };
   const [inspecting, setInspecting] = useState<Image | null>(null);
-  usePageAction(t('images.pull'), () => setPulling(true));
-  useActionRequest('pull', () => setPulling(true));
+  usePageAction(t('images.pull'), () => setPulling(''));
+  useActionRequest('pull', () => setPulling(''));
 
   const remove = (image: Image) =>
-    confirm(removeImageConfirmation(image, () => removeImage.mutateAsync(image)));
+    confirm(removeImageConfirmation(image, host, () => removeImage.mutateAsync(image)));
   const prune = (all: boolean) =>
-    confirm(pruneImagesConfirmation(all, () => pruneImages.mutateAsync(all)));
+    confirm(pruneImagesConfirmation(all, host, () => pruneImages.mutateAsync(all)));
 
   if (images.isPending) return <Spinner />;
   if (images.error)
@@ -93,58 +108,67 @@ function ImagesList({ hostId }: { hostId: string }) {
         description={t('images.summary', { count: images.data.length, size: formatBytes(total) })}
         actions={
           <>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <BrushCleaningIcon /> {t('images.cleanUp')}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onSelect={() => prune(false)}>
-                  {t('images.cleanUp.dangling')}
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
-                  {t('images.cleanUp.all')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-            {selected.length > 0 && (
-              <Button variant="outline" onClick={() => void saveImages(selected)}>
-                <SaveIcon /> {t('images.saveSelected', { count: selected.length })}
-              </Button>
-            )}
-            <CheckNewerImages hostId={hostId} />
-            <Button variant="outline" onClick={() => void loadImages()}>
-              <FileUpIcon /> {t('images.load')}
-            </Button>
-            <Button variant="outline" onClick={() => void importFilesystem()}>
-              <FileArchiveIcon /> {t('images.importTar')}
-            </Button>
             <Button variant="outline" onClick={() => setBuilding(true)}>
               <HammerIcon /> {t('images.build')}
             </Button>
             <WithShortcut keys={PAGE_ACTION_KEYS} label={t('images.pull')}>
-              <Button onClick={() => setPulling(true)}>
+              <Button onClick={() => setPulling('')}>
                 <DownloadIcon /> {t('images.pull')}
               </Button>
             </WithShortcut>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+                  <EllipsisIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-auto">
+                <DropdownMenuItem
+                  disabled={checkNewer.isPending}
+                  onSelect={() => checkNewer.mutate()}
+                >
+                  <RefreshCwIcon className={checkNewer.isPending ? 'animate-spin' : undefined} />
+                  {checkNewer.isPending ? t('core.freshness.checking') : t('core.freshness.check')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void loadImages()}>
+                  <FileUpIcon /> {t('images.load')}
+                </DropdownMenuItem>
+                <DropdownMenuItem onSelect={() => void importFilesystem()}>
+                  <FileArchiveIcon /> {t('images.importTar')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>{t('images.cleanUp')}</DropdownMenuLabel>
+                <DropdownMenuItem onSelect={() => prune(false)}>
+                  <BrushCleaningIcon /> {t('images.cleanUp.dangling')}
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
+                  <Trash2Icon /> {t('images.cleanUp.all')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         }
       />
-      <div className="mb-3">
+      <div className="mb-3 flex flex-wrap items-center gap-3">
         <SearchInput value={query} onChange={setQuery} placeholder={t('images.search')} />
+        {selected.length > 0 && (
+          <Button variant="outline" onClick={() => void saveImages(selected)}>
+            <SaveIcon /> {t('images.saveSelected', { count: selected.length })}
+          </Button>
+        )}
       </div>
       {images.data.length === 0 ? (
         <EmptyState
           icon={LayersIcon}
           title={t('images.empty.title')}
           description={t('images.empty.description')}
-          action={<Button onClick={() => setPulling(true)}>{t('images.pull')}</Button>}
+          action={<Button onClick={() => setPulling('')}>{t('images.pull')}</Button>}
         />
       ) : (
         <DataTable
           columns={imageColumns({
             onRun: setRunning,
+            onPullNewer: setPulling,
             onInspect: setInspecting,
             onTag: setTagging,
             onPush: setPushingImage,
@@ -159,7 +183,13 @@ function ImagesList({ hostId }: { hostId: string }) {
           onSelectionChange={setSelected}
         />
       )}
-      <PullDialog hostId={hostId} open={pulling} onOpenChange={setPulling} />
+      <PullDialog
+        key={pulling ?? ''}
+        hostId={hostId}
+        reference={pulling ?? ''}
+        open={pulling !== null}
+        onOpenChange={(open) => setPulling(open ? (pulling ?? '') : null)}
+      />
       {building && <BuildDialog hostId={hostId} onClose={() => setBuilding(false)} />}
       {importing && (
         <ImportDialog

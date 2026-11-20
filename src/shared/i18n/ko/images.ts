@@ -24,21 +24,24 @@ export default {
   'images.column.size': '크기',
   'images.column.status': '상태',
   'images.moreTags': '{count, plural, other {태그 #개 더 있음}}',
-  'images.inUse': '사용 중 · {count}',
+  'images.inUse': '{count, plural, other {컨테이너 #개}}에서 사용 중',
   'images.unused': '사용 안 함',
+  'images.newer': '새 버전',
   'images.runOne': '{name} 실행',
+  'images.moreActionsFor': '{name} 추가 작업',
   'images.action.inspect': '검사',
   'images.action.tag': '태그',
   'images.action.push': '푸시',
   'images.action.save': '저장…',
+  'images.action.pullNewer': '새 {reference} 풀',
 
-  'images.remove.title': '{name} 이미지를 삭제하시겠습니까?',
+  'images.remove.title': '{host}에서 {name} 이미지를 삭제하시겠습니까?',
   'images.remove.everyName':
     '이미지의 모든 이름({names})과 다른 곳에서 사용하지 않는 레이어가 삭제됩니다.',
   'images.remove.description':
     '이미지와 다른 이미지가 사용하지 않는 레이어가 삭제됩니다. 나중에 다시 풀할 수 있습니다.',
-  'images.prune.allTitle': '사용하지 않는 모든 이미지를 삭제하시겠습니까?',
-  'images.prune.danglingTitle': '댕글링 이미지를 삭제하시겠습니까?',
+  'images.prune.allTitle': '{host}에서 사용하지 않는 모든 이미지를 삭제하시겠습니까?',
+  'images.prune.danglingTitle': '{host}에서 댕글링 이미지를 삭제하시겠습니까?',
   'images.prune.allDescription':
     '태그가 있는 이미지를 포함해, 컨테이너가 사용하지 않는 모든 이미지가 삭제됩니다.',
   'images.prune.danglingDescription': '빌드와 풀 후에 남은 태그 없는 이미지가 삭제됩니다.',
@@ -104,6 +107,7 @@ export default {
 
   'images.inspect.layers': '레이어',
   'images.inspect.raw': '원본 JSON',
+  'images.inspect.names': '이름',
   'images.inspect.created': '생성일',
   'images.inspect.instruction': '명령어',
   'images.inspect.size': '크기',

@@ -9,6 +9,7 @@ import {
   DialogTitle,
   ErrorMessage,
   Input,
+  Label,
 } from '@/shared/ui';
 import { useTagImage } from '../../api/mutations';
 import { imageName } from '../../model/imageName';
@@ -39,13 +40,18 @@ export function TagDialog({
             tag.mutate(target);
           }}
         >
-          <Input
-            value={target}
-            onChange={(e) => setTarget(e.target.value)}
-            placeholder="registry.example.com/app:v2"
-            autoFocus
-            aria-label={t('images.tagDialog.newName')}
-          />
+          <div className="grid gap-1.5">
+            <Label htmlFor="tag-name">{t('images.tagDialog.newName')}</Label>
+            <Input
+              id="tag-name"
+              value={target}
+              onChange={(e) => setTarget(e.target.value)}
+              placeholder="registry.example.com/app:v2"
+              className="font-mono"
+              autoFocus
+              spellCheck={false}
+            />
+          </div>
           {tag.error && <ErrorMessage error={tag.error} />}
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>

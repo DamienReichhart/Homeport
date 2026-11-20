@@ -24,21 +24,24 @@ export default {
   'images.column.size': 'Tamanho',
   'images.column.status': 'Status',
   'images.moreTags': '{count, plural, one {+# tag a mais} other {+# tags a mais}}',
-  'images.inUse': 'Em uso · {count}',
+  'images.inUse': 'Usada por {count, plural, one {# contêiner} other {# contêineres}}',
   'images.unused': 'Não usada',
+  'images.newer': 'Versão mais recente',
   'images.runOne': 'Executar {name}',
+  'images.moreActionsFor': 'Mais ações para {name}',
   'images.action.inspect': 'Inspecionar',
   'images.action.tag': 'Adicionar tag',
   'images.action.push': 'Enviar',
   'images.action.save': 'Salvar…',
+  'images.action.pullNewer': 'Baixar a nova versão de {reference}',
 
-  'images.remove.title': 'Remover {name}?',
+  'images.remove.title': 'Remover {name} de {host}?',
   'images.remove.everyName':
     'Isso remove todos os nomes da imagem ({names}) e as camadas dela que nada mais usa.',
   'images.remove.description':
     'A imagem e as camadas que nenhuma outra imagem usa são excluídas. Ela pode ser baixada novamente depois.',
-  'images.prune.allTitle': 'Remover todas as imagens não usadas?',
-  'images.prune.danglingTitle': 'Remover imagens órfãs?',
+  'images.prune.allTitle': 'Remover todas as imagens não usadas em {host}?',
+  'images.prune.danglingTitle': 'Remover imagens órfãs em {host}?',
   'images.prune.allDescription':
     'Todas as imagens que nenhum contêiner usa são excluídas, inclusive as com tag.',
   'images.prune.danglingDescription':
@@ -106,6 +109,7 @@ export default {
 
   'images.inspect.layers': 'Camadas',
   'images.inspect.raw': 'JSON bruto',
+  'images.inspect.names': 'Nomes',
   'images.inspect.created': 'Criada',
   'images.inspect.instruction': 'Instrução',
   'images.inspect.size': 'Tamanho',

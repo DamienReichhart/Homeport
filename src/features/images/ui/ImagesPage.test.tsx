@@ -32,7 +32,8 @@ describe('images page', () => {
     renderApp('/images');
     expect(await screen.findByText('nginx:1.27')).toBeInTheDocument();
     expect(screen.getByText('+1 more tag')).toBeInTheDocument();
-    expect(screen.getByText('In use · 2')).toBeInTheDocument();
+    expect(screen.getByText('Used by 2 containers')).toBeInTheDocument();
+    expect(screen.getByText('Unused')).toBeInTheDocument();
     expect(screen.getByText('<none>')).toBeInTheDocument();
     expect(screen.getByText('2 images · 190.0 MB')).toBeInTheDocument();
   });
@@ -52,8 +53,9 @@ describe('images page', () => {
     });
     const user = userEvent.setup();
     renderApp('/images');
-    await user.click(await screen.findByRole('button', { name: 'Clean up' }));
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Dangling images' }));
+    expect(await screen.findByText('Remove dangling images on local?')).toBeInTheDocument();
     const confirmation = await screen.findByRole('alertdialog');
     await user.click(within(confirmation).getByRole('button', { name: 'Clean up' }));
 
@@ -62,7 +64,7 @@ describe('images page', () => {
     expect(screen.getByRole('alertdialog')).toBeInTheDocument();
   });
 
-  it('marks an image whose tag has a newer version', async () => {
+  it('marks an image whose tag has a newer version in amber', async () => {
     mockCommands({
       ...baseCommands,
       images_list: () => [
@@ -81,9 +83,16 @@ describe('images page', () => {
       ],
     });
     renderApp('/images');
-    expect(
-      await screen.findByRole('img', { name: 'A newer nginx:1.27 was published' }),
-    ).toBeInTheDocument();
+    const mark = await screen.findByLabelText('A newer nginx:1.27 was published');
+    expect(mark).toHaveTextContent('Newer version');
+    expect(mark).toHaveAttribute('data-variant', 'warning');
+
+    // The row's menu offers to pull it, with the reference filled in.
+    const user = userEvent.setup();
+    await user.click(screen.getByRole('button', { name: 'More actions for nginx:1.27' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Pull the newer nginx:1.27' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Pull an image' });
+    expect(within(dialog).getByLabelText('Image reference')).toHaveValue('nginx:1.27');
   });
 
   it('keeps the removal open when the image is in use, and retries it', async () => {
@@ -114,7 +123,7 @@ describe('images page', () => {
     });
     const user = userEvent.setup();
     renderApp('/images');
-    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('button', { name: 'More actions for nginx:1.27' }));
     await user.click(await screen.findByRole('menuitem', { name: /Remove/ }));
     const confirmation = await screen.findByRole('alertdialog');
     const remove = within(confirmation).getByRole('button', { name: 'Remove' });

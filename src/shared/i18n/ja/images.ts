@@ -24,21 +24,24 @@ export default {
   'images.column.size': 'サイズ',
   'images.column.status': 'ステータス',
   'images.moreTags': '{count, plural, other {ほか # 個のタグ}}',
-  'images.inUse': '使用中 · {count}',
+  'images.inUse': '{count, plural, other {# 個のコンテナ}}が使用中',
   'images.unused': '未使用',
+  'images.newer': '新しいバージョン',
   'images.runOne': '{name} を実行',
+  'images.moreActionsFor': '{name} のその他の操作',
   'images.action.inspect': '検査',
   'images.action.tag': 'タグ付け',
   'images.action.push': 'プッシュ',
   'images.action.save': '保存…',
+  'images.action.pullNewer': '新しい {reference} をプル',
 
-  'images.remove.title': '{name} を削除しますか？',
+  'images.remove.title': '{host} から {name} を削除しますか？',
   'images.remove.everyName':
     'イメージのすべての名前（{names}）と、ほかで使われていないレイヤーが削除されます。',
   'images.remove.description':
     'イメージと、ほかのイメージが使っていないレイヤーが削除されます。後で再びプルできます。',
-  'images.prune.allTitle': '未使用のイメージをすべて削除しますか？',
-  'images.prune.danglingTitle': 'dangling イメージを削除しますか？',
+  'images.prune.allTitle': '{host} の未使用のイメージをすべて削除しますか？',
+  'images.prune.danglingTitle': '{host} の dangling イメージを削除しますか？',
   'images.prune.allDescription':
     'どのコンテナも使っていないイメージは、タグ付きのものも含めてすべて削除されます。',
   'images.prune.danglingDescription':
@@ -105,6 +108,7 @@ export default {
 
   'images.inspect.layers': 'レイヤー',
   'images.inspect.raw': '生の JSON',
+  'images.inspect.names': '名前',
   'images.inspect.created': '作成日時',
   'images.inspect.instruction': '命令',
   'images.inspect.size': 'サイズ',

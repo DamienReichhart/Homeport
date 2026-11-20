@@ -1,17 +1,17 @@
 import {
+  CirclePlayIcon,
+  DownloadIcon,
   EllipsisVerticalIcon,
   InfoIcon,
-  PlayIcon,
   SaveIcon,
   TagIcon,
   Trash2Icon,
   UploadIcon,
 } from 'lucide-react';
-import { NewerImage, newerLabel, newerTags, type FreshnessIndex } from '@/core/host';
+import { newerTags, type FreshnessIndex } from '@/core/host';
 import type { Image } from '@/shared/api';
-import { formatBytes, formatRelative, shortId } from '@/shared/lib';
+import { formatBytes, formatDateTime, formatRelative, shortId } from '@/shared/lib';
 import {
-  Badge,
   Button,
   type ColumnDef,
   DropdownMenu,
@@ -21,11 +21,14 @@ import {
   DropdownMenuTrigger,
 } from '@/shared/ui';
 import { imageName } from '../model/imageName';
+import { ImageStatus } from './ImageStatus';
+import { RowButton } from './RowButton';
 import { t } from '@/shared/i18n';
 
 /** The images table's columns; the last one holds the row's actions. */
 export function imageColumns({
   onRun,
+  onPullNewer,
   onInspect,
   onTag,
   onPush,
@@ -34,6 +37,8 @@ export function imageColumns({
   freshness,
 }: {
   onRun: (image: Image) => void;
+  /** Opens a pull of `reference`, a tag with a newer version published. */
+  onPullNewer: (reference: string) => void;
   onInspect: (image: Image) => void;
   onTag: (image: Image) => void;
   onPush: (image: Image) => void;
@@ -47,49 +52,50 @@ export function imageColumns({
       header: t('images.column.name'),
       accessorFn: (i) => i.tags.join(' ') || '<none>',
       cell: ({ row }) => (
-        <div className="min-w-0">
-          <p className="flex items-center gap-1.5 font-medium">
-            <span className="truncate">{imageName(row.original)}</span>
-            {newerTags(freshness, row.original).length > 0 && (
-              <NewerImage label={newerLabel(newerTags(freshness, row.original))} />
-            )}
-          </p>
+        <span className="flex max-w-md min-w-0 items-baseline gap-2">
+          <span className="truncate font-medium" title={row.original.tags.join('\n') || undefined}>
+            {imageName(row.original)}
+          </span>
           {row.original.tags.length > 1 && (
-            <p className="text-muted-foreground text-xs">
+            <span className="text-muted-foreground shrink-0 text-xs">
               {t('images.moreTags', { count: row.original.tags.length - 1 })}
-            </p>
+            </span>
           )}
-        </div>
+        </span>
       ),
     },
     {
       id: 'id',
       header: t('images.column.id'),
       accessorFn: (i) => i.id,
-      cell: ({ row }) => <span className="font-mono text-xs">{shortId(row.original.id)}</span>,
+      cell: ({ row }) => (
+        <span className="text-muted-foreground font-mono text-xs">{shortId(row.original.id)}</span>
+      ),
     },
     {
       id: 'created',
       header: t('images.column.created'),
       accessorFn: (i) => i.created,
-      cell: ({ row }) => formatRelative(row.original.created),
+      cell: ({ row }) => (
+        <span title={formatDateTime(row.original.created)}>
+          {formatRelative(row.original.created)}
+        </span>
+      ),
     },
     {
       id: 'size',
       header: t('images.column.size'),
       accessorFn: (i) => i.size,
-      cell: ({ row }) => formatBytes(row.original.size),
+      cell: ({ row }) => <span className="tabular-nums">{formatBytes(row.original.size)}</span>,
     },
     {
       id: 'usage',
       header: t('images.column.status'),
-      accessorFn: (i) => i.containers,
-      cell: ({ row }) =>
-        row.original.containers > 0 ? (
-          <Badge>{t('images.inUse', { count: row.original.containers })}</Badge>
-        ) : (
-          <Badge variant="outline">{t('images.unused')}</Badge>
-        ),
+      // Images with a newer version first, then by how many containers use them.
+      accessorFn: (i) => (newerTags(freshness, i).length > 0 ? 1e6 : 0) + i.containers,
+      cell: ({ row }) => (
+        <ImageStatus image={row.original} newer={newerTags(freshness, row.original)} />
+      ),
     },
     {
       id: 'actions',
@@ -97,21 +103,28 @@ export function imageColumns({
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('images.runOne', { name: imageName(row.original) })}
+          <RowButton
+            label={t('images.runOne', { name: imageName(row.original) })}
             onClick={() => onRun(row.original)}
           >
-            <PlayIcon />
-          </Button>
+            <CirclePlayIcon />
+          </RowButton>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon-sm" aria-label={t('common.moreActions')}>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t('images.moreActionsFor', { name: imageName(row.original) })}
+              >
                 <EllipsisVerticalIcon />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-auto">
+              {newerTags(freshness, row.original).map((tag) => (
+                <DropdownMenuItem key={tag} onSelect={() => onPullNewer(tag)}>
+                  <DownloadIcon /> {t('images.action.pullNewer', { reference: tag })}
+                </DropdownMenuItem>
+              ))}
               <DropdownMenuItem onSelect={() => onInspect(row.original)}>
                 <InfoIcon /> {t('images.action.inspect')}
               </DropdownMenuItem>

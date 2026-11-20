@@ -24,21 +24,24 @@ export default {
   'images.column.size': 'आकार',
   'images.column.status': 'स्थिति',
   'images.moreTags': '{count, plural, one {+# और टैग} other {+# और टैग}}',
-  'images.inUse': 'इस्तेमाल में · {count}',
+  'images.inUse': '{count, plural, one {# कंटेनर} other {# कंटेनर}} द्वारा इस्तेमाल में',
   'images.unused': 'अप्रयुक्त',
+  'images.newer': 'नया संस्करण',
   'images.runOne': '{name} चलाएँ',
+  'images.moreActionsFor': '{name} के लिए और कार्रवाइयाँ',
   'images.action.inspect': 'निरीक्षण करें',
   'images.action.tag': 'टैग करें',
   'images.action.push': 'पुश करें',
   'images.action.save': 'सहेजें…',
+  'images.action.pullNewer': 'नया {reference} पुल करें',
 
-  'images.remove.title': '{name} हटाएँ?',
+  'images.remove.title': '{host} से {name} हटाएँ?',
   'images.remove.everyName':
     'इससे इमेज के सभी नाम ({names}) और उसकी वे लेयर हट जाती हैं जिनका कोई और इस्तेमाल नहीं करता।',
   'images.remove.description':
     'इमेज और वे लेयर जिनका कोई दूसरी इमेज इस्तेमाल नहीं करती, हटा दी जाती हैं। इसे बाद में फिर से पुल किया जा सकता है।',
-  'images.prune.allTitle': 'सभी अप्रयुक्त इमेज हटाएँ?',
-  'images.prune.danglingTitle': 'Dangling इमेज हटाएँ?',
+  'images.prune.allTitle': '{host} पर सभी अप्रयुक्त इमेज हटाएँ?',
+  'images.prune.danglingTitle': '{host} पर Dangling इमेज हटाएँ?',
   'images.prune.allDescription':
     'हर वह इमेज हटा दी जाती है जिसका कोई कंटेनर इस्तेमाल नहीं करता, टैग की गई इमेज भी।',
   'images.prune.danglingDescription': 'बिल्ड और पुल के बाद बची बिना टैग की इमेज हटा दी जाती हैं।',
@@ -105,6 +108,7 @@ export default {
 
   'images.inspect.layers': 'लेयर',
   'images.inspect.raw': 'मूल JSON',
+  'images.inspect.names': 'नाम',
   'images.inspect.created': 'बनाई गई',
   'images.inspect.instruction': 'निर्देश',
   'images.inspect.size': 'आकार',

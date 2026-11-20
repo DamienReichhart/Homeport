@@ -1,12 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
+import type { ReactNode } from 'react';
 import type { Image } from '@/shared/api';
-import { formatBytes, formatRelative } from '@/shared/lib';
+import { formatBytes, formatDateTime, formatRelative } from '@/shared/lib';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   JsonView,
+  KeyValue,
   Spinner,
   Table,
   TableBody,
@@ -23,7 +25,7 @@ import { imageQueries } from '../../api/queries';
 import { imageName } from '../../model/imageName';
 import { t } from '@/shared/i18n';
 
-/** An image's layers and its raw JSON. */
+/** An image's facts, its layers and its raw JSON. */
 export function InspectDialog({
   hostId,
   image,
@@ -39,8 +41,32 @@ export function InspectDialog({
     <Dialog open onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-4xl">
         <DialogHeader>
-          <DialogTitle>{imageName(image)}</DialogTitle>
+          <DialogTitle className="font-mono">{imageName(image)}</DialogTitle>
         </DialogHeader>
+        <KeyValue
+          items={[
+            [t('images.column.id'), <span className="font-mono text-xs">{image.id}</span>],
+            ...(image.tags.length > 1
+              ? [
+                  [
+                    t('images.inspect.names'),
+                    <span className="font-mono text-xs">{image.tags.join(', ')}</span>,
+                  ] as [string, ReactNode],
+                ]
+              : []),
+            [t('images.column.size'), formatBytes(image.size)],
+            [
+              t('images.column.created'),
+              <span title={formatDateTime(image.created)}>{formatRelative(image.created)}</span>,
+            ],
+            [
+              t('images.column.status'),
+              image.containers > 0
+                ? t('images.inUse', { count: image.containers })
+                : t('images.unused'),
+            ],
+          ]}
+        />
         <Tabs defaultValue="layers">
           <TabsList>
             <TabsTrigger value="layers">{t('images.inspect.layers')}</TabsTrigger>
@@ -57,6 +83,13 @@ export function InspectDialog({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {history.data.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-muted-foreground h-16 text-center">
+                        {t('ui.table.empty')}
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {history.data.map((l, i) => (
                     <TableRow key={i}>
                       <TableCell className="text-muted-foreground whitespace-nowrap">

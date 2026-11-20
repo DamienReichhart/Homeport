@@ -21,21 +21,24 @@ export default {
   'images.column.size': 'Size',
   'images.column.status': 'Status',
   'images.moreTags': '{count, plural, one {+# more tag} other {+# more tags}}',
-  'images.inUse': 'In use · {count}',
+  'images.inUse': 'Used by {count, plural, one {# container} other {# containers}}',
   'images.unused': 'Unused',
+  'images.newer': 'Newer version',
   'images.runOne': 'Run {name}',
+  'images.moreActionsFor': 'More actions for {name}',
   'images.action.inspect': 'Inspect',
   'images.action.tag': 'Tag',
   'images.action.push': 'Push',
   'images.action.save': 'Save…',
+  'images.action.pullNewer': 'Pull the newer {reference}',
 
-  'images.remove.title': 'Remove {name}?',
+  'images.remove.title': 'Remove {name} from {host}?',
   'images.remove.everyName':
     'This removes every name of the image ({names}) and its layers that nothing else uses.',
   'images.remove.description':
     'The image and the layers no other image uses are deleted. It can be pulled again later.',
-  'images.prune.allTitle': 'Remove all unused images?',
-  'images.prune.danglingTitle': 'Remove dangling images?',
+  'images.prune.allTitle': 'Remove every unused image on {host}?',
+  'images.prune.danglingTitle': 'Remove dangling images on {host}?',
   'images.prune.allDescription': 'Every image no container uses is deleted, tagged ones included.',
   'images.prune.danglingDescription':
     'Untagged images left behind by builds and pulls are deleted.',
@@ -101,13 +104,14 @@ export default {
 
   'images.inspect.layers': 'Layers',
   'images.inspect.raw': 'Raw JSON',
+  'images.inspect.names': 'Names',
   'images.inspect.created': 'Created',
   'images.inspect.instruction': 'Instruction',
   'images.inspect.size': 'Size',
 
   'images.pullDialog.title': 'Pull an image',
   'images.pullDialog.description':
-    'Search Docker Hub by name, or type any reference the host can reach, e.g. nginx:1.27 or ghcr.io/org/app:v2.',
+    'Search Docker Hub by name, or type any reference the Host can reach, e.g. nginx:1.27 or ghcr.io/org/app:v2.',
   'images.pullDialog.placeholder': 'postgres, or nginx:1.27',
   'images.pullDialog.reference': 'Image reference',
   'images.pullDialog.pull': 'Pull',

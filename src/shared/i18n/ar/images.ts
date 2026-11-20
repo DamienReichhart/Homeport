@@ -27,21 +27,25 @@ export default {
   'images.column.status': 'الحالة',
   'images.moreTags':
     '{count, plural, zero {لا وسوم أخرى} one {+وسم واحد آخر} two {+وسمان آخران} few {+# وسوم أخرى} many {+# وسمًا آخر} other {+# وسم آخر}}',
-  'images.inUse': 'قيد الاستخدام · {count}',
+  'images.inUse':
+    'تستخدمها {count, plural, zero {لا حاويات} one {حاوية واحدة} two {حاويتان} few {# حاويات} many {# حاوية} other {# حاوية}}',
   'images.unused': 'غير مستخدمة',
+  'images.newer': 'إصدار أحدث',
   'images.runOne': 'تشغيل {name}',
+  'images.moreActionsFor': 'مزيد من الإجراءات لـ {name}',
   'images.action.inspect': 'فحص',
   'images.action.tag': 'وسم',
   'images.action.push': 'دفع',
   'images.action.save': 'حفظ…',
+  'images.action.pullNewer': 'سحب الإصدار الأحدث من {reference}',
 
-  'images.remove.title': 'هل تريد إزالة {name}؟',
+  'images.remove.title': 'هل تريد إزالة {name} من {host}؟',
   'images.remove.everyName':
     'يزيل هذا كل أسماء الصورة ({names}) وطبقاتها التي لا يستخدمها أي شيء آخر.',
   'images.remove.description':
     'تُحذف الصورة والطبقات التي لا تستخدمها أي صورة أخرى. يمكن سحبها مجددًا لاحقًا.',
-  'images.prune.allTitle': 'هل تريد إزالة كل الصور غير المستخدمة؟',
-  'images.prune.danglingTitle': 'هل تريد إزالة الصور المعلّقة؟',
+  'images.prune.allTitle': 'هل تريد إزالة كل الصور غير المستخدمة على {host}؟',
+  'images.prune.danglingTitle': 'هل تريد إزالة الصور المعلّقة على {host}؟',
   'images.prune.allDescription': 'تُحذف كل صورة لا تستخدمها أي حاوية، بما في ذلك الصور ذات الوسوم.',
   'images.prune.danglingDescription': 'تُحذف الصور بلا وسوم التي خلّفتها عمليات البناء والسحب.',
 
@@ -109,6 +113,7 @@ export default {
 
   'images.inspect.layers': 'الطبقات',
   'images.inspect.raw': 'JSON الخام',
+  'images.inspect.names': 'الأسماء',
   'images.inspect.created': 'تاريخ الإنشاء',
   'images.inspect.instruction': 'التعليمة',
   'images.inspect.size': 'الحجم',

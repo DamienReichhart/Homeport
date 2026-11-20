@@ -36,7 +36,8 @@ describe('saving, loading and importing images', () => {
     });
     const user = userEvent.setup();
     renderApp('/images');
-    await user.click(await screen.findByRole('button', { name: 'Load…' }));
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Load…' }));
     const dialog = await screen.findByRole('dialog');
     expect(await within(dialog).findByText('Done: nginx:1.27')).toBeInTheDocument();
     expect(within(dialog).getByText('Loaded image: nginx:1.27')).toBeInTheDocument();
@@ -93,7 +94,8 @@ describe('saving, loading and importing images', () => {
     });
     const user = userEvent.setup();
     renderApp('/images');
-    await user.click(await screen.findByRole('button', { name: 'Import from tar…' }));
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Import from tar…' }));
     const form = await screen.findByRole('dialog', { name: 'Import a filesystem as an image' });
     const name = within(form).getByLabelText('Image name');
     expect(name).toHaveValue('debian-rootfs:latest');

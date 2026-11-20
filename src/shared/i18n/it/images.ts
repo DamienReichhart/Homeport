@@ -24,21 +24,24 @@ export default {
   'images.column.size': 'Dimensione',
   'images.column.status': 'Stato',
   'images.moreTags': '{count, plural, one {+# altro tag} other {+# altri tag}}',
-  'images.inUse': 'In uso · {count}',
+  'images.inUse': 'Usata da {count, plural, one {# container} other {# container}}',
   'images.unused': 'Inutilizzata',
+  'images.newer': 'Versione più recente',
   'images.runOne': 'Esegui {name}',
+  'images.moreActionsFor': 'Altre azioni per {name}',
   'images.action.inspect': 'Ispeziona',
   'images.action.tag': 'Aggiungi tag',
   'images.action.push': 'Invia',
   'images.action.save': 'Salva…',
+  'images.action.pullNewer': 'Scarica la nuova versione di {reference}',
 
-  'images.remove.title': 'Rimuovere {name}?',
+  'images.remove.title': 'Rimuovere {name} da {host}?',
   'images.remove.everyName':
     'Vengono rimossi tutti i nomi dell’immagine ({names}) e i suoi layer non usati da nient’altro.',
   'images.remove.description':
     'Vengono eliminati l’immagine e i layer non usati da altre immagini. Potrai scaricarla di nuovo in seguito.',
-  'images.prune.allTitle': 'Rimuovere tutte le immagini inutilizzate?',
-  'images.prune.danglingTitle': 'Rimuovere le immagini orfane?',
+  'images.prune.allTitle': 'Rimuovere tutte le immagini inutilizzate su {host}?',
+  'images.prune.danglingTitle': 'Rimuovere le immagini orfane su {host}?',
   'images.prune.allDescription':
     'Viene eliminata ogni immagine non usata da alcun container, comprese quelle con tag.',
   'images.prune.danglingDescription':
@@ -106,6 +109,7 @@ export default {
 
   'images.inspect.layers': 'Layer',
   'images.inspect.raw': 'JSON originale',
+  'images.inspect.names': 'Nomi',
   'images.inspect.created': 'Creato',
   'images.inspect.instruction': 'Istruzione',
   'images.inspect.size': 'Dimensione',
