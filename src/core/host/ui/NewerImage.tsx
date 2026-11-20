@@ -12,7 +12,7 @@ export function NewerImage({ label }: { label: string }) {
         <span
           role="img"
           aria-label={label}
-          className="text-foreground inline-flex shrink-0 items-center"
+          className="text-warning inline-flex shrink-0 items-center"
           onClick={(e) => e.stopPropagation()}
         >
           <CircleArrowUpIcon className="size-4" />
