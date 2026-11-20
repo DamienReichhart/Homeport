@@ -300,4 +300,5 @@ export default {
   'stacks.kind.linkedHint': 'I suoi file compose sono in una cartella di questo computer.',
   'stacks.kind.syncedHint': 'Distribuito da un repository git.',
   'stacks.kind.externalHint': 'Distribuito al di fuori di Homeport.',
+  'stacks.services.noContainer': 'Nessun container',
 } satisfies Translation<typeof en>;

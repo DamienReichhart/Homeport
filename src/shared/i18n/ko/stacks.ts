@@ -294,4 +294,5 @@ export default {
   'stacks.kind.linkedHint': 'compose 파일이 이 컴퓨터의 폴더에 있습니다.',
   'stacks.kind.syncedHint': 'git 저장소에서 배포됩니다.',
   'stacks.kind.externalHint': 'Homeport 밖에서 배포되었습니다.',
+  'stacks.services.noContainer': '컨테이너 없음',
 } satisfies Translation<typeof en>;

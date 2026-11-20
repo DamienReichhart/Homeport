@@ -280,4 +280,5 @@ export default {
   'stacks.kind.linkedHint': '其 compose 文件位于本机的文件夹中。',
   'stacks.kind.syncedHint': '从 git 仓库部署。',
   'stacks.kind.externalHint': '在 Homeport 之外部署。',
+  'stacks.services.noContainer': '没有容器',
 } satisfies Translation<typeof en>;

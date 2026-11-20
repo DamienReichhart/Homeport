@@ -296,4 +296,5 @@ export default {
   'stacks.kind.linkedHint': 'compose ファイルはこのコンピューター上のフォルダーにあります。',
   'stacks.kind.syncedHint': 'git リポジトリからデプロイされます。',
   'stacks.kind.externalHint': 'Homeport の外でデプロイされました。',
+  'stacks.services.noContainer': 'コンテナなし',
 } satisfies Translation<typeof en>;

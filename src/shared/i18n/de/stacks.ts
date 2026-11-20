@@ -306,4 +306,5 @@ export default {
   'stacks.kind.linkedHint': 'Seine Compose-Dateien liegen in einem Ordner auf diesem Computer.',
   'stacks.kind.syncedHint': 'Aus einem Git-Repository bereitgestellt.',
   'stacks.kind.externalHint': 'Außerhalb von Homeport bereitgestellt.',
+  'stacks.services.noContainer': 'Kein Container',
 } satisfies Translation<typeof en>;

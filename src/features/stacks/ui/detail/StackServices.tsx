@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   containerFreshness,
@@ -8,11 +8,12 @@ import {
   resourceQueries,
   useContainers,
 } from '@/core/host';
-import { containerTone } from '@/features/containers';
+import { containerTone, statusText } from '@/features/containers';
 import type { Stack } from '@/shared/api';
 import { serviceFreshness, stackFreshness } from '../../model/freshness';
 import { t } from '@/shared/i18n';
 import {
+  Badge,
   StatusDot,
   Table,
   TableBody,
@@ -22,8 +23,12 @@ import {
   TableRow,
 } from '@/shared/ui';
 
-/** Each service of a Stack with its containers and their status. */
+/**
+ * Each service of a Stack with the state of its containers, one row per
+ * container; a container's row opens its page.
+ */
 export function StackServices({ hostId, stack }: { hostId: string; stack: Stack }) {
+  const navigate = useNavigate();
   const containers = useContainers(hostId);
   const freshness = indexFreshness(useQuery(resourceQueries.freshness(hostId)).data);
   const byId = new Map(containers.data?.map((c) => [c.id, c]));
@@ -45,45 +50,78 @@ export function StackServices({ hostId, stack }: { hostId: string; stack: Stack 
           </span>
         </p>
       )}
-      <div className="rounded-md border">
-        <Table>
+      <div className="bg-card rounded-md border">
+        <Table className="table-fixed">
           <TableHeader>
             <TableRow>
-              <TableHead>{t('stacks.services.column.service')}</TableHead>
-              <TableHead>{t('stacks.services.column.container')}</TableHead>
+              <TableHead className="w-[18%]">{t('stacks.services.column.service')}</TableHead>
+              <TableHead className="w-[26%]">{t('stacks.services.column.container')}</TableHead>
               <TableHead>{t('stacks.services.column.image')}</TableHead>
-              <TableHead>{t('stacks.services.column.status')}</TableHead>
+              <TableHead className="w-[24%]">{t('stacks.services.column.status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {stack.services.flatMap((s) =>
-              s.containerIds.map((id) => {
-                const c = byId.get(id);
-                return (
-                  <TableRow key={id}>
-                    <TableCell className="font-medium">{s.name}</TableCell>
-                    <TableCell>
-                      <Link to={`/containers/${id}/logs`} className="text-primary hover:underline">
-                        {c?.name ?? id.slice(0, 12)}
-                      </Link>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1.5">
-                        {c?.image}
-                        {c && containerFreshness(freshness, c) === 'newer' && (
-                          <NewerImage label={newerLabel([c.image])} />
+              s.containerIds.length === 0 ? (
+                <TableRow key={`service:${s.name}`}>
+                  <TableCell className="truncate font-medium">{s.name}</TableCell>
+                  <TableCell className="text-muted-foreground">—</TableCell>
+                  <TableCell />
+                  <TableCell>
+                    <span className="text-muted-foreground flex items-center gap-1.5 text-sm">
+                      <StatusDot tone="muted" /> {t('stacks.services.noContainer')}
+                    </span>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                s.containerIds.map((id, i) => {
+                  const c = byId.get(id);
+                  const to = `/containers/${id}/logs`;
+                  return (
+                    <TableRow key={id} className="cursor-pointer" onClick={() => navigate(to)}>
+                      {/* The service is named once, on its first container. */}
+                      <TableCell className="truncate font-medium" title={s.name}>
+                        {i === 0 ? s.name : ''}
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex min-w-0 items-center gap-2">
+                          <StatusDot tone={c ? containerTone(c.state, c.health) : 'muted'} />
+                          <Link
+                            to={to}
+                            className="focus-visible:ring-ring/50 truncate rounded-sm font-mono text-xs outline-none hover:underline focus-visible:ring-[3px]"
+                            title={c?.name}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            {c?.name ?? id.slice(0, 12)}
+                          </Link>
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        <span className="flex min-w-0 items-center gap-1.5">
+                          <span className="truncate font-mono text-xs" title={c?.image}>
+                            {c?.image}
+                          </span>
+                          {c && containerFreshness(freshness, c) === 'newer' && (
+                            <NewerImage label={newerLabel([c.image])} />
+                          )}
+                        </span>
+                      </TableCell>
+                      <TableCell>
+                        {c && (
+                          <span className="flex min-w-0 items-center gap-1.5 text-sm">
+                            <span className="text-muted-foreground truncate">{statusText(c)}</span>
+                            {c.health && (
+                              <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'}>
+                                {c.health}
+                              </Badge>
+                            )}
+                          </span>
                         )}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      <span className="flex items-center gap-1.5">
-                        {c && <StatusDot tone={containerTone(c.state, c.health)} />}
-                        {c?.status}
-                      </span>
-                    </TableCell>
-                  </TableRow>
-                );
-              }),
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ),
             )}
           </TableBody>
         </Table>

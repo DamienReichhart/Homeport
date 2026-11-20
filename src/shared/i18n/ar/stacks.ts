@@ -293,4 +293,5 @@ export default {
   'stacks.kind.linkedHint': 'ملفات compose الخاصة به في مجلد على هذا الكمبيوتر.',
   'stacks.kind.syncedHint': 'نُشر من مستودع git.',
   'stacks.kind.externalHint': 'نُشر خارج Homeport.',
+  'stacks.services.noContainer': 'لا توجد حاوية',
 } satisfies Translation<typeof en>;

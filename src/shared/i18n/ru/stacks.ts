@@ -301,4 +301,5 @@ export default {
   'stacks.kind.linkedHint': 'Его файлы compose лежат в папке на этом компьютере.',
   'stacks.kind.syncedHint': 'Развёрнут из git-репозитория.',
   'stacks.kind.externalHint': 'Развёрнут вне Homeport.',
+  'stacks.services.noContainer': 'Нет контейнера',
 } satisfies Translation<typeof en>;

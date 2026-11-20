@@ -295,4 +295,5 @@ export default {
   'stacks.kind.linkedHint': 'Its compose files are in a folder on this computer.',
   'stacks.kind.syncedHint': 'Deployed from a git repository.',
   'stacks.kind.externalHint': 'Deployed outside Homeport.',
+  'stacks.services.noContainer': 'No container',
 } as const;

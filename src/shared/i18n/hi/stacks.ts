@@ -300,4 +300,5 @@ export default {
   'stacks.kind.linkedHint': 'इसकी compose फ़ाइलें इस कंप्यूटर के किसी फ़ोल्डर में हैं।',
   'stacks.kind.syncedHint': 'किसी git रिपॉज़िटरी से डिप्लॉय किया गया।',
   'stacks.kind.externalHint': 'Homeport के बाहर डिप्लॉय किया गया।',
+  'stacks.services.noContainer': 'कोई कंटेनर नहीं',
 } satisfies Translation<typeof en>;
