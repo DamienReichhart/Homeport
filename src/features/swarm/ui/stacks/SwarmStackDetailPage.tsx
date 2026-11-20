@@ -88,8 +88,13 @@ function SwarmStackDetail({ swarm, name }: { swarm: SwarmView; name: string }) {
         }
         description={
           <span className="flex items-center gap-1.5">
-            <StatusDot tone={STATE_TONE[stack.state]} /> {t(STATE_LABEL[stack.state])}
-            {stack.total > 0 &&
+            <StatusDot tone={STATE_TONE[stack.state]} />
+            {/* Running says itself in the count; other states name themselves first. */}
+            {stack.state === 'running' && stack.total > 0
+              ? t('stacks.detail.running', { running: stack.running, total: stack.total })
+              : t(STATE_LABEL[stack.state])}
+            {stack.state !== 'running' &&
+              stack.total > 0 &&
               ` · ${t('stacks.detail.running', { running: stack.running, total: stack.total })}`}
           </span>
         }
