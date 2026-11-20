@@ -13,6 +13,7 @@ import {
   toastError,
 } from '@/shared/ui';
 import { containerTone, statusText } from '../../model/containerTone';
+import type { Columns } from '../../model/columns';
 import { portLabels } from '../../model/grouping';
 import { ContainerMenu } from '../ContainerMenu';
 import type { ContainerDialogRequest } from '../dialogs/ContainerDialogs';
@@ -28,6 +29,7 @@ export function ContainerRow({
   nested,
   usage,
   pod,
+  columns,
   newer,
   address,
   selected,
@@ -41,6 +43,8 @@ export function ContainerRow({
   usage?: ContainerUsage;
   /** The Podman pod it runs in. */
   pod?: PodRef;
+  /** The optional columns the table shows. */
+  columns: Columns;
   /** The registry has a newer image under the tag it was created from. */
   newer?: boolean;
   /** Where published ports are reachable, for links. */
@@ -104,12 +108,16 @@ export function ContainerRow({
           </div>
         </div>
       </TableCell>
-      <TableCell className="max-w-56">
-        <span className="flex items-center gap-1.5">
-          <span className="truncate">{c.image}</span>
-          {newer && <NewerImage label={newerLabel([c.image])} />}
-        </span>
-      </TableCell>
+      {columns.image && (
+        <TableCell className="max-w-44">
+          <span className="flex items-center gap-1.5">
+            <span className="truncate" title={c.image}>
+              {c.image}
+            </span>
+            {newer && <NewerImage label={newerLabel([c.image])} />}
+          </span>
+        </TableCell>
+      )}
       <TableCell>
         {/* The health shows as a badge, not repeated in the status. */}
         <span className="text-sm">{statusText(c)}</span>
@@ -119,37 +127,45 @@ export function ContainerRow({
           </Badge>
         )}
       </TableCell>
-      <TableCell onClick={(e) => e.stopPropagation()}>
-        <div className="flex max-w-48 flex-wrap gap-1">
-          {portLabels(c)
-            .slice(0, 3)
-            .map((p) =>
-              p.publicPort ? (
-                <button
-                  key={p.label}
-                  type="button"
-                  className="text-primary font-mono text-xs hover:underline"
-                  onClick={() => openUrl(`http://${address}:${p.publicPort}`).catch(toastError)}
-                >
-                  {p.label}
-                </button>
-              ) : (
-                <span key={p.label} className="text-muted-foreground font-mono text-xs">
-                  {p.label}
-                </span>
-              ),
-            )}
-        </div>
-      </TableCell>
-      <TableCell className="text-end tabular-nums">
-        {usage ? formatPercent(usage.cpuPercent ?? 0) : '—'}
-      </TableCell>
-      <TableCell className="text-end tabular-nums">
-        {usage ? formatBytes(usage.memoryUsage) : '—'}
-      </TableCell>
-      <TableCell className="text-muted-foreground whitespace-nowrap">
-        {formatRelative(c.created)}
-      </TableCell>
+      {columns.ports && (
+        <TableCell onClick={(e) => e.stopPropagation()}>
+          <div className="flex max-w-48 flex-wrap gap-1">
+            {portLabels(c)
+              .slice(0, 3)
+              .map((p) =>
+                p.publicPort ? (
+                  <button
+                    key={p.label}
+                    type="button"
+                    className="text-primary font-mono text-xs hover:underline"
+                    onClick={() => openUrl(`http://${address}:${p.publicPort}`).catch(toastError)}
+                  >
+                    {p.label}
+                  </button>
+                ) : (
+                  <span key={p.label} className="text-muted-foreground font-mono text-xs">
+                    {p.label}
+                  </span>
+                ),
+              )}
+          </div>
+        </TableCell>
+      )}
+      {columns.usage && (
+        <>
+          <TableCell className="text-end tabular-nums">
+            {usage ? formatPercent(usage.cpuPercent ?? 0) : '—'}
+          </TableCell>
+          <TableCell className="text-end tabular-nums">
+            {usage ? formatBytes(usage.memoryUsage) : '—'}
+          </TableCell>
+        </>
+      )}
+      {columns.created && (
+        <TableCell className="text-muted-foreground whitespace-nowrap">
+          {formatRelative(c.created)}
+        </TableCell>
+      )}
       <TableCell>
         <ContainerMenu
           hostId={hostId}

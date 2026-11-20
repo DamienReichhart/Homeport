@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import type { ContainerUsage } from '@/shared/api';
 import { formatBytes, formatPercent } from '@/shared/lib';
 import { Badge, Button, Checkbox, StatusDot, TableCell, TableRow } from '@/shared/ui';
+import type { Columns } from '../../model/columns';
 import type { StackGroup } from '../../model/grouping';
 import { t } from '@/shared/i18n';
 
@@ -16,6 +17,7 @@ export function StackGroupRows({
   allSelected,
   onSelect,
   swarmId,
+  columns,
   children,
 }: {
   group: StackGroup;
@@ -26,6 +28,8 @@ export function StackGroupRows({
   usage: Map<string, ContainerUsage>;
   allSelected: boolean;
   onSelect: (on: boolean) => void;
+  /** The optional columns the table shows, so the totals line up with them. */
+  columns: Columns;
   /** The containers' rows, shown while the group is open. */
   children: ReactNode;
 }) {
@@ -42,7 +46,7 @@ export function StackGroupRows({
             onCheckedChange={(v) => onSelect(v === true)}
           />
         </TableCell>
-        <TableCell colSpan={4}>
+        <TableCell colSpan={2 + Number(columns.image) + Number(columns.ports)}>
           <span className="flex items-center gap-2 font-medium">
             {/* The row's keyboard stop: Enter or Space toggles it, as a click on the row does. */}
             <button
@@ -73,13 +77,17 @@ export function StackGroupRows({
             </span>
           </span>
         </TableCell>
-        <TableCell className="text-end tabular-nums">
-          {g.running ? formatPercent(cpu) : '—'}
-        </TableCell>
-        <TableCell className="text-end tabular-nums">
-          {g.running ? formatBytes(mem) : '—'}
-        </TableCell>
-        <TableCell colSpan={2} className="text-end">
+        {columns.usage && (
+          <>
+            <TableCell className="text-end tabular-nums">
+              {g.running ? formatPercent(cpu) : '—'}
+            </TableCell>
+            <TableCell className="text-end tabular-nums">
+              {g.running ? formatBytes(mem) : '—'}
+            </TableCell>
+          </>
+        )}
+        <TableCell colSpan={1 + Number(columns.created)} className="text-end">
           {(!g.swarm || swarmId) && (
             <Button
               variant="link"
