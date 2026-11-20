@@ -80,7 +80,6 @@ export default {
   'swarm.services.emptyHint': '이미지로 서비스를 만들거나 이 Swarm에 스택을 배포하세요.',
   'swarm.services.column.name': '이름',
   'swarm.services.column.image': '이미지',
-  'swarm.services.column.mode': '모드',
   'swarm.services.column.replicas': '실행 중',
   'swarm.services.column.ports': '포트',
   'swarm.services.column.stack': '스택',

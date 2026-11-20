@@ -80,7 +80,6 @@ export default {
   'swarm.services.emptyHint': 'أنشئ خدمة من صورة، أو انشر مكدسًا على هذا الـ Swarm.',
   'swarm.services.column.name': 'الاسم',
   'swarm.services.column.image': 'الصورة',
-  'swarm.services.column.mode': 'الوضع',
   'swarm.services.column.replicas': 'قيد التشغيل',
   'swarm.services.column.ports': 'المنافذ',
   'swarm.services.column.stack': 'المكدس',

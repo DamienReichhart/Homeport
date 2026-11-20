@@ -81,7 +81,6 @@ export default {
   'swarm.services.emptyHint': 'Creane uno da un’immagine o distribuisci uno stack su questo Swarm.',
   'swarm.services.column.name': 'Nome',
   'swarm.services.column.image': 'Immagine',
-  'swarm.services.column.mode': 'Modalità',
   'swarm.services.column.replicas': 'In esecuzione',
   'swarm.services.column.ports': 'Porte',
   'swarm.services.column.stack': 'Stack',

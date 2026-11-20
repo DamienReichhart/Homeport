@@ -82,7 +82,6 @@ export default {
     'イメージから作成するか、この Swarm にスタックをデプロイしてください。',
   'swarm.services.column.name': '名前',
   'swarm.services.column.image': 'イメージ',
-  'swarm.services.column.mode': 'モード',
   'swarm.services.column.replicas': '実行中',
   'swarm.services.column.ports': 'ポート',
   'swarm.services.column.stack': 'スタック',

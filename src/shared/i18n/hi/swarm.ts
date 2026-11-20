@@ -80,7 +80,6 @@ export default {
   'swarm.services.emptyHint': 'किसी इमेज से एक बनाएँ, या इस Swarm पर कोई स्टैक डिप्लॉय करें।',
   'swarm.services.column.name': 'नाम',
   'swarm.services.column.image': 'इमेज',
-  'swarm.services.column.mode': 'मोड',
   'swarm.services.column.replicas': 'चल रहे हैं',
   'swarm.services.column.ports': 'पोर्ट',
   'swarm.services.column.stack': 'स्टैक',

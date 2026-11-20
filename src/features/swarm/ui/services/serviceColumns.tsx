@@ -28,7 +28,7 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       accessorFn: (s) => s.image,
       cell: ({ row }) => (
         <span
-          className="block max-w-64 truncate font-mono text-xs"
+          className="block max-w-56 truncate font-mono text-xs"
           title={row.original.imageDigest ?? row.original.image}
         >
           {row.original.image}
@@ -36,19 +36,19 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       ),
     },
     {
-      id: 'mode',
-      header: t('swarm.services.column.mode'),
-      accessorFn: (s) => s.mode,
-      cell: ({ row }) => (
-        <span className="text-muted-foreground">{t(MODES[row.original.mode])}</span>
-      ),
-    },
-    {
       id: 'replicas',
       header: t('swarm.services.column.replicas'),
       accessorFn: (s) => s.running,
       meta: { compact: true },
-      cell: ({ row }) => <ReplicasBadge service={row.original} />,
+      // Replicated is the norm; a global service or a job says so beside its count.
+      cell: ({ row }) => (
+        <span className="flex items-center gap-1.5 whitespace-nowrap">
+          <ReplicasBadge service={row.original} />
+          {row.original.mode !== 'replicated' && (
+            <span className="text-muted-foreground text-xs">{t(MODES[row.original.mode])}</span>
+          )}
+        </span>
+      ),
     },
     {
       id: 'ports',
@@ -56,7 +56,7 @@ export function serviceColumns(actions: ServiceActions): ColumnDef<ServiceView, 
       accessorFn: portsLabel,
       cell: ({ row }) => (
         <span
-          className="block max-w-48 truncate font-mono text-xs"
+          className="block max-w-40 truncate font-mono text-xs"
           title={portsLabel(row.original) || undefined}
         >
           {portsLabel(row.original) || '—'}

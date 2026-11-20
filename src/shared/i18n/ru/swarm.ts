@@ -81,7 +81,6 @@ export default {
   'swarm.services.emptyHint': 'Создайте сервис из образа или разверните стек в этом Swarm.',
   'swarm.services.column.name': 'Имя',
   'swarm.services.column.image': 'Образ',
-  'swarm.services.column.mode': 'Режим',
   'swarm.services.column.replicas': 'Работает',
   'swarm.services.column.ports': 'Порты',
   'swarm.services.column.stack': 'Стек',

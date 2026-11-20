@@ -81,7 +81,6 @@ export default {
   'swarm.services.emptyHint': 'Crie um a partir de uma imagem ou implante uma stack neste Swarm.',
   'swarm.services.column.name': 'Nome',
   'swarm.services.column.image': 'Imagem',
-  'swarm.services.column.mode': 'Modo',
   'swarm.services.column.replicas': 'Em execução',
   'swarm.services.column.ports': 'Portas',
   'swarm.services.column.stack': 'Stack',

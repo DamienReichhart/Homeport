@@ -77,7 +77,6 @@ export default {
     'Cree uno a partir de una imagen o despliegue un stack en este Swarm.',
   'swarm.services.column.name': 'Nombre',
   'swarm.services.column.image': 'Imagen',
-  'swarm.services.column.mode': 'Modo',
   'swarm.services.column.replicas': 'En ejecución',
   'swarm.services.column.ports': 'Puertos',
   'swarm.services.column.stack': 'Stack',

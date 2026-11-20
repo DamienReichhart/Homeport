@@ -79,7 +79,6 @@ export default {
   'swarm.services.emptyHint': '从镜像创建一个服务，或向此 Swarm 部署一个堆栈。',
   'swarm.services.column.name': '名称',
   'swarm.services.column.image': '镜像',
-  'swarm.services.column.mode': '模式',
   'swarm.services.column.replicas': '运行中',
   'swarm.services.column.ports': '端口',
   'swarm.services.column.stack': '堆栈',

@@ -77,7 +77,6 @@ export default {
   'swarm.services.emptyHint': 'Create one from an image, or deploy a Stack to this Swarm.',
   'swarm.services.column.name': 'Name',
   'swarm.services.column.image': 'Image',
-  'swarm.services.column.mode': 'Mode',
   'swarm.services.column.replicas': 'Running',
   'swarm.services.column.ports': 'Ports',
   'swarm.services.column.stack': 'Stack',
