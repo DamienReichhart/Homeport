@@ -1,4 +1,5 @@
 import { TriangleAlertIcon } from 'lucide-react';
+import { useId } from 'react';
 import { ENGINE_LABELS } from '@/core/host';
 import type { EngineKind } from '@/shared/api';
 import {
@@ -15,6 +16,7 @@ import {
   ToggleGroupItem,
 } from '@/shared/ui';
 import {
+  defaultName,
   ENGINE_KINDS,
   engineForSocket,
   engineReachableOver,
@@ -26,13 +28,15 @@ import {
 } from '../../model/form';
 import { Field } from './Field';
 import { IncusTlsFields } from './IncusTlsFields';
-import { SshFields } from './SshFields';
+import { SshAccessFields, SshServerFields } from './SshFields';
 import { TlsFields } from './TlsFields';
 import { t } from '@/shared/i18n';
 
 /**
- * Fields for defining a Host. `editing` relaxes credentials (blank keeps the
- * stored ones); `keychain: false` disables what would need stored secrets.
+ * Fields for defining a Host, in the order they're decided: how to reach it,
+ * where it is, its name (which defaults from there), its Engine, then how to
+ * log in. `editing` relaxes credentials (blank keeps the stored ones);
+ * `keychain: false` disables what would need stored secrets.
  */
 export function HostForm({
   form,
@@ -48,60 +52,48 @@ export function HostForm({
   const set = <K extends keyof HostFormState>(key: K, value: HostFormState[K]) =>
     onChange({ ...form, [key]: value });
   const keepHint = editing ? t('hosts.form.keepHint') : undefined;
+  const suggested = defaultName(form);
+  const kindId = useId();
 
   return (
     <div className="grid gap-4">
       {!editing && (
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={form.kind}
-          onValueChange={(kind) => kind && set('kind', kind as HostKind)}
-        >
-          {HOST_KINDS.map(({ kind, label }) => (
-            <ToggleGroupItem
-              key={kind}
-              value={kind}
-              disabled={!engineReachableOver(form.engine, kind)}
-              title={
-                engineReachableOver(form.engine, kind)
-                  ? undefined
-                  : t(form.engine === 'incus' ? 'hosts.form.noPlainTcp' : 'hosts.form.socketOnly', {
-                      engine: t(ENGINE_LABELS[form.engine]),
-                    })
-              }
-            >
-              {t(label)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        <div className="grid gap-1.5">
+          <span id={kindId} className="text-sm leading-none font-medium">
+            {t('hosts.form.connectOver')}
+          </span>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            aria-labelledby={kindId}
+            value={form.kind}
+            onValueChange={(kind) => kind && set('kind', kind as HostKind)}
+          >
+            {HOST_KINDS.map(({ kind, label }) => (
+              <ToggleGroupItem
+                key={kind}
+                value={kind}
+                disabled={!engineReachableOver(form.engine, kind)}
+                title={
+                  engineReachableOver(form.engine, kind)
+                    ? undefined
+                    : t(
+                        form.engine === 'incus' ? 'hosts.form.noPlainTcp' : 'hosts.form.socketOnly',
+                        {
+                          engine: t(ENGINE_LABELS[form.engine]),
+                        },
+                      )
+                }
+              >
+                {t(label)}
+              </ToggleGroupItem>
+            ))}
+          </ToggleGroup>
+        </div>
       )}
 
-      <Field label={t('hosts.form.name')}>
-        <Input
-          value={form.name}
-          onChange={(e) => set('name', e.target.value)}
-          placeholder="production"
-        />
-      </Field>
-
-      <Field label={t('hosts.form.engine')} hint={t('hosts.form.engineHint')}>
-        <Select
-          value={form.engine}
-          onValueChange={(engine) => onChange(withEngine(form, engine as EngineKind))}
-        >
-          <SelectTrigger className="w-full" aria-label={t('hosts.form.engine')}>
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {ENGINE_KINDS.map((engine) => (
-              <SelectItem key={engine} value={engine}>
-                {t(ENGINE_LABELS[engine])}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </Field>
+      {/* Where the Engine is, first: the name and the rest follow from it. */}
+      {form.kind === 'ssh' && <SshServerFields form={form} set={set} />}
 
       {form.kind === 'local' && (
         <Field
@@ -134,6 +126,35 @@ export function HostForm({
         </Field>
       )}
 
+      <Field
+        label={t('hosts.form.name')}
+        hint={editing || !suggested ? undefined : t('hosts.form.nameHint', { name: suggested })}
+      >
+        <Input
+          value={form.name}
+          onChange={(e) => set('name', e.target.value)}
+          placeholder={suggested || 'production'}
+        />
+      </Field>
+
+      <Field label={t('hosts.form.engine')} hint={t('hosts.form.engineHint')}>
+        <Select
+          value={form.engine}
+          onValueChange={(engine) => onChange(withEngine(form, engine as EngineKind))}
+        >
+          <SelectTrigger className="w-full" aria-label={t('hosts.form.engine')}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {ENGINE_KINDS.map((engine) => (
+              <SelectItem key={engine} value={engine}>
+                {t(ENGINE_LABELS[engine])}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
+
       {form.kind === 'tcp' && (
         <Alert>
           <TriangleAlertIcon />
@@ -157,7 +178,7 @@ export function HostForm({
       )}
 
       {form.kind === 'ssh' && (
-        <SshFields
+        <SshAccessFields
           form={form}
           set={set}
           editing={editing}

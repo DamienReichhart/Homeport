@@ -16,7 +16,9 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'ホストを保存しました',
   'hosts.notFound': 'このホストはもう存在しません。',
-  'hosts.addPage.description': 'Homeport を Docker エンジンに接続します。',
+  'hosts.addPage.description':
+    'このコンピューターで見つかったエンジンを追加するか、インポートするか、下で接続情報を入力します。',
+  'hosts.addPage.manual': '接続情報を入力',
   'hosts.switcher.add': 'ホストを追加…',
   'hosts.switcher.manage': 'ホストを管理',
   'hosts.switcher.addCluster': 'クラスターを追加…',
@@ -71,10 +73,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'ローカルソケット',
   'hosts.form.keepHint': '保存済みの値を使い続ける場合は空欄のままにします。',
+  'hosts.form.connectOver': '接続方法',
   'hosts.form.name': '名前',
+  'hosts.form.nameHint': '空欄のままにすると {name} という名前になります。',
   'hosts.form.engine': 'エンジン',
   'hosts.form.engineHint':
-    'Docker 互換には Docker と Podman が含まれ、Homeport は接続時に両者を区別します。containerd にはそのソケット経由で、ローカルまたは SSH 経由で接続します。Incus には HTTPS（TLS）経由でも接続できます。',
+    'Docker 互換には Docker と Podman が含まれます。containerd にはそのソケット経由で、ローカルまたは SSH 経由で接続します。Incus には HTTPS（TLS）経由でも接続できます。',
   'hosts.form.socketOnly':
     '{engine} はソケットでしか応答しません。ローカルまたは SSH 経由で接続してください。',
   'hosts.form.noPlainTcp':

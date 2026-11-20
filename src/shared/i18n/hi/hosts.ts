@@ -16,7 +16,9 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'होस्ट सहेजा गया',
   'hosts.notFound': 'यह होस्ट अब मौजूद नहीं है।',
-  'hosts.addPage.description': 'Homeport को किसी Docker Engine से कनेक्ट करें।',
+  'hosts.addPage.description':
+    'इस कंप्यूटर पर मिला इंजन जोड़ें, कोई इम्पोर्ट करें, या नीचे उसका कनेक्शन दर्ज करें।',
+  'hosts.addPage.manual': 'कनेक्शन दर्ज करें',
   'hosts.switcher.add': 'होस्ट जोड़ें…',
   'hosts.switcher.manage': 'होस्ट प्रबंधित करें',
   'hosts.switcher.addCluster': 'क्लस्टर जोड़ें…',
@@ -70,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'लोकल सॉकेट',
   'hosts.form.keepHint': 'सहेजा हुआ मान रखने के लिए खाली छोड़ें।',
+  'hosts.form.connectOver': 'कनेक्शन का तरीका',
   'hosts.form.name': 'नाम',
+  'hosts.form.nameHint': 'खाली छोड़ने पर इसका नाम {name} होगा।',
   'hosts.form.engine': 'इंजन',
   'hosts.form.engineHint':
-    'Docker-संगत में Docker और Podman आते हैं; कनेक्ट होने पर Homeport उनमें फ़र्क पहचान लेता है। containerd तक उसके सॉकेट से पहुँचा जाता है, यहाँ या SSH पर; Incus तक HTTPS (TLS) पर भी।',
+    'Docker-संगत में Docker और Podman आते हैं। containerd तक उसके सॉकेट से पहुँचा जाता है, यहाँ या SSH पर; Incus तक HTTPS (TLS) पर भी।',
   'hosts.form.socketOnly':
     '{engine} सिर्फ़ अपने सॉकेट पर जवाब देता है: लोकल रूप से या SSH से कनेक्ट करें।',
   'hosts.form.noPlainTcp':

@@ -16,7 +16,9 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': '호스트를 저장했습니다',
   'hosts.notFound': '이 호스트는 더 이상 존재하지 않습니다.',
-  'hosts.addPage.description': 'Homeport를 Docker Engine에 연결합니다.',
+  'hosts.addPage.description':
+    '이 컴퓨터에서 찾은 엔진을 추가하거나, 가져오거나, 아래에 연결 정보를 입력하세요.',
+  'hosts.addPage.manual': '연결 정보 입력',
   'hosts.switcher.add': '호스트 추가…',
   'hosts.switcher.manage': '호스트 관리',
   'hosts.switcher.addCluster': '클러스터 추가…',
@@ -70,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': '로컬 소켓',
   'hosts.form.keepHint': '저장된 값을 유지하려면 비워 두세요.',
+  'hosts.form.connectOver': '연결 방식',
   'hosts.form.name': '이름',
+  'hosts.form.nameHint': '비워 두면 {name} 이름을 사용합니다.',
   'hosts.form.engine': '엔진',
   'hosts.form.engineHint':
-    'Docker 호환에는 Docker와 Podman이 포함되며, Homeport가 연결할 때 둘을 구분합니다. containerd는 이 컴퓨터나 SSH를 통해 소켓으로 연결하고, Incus는 HTTPS(TLS)로도 연결할 수 있습니다.',
+    'Docker 호환에는 Docker와 Podman이 포함됩니다. containerd는 이 컴퓨터나 SSH를 통해 소켓으로 연결하고, Incus는 HTTPS(TLS)로도 연결할 수 있습니다.',
   'hosts.form.socketOnly': '{engine} 엔진은 소켓에서만 응답합니다. 로컬 또는 SSH로 연결하세요.',
   'hosts.form.noPlainTcp':
     '{engine} 엔진은 일반 TCP로 응답하지 않습니다. TLS, SSH 또는 소켓을 사용하세요.',

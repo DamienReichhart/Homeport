@@ -16,7 +16,9 @@ export default {
   'hosts.statusTitle': '{label} : {detail}',
   'hosts.saved': 'Hôte enregistré',
   'hosts.notFound': 'Cet hôte n’existe plus.',
-  'hosts.addPage.description': 'Connectez Homeport à un Docker Engine.',
+  'hosts.addPage.description':
+    'Ajoutez un moteur trouvé sur cet ordinateur, importez-en un, ou saisissez sa connexion ci-dessous.',
+  'hosts.addPage.manual': 'Saisir la connexion',
   'hosts.switcher.add': 'Ajouter un hôte…',
   'hosts.switcher.manage': 'Gérer les hôtes',
   'hosts.switcher.addCluster': 'Ajouter un cluster…',
@@ -71,10 +73,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'Socket local',
   'hosts.form.keepHint': 'Laissez vide pour conserver la valeur enregistrée.',
+  'hosts.form.connectOver': 'Se connecter via',
   'hosts.form.name': 'Nom',
+  'hosts.form.nameHint': 'Laissez vide pour le nommer {name}.',
   'hosts.form.engine': 'Moteur',
   'hosts.form.engineHint':
-    'Compatible Docker couvre Docker et Podman ; Homeport les distingue à la connexion. containerd est joint par son socket, ici ou via SSH ; Incus aussi via HTTPS (TLS).',
+    'Compatible Docker couvre Docker et Podman. containerd est joint par son socket, ici ou via SSH ; Incus aussi via HTTPS (TLS).',
   'hosts.form.socketOnly':
     '{engine} ne répond que sur son socket : connectez-vous localement ou via SSH.',
   'hosts.form.noPlainTcp':

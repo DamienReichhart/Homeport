@@ -16,7 +16,9 @@ export default {
   'hosts.statusTitle': '{label}: {detail}',
   'hosts.saved': 'Хост сохранён',
   'hosts.notFound': 'Этого хоста больше не существует.',
-  'hosts.addPage.description': 'Подключите Homeport к Docker Engine.',
+  'hosts.addPage.description':
+    'Добавьте движок, найденный на этом компьютере, импортируйте его или введите подключение ниже.',
+  'hosts.addPage.manual': 'Ввести подключение',
   'hosts.switcher.add': 'Добавить хост…',
   'hosts.switcher.manage': 'Управление хостами',
   'hosts.switcher.addCluster': 'Добавить кластер…',
@@ -70,10 +72,12 @@ export default {
   'hosts.kind.tcp': 'TCP',
   'hosts.kind.local': 'Локальный сокет',
   'hosts.form.keepHint': 'Оставьте пустым, чтобы сохранить текущее значение.',
+  'hosts.form.connectOver': 'Способ подключения',
   'hosts.form.name': 'Имя',
+  'hosts.form.nameHint': 'Оставьте пустым, чтобы назвать его {name}.',
   'hosts.form.engine': 'Движок',
   'hosts.form.engineHint':
-    'Совместимый с Docker — это Docker и Podman; Homeport различает их при подключении. К containerd подключаются через его сокет, здесь или по SSH; к Incus — также по HTTPS (TLS).',
+    'Совместимый с Docker — это Docker и Podman. К containerd подключаются через его сокет, здесь или по SSH; к Incus — также по HTTPS (TLS).',
   'hosts.form.socketOnly':
     '{engine} отвечает только на своём сокете: подключайтесь локально или по SSH.',
   'hosts.form.noPlainTcp':

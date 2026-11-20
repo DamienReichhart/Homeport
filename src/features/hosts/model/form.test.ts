@@ -1,4 +1,5 @@
 import {
+  defaultName,
   emptyBastion,
   emptyForm,
   engineForSocket,
@@ -32,6 +33,18 @@ describe('host form', () => {
       credentials: null,
       bastionKeys: [],
     });
+  });
+
+  it('names a Host after its server when no name is typed', () => {
+    const ssh = { ...emptyForm('ssh'), sshHost: 'prod-eu-1.example.com', sshUser: 'deploy' };
+    expect(defaultName(ssh)).toBe('prod-eu-1');
+    expect(toHostInput(ssh, false).name).toBe('prod-eu-1');
+    expect(toHostInput({ ...ssh, name: 'eu' }, false).name).toBe('eu');
+    const at = (address: string) => defaultName({ ...emptyForm('tls'), address });
+    expect(at('docker.example.com:2376')).toBe('docker');
+    expect(at('192.168.1.10:2376')).toBe('192.168.1.10');
+    expect(at('[fd00::1]:2376')).toBe('fd00::1');
+    expect(defaultName(emptyForm('local'))).toBe('');
   });
 
   it('sends the Engine kind with every kind of connection', () => {
