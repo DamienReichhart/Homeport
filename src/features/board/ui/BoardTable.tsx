@@ -13,17 +13,22 @@ import {
 } from '@/shared/ui';
 import type { BoardRow, BoardSort, SortKey } from '../model/board';
 import { BoardRowView } from './BoardRowView';
+import { SHOWN_FROM } from './columns';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const COLUMNS: { key: SortKey | null; label: MessageKey; className?: string }[] = [
   { key: 'host', label: 'board.column.host' },
   { key: 'name', label: 'containers.column.name' },
-  { key: 'image', label: 'containers.column.image' },
-  { key: 'status', label: 'containers.column.status' },
-  { key: 'stack', label: 'board.column.stack' },
-  { key: null, label: 'containers.column.ports' },
-  { key: 'cpu', label: 'containers.column.cpu', className: 'text-end' },
-  { key: 'memory', label: 'containers.column.memory', className: 'text-end' },
+  { key: 'image', label: 'containers.column.image', className: SHOWN_FROM.image },
+  { key: 'status', label: 'containers.column.status', className: SHOWN_FROM.basic },
+  { key: 'stack', label: 'board.column.stack', className: SHOWN_FROM.stack },
+  { key: null, label: 'containers.column.ports', className: SHOWN_FROM.ports },
+  { key: 'cpu', label: 'containers.column.cpu', className: `text-end ${SHOWN_FROM.basic}` },
+  {
+    key: 'memory',
+    label: 'containers.column.memory',
+    className: `text-end ${SHOWN_FROM.basic}`,
+  },
 ];
 /** Past this many rows, only those in view are drawn. */
 export const VIRTUAL_FROM = 300;
@@ -65,7 +70,10 @@ export function BoardTable({
   const some = rows.some((r) => selected.has(r.key));
 
   return (
-    <div ref={scroller} className="max-h-[calc(100vh-15rem)] overflow-auto rounded-md border">
+    <div
+      ref={scroller}
+      className="@container max-h-[calc(100vh-15rem)] overflow-auto rounded-md border"
+    >
       <Table>
         <TableHeader className="bg-background sticky top-0 z-10">
           <TableRow>
