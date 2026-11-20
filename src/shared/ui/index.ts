@@ -126,6 +126,7 @@ export { TransferDialog } from './feedback/TransferDialog';
 export { useConfirmedAction, type ConfirmedAction } from './feedback/useConfirmedAction';
 export { EmptyState } from './feedback/EmptyState';
 export { DangerZone } from './feedback/DangerZone';
+export { TypeToConfirm, typedMatches } from './feedback/TypeToConfirm';
 export { ErrorDetailsHost, showErrorDetails } from './feedback/ErrorDetails';
 export { ErrorMessage } from './feedback/ErrorMessage';
 export { HintView } from './feedback/HintView';

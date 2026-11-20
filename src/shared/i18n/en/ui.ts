@@ -32,4 +32,5 @@ export default {
   'ui.errorDetails.copyReport': 'Copy report',
   'ui.env.show': 'Show values',
   'ui.env.hide': 'Hide values',
+  'ui.confirm.typeName': 'Type {name} to confirm',
 } as const;

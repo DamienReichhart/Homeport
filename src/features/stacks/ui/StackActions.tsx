@@ -198,6 +198,7 @@ export function StackActions({
                     title: t('stacks.downWithVolumes.title', { name: stack.name }),
                     description: <strong>{t('stacks.downWithVolumes.warning')}</strong>,
                     confirmLabel: t('stacks.downWithVolumes.confirm'),
+                    typeToConfirm: stack.name,
                     destructive: true,
                     onConfirm: () => compose('downWithVolumes'),
                   })

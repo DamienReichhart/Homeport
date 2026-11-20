@@ -35,4 +35,5 @@ export default {
   'ui.errorDetails.copyReport': 'Bericht kopieren',
   'ui.env.show': 'Werte anzeigen',
   'ui.env.hide': 'Werte ausblenden',
+  'ui.confirm.typeName': 'Zum Bestätigen {name} eingeben',
 } satisfies Translation<typeof en>;

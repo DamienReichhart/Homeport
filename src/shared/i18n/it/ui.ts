@@ -35,4 +35,5 @@ export default {
   'ui.errorDetails.copyReport': 'Copia il rapporto',
   'ui.env.show': 'Mostra i valori',
   'ui.env.hide': 'Nascondi i valori',
+  'ui.confirm.typeName': 'Digita {name} per confermare',
 } satisfies Translation<typeof en>;

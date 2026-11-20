@@ -35,4 +35,5 @@ export default {
   'ui.errorDetails.copyReport': 'रिपोर्ट कॉपी करें',
   'ui.env.show': 'मान दिखाएँ',
   'ui.env.hide': 'मान छिपाएँ',
+  'ui.confirm.typeName': 'पुष्टि के लिए {name} टाइप करें',
 } satisfies Translation<typeof en>;

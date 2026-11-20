@@ -34,4 +34,5 @@ export default {
   'ui.errorDetails.copyReport': '复制报告',
   'ui.env.show': '显示值',
   'ui.env.hide': '隐藏值',
+  'ui.confirm.typeName': '输入 {name} 以确认',
 } satisfies Translation<typeof en>;

@@ -35,4 +35,5 @@ export default {
   'ui.errorDetails.copyReport': 'レポートをコピー',
   'ui.env.show': '値を表示',
   'ui.env.hide': '値を隠す',
+  'ui.confirm.typeName': '確認のため {name} と入力してください',
 } satisfies Translation<typeof en>;

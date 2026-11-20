@@ -10,6 +10,8 @@ import {
   DialogHeader,
   DialogTitle,
   Label,
+  typedMatches,
+  TypeToConfirm,
 } from '@/shared/ui';
 import { useDeleteInstance } from '../api/mutations';
 import { isUp } from '../model/instances';
@@ -36,6 +38,7 @@ export function DeleteInstanceDialog({
   onDeleted?: () => void;
 }) {
   const [stopFirst, setStopFirst] = useState(false);
+  const [typed, setTyped] = useState('');
   const remove = useDeleteInstance(hostId, project);
   const up = instance ? isUp(instance.status) : false;
   return (
@@ -44,6 +47,7 @@ export function DeleteInstanceDialog({
       onOpenChange={(open) => {
         if (!open) {
           setStopFirst(false);
+          setTyped('');
           onClose();
         }
       }}
@@ -79,18 +83,22 @@ export function DeleteInstanceDialog({
                 <Label htmlFor="stop-first">{t('incus.instances.delete.stopFirst')}</Label>
               </div>
             )}
+            <TypeToConfirm name={instance.name} value={typed} onChange={setTyped} />
             <DialogFooter>
               <Button variant="outline" onClick={onClose}>
                 {t('common.cancel')}
               </Button>
               <Button
                 variant="destructive"
-                disabled={remove.isPending || (up && !stopFirst)}
+                disabled={
+                  remove.isPending || (up && !stopFirst) || !typedMatches(typed, instance.name)
+                }
                 onClick={() =>
                   remove
                     .mutateAsync({ name: instance.name, stopFirst: up && stopFirst })
                     .then(() => {
                       setStopFirst(false);
+                      setTyped('');
                       onClose();
                       onDeleted?.();
                     })

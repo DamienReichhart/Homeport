@@ -82,7 +82,10 @@ describe('volumes page', () => {
 
     await user.click(screen.getByLabelText('Delete scratch'));
     expect(await screen.findByText(/permanently deleted/)).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: 'Delete volume and data' }));
+    const remove = screen.getByRole('button', { name: 'Delete volume and data' });
+    expect(remove).toBeDisabled();
+    await user.type(screen.getByLabelText('Type scratch to confirm'), 'scratch');
+    await user.click(remove);
     await vi.waitFor(() => expect(removed).toEqual(['scratch']));
   });
 
@@ -116,6 +119,7 @@ describe('volumes page', () => {
     await user.click(await screen.findByLabelText('Delete scratch'));
     const confirmation = await screen.findByRole('alertdialog');
     const remove = within(confirmation).getByRole('button', { name: 'Delete volume and data' });
+    await user.type(within(confirmation).getByLabelText('Type scratch to confirm'), 'scratch');
     await user.click(remove);
 
     expect(await screen.findByText('scratch is used by a container.')).toBeInTheDocument();

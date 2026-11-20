@@ -9,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
   Label,
+  TypeToConfirm,
+  typedMatches,
 } from '@/shared/ui';
 import { useStopJob, type JobRef } from '../api/mutations';
 import { t } from '@/shared/i18n';
@@ -24,6 +26,7 @@ export function StopJobDialog({
   onClose: () => void;
 }) {
   const [purge, setPurge] = useState(false);
+  const [typed, setTyped] = useState('');
   const stop = useStopJob(job, onClose);
   return (
     <Dialog open onOpenChange={(open) => !open && !stop.isPending && onClose()}>
@@ -47,6 +50,7 @@ export function StopJobDialog({
             <p className="text-muted-foreground text-xs">{t('nomad.stop.purgeHelp')}</p>
           </div>
         </div>
+        {purge && <TypeToConfirm name={job.jobId} value={typed} onChange={setTyped} />}
         <DialogFooter>
           <Button variant="ghost" onClick={onClose} disabled={stop.isPending}>
             {t('common.cancel')}
@@ -54,7 +58,7 @@ export function StopJobDialog({
           <Button
             variant="destructive"
             className="bg-destructive hover:bg-destructive/90 text-white"
-            disabled={stop.isPending}
+            disabled={stop.isPending || (purge && !typedMatches(typed, job.jobId))}
             onClick={() => stop.mutate(purge)}
           >
             {purge ? t('nomad.stop.confirmPurge') : t('nomad.stop.confirm')}

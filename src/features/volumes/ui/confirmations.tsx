@@ -18,6 +18,7 @@ export function removeVolumeConfirmation(
     ),
     confirmLabel: t('volumes.remove.confirm'),
     destructive: true,
+    typeToConfirm: volume.name,
     action,
   };
 }

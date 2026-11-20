@@ -36,4 +36,5 @@ export default {
   'ui.errorDetails.copyReport': 'Скопировать отчёт',
   'ui.env.show': 'Показать значения',
   'ui.env.hide': 'Скрыть значения',
+  'ui.confirm.typeName': 'Введите {name} для подтверждения',
 } satisfies Translation<typeof en>;

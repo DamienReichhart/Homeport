@@ -138,6 +138,7 @@ function Volumes({ hostId, project, pool }: { hostId: string; project: string; p
                   description: t('incus.storage.delete.description', { pool }),
                   confirmLabel: t('incus.delete'),
                   destructive: true,
+                  typeToConfirm: volume.name,
                   action: () => remove.mutateAsync(volume.name),
                 })
               }

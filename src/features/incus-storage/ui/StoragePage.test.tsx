@@ -74,6 +74,7 @@ describe('incus storage', () => {
     // Instances' own volumes aren't deleted here.
     expect(screen.queryByRole('button', { name: 'Delete t1' })).toBeNull();
     await user.click(screen.getByRole('button', { name: 'Delete spare' }));
+    await user.type(await screen.findByLabelText('Type spare to confirm'), 'spare');
     await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() =>
       expect(calls).toContainEqual({

@@ -35,4 +35,5 @@ export default {
   'ui.errorDetails.copyReport': '보고서 복사',
   'ui.env.show': '값 표시',
   'ui.env.hide': '값 숨기기',
+  'ui.confirm.typeName': '확인하려면 {name}을(를) 입력하세요',
 } satisfies Translation<typeof en>;
