@@ -123,6 +123,8 @@ export function SnapshotsTab({
                       }),
                       confirmLabel: t('incus.snapshots.restore'),
                       destructive: true,
+                      // What changed since the snapshot is lost for good.
+                      typeToConfirm: instance.name,
                       action: () =>
                         restore.mutateAsync({
                           snapshot: snapshot.name,

@@ -78,7 +78,10 @@ describe('an instance’s snapshots', () => {
     const confirm = await screen.findByRole('alertdialog');
     expect(within(confirm).getByText(/is lost/)).toBeInTheDocument();
     expect(calls).toEqual([]);
-    await user.click(within(confirm).getByRole('button', { name: 'Restore' }));
+    const restore = within(confirm).getByRole('button', { name: 'Restore' });
+    expect(restore).toBeDisabled();
+    await user.type(within(confirm).getByLabelText('Type web to confirm'), 'web');
+    await user.click(restore);
     await user.click(screen.getByRole('button', { name: 'Delete before-upgrade' }));
     await user.click(await screen.findByRole('button', { name: 'Delete' }));
     await waitFor(() => expect(calls.map((c) => c.cmd)).toEqual(['restore', 'delete']));
