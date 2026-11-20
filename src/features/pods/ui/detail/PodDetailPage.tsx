@@ -1,22 +1,29 @@
 import { useQuery } from '@tanstack/react-query';
+import { MoreHorizontalIcon, TrashIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   age,
   ClusterGate,
   ConditionList,
-  DeleteObjectButton,
   HealthBadge,
   Labels,
   ObjectEvents,
+  podTone,
   ResourceYaml,
+  useDeleteObjects,
   useMetrics,
   useResourceWatch,
 } from '@/core/cluster';
 import type { ClusterView, OwnerView, PodDetail } from '@/shared/api';
 import {
+  Button,
   Card,
   CardContent,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
   ErrorMessage,
   KeyValue,
   PageHeader,
@@ -31,6 +38,7 @@ import { PodContainers } from './PodContainers';
 import { PodLogs } from './PodLogs';
 import { PodMetrics } from './PodMetrics';
 import { PodTerminal } from './PodTerminal';
+import { cn } from '@/shared/lib';
 import { t, type MessageKey } from '@/shared/i18n';
 
 /** The page of a Pod's owner, when Homeport shows that kind. */
@@ -74,7 +82,7 @@ function Overview({ clusterId, pod }: { clusterId: string; pod: PodDetail }) {
     [t('pods.detail.annotations'), <Labels values={pod.annotations} />],
   ];
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-4">
       <Card>
         <CardContent>
           <KeyValue items={items} />
@@ -101,6 +109,45 @@ const TAB_LABELS: Record<(typeof TABS)[number], MessageKey> = {
   yaml: 'pods.tab.source',
 };
 
+/** The Pod page's "More actions": deleting it, which its controller usually replaces. */
+function PodMenu({
+  cluster,
+  pod,
+  onDeleted,
+}: {
+  cluster: ClusterView;
+  pod: PodDetail;
+  onDeleted: () => void;
+}) {
+  const [dialog, remove] = useDeleteObjects(cluster);
+  const v = pod.view;
+  return (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+            <MoreHorizontalIcon />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            variant="destructive"
+            onSelect={() =>
+              remove(
+                [{ type: { kind: 'pod' }, namespace: v.namespace, name: v.name, owner: v.owner }],
+                onDeleted,
+              )
+            }
+          >
+            <TrashIcon /> {t('core.delete.action')}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {dialog}
+    </>
+  );
+}
+
 function PodDetailView({ cluster }: { cluster: ClusterView }) {
   const { namespace = '', name = '', tab = 'overview' } = useParams();
   const navigate = useNavigate();
@@ -119,7 +166,13 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
         title={name}
         description={
           <span className="flex items-center gap-2">
-            <HealthBadge pod={pod.data.view.health} status={pod.data.view.status} />
+            <span
+              className={cn(
+                podTone(pod.data.view.health) === 'danger' && 'text-destructive font-medium',
+              )}
+            >
+              <HealthBadge pod={pod.data.view.health} status={pod.data.view.status} />
+            </span>
             <span className="text-muted-foreground">
               ·{' '}
               {t('pods.detail.readyOf', {
@@ -130,14 +183,9 @@ function PodDetailView({ cluster }: { cluster: ClusterView }) {
           </span>
         }
         actions={
-          <DeleteObjectButton
+          <PodMenu
             cluster={cluster}
-            target={{
-              type: { kind: 'pod' },
-              namespace,
-              name,
-              owner: pod.data.view.owner,
-            }}
+            pod={pod.data}
             onDeleted={() => void navigate('/pods', { replace: true })}
           />
         }

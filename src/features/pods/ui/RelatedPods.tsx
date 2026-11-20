@@ -23,5 +23,6 @@ export function RelatedPods({
   useResourceWatch(clusterId, 'pod', namespace);
   if (pods.isPending) return <Spinner />;
   if (pods.error) return <ErrorMessage error={pods.error} onRetry={() => void pods.refetch()} />;
-  return <PodsTable pods={pods.data} showNamespace={namespace === null} />;
+  // Beside a workload, a Service or a Node, the Pod's own page says where it runs.
+  return <PodsTable pods={pods.data} showNamespace={namespace === null} showNode={false} />;
 }

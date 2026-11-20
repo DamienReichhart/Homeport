@@ -65,4 +65,5 @@ export default {
   'pods.tab.metrics': 'Métricas',
   'pods.metrics.noSample':
     'O metrics-server ainda não tem amostra deste Pod: ele pode ter acabado de iniciar ou não estar em execução.',
+  'pods.failing': '{count} com falha',
 } satisfies Translation<typeof en>;

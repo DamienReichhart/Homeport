@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands } from '@/test/fixtures';
 import { clusterCommands, podView } from '@/test/clusters';
@@ -35,6 +35,31 @@ describe('pods', () => {
     await user.click(await screen.findByRole('option', { name: 'All namespaces' }));
     expect(await screen.findByText('shop')).toBeInTheDocument();
     await waitFor(() => expect(saved.at(-1)?.clusterNamespaces).toEqual({ c1: '' }));
+  });
+
+  it('opens a Pod’s logs or terminal straight from its row', async () => {
+    mockCommands({
+      ...baseCommands,
+      ...clusterCommands,
+      clusters_pods_list: () => [
+        podView('web-1'),
+        podView('web-2', { status: 'CrashLoopBackOff', health: 'crashing', restarts: 7 }),
+      ],
+    });
+    renderApp('/pods');
+    const running = within(await screen.findByRole('row', { name: /web-1/ }));
+    expect(running.getByRole('link', { name: 'Logs' })).toHaveAttribute(
+      'href',
+      '/pods/default/web-1/logs',
+    );
+    expect(running.getByRole('link', { name: 'Terminal' })).toHaveAttribute(
+      'href',
+      '/pods/default/web-1/terminal',
+    );
+    // A crashing Pod has no shell to open, but its logs say why.
+    const crashing = within(screen.getByRole('row', { name: /web-2/ }));
+    expect(crashing.getByRole('link', { name: 'Logs' })).toBeInTheDocument();
+    expect(crashing.queryByRole('link', { name: 'Terminal' })).not.toBeInTheDocument();
   });
 
   it('shows thousands of Pods a page at a time', async () => {

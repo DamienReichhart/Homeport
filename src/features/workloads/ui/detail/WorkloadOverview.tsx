@@ -24,7 +24,7 @@ export function WorkloadOverview({ detail }: { detail: WorkloadDetail }) {
   items.push([t('workloads.detail.labels'), <Labels values={detail.labels} />]);
   items.push([t('workloads.detail.annotations'), <Labels values={detail.annotations} />]);
   return (
-    <div className="grid gap-8">
+    <div className="grid grid-cols-1 gap-8">
       <Card>
         <CardContent>
           <KeyValue items={items} />

@@ -2,6 +2,7 @@ import { age } from '@/core/cluster';
 import { ForwardButton } from '@/features/port-forwards';
 import type { PodContainer } from '@/shared/api';
 import { Badge, DataTable, StatusDot, type ColumnDef } from '@/shared/ui';
+import { cn } from '@/shared/lib';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const STATES: Partial<Record<string, MessageKey>> = {
@@ -26,7 +27,14 @@ const columns: ColumnDef<PodContainer, unknown>[] = [
     id: 'image',
     header: t('pods.container.image'),
     accessorFn: (c) => c.image,
-    cell: ({ row }) => <span className="font-mono text-xs break-all">{row.original.image}</span>,
+    cell: ({ row }) => (
+      <span
+        className="inline-block max-w-56 truncate align-bottom font-mono text-xs"
+        title={row.original.image}
+      >
+        {row.original.image}
+      </span>
+    ),
   },
   {
     id: 'state',
@@ -34,24 +42,37 @@ const columns: ColumnDef<PodContainer, unknown>[] = [
     accessorFn: (c) => c.state,
     cell: ({ row }) => {
       const c = row.original;
+      // Waiting to be pulled or created is normal; waiting after a crash or a
+      // failed pull (CrashLoopBackOff, ErrImagePull…) needs you.
       const tone =
         c.state === 'running'
           ? c.ready
             ? 'success'
             : 'warning'
           : c.state === 'waiting'
-            ? 'info'
+            ? c.reason && /BackOff|Err|Invalid|Error/.test(c.reason)
+              ? 'danger'
+              : 'info'
             : c.exitCode === 0
               ? 'muted'
               : 'danger';
       return (
         <span className="grid gap-0.5">
-          <span className="inline-flex items-center gap-1.5">
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5',
+              tone === 'danger' && 'text-destructive',
+            )}
+          >
             <StatusDot tone={tone} />
             {c.reason ?? t(STATES[c.state] ?? 'pods.state.waiting')}
             {c.exitCode !== null && c.state === 'terminated' && ` (${c.exitCode})`}
           </span>
-          {c.message && <span className="text-muted-foreground text-xs">{c.message}</span>}
+          {c.message && (
+            <span className="text-muted-foreground max-w-96 text-xs whitespace-normal">
+              {c.message}
+            </span>
+          )}
         </span>
       );
     },

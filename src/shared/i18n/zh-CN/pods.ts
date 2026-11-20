@@ -64,4 +64,5 @@ export default {
   'pods.column.memory': '内存',
   'pods.tab.metrics': '指标',
   'pods.metrics.noSample': 'metrics-server 还没有此 Pod 的样本：它可能刚刚启动，或没有运行。',
+  'pods.failing': '{count} 个出错',
 } satisfies Translation<typeof en>;

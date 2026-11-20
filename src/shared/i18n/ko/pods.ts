@@ -65,4 +65,5 @@ export default {
   'pods.tab.metrics': '메트릭',
   'pods.metrics.noSample':
     'metrics-server에 아직 이 Pod의 샘플이 없습니다. 방금 시작되었거나 실행 중이 아닐 수 있습니다.',
+  'pods.failing': '{count}개 실패',
 } satisfies Translation<typeof en>;
