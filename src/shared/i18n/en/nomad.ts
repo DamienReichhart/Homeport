@@ -162,7 +162,6 @@ export default {
   'nomad.nodes.drainCancelled': 'Drain cancelled',
 
   'nomad.node.description': 'Client node in {datacenter}, node pool {pool}',
-  'nomad.node.back': 'Nodes',
   'nomad.node.eligible': 'Eligible for new allocations',
   'nomad.node.drain': 'Drain',
   'nomad.node.settings': 'Node',

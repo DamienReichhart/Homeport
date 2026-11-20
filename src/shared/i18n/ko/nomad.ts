@@ -166,7 +166,6 @@ export default {
   'nomad.nodes.drainCancelled': '드레인을 취소했습니다',
 
   'nomad.node.description': '{datacenter}의 클라이언트 노드, 노드 풀 {pool}',
-  'nomad.node.back': '노드',
   'nomad.node.eligible': '새 allocation 스케줄링 가능',
   'nomad.node.drain': '드레인',
   'nomad.node.settings': '노드',

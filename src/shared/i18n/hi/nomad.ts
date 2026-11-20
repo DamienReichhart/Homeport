@@ -167,7 +167,6 @@ export default {
   'nomad.nodes.drainCancelled': 'ड्रेन रद्द हुआ',
 
   'nomad.node.description': '{datacenter} में client node, node pool {pool}',
-  'nomad.node.back': 'Nodes',
   'nomad.node.eligible': 'नए allocation के लिए योग्य',
   'nomad.node.drain': 'ड्रेन करें',
   'nomad.node.settings': 'Node',

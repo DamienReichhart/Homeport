@@ -168,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'Drenagem cancelada',
 
   'nomad.node.description': 'Nó cliente em {datacenter}, pool de nós {pool}',
-  'nomad.node.back': 'Nós',
   'nomad.node.eligible': 'Elegível para novas alocações',
   'nomad.node.drain': 'Drenar',
   'nomad.node.settings': 'Nó',

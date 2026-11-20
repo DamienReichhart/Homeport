@@ -15,6 +15,7 @@ import {
 } from '@/shared/ui';
 import { nomadNodeQueries } from '../api/queries';
 import { nodeTone } from '../model/nodes';
+import { cn } from '@/shared/lib';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const STATUS_LABELS: Partial<Record<string, MessageKey>> = {
@@ -34,9 +35,15 @@ export function NodeStatus({ node }: { node: NomadNodeView }) {
       : known
         ? t(known)
         : node.status;
+  const tone = nodeTone(node);
   return (
-    <span className="inline-flex items-center gap-1.5 text-sm">
-      <StatusDot tone={nodeTone(node)} />
+    <span
+      className={cn(
+        'inline-flex items-center gap-1.5 text-sm',
+        tone === 'danger' && 'text-destructive font-medium',
+      )}
+    >
+      <StatusDot tone={tone} />
       {label}
     </span>
   );
@@ -54,6 +61,8 @@ const columns: ColumnDef<NomadNodeView, unknown>[] = [
     header: t('nomad.nodes.column.status'),
     accessorFn: (n) => n.status,
     cell: ({ row }) => <NodeStatus node={row.original} />,
+    // Beside an open node, the list still shows one that is down or draining.
+    meta: { compact: true },
   },
   {
     id: 'eligibility',
@@ -70,9 +79,14 @@ const columns: ColumnDef<NomadNodeView, unknown>[] = [
     id: 'running',
     header: t('nomad.nodes.column.running'),
     accessorFn: (n) => n.running ?? -1,
-    cell: ({ row }) => row.original.running ?? '—',
+    cell: ({ row }) => <span className="tabular-nums">{row.original.running ?? '—'}</span>,
   },
-  { id: 'address', header: t('nomad.nodes.column.address'), accessorFn: (n) => n.address ?? '' },
+  {
+    id: 'address',
+    header: t('nomad.nodes.column.address'),
+    accessorFn: (n) => n.address ?? '',
+    cell: ({ row }) => <span className="font-mono text-xs">{row.original.address}</span>,
+  },
   { id: 'version', header: t('nomad.nodes.column.version'), accessorFn: (n) => n.version ?? '' },
 ];
 

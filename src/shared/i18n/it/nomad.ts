@@ -168,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'Svuotamento annullato',
 
   'nomad.node.description': 'Nodo client in {datacenter}, node pool {pool}',
-  'nomad.node.back': 'Nodi',
   'nomad.node.eligible': 'Idoneo per nuove allocation',
   'nomad.node.drain': 'Svuota',
   'nomad.node.settings': 'Nodo',

@@ -168,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'أُلغي التفريغ',
 
   'nomad.node.description': 'عقدة عميل في {datacenter}، الـ node pool {pool}',
-  'nomad.node.back': 'العقد',
   'nomad.node.eligible': 'مؤهلة لـ allocations جديدة',
   'nomad.node.drain': 'تفريغ',
   'nomad.node.settings': 'العقدة',

@@ -168,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'Drainage annulé',
 
   'nomad.node.description': 'Nœud client dans {datacenter}, pool de nœuds {pool}',
-  'nomad.node.back': 'Nœuds',
   'nomad.node.eligible': 'Éligible aux nouvelles allocations',
   'nomad.node.drain': 'Drainer',
   'nomad.node.settings': 'Nœud',

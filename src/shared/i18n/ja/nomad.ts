@@ -168,7 +168,6 @@ export default {
   'nomad.nodes.drainCancelled': 'ドレインをキャンセルしました',
 
   'nomad.node.description': '{datacenter} のクライアントノード、ノードプール {pool}',
-  'nomad.node.back': 'ノード',
   'nomad.node.eligible': '新しいアロケーションの対象にする',
   'nomad.node.drain': 'ドレイン',
   'nomad.node.settings': 'ノード',

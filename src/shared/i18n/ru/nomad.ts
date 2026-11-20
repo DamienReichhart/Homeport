@@ -170,7 +170,6 @@ export default {
   'nomad.nodes.drainCancelled': 'Освобождение отменено',
 
   'nomad.node.description': 'Клиентский узел в {datacenter}, пул узлов {pool}',
-  'nomad.node.back': 'Узлы',
   'nomad.node.eligible': 'Доступен для новых allocation',
   'nomad.node.drain': 'Освободить',
   'nomad.node.settings': 'Узел',

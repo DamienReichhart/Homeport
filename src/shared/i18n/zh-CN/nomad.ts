@@ -164,7 +164,6 @@ export default {
   'nomad.nodes.drainCancelled': '已取消腾空',
 
   'nomad.node.description': '位于 {datacenter} 的 client node，node pool {pool}',
-  'nomad.node.back': 'Node',
   'nomad.node.eligible': '可接收新的 allocation',
   'nomad.node.drain': '腾空',
   'nomad.node.settings': 'Node',
