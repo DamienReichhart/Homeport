@@ -1,5 +1,5 @@
 import { $, expect } from '@wdio/globals';
-import { button, field, gone, goTo, paste, press, shown, text } from '../support/app';
+import { button, field, gone, menuItem, paste, press, shown, text } from '../support/app';
 import { SSH_PORT, startSshHost, type SshHost } from '../support/sshd';
 
 const NAME = 'e2e-ssh';
@@ -12,9 +12,10 @@ describe('an SSH Host', () => {
   after(() => server?.stop());
 
   it('is added with an existing key, trusted on first use and connects', async () => {
-    await shown(text('Overview'), 60_000);
-    await goTo('Overview');
-    await press(button('Add host'));
+    // Adding a Host is a menu at the foot of the sidebar's fleet.
+    await shown(button('Add host or cluster'), 60_000);
+    await press(button('Add host or cluster'));
+    await press(menuItem('Add host…'));
     await shown(field('Name'));
     await field('Name').setValue(NAME);
     // SSH is the form's first choice.
