@@ -7,7 +7,7 @@ export default {
     'Homeport s’exécute sur votre machine et n’installe rien sur vos serveurs. Gratuit et open source.',
   'home.hero.docs': 'Lire la documentation',
   'home.map.label':
-    'Un exemple de parc dessiné comme un plan de métro. Cette machine est au terminus de cinq lignes : le socket local dessert laptop, SSH dessert prod-eu-1, nas et edge-1, TLS dessert staging et vps-fra-1, TCP dessert lan-box, et l’API du cluster dessert k8s-prod, jobs et lab. Une stack sur vps-fra-1 est à traiter.',
+    'Un exemple de parc dessiné comme un plan de métro. Cette machine est au terminus de cinq lignes : le socket local dessert This Mac, SSH dessert prod-eu-1, nas et edge-1, TLS dessert staging et vps-fra-1, TCP dessert lan-box, et l’API du cluster dessert k8s-prod, jobs et lab. Une stack sur vps-fra-1 est à traiter.',
   'home.map.thisMachine': 'Cette machine',
   'home.map.needsYou': '1 stack à traiter',
   'home.map.keyNeedsYou': 'À traiter',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'Gérer les stacks',
   'home.questions.act.screenshot':
     'La définition d’une stack gérée : l’éditeur de compose.yaml, son environnement et le bouton Déployer.',
+  'home.questions.background.title': 'Une surveillance en arrière-plan',
+  'home.questions.background.body':
+    'L’état de chaque hôte dans la zone de notification, des notifications quand un conteneur plante ou qu’un hôte se déconnecte, et Homeport qui démarre à l’ouverture de session, masqué jusqu’à ce que vous en ayez besoin.',
+  'home.questions.keyboard.title': 'Le clavier d’abord',
+  'home.questions.keyboard.body':
+    'Une palette de commandes pour aller n’importe où, changer d’hôte ou lancer une commande, et pour trouver n’importe quel conteneur, image ou volume sur l’hôte qui l’a. Des raccourcis pour chaque page, listés avec ?.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'Rien ne s’installe.',

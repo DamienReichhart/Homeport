@@ -7,7 +7,7 @@ export default {
     'Homeport se ejecuta en tu equipo y no instala nada en tus servidores. Gratuito y de código abierto.',
   'home.hero.docs': 'Leer la documentación',
   'home.map.label':
-    'Una flota de ejemplo dibujada como un plano de metro. Este equipo está al final de cinco líneas: el socket local llega a laptop, SSH llega a prod-eu-1, nas y edge-1, TLS llega a staging y vps-fra-1, TCP llega a lan-box, y la API del clúster llega a k8s-prod, jobs y lab. Un stack en vps-fra-1 requiere tu atención.',
+    'Una flota de ejemplo dibujada como un plano de metro. Este equipo está al final de cinco líneas: el socket local llega a This Mac, SSH llega a prod-eu-1, nas y edge-1, TLS llega a staging y vps-fra-1, TCP llega a lan-box, y la API del clúster llega a k8s-prod, jobs y lab. Un stack en vps-fra-1 requiere tu atención.',
   'home.map.thisMachine': 'Este equipo',
   'home.map.needsYou': '1 stack requiere tu atención',
   'home.map.keyNeedsYou': 'Requiere tu atención',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'Gestionar stacks',
   'home.questions.act.screenshot':
     'La definición de un stack gestionado: el editor de compose.yaml, su entorno y el botón Desplegar.',
+  'home.questions.background.title': 'Vigilando en segundo plano',
+  'home.questions.background.body':
+    'El estado de cada host en la bandeja del sistema, notificaciones cuando un contenedor falla o un host se desconecta, y Homeport iniciándose al iniciar sesión, oculto hasta que lo necesites.',
+  'home.questions.keyboard.title': 'Primero el teclado',
+  'home.questions.keyboard.body':
+    'Una paleta de comandos para ir a cualquier sitio, cambiar de host o ejecutar un comando, y para encontrar cualquier contenedor, imagen o volumen en el host que lo tenga. Atajos para cada página, listados con ?.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'Nada se instala.',

@@ -7,17 +7,18 @@
 import Search from '@astrojs/starlight/components/Search.astro';
 import SiteTitle from '@astrojs/starlight/components/SiteTitle.astro';
 import SocialIcons from '@astrojs/starlight/components/SocialIcons.astro';
-import ThemeSelect from '@astrojs/starlight/components/ThemeSelect.astro';
 import LanguageSwitcher from '@/app/chrome/LanguageSwitcher.astro';
+import ThemeToggle from '@/app/chrome/ThemeToggle.astro';
 import { pageLocale, strings } from '@/core/i18n';
 import { localePath } from '@/core/site';
 import { href, unbased } from '@/shared/lib/href';
 
 const locale = pageLocale(Astro.url);
 const s = strings(locale);
+// The same pages, in the same order, as the site's own header (app/chrome/SiteHeader.astro).
 const links = [
+  { label: s['header.engines'], path: localePath('/#engines', locale) },
   { label: s['header.docs'], path: localePath('/docs/', locale) },
-  { label: s['header.download'], path: localePath('/download/', locale) },
   { label: s['header.changelog'], path: localePath('/changelog/', locale) },
 ];
 const current = Astro.url.pathname;
@@ -45,7 +46,10 @@ const current = Astro.url.pathname;
       <SocialIcons />
     </div>
     <LanguageSwitcher currentPath={unbased(Astro.url.pathname)} />
-    <ThemeSelect />
+    <ThemeToggle />
+    <a class="download" href={href(localePath('/download/', locale))}>
+      {s['header.download']}
+    </a>
   </div>
 </div>
 
@@ -72,6 +76,27 @@ const current = Astro.url.pathname;
   }
   .right-group {
     align-self: stretch;
+  }
+  .social-icons {
+    margin-inline-start: 0.5rem;
+  }
+  /* The one solid button, as in the site's header. */
+  .download {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.25rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: var(--hp-radius);
+    background: var(--hp-primary);
+    color: var(--hp-on-primary);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 150ms ease;
+  }
+  .download:hover {
+    background: var(--hp-primary-strong);
+    color: var(--hp-on-primary);
   }
   .social-icons::after {
     content: '';

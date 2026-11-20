@@ -46,14 +46,31 @@ interface Props {
   class?: string;
   /** Show only the top-left part of the shot, at this aspect ratio (e.g. `960 / 900`). */
   crop?: string;
+  /**
+   * Show only this part of the shot, enlarged to fill the frame: `x y width
+   * height` in the window's own pixels (a 1440 × 900 window), e.g. the log pane
+   * of a container's page. Overrides `crop`.
+   */
+  region?: string;
   /** The page's language folder (`fr`, `pt-br`); empty or absent for English. */
   folder?: string;
 }
 
-const { name, alt, sizes, eager = false, crop, folder = '' } = Astro.props;
-const cropStyle = crop
-  ? `aspect-ratio: ${crop}; object-fit: cover; object-position: left top;`
+const { name, alt, sizes, eager = false, crop, region, folder = '' } = Astro.props;
+/** The window the shots were captured in, in CSS pixels. */
+const WINDOW_WIDTH = 1440;
+const [rx = 0, ry = 0, rw = WINDOW_WIDTH, rh = 0] = (region ?? '').split(/\s+/).map(Number);
+/* A region is drawn by making the shot wider than its frame and moving it up and left;
+   percentage margins are of the frame's width, so the region keeps its place at any size. */
+const regionStyle = region
+  ? `width: ${(WINDOW_WIDTH / rw) * 100}%; max-width: none; margin: ${(-ry / rw) * 100}% 0 0 ${(-rx / rw) * 100}%;`
   : undefined;
+const frameStyle = region ? `aspect-ratio: ${rw} / ${rh}; direction: ltr;` : undefined;
+const cropStyle = region
+  ? regionStyle
+  : crop
+    ? `aspect-ratio: ${crop}; object-fit: cover; object-position: left top;`
+    : undefined;
 /** A crop's width over its height: `960 / 820` is 1.17. */
 const [cropWidth = 0, cropHeight = 0] = (crop ?? '').split('/').map(Number);
 
@@ -93,15 +110,17 @@ const pictures = await Promise.all(
     );
     // A crop narrower than the shot fills its box by height, so the shot is
     // drawn wider than the box: by the ratio of the two shapes.
-    const zoom = cropHeight
-      ? Math.max(1, image.width / image.height / (cropWidth / cropHeight))
-      : 1;
+    const zoom = region
+      ? WINDOW_WIDTH / rw
+      : cropHeight
+        ? Math.max(1, image.width / image.height / (cropWidth / cropHeight))
+        : 1;
     return { avif: avif!, webp: webp!, theme, sizes: scaleSizes(sizes, zoom) };
   }),
 );
 ---
 
-<div class:list={['window', Astro.props.class]}>
+<div class:list={['window', Astro.props.class]} style={frameStyle}>
   {pictures.map(({ avif, webp, theme, sizes }) => (
     <picture>
       <source type="image/avif" srcset={avif.srcSet.attribute} sizes={sizes} />

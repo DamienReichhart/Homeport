@@ -7,7 +7,7 @@ export default {
     'Homeport는 사용자의 컴퓨터에서 실행되며 서버에는 아무것도 설치하지 않습니다. 무료 오픈 소스입니다.',
   'home.hero.docs': '문서 읽기',
   'home.map.label':
-    '노선도로 그린 예시 서버 구성입니다. 이 컴퓨터는 다섯 노선의 종점입니다. 로컬 소켓은 laptop에, SSH는 prod-eu-1, nas, edge-1에, TLS는 staging, vps-fra-1에, TCP는 lan-box에, 클러스터 API는 k8s-prod, jobs, lab에 닿습니다. vps-fra-1의 스택 하나가 확인이 필요합니다.',
+    '노선도로 그린 예시 서버 구성입니다. 이 컴퓨터는 다섯 노선의 종점입니다. 로컬 소켓은 This Mac에, SSH는 prod-eu-1, nas, edge-1에, TLS는 staging, vps-fra-1에, TCP는 lan-box에, 클러스터 API는 k8s-prod, jobs, lab에 닿습니다. vps-fra-1의 스택 하나가 확인이 필요합니다.',
   'home.map.thisMachine': '이 컴퓨터',
   'home.map.needsYou': '확인이 필요한 스택 1개',
   'home.map.keyNeedsYou': '확인 필요',
@@ -40,6 +40,12 @@ export default {
     '다시 배포하면 실행하기 전에 무엇이 바뀌는지 보여 줍니다. 배포마다 기록이 남아 롤백할 수 있고, 업데이트는 새 이미지를 한 번에 풀합니다.',
   'home.questions.act.link': '스택 관리하기',
   'home.questions.act.screenshot': '관리형 스택의 정의: compose.yaml 편집기, 환경, 배포 버튼.',
+  'home.questions.background.title': '백그라운드에서 지켜보기',
+  'home.questions.background.body':
+    '시스템 트레이에 모든 호스트의 상태가 표시되고, 컨테이너가 비정상 종료되거나 호스트 연결이 끊기면 알림이 옵니다. Homeport는 로그인할 때 시작되어 필요할 때까지 숨어 있습니다.',
+  'home.questions.keyboard.title': '키보드 우선',
+  'home.questions.keyboard.body':
+    '명령 팔레트로 어디든 이동하고, 호스트를 전환하거나 명령을 실행하고, 어느 호스트에 있든 컨테이너, 이미지, 볼륨을 찾을 수 있습니다. 모든 페이지에 단축키가 있으며, ?를 누르면 목록을 볼 수 있습니다.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': '서버에 자리 잡는 것은 없습니다.',

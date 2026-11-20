@@ -7,7 +7,7 @@ export default {
     'Homeport funziona sul tuo computer e non installa nulla sui tuoi server. Gratuito e open source.',
   'home.hero.docs': 'Leggi la documentazione',
   'home.map.label':
-    'Un parco server di esempio disegnato come una mappa della metropolitana. Questo computer è il capolinea di cinque linee: il socket locale raggiunge laptop, SSH raggiunge prod-eu-1, nas ed edge-1, TLS raggiunge staging e vps-fra-1, TCP raggiunge lan-box, e l’API del cluster raggiunge k8s-prod, jobs e lab. Uno stack su vps-fra-1 è da gestire.',
+    'Un parco server di esempio disegnato come una mappa della metropolitana. Questo computer è il capolinea di cinque linee: il socket locale raggiunge This Mac, SSH raggiunge prod-eu-1, nas ed edge-1, TLS raggiunge staging e vps-fra-1, TCP raggiunge lan-box, e l’API del cluster raggiunge k8s-prod, jobs e lab. Uno stack su vps-fra-1 è da gestire.',
   'home.map.thisMachine': 'Questo computer',
   'home.map.needsYou': '1 stack da gestire',
   'home.map.keyNeedsYou': 'Da gestire',
@@ -41,6 +41,12 @@ export default {
   'home.questions.act.link': 'Gestire gli stack',
   'home.questions.act.screenshot':
     'La definizione di uno stack gestito: l’editor di compose.yaml, il suo ambiente e il pulsante Distribuisci.',
+  'home.questions.background.title': 'Sorveglianza in background',
+  'home.questions.background.body':
+    'Lo stato di ogni host nell’area di notifica, notifiche quando un container si arresta in modo anomalo o un host si disconnette, e Homeport che si avvia all’accesso, nascosto finché non ti serve.',
+  'home.questions.keyboard.title': 'Prima la tastiera',
+  'home.questions.keyboard.body':
+    'Un riquadro comandi per andare ovunque, cambiare host o eseguire un comando, e per trovare qualsiasi container, immagine o volume su qualunque host si trovi. Scorciatoie per ogni pagina, elencate con ?.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'Niente si trasferisce sui server.',

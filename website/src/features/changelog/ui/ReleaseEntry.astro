@@ -26,15 +26,16 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
 <li class="entry" id={release.tag}>
   <div class="entry__meta" lang={lang}>
     <span class:list={['station', 'entry__station']} aria-hidden="true" />
-    <a class="entry__version" href={`#${release.tag}`}>
-      {release.version}
-    </a>
     <time datetime={release.publishedAt}>{formatDate(release.publishedAt, locale.lang)}</time>
     {latest && !release.prerelease && <span class="tag tag--latest">{s['changelog.latest']}</span>}
     {release.prerelease && <span class="tag">{s['changelog.prerelease']}</span>}
   </div>
   <article class="entry__body prose">
-    <h2>{release.name}</h2>
+    <h2>
+      <a class="entry__version" href={`#${release.tag}`}>
+        {release.name}
+      </a>
+    </h2>
     <Fragment set:html={releaseNotes(release.body)} />
     <p class="entry__links" lang={lang}>
       <a href={release.url}>{s['changelog.onGitHub']}</a>
@@ -103,9 +104,6 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
   }
   .entry__version {
     color: var(--hp-text);
-    font-family: var(--sl-font-mono);
-    font-size: 1.35rem;
-    font-weight: 500;
     text-decoration: none;
   }
   .entry__version:hover {
@@ -113,6 +111,7 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
   }
   .entry__meta time {
     color: var(--hp-text-muted);
+    font-variant-numeric: tabular-nums;
   }
   .tag {
     padding: 0.1rem 0.55rem;
@@ -140,6 +139,11 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
   }
   .entry__body :global(ul) {
     padding-inline-start: 1.2rem;
+  }
+  /* A note's scope ("rbac:", "website:") is for maintainers: it stays, quietly. */
+  .entry__body :global(li > strong:first-child) {
+    color: var(--hp-text-faint);
+    font-weight: 500;
   }
   .entry__body :global(li a) {
     color: var(--hp-text-faint);

@@ -1,6 +1,6 @@
 # Design
 
-How Homeport's interface is built: the rules every page follows. `docs/BRAND.md` owns the identity (colour, type, mark, voice); `PRODUCT.md` owns who it is for. This file is about the screens.
+How Homeport's interface is built: the rules every page follows. `docs/BRAND.md` owns the identity (colour, type, mark, voice); `PRODUCT.md` owns who it is for. This file is about the screens. The website and its docs are drawn in their own line-map world: `docs/BRAND.md` § Website and ADR 0022.
 
 ## Principles
 

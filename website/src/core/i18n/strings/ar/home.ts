@@ -6,7 +6,7 @@ export default {
   'home.hero.lead': 'يعمل Homeport على جهازك ولا يثبّت شيئًا على خوادمك. مجاني ومفتوح المصدر.',
   'home.hero.docs': 'اقرأ التوثيق',
   'home.map.label':
-    'أسطول على سبيل المثال مرسوم كخريطة خطوط. يقع هذا الجهاز في طرف خمسة خطوط: يصل المقبس المحلي إلى laptop، ويصل SSH إلى prod-eu-1 وnas وedge-1، ويصل TLS إلى staging وvps-fra-1، ويصل TCP إلى lan-box، ويصل API العنقود إلى k8s-prod وjobs وlab. مكدس واحد على vps-fra-1 يحتاج إليك.',
+    'أسطول على سبيل المثال مرسوم كخريطة خطوط. يقع هذا الجهاز في طرف خمسة خطوط: يصل المقبس المحلي إلى This Mac، ويصل SSH إلى prod-eu-1 وnas وedge-1، ويصل TLS إلى staging وvps-fra-1، ويصل TCP إلى lan-box، ويصل API العنقود إلى k8s-prod وjobs وlab. مكدس واحد على vps-fra-1 يحتاج إليك.',
   'home.map.thisMachine': 'هذا الجهاز',
   'home.map.needsYou': 'مكدس واحد يحتاج إليك',
   'home.map.keyNeedsYou': 'يحتاج إليك',
@@ -39,6 +39,12 @@ export default {
     'تعرض إعادة النشر ما سيتغير قبل تنفيذها. ويُحتفظ بكل نشر لتتمكن من التراجع، و«تحديث» يسحب صورًا أحدث في خطوة واحدة.',
   'home.questions.act.link': 'إدارة المكدسات',
   'home.questions.act.screenshot': 'تعريف مكدس مُدار: محرر compose.yaml، وبيئته، وزر «نشر».',
+  'home.questions.background.title': 'مراقبة في الخلفية',
+  'home.questions.background.body':
+    'حالة كل مضيف في علبة النظام، وإشعارات عندما تتعطل حاوية أو ينقطع مضيف، وHomeport يبدأ عند تسجيل الدخول، مخفيًا حتى تحتاج إليه.',
+  'home.questions.keyboard.title': 'لوحة المفاتيح أولًا',
+  'home.questions.keyboard.body':
+    'لوحة أوامر للانتقال إلى أي مكان، أو تبديل المضيف، أو تشغيل أمر، وللعثور على أي حاوية أو صورة أو وحدة تخزين على أي مضيف توجد عليه. اختصارات لكل صفحة، تعرضها ?.',
 
   // Home: the lines, and what each needs on the server.
   'home.lines.title': 'لا شيء يستقر على خوادمك.',
