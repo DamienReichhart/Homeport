@@ -60,7 +60,7 @@ export function CreateVolumeDialog({
               {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={create.isPending || !name.trim()}>
-              {t('common.create')}
+              {t('volumes.create')}
             </Button>
           </DialogFooter>
         </form>

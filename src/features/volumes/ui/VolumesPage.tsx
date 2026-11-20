@@ -2,12 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import {
   ArchiveRestoreIcon,
   BrushCleaningIcon,
+  EllipsisIcon,
   HardDriveIcon,
   PlusIcon,
   RefreshCwIcon,
+  Trash2Icon,
 } from 'lucide-react';
 import { useState } from 'react';
-import { HostGate, resourceQueries } from '@/core/host';
+import { HostGate, hostQueries, resourceQueries } from '@/core/host';
 import type { VolumeView } from '@/shared/api';
 import { pickFile, pickSavePath } from '@/shared/lib';
 import {
@@ -16,6 +18,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
   EmptyState,
   ErrorMessage,
@@ -45,6 +49,8 @@ function VolumesList({ hostId }: { hostId: string }) {
   const sizes = useQuery(resourceQueries.volumeSizes(hostId));
   const removeVolume = useRemoveVolume(hostId);
   const pruneVolumes = usePruneVolumes(hostId);
+  const host =
+    useQuery(hostQueries.list()).data?.find((h) => h.host.id === hostId)?.host.name ?? hostId;
   const [dialog, confirm] = useConfirmedAction();
   const [query, setQuery] = usePageQuery();
   const [creating, setCreating] = useState(false);
@@ -70,9 +76,9 @@ function VolumesList({ hostId }: { hostId: string }) {
   };
 
   const remove = (v: VolumeView) =>
-    confirm(removeVolumeConfirmation(v, () => removeVolume.mutateAsync(v)));
+    confirm(removeVolumeConfirmation(v, host, () => removeVolume.mutateAsync(v)));
   const prune = (all: boolean) =>
-    confirm(pruneVolumesConfirmation(all, () => pruneVolumes.mutateAsync(all)));
+    confirm(pruneVolumesConfirmation(all, host, () => pruneVolumes.mutateAsync(all)));
 
   if (volumes.isPending) return <Spinner />;
   if (volumes.error)
@@ -87,29 +93,6 @@ function VolumesList({ hostId }: { hostId: string }) {
         })}
         actions={
           <>
-            <Button
-              variant="outline"
-              disabled={sizes.isFetching}
-              onClick={() => void sizes.refetch()}
-            >
-              <RefreshCwIcon className={sizes.isFetching ? 'animate-spin' : undefined} />{' '}
-              {t('volumes.size.refresh')}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline">
-                  <BrushCleaningIcon /> {t('volumes.cleanUp')}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem variant="destructive" onSelect={() => prune(false)}>
-                  {t('volumes.cleanUp.anonymous')}
-                </DropdownMenuItem>
-                <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
-                  {t('volumes.cleanUp.all')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
             <Button variant="outline" onClick={() => void restoreFrom()}>
               <ArchiveRestoreIcon /> {t('volumes.restoreFromFile')}
             </Button>
@@ -118,6 +101,27 @@ function VolumesList({ hostId }: { hostId: string }) {
                 <PlusIcon /> {t('volumes.create')}
               </Button>
             </WithShortcut>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+                  <EllipsisIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-auto">
+                <DropdownMenuItem disabled={sizes.isFetching} onSelect={() => void sizes.refetch()}>
+                  <RefreshCwIcon className={sizes.isFetching ? 'animate-spin' : undefined} />
+                  {t('volumes.size.refresh')}
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>{t('volumes.cleanUp')}</DropdownMenuLabel>
+                <DropdownMenuItem variant="destructive" onSelect={() => prune(false)}>
+                  <BrushCleaningIcon /> {t('volumes.cleanUp.anonymous')}
+                </DropdownMenuItem>
+                <DropdownMenuItem variant="destructive" onSelect={() => prune(true)}>
+                  <Trash2Icon /> {t('volumes.cleanUp.all')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         }
       />
@@ -129,6 +133,7 @@ function VolumesList({ hostId }: { hostId: string }) {
           icon={HardDriveIcon}
           title={t('volumes.empty.title')}
           description={t('volumes.empty.description')}
+          action={<Button onClick={() => setCreating(true)}>{t('volumes.create')}</Button>}
         />
       ) : (
         <DataTable

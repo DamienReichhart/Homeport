@@ -32,17 +32,21 @@ describe('volumes page', () => {
     expect(await screen.findByText('2.9 MB')).toBeInTheDocument();
     expect(screen.getByText('2.0 KB')).toBeInTheDocument();
     expect(screen.getByText('—')).toBeInTheDocument();
+    // Only a driver other than local is named.
+    expect(screen.getByText('rclone')).toBeInTheDocument();
+    expect(within(screen.getByRole('table')).queryByText('local')).toBeNull();
 
     await user.click(screen.getByRole('columnheader', { name: 'Size' }));
     const names = () =>
       screen
         .getAllByRole('row')
         .slice(1)
-        .map((r) => within(r).getAllByRole('cell')[0]?.textContent);
+        .map((r) => within(r).getAllByRole('cell')[0]?.querySelector('[title]')?.textContent);
     // Largest first, unknown last.
     await waitFor(() => expect(names()).toEqual(['db', 'cache', 'remote']));
 
-    await user.click(screen.getByRole('button', { name: 'Refresh sizes' }));
+    await user.click(screen.getByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Refresh sizes' }));
     await waitFor(() => expect(asked).toBe(2));
   });
 
@@ -80,8 +84,10 @@ describe('volumes page', () => {
     expect(await screen.findByText('shop-db-1')).toBeInTheDocument();
     expect(screen.getByText('2 volumes · 1 unused')).toBeInTheDocument();
 
-    await user.click(screen.getByLabelText('Delete scratch'));
-    expect(await screen.findByText(/permanently deleted/)).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'More actions for scratch' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete…' }));
+    expect(await screen.findByText('Delete volume scratch from local?')).toBeInTheDocument();
+    expect(screen.getByText(/permanently deleted/)).toBeInTheDocument();
     const remove = screen.getByRole('button', { name: 'Delete volume and data' });
     expect(remove).toBeDisabled();
     await user.type(screen.getByLabelText('Type scratch to confirm'), 'scratch');
@@ -116,7 +122,8 @@ describe('volumes page', () => {
     });
     const user = userEvent.setup();
     renderApp('/volumes');
-    await user.click(await screen.findByLabelText('Delete scratch'));
+    await user.click(await screen.findByRole('button', { name: 'More actions for scratch' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete…' }));
     const confirmation = await screen.findByRole('alertdialog');
     const remove = within(confirmation).getByRole('button', { name: 'Delete volume and data' });
     await user.type(within(confirmation).getByLabelText('Type scratch to confirm'), 'scratch');
@@ -129,5 +136,28 @@ describe('volumes page', () => {
 
     await user.click(within(confirmation).getByRole('button', { name: 'Cancel' }));
     await waitFor(() => expect(screen.queryByRole('alertdialog')).toBeNull());
+  });
+
+  it('asks for the Host name before deleting every unused volume', async () => {
+    let pruned: unknown = null;
+    mockCommands({
+      ...baseCommands,
+      volumes_list: () => [volume('scratch')],
+      volumes_prune: (args) => {
+        pruned = args;
+        return { removed: ['scratch'], spaceReclaimed: 0 };
+      },
+    });
+    const user = userEvent.setup();
+    renderApp('/volumes');
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'All unused volumes' }));
+    const confirmation = await screen.findByRole('alertdialog');
+    expect(within(confirmation).getByText('Delete every unused volume on local?')).toBeVisible();
+    const remove = within(confirmation).getByRole('button', { name: 'Delete volumes and data' });
+    expect(remove).toBeDisabled();
+    await user.type(within(confirmation).getByLabelText('Type local to confirm'), 'local');
+    await user.click(remove);
+    await waitFor(() => expect(pruned).not.toBeNull());
   });
 });

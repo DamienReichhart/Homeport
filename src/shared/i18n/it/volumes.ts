@@ -18,15 +18,13 @@ export default {
   'volumes.column.stack': 'Stack',
   'volumes.column.driver': 'Driver',
   'volumes.column.size': 'Dimensione',
-  'volumes.size.label': 'Dimensione:',
   'volumes.size.measuring': 'Misurazione',
   'volumes.size.unknown': 'Il driver di questo volume non ne indica la dimensione.',
   'volumes.size.refresh': 'Aggiorna le dimensioni',
   'volumes.column.usedBy': 'Usato da',
   'volumes.column.created': 'Creato',
+  'volumes.mountpoint': 'Punto di montaggio',
   'volumes.unused': 'Inutilizzato',
-  'volumes.inspectOne': 'Ispeziona {name}',
-  'volumes.deleteOne': 'Elimina {name}',
   'volumes.browseOne': 'Sfoglia i file di {name}',
   'volumes.browse.title': 'File di {name}',
   'volumes.browse.description':
@@ -42,9 +40,11 @@ export default {
   'volumes.helper.pulling': 'Download di {image}…',
   'volumes.helper.progress': 'Avanzamento del download',
   'volumes.moreActions': 'Altre azioni per {name}',
+  'volumes.inspectMenu': 'Ispeziona',
   'volumes.backupMenu': 'Esegui il backup su file…',
   'volumes.restoreMenu': 'Ripristina da file…',
   'volumes.cloneMenu': 'Clona…',
+  'volumes.deleteMenu': 'Elimina…',
   'volumes.clone.title': 'Clona {volume}',
   'volumes.clone.description':
     'Copia i suoi file, con proprietari e permessi, in un nuovo volume su questo host. La copia non appartiene ad alcuno stack.',
@@ -91,21 +91,19 @@ export default {
   'volumes.flow.replace':
     '{volume} contiene già dei file. Il ripristino li elimina e mette al loro posto quelli del backup.',
   'volumes.flow.replaceConfirm': 'Sostituisci il contenuto',
-  'volumes.usedBy': 'Usato da {containers}.',
-  'volumes.notUsed': 'Nessun container usa questo volume.',
   'volumes.createDialog.title': 'Crea un volume',
   'volumes.createDialog.name': 'Nome',
   'volumes.createDialog.driver': 'Driver',
   'volumes.deleted': '{name} eliminato',
   'volumes.pruned':
     '{count, plural, one {# volume eliminato} other {# volumi eliminati}}, {space} recuperati',
-  'volumes.remove.title': 'Eliminare il volume {name}?',
+  'volumes.remove.title': 'Eliminare il volume {name} da {host}?',
   'volumes.remove.warning':
     '<strong>Tutti i dati di questo volume vengono eliminati definitivamente.</strong>',
   'volumes.remove.mounted': ' È montato da {containers}; prima rimuovi quei container.',
   'volumes.remove.confirm': 'Elimina volume e dati',
-  'volumes.prune.allTitle': 'Eliminare tutti i volumi inutilizzati?',
-  'volumes.prune.anonymousTitle': 'Eliminare i volumi anonimi inutilizzati?',
+  'volumes.prune.allTitle': 'Eliminare tutti i volumi inutilizzati su {host}?',
+  'volumes.prune.anonymousTitle': 'Eliminare i volumi anonimi inutilizzati su {host}?',
   'volumes.prune.allWarning':
     'I dati di ogni volume non usato da alcun container vengono eliminati definitivamente, compresi i volumi con nome.',
   'volumes.prune.anonymousWarning':

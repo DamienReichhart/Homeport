@@ -18,15 +18,13 @@ export default {
   'volumes.column.stack': 'Stack',
   'volumes.column.driver': 'Treiber',
   'volumes.column.size': 'Größe',
-  'volumes.size.label': 'Größe:',
   'volumes.size.measuring': 'Wird gemessen',
   'volumes.size.unknown': 'Der Treiber dieses Volumes meldet seine Größe nicht.',
   'volumes.size.refresh': 'Größen aktualisieren',
   'volumes.column.usedBy': 'Verwendet von',
   'volumes.column.created': 'Erstellt',
+  'volumes.mountpoint': 'Einhängepunkt',
   'volumes.unused': 'Unbenutzt',
-  'volumes.inspectOne': '{name} untersuchen',
-  'volumes.deleteOne': '{name} löschen',
   'volumes.browseOne': 'Dateien von {name} durchsuchen',
   'volumes.browse.title': 'Dateien von {name}',
   'volumes.browse.description':
@@ -42,9 +40,11 @@ export default {
   'volumes.helper.pulling': '{image} wird gepullt…',
   'volumes.helper.progress': 'Pull-Fortschritt',
   'volumes.moreActions': 'Weitere Aktionen für {name}',
+  'volumes.inspectMenu': 'Untersuchen',
   'volumes.backupMenu': 'In eine Datei sichern…',
   'volumes.restoreMenu': 'Aus einer Datei wiederherstellen…',
   'volumes.cloneMenu': 'Klonen…',
+  'volumes.deleteMenu': 'Löschen…',
   'volumes.clone.title': '{volume} klonen',
   'volumes.clone.description':
     'Kopiert seine Dateien mit ihren Besitzern und Berechtigungen in ein neues Volume auf diesem Host. Die Kopie gehört zu keinem Stack.',
@@ -91,22 +91,20 @@ export default {
   'volumes.flow.replace':
     '{volume} enthält bereits Dateien. Die Wiederherstellung löscht sie und legt die der Sicherung an ihre Stelle.',
   'volumes.flow.replaceConfirm': 'Inhalt ersetzen',
-  'volumes.usedBy': 'Verwendet von {containers}.',
-  'volumes.notUsed': 'Kein Container verwendet dieses Volume.',
   'volumes.createDialog.title': 'Volume erstellen',
   'volumes.createDialog.name': 'Name',
   'volumes.createDialog.driver': 'Treiber',
   'volumes.deleted': '{name} gelöscht',
   'volumes.pruned':
     '{count, plural, one {# Volume} other {# Volumes}} gelöscht, {space} freigegeben',
-  'volumes.remove.title': 'Volume {name} löschen?',
+  'volumes.remove.title': 'Volume {name} von {host} löschen?',
   'volumes.remove.warning':
     '<strong>Alle Daten in diesem Volume werden dauerhaft gelöscht.</strong>',
   'volumes.remove.mounted':
     ' Es ist in {containers} eingehängt; entfernen Sie zuerst diese Container.',
   'volumes.remove.confirm': 'Volume und Daten löschen',
-  'volumes.prune.allTitle': 'Alle unbenutzten Volumes löschen?',
-  'volumes.prune.anonymousTitle': 'Unbenutzte anonyme Volumes löschen?',
+  'volumes.prune.allTitle': 'Alle unbenutzten Volumes auf {host} löschen?',
+  'volumes.prune.anonymousTitle': 'Unbenutzte anonyme Volumes auf {host} löschen?',
   'volumes.prune.allWarning':
     'Die Daten in allen Volumes, die kein Container verwendet, werden dauerhaft gelöscht, benannte Volumes eingeschlossen.',
   'volumes.prune.anonymousWarning':
