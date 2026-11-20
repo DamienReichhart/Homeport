@@ -34,11 +34,11 @@ Un hôte qui fait partie d’un Docker Swarm affiche **Manager de** ou **Worker 
 
 ## Ajouter, modifier et supprimer des hôtes
 
-- **Ajoutez** un hôte avec **Ajouter un hôte…** dans le sélecteur d’hôte en haut de la barre latérale, ou **Ajouter un hôte** sur la vue d’ensemble.
-- **Gérer les hôtes** dans le sélecteur d’hôte liste chaque hôte avec son type, son adresse et son état. Sélectionnez-en un pour ouvrir sa page.
-- Sur la page d’un hôte, vous pouvez modifier ses détails de connexion et choisir **Enregistrer** ; Homeport se reconnecte avec les nouveaux paramètres. Le type de connexion d’un hôte ne peut pas être modifié — supprimez-le et ajoutez-le de nouveau à la place.
+- **Ajoutez** un hôte avec **Ajouter un hôte ou un cluster**, sous la liste des hôtes dans la barre latérale, puis **Ajouter un hôte…**.
+- **Gérer les hôtes**, l’icône de réglages à côté de **Hôtes** dans la barre latérale, ouvre la page Hôtes : chaque hôte avec son type, son adresse et son état. Sélectionnez-en un pour ouvrir sa page.
+- Sur la page d’un hôte, vous pouvez modifier ses détails de connexion et choisir **Enregistrer les modifications** ; Homeport se reconnecte avec les nouveaux paramètres. Le type de connexion d’un hôte ne peut pas être modifié — supprimez-le et ajoutez-le de nouveau à la place.
 - L’interrupteur **Activé** déconnecte un hôte sans l’oublier. Un hôte désactivé ne réessaie pas tant que vous ne le réactivez pas.
-- **Supprimer l’hôte** oublie l’hôte, ses identifiants enregistrés, les définitions compose de ses stacks gérées, ses stacks liées et l’historique de déploiement de ses stacks. Rien de ce qui s’exécute sur l’hôte n’est touché : les conteneurs, images et volumes restent tels quels, de même que les dossiers des stacks liées. Les stacks d’un Swarm que l’hôte gère appartiennent au Swarm, et sont conservées.
+- **Supprimer l’hôte** oublie l’hôte, ses identifiants enregistrés, les définitions compose de ses stacks gérées, ses stacks liées et l’historique de déploiement de ses stacks. Rien de ce qui s’exécute sur l’hôte n’est touché : les conteneurs, images et volumes restent tels quels, de même que les dossiers des stacks liées. Les stacks d’un Swarm que l’hôte gère appartiennent au Swarm, et sont conservées. Comme les définitions sont supprimées pour de bon, Homeport vous demande d’abord de saisir le nom de l’hôte.
 
 Les noms d’hôte doivent être uniques, sans tenir compte de la casse.
 
@@ -73,11 +73,11 @@ Un contexte dont le nom est déjà celui d’un hôte est proposé sous la forme
 
 ## Passer à un autre ordinateur
 
-**Exporter** sur la page Hôtes enregistre les hôtes que vous choisissez dans un fichier protégé par une phrase secrète ; **Importer** sur la page Hôtes de l’autre ordinateur l’ouvre et ajoute les hôtes que vous choisissez, prêts à se connecter. Un hôte dont le nom y est déjà pris est proposé sous la forme `name (2)`, et vous pouvez le renommer ou l’ignorer. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur) pour la façon dont le fichier est protégé. Pour tout déplacer d’un coup, clusters, stacks, identifiants de registre, dépôts et paramètres compris, utilisez plutôt une [sauvegarde](/docs/reference/data-and-backups/#sauvegarder-dans-homeport).
+**Exporter des hôtes vers un fichier…**, dans le menu **Plus d’actions** de la page Hôtes, enregistre les hôtes que vous choisissez dans un fichier protégé par une phrase secrète ; **Importer des hôtes depuis un fichier…**, dans le même menu sur l’autre ordinateur, l’ouvre et ajoute les hôtes que vous choisissez, prêts à se connecter. Un hôte dont le nom y est déjà pris est proposé sous la forme `name (2)`, et vous pouvez le renommer ou l’ignorer. Voir [passer à un autre ordinateur](/docs/reference/security/#passer-à-un-autre-ordinateur) pour la façon dont le fichier est protégé. Pour tout déplacer d’un coup, clusters, stacks, identifiants de registre, dépôts et paramètres compris, utilisez plutôt une [sauvegarde](/docs/reference/data-and-backups/#sauvegarder-dans-homeport).
 
 ## Sélectionner un hôte
 
-Chaque page de ressources — Conteneurs, Images, Volumes, Réseaux, Stacks et Événements — montre l’hôte sélectionné dans le **sélecteur d’hôte**. Les pages d’un hôte containerd montrent aussi un seul espace de noms à la fois, choisi [sous le sélecteur](/docs/hosts/containerd/#espaces-de-noms), et celles d’un hôte Incus un seul [projet](/docs/hosts/incus/#projets). Changez d’hôte à cet endroit, ou sélectionnez la carte d’un hôte sur la [vue d’ensemble](/docs/guides/overview/). Homeport retient votre choix d’un lancement à l’autre.
+Chaque page de ressources — Conteneurs, Images, Volumes, Réseaux, Stacks et Événements — montre l’hôte sélectionné dans la barre latérale, où ses pages sont listées sous son nom. Les pages d’un hôte containerd montrent aussi un seul espace de noms à la fois, choisi [sous l’hôte](/docs/hosts/containerd/#espaces-de-noms) dans la barre latérale, et celles d’un hôte Incus un seul [projet](/docs/hosts/incus/#projets). Sélectionnez un autre hôte dans la barre latérale pour en changer, en restant sur le même type de page quand il en a un, ou sélectionnez sa vignette sur le [Tableau](/docs/guides/overview/#tableau). Un hôte qui ne peut pas être utilisé a, à côté de lui, un bouton **Pourquoi … ne peut pas être utilisé** qui montre l’erreur. Homeport retient votre choix d’un lancement à l’autre.
 
 ## États
 

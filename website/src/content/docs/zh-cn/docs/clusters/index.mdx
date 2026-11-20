@@ -34,7 +34,7 @@ import { DocScreenshot } from '@/features/docs';
   alt="添加集群页面：顶部是在本机上找到的本地集群，下方是 ~/.kube/config 中的上下文，显示其 API server、登录方式以及哪些已添加。"
 />
 
-在切换器中选择**添加集群…**，或在集群页面上选择**添加集群**。[本地集群](/docs/clusters/local/)（Docker Desktop、OrbStack、Rancher Desktop、kind、k3d、minikube）会列在顶部，每个只需一键。你选择的每个上下文都会成为一个以该上下文命名的集群；导入之前或之后都可以重命名。
+在侧边栏主机列表下方选择**添加主机或集群**，再选择**添加集群…**，或在集群页面上选择**添加集群**。[本地集群](/docs/clusters/local/)（Docker Desktop、OrbStack、Rancher Desktop、kind、k3d、minikube）会列在顶部，每个只需一键。你选择的每个上下文都会成为一个以该上下文命名的集群；导入之前或之后都可以重命名。
 
 - **来自本机的 kubeconfig** 读取 `KUBECONFIG` 中列出的文件，并按 `kubectl` 的方式合并；未设置 `KUBECONFIG` 时读取 `~/.kube/config`。当前上下文会被自动选中。
 - **粘贴 kubeconfig** 读取你粘贴的文本，只保存在内存中：它绝不会被保存为文件。其中引用的文件（`certificate-authority: /…`）必须使用完整路径；最简单的做法是粘贴一个所有内容都已内联的 kubeconfig：
@@ -43,7 +43,7 @@ import { DocScreenshot } from '@/features/docs';
   kubectl config view --raw --flatten --minify
   ```
 
-每个上下文都会显示其 API server、其 namespace 以及其用户的登录方式——**客户端证书**、**令牌**、**OpenID Connect**，云集群则为 **Exec 插件 (aws)**——这样你在导入之前就能分辨本地集群和生产集群。勾选你需要的上下文；每个都有一个名称字段，预填为上下文的名称。像 `arn:aws:eks:…:cluster/prod` 这样的长 ARN 值得改成 `eks-prod` 之类的简短名称：切换器和概览显示的就是这个名称。
+每个上下文都会显示其 API server、其 namespace 以及其用户的登录方式——**客户端证书**、**令牌**、**OpenID Connect**，云集群则为 **Exec 插件 (aws)**——这样你在导入之前就能分辨本地集群和生产集群。勾选你需要的上下文；每个都有一个名称字段，预填为上下文的名称。像 `arn:aws:eks:…:cluster/prod` 这样的长 ARN 值得改成 `eks-prod` 之类的简短名称：侧边栏、看板和概览显示的就是这个名称。
 
 已经是集群的上下文不能重复导入：Homeport 会改为提供**刷新它**。无法使用的上下文会说明原因，例如其用户的 `auth-provider` 为 `gcp` 或 `azure`，而 Kubernetes 已移除这两者（请改用 `gke-gcloud-auth-plugin` 或 `kubelogin`，`kubectl` 现在也要求如此）。
 
@@ -64,7 +64,7 @@ kind、k3d 和 minikube 每次重新创建集群时都会为其生成新证书�
 
 ## 管理集群
 
-- 切换器中的**管理集群**会列出每个集群及其状态、API server 和登录方式。
+- 侧边栏中**集群**旁边的设置图标**管理集群**会列出每个集群及其状态、API server 和登录方式。
 - 在集群页面上，**已启用**开关会断开集群连接但不会忘记它，**重新连接**会立即重试，**重命名**只在 Homeport 中更改其名称。
 - **删除集群**会忘记该集群及其已保存的凭据。集群上和你的 kubeconfig 中的内容都不会改变。
 

@@ -27,7 +27,7 @@ What an Incus host runs: a system container, which boots a whole Linux distribut
 
 ### Project (Incus's)
 
-On an Incus host, the space its instances, images, profiles, custom volumes and networks live in. An Incus host's pages show one at a time, picked under the host switcher. See [projects](/docs/hosts/incus/#projects).
+On an Incus host, the space its instances, images, profiles, custom volumes and networks live in. An Incus host's pages show one at a time, picked under the Host in the sidebar. See [projects](/docs/hosts/incus/#projects).
 
 ### Profile
 

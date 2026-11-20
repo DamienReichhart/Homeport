@@ -20,9 +20,9 @@ Para conectarte a un Engine remoto, elige **Añadir otro host**:
 
 1. Elige cómo conectarte: **SSH**, **TLS**, **TCP** o **Socket local**. SSH es lo habitual para un servidor.
 
-2. Dale al host un **Nombre** que reconozcas, como `production`.
+2. Rellena los datos de conexión. Para SSH son el **Servidor**, el **Puerto**, el **Usuario** y, si Docker no está en el lugar predeterminado, la **Ruta del socket remoto**.
 
-3. Rellena los datos de conexión. Para SSH son el **Servidor**, el **Puerto**, el **Usuario** y, si Docker no está en el lugar predeterminado, la **Ruta del socket remoto**.
+3. Dale al host un **Nombre** que reconozcas, como `production`. Si lo dejas vacío, toma el nombre de su servidor.
 
 4. Elige **Añadir host**. Homeport abre la página del host y empieza a conectarse.
 
@@ -43,19 +43,19 @@ Cuando el estado pasa a **Conectado**, ya está.
 
 ## 2. Echa un vistazo
 
-La barra lateral tiene una página para cada tipo de recurso, y todas muestran el host elegido en el **selector de hosts**, en la parte superior de la barra lateral:
+La barra lateral empieza con **Buscar**, que abre la [paleta de comandos](/docs/guides/keyboard/#paleta-de-comandos), y el **Tablero**. Debajo lista cada host con su estado: selecciona uno y sus páginas se abren debajo, cada una mostrando ese host. **Ajustes** está abajo del todo.
 
-| Página           | Qué muestra                                                                                                 |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| **Resumen**      | Una tarjeta por host, y el Engine, el uso de disco y los eventos del host seleccionado                      |
-| **Tablero**      | Los contenedores de todos los hosts conectados en una sola tabla                                            |
-| **Contenedores** | Todos los contenedores, agrupados por stack, con CPU y memoria en directo                                   |
-| **Imágenes**     | Las imágenes locales, qué las usa, su descarga y su limpieza                                                |
-| **Volúmenes**    | Los volúmenes y los contenedores que los usan                                                               |
-| **Redes**        | Las redes, sus subredes y los contenedores conectados                                                       |
-| **Stacks**       | Los proyectos de Compose: gestionados, vinculados, sincronizados y externos                                 |
-| **Eventos**      | Lo que el Engine ha notificado, guardado durante 30 días                                                    |
-| **Ajustes**      | El tema y el idioma, los inicios de sesión de registros, las copias de seguridad y lo que tiene este equipo |
+| Página           | Qué muestra                                                                                                       |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Tablero**      | Todos los hosts y clústeres de un vistazo, lo que requiere tu atención y todos los contenedores en una sola tabla |
+| **Resumen**      | El host seleccionado: su Engine, sus contenedores, CPU, memoria, uso de disco y eventos recientes                 |
+| **Contenedores** | Todos los contenedores, agrupados por stack, con CPU y memoria en directo                                         |
+| **Imágenes**     | Las imágenes locales, qué las usa, su descarga y su limpieza                                                      |
+| **Volúmenes**    | Los volúmenes y los contenedores que los usan                                                                     |
+| **Redes**        | Las redes, sus subredes y los contenedores conectados                                                             |
+| **Stacks**       | Los proyectos de Compose: gestionados, vinculados, sincronizados y externos                                       |
+| **Eventos**      | Lo que el Engine ha notificado, guardado durante 30 días                                                          |
+| **Ajustes**      | El tema y el idioma, los inicios de sesión de registros, las copias de seguridad y lo que tiene este equipo       |
 
 Homeport se actualiza a medida que el Engine notifica cambios, así que nunca necesitas un botón de actualizar: inicia un contenedor en un terminal y aparece al momento.
 
@@ -79,7 +79,7 @@ De vuelta en la página Contenedores, el puerto `8080:80/tcp` es un enlace: sele
 
 ## 4. Añade más hosts
 
-Añade tantos hosts como quieras con **Añadir host…** en el selector de hosts. El Resumen los muestra todos juntos; selecciona una tarjeta para cambiar a ese host.
+Añade tantos hosts como quieras con **Añadir host o clúster**, bajo la lista de hosts de la barra lateral. El Tablero los muestra todos juntos; selecciona un host en la barra lateral, o su mosaico en el Tablero, para cambiar a él.
 
 <Aside type="tip">
   Homeport recuerda el host que tenías seleccionado, y se vuelve a conectar a todos los hosts al

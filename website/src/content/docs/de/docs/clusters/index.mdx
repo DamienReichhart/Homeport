@@ -34,7 +34,7 @@ Jede Änderung geht mit den Rechten Ihrer Zugangsdaten an die Kubernetes-API, un
   alt="Die Seite Cluster hinzufügen: oben die auf diesem Rechner gefundenen lokalen Cluster, dann die Kontexte von ~/.kube/config mit ihrem API-Server, ihrer Anmeldeart und welche bereits hinzugefügt sind."
 />
 
-Wählen Sie **Cluster hinzufügen…** im Umschalter oder **Cluster hinzufügen** auf der Seite Cluster. [Lokale Cluster](/docs/clusters/local/) – Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube – werden oben angeboten, jeder mit einem Klick. Jeder Kontext, den Sie wählen, wird zu einem Cluster, benannt nach dem Kontext; Sie können ihn vor oder nach dem Import umbenennen.
+Wählen Sie **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste und dann **Cluster hinzufügen…**, oder **Cluster hinzufügen** auf der Seite Cluster. [Lokale Cluster](/docs/clusters/local/) – Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube – werden oben angeboten, jeder mit einem Klick. Jeder Kontext, den Sie wählen, wird zu einem Cluster, benannt nach dem Kontext; Sie können ihn vor oder nach dem Import umbenennen.
 
 - **Aus der kubeconfig dieses Rechners** liest die in `KUBECONFIG` aufgeführten Dateien, zusammengeführt wie bei `kubectl`, oder `~/.kube/config`, wenn `KUBECONFIG` nicht gesetzt ist. Der aktuelle Kontext ist vorausgewählt.
 - **kubeconfig einfügen** liest Text, den Sie einfügen, nur im Arbeitsspeicher: Er wird nie als Datei gespeichert. Dateien, auf die er verweist (`certificate-authority: /…`), müssen vollständige Pfade sein; am einfachsten fügen Sie eine ein, in der alles eingebettet ist:
@@ -43,7 +43,7 @@ Wählen Sie **Cluster hinzufügen…** im Umschalter oder **Cluster hinzufügen*
   kubectl config view --raw --flatten --minify
   ```
 
-Jeder Kontext zeigt seinen API-Server, seinen Namespace und wie sein Benutzer sich anmeldet – **Client-Zertifikat**, **Token**, **OpenID Connect** oder **Exec-Plugin (aws)** für einen Cloud-Cluster –, sodass Sie einen lokalen Cluster vor dem Import von einem Produktionscluster unterscheiden können. Haken Sie die gewünschten an; jeder erhält ein Namensfeld, vorausgefüllt mit dem Namen des Kontexts. Lange ARNs wie `arn:aws:eks:…:cluster/prod` sollten Sie in etwas Kurzes wie `eks-prod` umbenennen: Der Name ist das, was der Umschalter und die Übersicht anzeigen.
+Jeder Kontext zeigt seinen API-Server, seinen Namespace und wie sein Benutzer sich anmeldet – **Client-Zertifikat**, **Token**, **OpenID Connect** oder **Exec-Plugin (aws)** für einen Cloud-Cluster –, sodass Sie einen lokalen Cluster vor dem Import von einem Produktionscluster unterscheiden können. Haken Sie die gewünschten an; jeder erhält ein Namensfeld, vorausgefüllt mit dem Namen des Kontexts. Lange ARNs wie `arn:aws:eks:…:cluster/prod` sollten Sie in etwas Kurzes wie `eks-prod` umbenennen: Der Name ist das, was die Seitenleiste, das Board und die Übersicht anzeigen.
 
 Ein Kontext, der bereits ein Cluster ist, kann nicht zweimal importiert werden: Homeport bietet stattdessen **Aktualisieren** an. Ein Kontext, der nicht verwendet werden kann, sagt warum, zum Beispiel ein Benutzer, dessen `auth-provider` `gcp` oder `azure` ist, was Kubernetes entfernt hat (stellen Sie ihn auf `gke-gcloud-auth-plugin` oder `kubelogin` um, wie `kubectl` es inzwischen verlangt).
 
@@ -64,7 +64,7 @@ kind, k3d und minikube geben einem Cluster bei jeder Neuerstellung neue Zertifik
 
 ## Cluster verwalten
 
-- **Cluster verwalten** im Umschalter listet jeden Cluster mit seinem Status, seinem API-Server und seiner Anmeldeart auf.
+- **Cluster verwalten**, das Einstellungssymbol neben **Cluster** in der Seitenleiste, listet jeden Cluster mit seinem Status, seinem API-Server und seiner Anmeldeart auf.
 - Auf der Seite eines Clusters trennt der Schalter **Aktiviert** die Verbindung, ohne ihn zu vergessen, **Neu verbinden** versucht es sofort erneut, und **Umbenennen** ändert seinen Namen nur in Homeport.
 - **Cluster entfernen** vergisst den Cluster und seine gespeicherten Zugangsdaten. Auf dem Cluster und in Ihrer kubeconfig ändert sich nichts.
 

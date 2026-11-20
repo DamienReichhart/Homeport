@@ -27,7 +27,7 @@ Lo que ejecuta un host de Incus: un contenedor de sistema, que arranca una distr
 
 ### Project (Incus's) (es. _proyecto_)
 
-En un host de Incus, el espacio en el que viven sus instancias, imágenes, perfiles, volúmenes personalizados y redes. Las páginas de un host de Incus muestran uno a la vez, elegido bajo el selector de hosts. Consulta [proyectos](/docs/hosts/incus/#proyectos).
+En un host de Incus, el espacio en el que viven sus instancias, imágenes, perfiles, volúmenes personalizados y redes. Las páginas de un host de Incus muestran uno a la vez, elegido bajo el host en la barra lateral. Consulta [proyectos](/docs/hosts/incus/#proyectos).
 
 ### Profile (es. _perfil_)
 

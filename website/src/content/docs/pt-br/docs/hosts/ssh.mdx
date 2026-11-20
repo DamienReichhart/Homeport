@@ -20,16 +20,16 @@ O Homeport tem o seu próprio cliente SSH. Ele faz login no servidor e encaminha
 
 <Steps>
 
-1. Escolha **Adicionar host…** no seletor de hosts e mantenha **SSH** selecionado.
+1. Escolha **Adicionar host ou cluster**, abaixo da lista de hosts na barra lateral, depois **Adicionar host…**, e mantenha **SSH** selecionado.
 
 2. Preencha a conexão:
 
    | Campo                        | O que digitar                                                                                                                                                          |
    | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | **Nome**                     | Um nome que você vá reconhecer, como `production`.                                                                                                                     |
    | **Servidor**                 | O nome de host ou o endereço IP do servidor.                                                                                                                           |
    | **Porta**                    | A porta SSH; `22` por padrão.                                                                                                                                          |
    | **Usuário**                  | A conta com a qual fazer login. Ela precisa de acesso ao socket do Docker, normalmente pelo grupo `docker`.                                                            |
+   | **Nome**                     | Um nome que você vá reconhecer, como `production`. Se ficar vazio, o host recebe o nome do servidor: `prod` para `prod.example.com`.                                   |
    | **Caminho do socket remoto** | Onde o Engine escuta no servidor: `/var/run/docker.sock` por padrão, `/run/user/<uid>/docker.sock` para o Docker rootless, ou `/run/podman/podman.sock` para o Podman. |
 
 3. Escolha como fazer login em **Autenticação** (veja abaixo).
@@ -122,7 +122,7 @@ Para uma chave criada pelo Homeport, ou uma que você importou, o cartão **Auto
 
 </Steps>
 
-Até que a chave seja autorizada, o host mostra **Acesso recusado**: _O servidor SSH não permitiu que deploy@server fizesse login._, com o comando que autoriza a chave do Homeport. Ele espera por você em vez de tentar de novo.
+Até que a chave seja autorizada, o host mostra **Acesso recusado**: _O servidor SSH não permitiu que deploy@server fizesse login._, com o comando que autoriza a chave do Homeport. Ele espera por você em vez de tentar de novo. Quando o host se conecta, os comandos se recolhem; **Mostrar os comandos** os mostra de novo.
 
 ## Quando a chave do servidor muda
 

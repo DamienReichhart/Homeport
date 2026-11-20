@@ -34,7 +34,7 @@ Ogni modifica va all’API di Kubernetes con i diritti delle tue credenziali, e 
   alt="La pagina Aggiungi un cluster: in alto i cluster locali trovati su questo computer, poi i contesti di ~/.kube/config con il loro server API, il modo in cui accedono e quali sono già aggiunti."
 />
 
-Scegli **Aggiungi cluster…** nel selettore, o **Aggiungi un cluster** nella pagina Cluster. I [cluster locali](/docs/clusters/local/) — Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube — sono proposti in alto, con un clic ciascuno. Ogni contesto che scegli diventa un cluster, con il nome del contesto; puoi rinominarlo prima o dopo l’importazione.
+Scegli **Aggiungi host o cluster**, sotto l’elenco degli host nella barra laterale, poi **Aggiungi cluster…**, o **Aggiungi un cluster** nella pagina Cluster. I [cluster locali](/docs/clusters/local/) — Docker Desktop, OrbStack, Rancher Desktop, kind, k3d, minikube — sono proposti in alto, con un clic ciascuno. Ogni contesto che scegli diventa un cluster, con il nome del contesto; puoi rinominarlo prima o dopo l’importazione.
 
 - **Dal kubeconfig di questo computer** legge i file elencati in `KUBECONFIG`, uniti come li unisce `kubectl`, o `~/.kube/config` quando `KUBECONFIG` non è impostata. Il contesto attuale viene scelto per te.
 - **Incolla un kubeconfig** legge il testo che incolli, solo in memoria: non viene mai salvato come file. I file a cui fa riferimento (`certificate-authority: /…`) devono essere percorsi completi; la cosa più semplice è incollarne uno con tutto incluso:
@@ -43,7 +43,7 @@ Scegli **Aggiungi cluster…** nel selettore, o **Aggiungi un cluster** nella pa
   kubectl config view --raw --flatten --minify
   ```
 
-Ogni contesto mostra il suo server API, il suo namespace e il modo in cui il suo utente accede — **Certificato client**, **Token**, **OpenID Connect**, o **Plugin exec (aws)** per uno cloud — così puoi distinguere un cluster locale da uno di produzione prima di importarlo. Spunta quelli che vuoi; ognuno riceve un campo nome, compilato con il nome del contesto. Gli ARN lunghi come `arn:aws:eks:…:cluster/prod` meritano di essere rinominati in qualcosa di breve come `eks-prod`: il nome è ciò che mostrano il selettore e la Panoramica.
+Ogni contesto mostra il suo server API, il suo namespace e il modo in cui il suo utente accede — **Certificato client**, **Token**, **OpenID Connect**, o **Plugin exec (aws)** per uno cloud — così puoi distinguere un cluster locale da uno di produzione prima di importarlo. Spunta quelli che vuoi; ognuno riceve un campo nome, compilato con il nome del contesto. Gli ARN lunghi come `arn:aws:eks:…:cluster/prod` meritano di essere rinominati in qualcosa di breve come `eks-prod`: il nome è ciò che mostrano la barra laterale, la Bacheca e la Panoramica.
 
 Un contesto che è già un cluster non può essere importato due volte: Homeport propone invece **Aggiornalo**. Un contesto che non può essere usato spiega perché, per esempio un utente il cui `auth-provider` è `gcp` o `azure`, che Kubernetes ha rimosso (passa a `gke-gcloud-auth-plugin` o `kubelogin`, come ora richiede `kubectl`).
 
@@ -64,7 +64,7 @@ kind, k3d e minikube danno a un cluster nuovi certificati ogni volta che lo ricr
 
 ## Gestire i cluster
 
-- **Gestisci i cluster** nel selettore elenca ogni cluster con il suo stato, il server API e il modo in cui accede.
+- **Gestisci i cluster**, l’icona delle impostazioni accanto a **Cluster** nella barra laterale, elenca ogni cluster con il suo stato, il server API e il modo in cui accede.
 - Nella pagina di un cluster, l’interruttore **Attivato** lo disconnette senza dimenticarlo, **Riconnetti** riprova subito, e **Rinomina** cambia il suo nome solo in Homeport.
 - **Rimuovi il cluster** dimentica il cluster e le sue credenziali memorizzate. Nulla cambia sul cluster o nel tuo kubeconfig.
 

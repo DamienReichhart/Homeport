@@ -66,7 +66,7 @@ Le certificat d’Incus est auto-signé, donc il n’y a pas d’AC par rapport 
 
 ## Projets
 
-Incus conserve les instances, images, profils, volumes personnalisés et réseaux dans des **projets**. Les pages montrent un projet à la fois, choisi sous le sélecteur d’hôte, qui liste chacun avec le nombre d’instances et d’images qu’il contient. Homeport retient ce choix pour chaque hôte d’un lancement à l’autre. Tant que vous n’en avez pas choisi, un hôte affiche `default`, ou son seul projet sur le socket restreint. Les pools de stockage appartiennent à tout le serveur ; leurs volumes sont affichés pour le projet sélectionné.
+Incus conserve les instances, images, profils, volumes personnalisés et réseaux dans des **projets**. Les pages montrent un projet à la fois, choisi sous l’hôte sélectionné dans la barre latérale, qui liste chacun avec le nombre d’instances et d’images qu’il contient. Homeport retient ce choix pour chaque hôte d’un lancement à l’autre. Tant que vous n’en avez pas choisi, un hôte affiche `default`, ou son seul projet sur le socket restreint. Les pools de stockage appartiennent à tout le serveur ; leurs volumes sont affichés pour le projet sélectionné.
 
 ## Événements
 

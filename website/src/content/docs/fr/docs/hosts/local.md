@@ -31,7 +31,7 @@ Si Homeport ne peut pas exécuter `podman` — il n’est ni dans son PATH, ni d
 
 Si votre moteur n’est pas détecté — un profil Colima autre que `default`, une machine Podman sous Windows avec un autre nom que celui par défaut, ou un chemin personnalisé — ajoutez-le vous-même :
 
-1. Choisissez **Ajouter un hôte…** dans le sélecteur d’hôte.
+1. Choisissez **Ajouter un hôte ou un cluster**, sous la liste des hôtes dans la barre latérale, puis **Ajouter un hôte…**.
 2. Sélectionnez **Socket local**.
 3. Saisissez un **Nom** et le **Chemin du socket** : un socket Unix comme `/run/user/1000/docker.sock`, ou un pipe nommé comme `//./pipe/docker_engine` sous Windows.
 4. Choisissez **Ajouter un hôte**.

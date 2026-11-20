@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 Ein Cluster kann neben einem Kubernetes-Cluster auch ein **Nomad**-Cluster sein. Homeport spricht von Ihrem Rechner aus mit der HTTP-API, die ein Nomad-Agent, ob Server oder Client, bereits bereitstellt: Auf dem Cluster wird nichts installiert, und auf diesem Rechner ist keine `nomad`-CLI nötig. Alles, was es tut, geht über die API, mit den Rechten des ACL-Tokens, das Sie ihm geben.
 
-Nomad-Cluster stehen neben Ihren Hosts und Kubernetes-Clustern im Umschalter. Wenn Sie einen auswählen, zeigt die Übersicht seine Version, Region und Adresse, und die Seitenleiste seine eigenen Seiten: **[Jobs](#jobs)**, wo Sie [Jobs ausführen](#einen-job-ausführen) und die [Logs und Shells](#logs-und-shell) ihrer Allocations öffnen, und **[Nodes](#nodes)**. Die Kubernetes-Seiten sind ausgeblendet, solange er ausgewählt ist.
+Nomad-Cluster stehen in der Seitenleiste bei Ihren Kubernetes-Clustern, jeder mit seinem Status. Wenn Sie einen auswählen, zeigt die Übersicht seine Version, Region und Adresse, und die Seitenleiste seine eigenen Seiten: **[Jobs](#jobs)**, wo Sie [Jobs ausführen](#einen-job-ausführen) und die [Logs und Shells](#logs-und-shell) ihrer Allocations öffnen, und **[Nodes](#nodes)**. Die Kubernetes-Seiten sind ausgeblendet, solange er ausgewählt ist.
 
 Was Sie tun können, in der Reihenfolge, in der diese Seite es erklärt:
 
@@ -20,9 +20,9 @@ Was Sie tun können, in der Reihenfolge, in der diese Seite es erklärt:
 
 ## Einen Nomad-Cluster hinzufügen
 
-Wählen Sie **Cluster hinzufügen…** im Umschalter, dann den Tab **Nomad**, und füllen Sie aus:
+Wählen Sie **Host oder Cluster hinzufügen** unter der Liste der Hosts in der Seitenleiste, dann **Cluster hinzufügen…** und den Tab **Nomad**, und füllen Sie aus:
 
-- **Name**: was der Umschalter und die Übersicht anzeigen, etwa `nomad-prod`.
+- **Name**: was die Seitenleiste, das Board und die Übersicht anzeigen, etwa `nomad-prod`.
 - **Adresse**: die HTTP-API des Agenten, wie `NOMAD_ADDR` sie der `nomad`-CLI angibt. `nomad.example.com` wird zu `http://nomad.example.com:4646`: Port 4646 wird ergänzt, wenn keiner angegeben ist, und `https://` wird verwendet, wenn Sie TLS-Material angeben.
 - **Region**: Lassen Sie sie leer, um die eigene Region des Agenten zu verwenden. Setzen Sie sie, um über einen föderierten Agenten eine andere Region zu verwalten, wie `NOMAD_REGION` es tut.
 - **ACL-Token**: die Secret-ID des Tokens, wenn der Cluster ACLs aktiviert hat. Siehe [das Token](#das-acl-token) unten.

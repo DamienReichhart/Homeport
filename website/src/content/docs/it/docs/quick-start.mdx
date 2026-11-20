@@ -20,9 +20,9 @@ Per connetterti invece a un Engine remoto, scegli **Aggiungi un altro host**:
 
 1. Scegli come connetterti: **SSH**, **TLS**, **TCP** o **Socket locale**. SSH è la scelta abituale per un server.
 
-2. Dai all’host un **Nome** che riconoscerai, come `production`.
+2. Compila i dettagli della connessione. Per SSH sono il **Server**, la **Porta**, l’**Utente** e, se Docker non è nella posizione predefinita, il **Percorso del socket remoto**.
 
-3. Compila i dettagli della connessione. Per SSH sono il **Server**, la **Porta**, l’**Utente** e, se Docker non è nella posizione predefinita, il **Percorso del socket remoto**.
+3. Dai all’host un **Nome** che riconoscerai, come `production`. Se lo lasci vuoto, prende il nome del suo server.
 
 4. Scegli **Aggiungi host**. Homeport apre la pagina dell’host e inizia a connettersi.
 
@@ -43,19 +43,19 @@ Quando lo stato diventa **Connesso**, hai finito.
 
 ## 2. Guardati intorno
 
-La barra laterale ha una pagina per ogni tipo di risorsa, e tutte mostrano l’host scelto nel **selettore degli host** in cima alla barra laterale:
+La barra laterale comincia con **Cerca**, che apre il [riquadro comandi](/docs/guides/keyboard/#riquadro-comandi), e con la **Bacheca**. Sotto elenca ogni host con il suo stato: selezionane uno e le sue pagine si aprono sotto di esso, ognuna su quell’host. **Impostazioni** è in fondo.
 
-| Pagina           | Cosa mostra                                                                            |
-| ---------------- | -------------------------------------------------------------------------------------- |
-| **Panoramica**   | Una scheda per ogni host, l’Engine, l’uso del disco e gli eventi dell’host selezionato |
-| **Bacheca**      | I container di ogni host connesso in un’unica tabella                                  |
-| **Container**    | Ogni container, raggruppato per stack, con CPU e memoria in tempo reale                |
-| **Immagini**     | Le immagini locali, cosa le usa, il download e la pulizia                              |
-| **Volumi**       | I volumi e i container che li usano                                                    |
-| **Reti**         | Le reti, le loro sottoreti e i container collegati                                     |
-| **Stack**        | I progetti Compose: gestiti, collegati, sincronizzati ed esterni                       |
-| **Eventi**       | Ciò che l’Engine ha segnalato, conservato per 30 giorni                                |
-| **Impostazioni** | Tema e lingua, accessi ai registri, backup e ciò che ha questo computer                |
+| Pagina           | Cosa mostra                                                                                         |
+| ---------------- | --------------------------------------------------------------------------------------------------- |
+| **Bacheca**      | Tutti gli host e i cluster in breve, ciò che c’è da gestire e tutti i container in un’unica tabella |
+| **Panoramica**   | L’host selezionato: l’Engine, i container, CPU, memoria, uso del disco ed eventi recenti            |
+| **Container**    | Ogni container, raggruppato per stack, con CPU e memoria in tempo reale                             |
+| **Immagini**     | Le immagini locali, cosa le usa, il download e la pulizia                                           |
+| **Volumi**       | I volumi e i container che li usano                                                                 |
+| **Reti**         | Le reti, le loro sottoreti e i container collegati                                                  |
+| **Stack**        | I progetti Compose: gestiti, collegati, sincronizzati ed esterni                                    |
+| **Eventi**       | Ciò che l’Engine ha segnalato, conservato per 30 giorni                                             |
+| **Impostazioni** | Tema e lingua, accessi ai registri, backup e ciò che ha questo computer                             |
 
 Homeport si aggiorna man mano che l’Engine segnala modifiche, quindi non ti serve mai un pulsante di aggiornamento — avvia un container in un terminale e compare subito.
 
@@ -79,7 +79,7 @@ Di nuovo nella pagina Container, la porta `8080:80/tcp` è un link: selezionala 
 
 ## 4. Aggiungi altri host
 
-Aggiungi tutti gli host che vuoi con **Aggiungi host…** nel selettore degli host. La Panoramica li mostra tutti insieme; seleziona una scheda per passare a quell’host.
+Aggiungi tutti gli host che vuoi con **Aggiungi host o cluster**, sotto l’elenco degli host nella barra laterale. La Bacheca li mostra tutti insieme; seleziona un host nella barra laterale, o il suo riquadro nella Bacheca, per passare a quell’host.
 
 <Aside type="tip">
   Homeport ricorda l’host che avevi selezionato, e si riconnette a ogni host all’avvio.

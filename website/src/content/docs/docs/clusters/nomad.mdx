@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 A Cluster can be a **Nomad** cluster as well as a Kubernetes one. Homeport talks to the HTTP API that a Nomad agent, server or client, already serves, from your computer: nothing is installed on the cluster, and no `nomad` CLI is needed on this machine. Everything it does goes through the API with the rights of the ACL token you give it.
 
-Nomad clusters sit next to your Hosts and Kubernetes clusters in the switcher. Selecting one shows its version, region and address on the Overview, and its own pages in the sidebar: **[Jobs](#jobs)**, where you [run jobs](#run-a-job) and open their allocations' [logs and shells](#logs-and-shell), and **[Nodes](#nodes)**. The Kubernetes pages are hidden while it is selected.
+Nomad clusters are listed in the sidebar with your Kubernetes clusters, each with its status. Selecting one shows its version, region and address on the Overview, and its own pages in the sidebar: **[Jobs](#jobs)**, where you [run jobs](#run-a-job) and open their allocations' [logs and shells](#logs-and-shell), and **[Nodes](#nodes)**. The Kubernetes pages are hidden while it is selected.
 
 What you can do, in the order this page explains it:
 
@@ -20,9 +20,9 @@ What you can do, in the order this page explains it:
 
 ## Adding a Nomad cluster
 
-Choose **Add cluster…** in the switcher, then the **Nomad** tab, and fill in:
+Choose **Add host or cluster**, under the list of Hosts in the sidebar, then **Add cluster…** and the **Nomad** tab, and fill in:
 
-- **Name**: what the switcher and the Overview show, such as `nomad-prod`.
+- **Name**: what the sidebar, the Board and the Overview show, such as `nomad-prod`.
 - **Address**: the agent's HTTP API, as `NOMAD_ADDR` gives it to the `nomad` CLI. `nomad.example.com` becomes `http://nomad.example.com:4646`: port 4646 is added when none is given, and `https://` is used when you give TLS material.
 - **Region**: leave it empty to use the agent's own region. Set it to manage another region through a federated agent, as `NOMAD_REGION` does.
 - **ACL token**: the token's secret ID, when the cluster has ACLs enabled. See [the token](#the-acl-token) below.

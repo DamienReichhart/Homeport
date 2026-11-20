@@ -20,16 +20,16 @@ Homeport ha un proprio client SSH. Accede al server e inoltra un canale verso il
 
 <Steps>
 
-1. Scegli **Aggiungi host…** nel selettore degli host e lascia selezionato **SSH**.
+1. Scegli **Aggiungi host o cluster**, sotto l’elenco degli host nella barra laterale, poi **Aggiungi host…**, e lascia selezionato **SSH**.
 
 2. Compila la connessione:
 
    | Campo                          | Cosa inserire                                                                                                                                                                          |
    | ------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | **Nome**                       | Un nome che riconoscerai, come `production`.                                                                                                                                           |
    | **Server**                     | Il nome host o l’indirizzo IP del server.                                                                                                                                              |
    | **Porta**                      | La porta SSH; `22` per impostazione predefinita.                                                                                                                                       |
    | **Utente**                     | L’account con cui accedere. Deve avere accesso al socket Docker, di solito tramite il gruppo `docker`.                                                                                 |
+   | **Nome**                       | Un nome che riconoscerai, come `production`. Se lo lasci vuoto, l’host prende il nome del suo server: `prod` per `prod.example.com`.                                                   |
    | **Percorso del socket remoto** | Dove l’Engine è in ascolto sul server: `/var/run/docker.sock` per impostazione predefinita, `/run/user/<uid>/docker.sock` per Docker rootless, o `/run/podman/podman.sock` per Podman. |
 
 3. Scegli come accedere sotto **Autenticazione** (vedi sotto).
@@ -123,7 +123,7 @@ Per una chiave creata da Homeport, o una che hai importato, la scheda **Autorizz
 
 </Steps>
 
-Finché la chiave non è autorizzata, l’host mostra **Accesso negato**: _Il server SSH non ha consentito l’accesso a deploy@server._, con il comando che autorizza la chiave di Homeport. Ti aspetta invece di riprovare.
+Finché la chiave non è autorizzata, l’host mostra **Accesso negato**: _Il server SSH non ha consentito l’accesso a deploy@server._, con il comando che autorizza la chiave di Homeport. Ti aspetta invece di riprovare. Quando l’host si connette, i comandi si richiudono; **Mostra i comandi** li mostra di nuovo.
 
 ## Quando la chiave del server cambia
 

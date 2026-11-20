@@ -54,7 +54,7 @@ Ein containerd, das zu alt zum Verbinden ist, lässt den Host **Falsch konfiguri
 
 ## Namespaces
 
-Jedes containerd-Objekt lebt in einem **Namespace**: nerdctl verwendet `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Die Seiten zeigen jeweils einen Namespace, gewählt unter dem Host-Umschalter, der jeden mit der Anzahl seiner Container und Images auflistet. Homeport merkt sich die Wahl für jeden Host zwischen den Starts. Bis Sie einen wählen, zeigt ein Host `default` oder, wenn `default` leer ist, den einzigen Namespace, der etwas enthält, sodass ein k3s-Host auf `k8s.io` öffnet.
+Jedes containerd-Objekt lebt in einem **Namespace**: nerdctl verwendet `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Die Seiten zeigen jeweils einen Namespace, gewählt unter dem ausgewählten Host in der Seitenleiste, die jeden mit der Anzahl seiner Container und Images auflistet. Homeport merkt sich die Wahl für jeden Host zwischen den Starts. Bis Sie einen wählen, zeigt ein Host `default` oder, wenn `default` leer ist, den einzigen Namespace, der etwas enthält, sodass ein k3s-Host auf `k8s.io` öffnet.
 
 Die Seite **Namespaces** erstellt leere Namespaces und entfernt leere. containerd weigert sich, einen Namespace zu entfernen, der noch etwas enthält, und Homeport sagt, was er noch enthält: Entfernen Sie zuerst seine Container, Images und Snapshots.
 

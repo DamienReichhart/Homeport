@@ -20,9 +20,9 @@ Pour vous connecter plutôt à un moteur distant, choisissez **Ajouter un autre 
 
 1. Choisissez comment vous connecter : **SSH**, **TLS**, **TCP** ou **Socket local**. SSH est le choix habituel pour un serveur.
 
-2. Donnez à l’hôte un **Nom** que vous reconnaîtrez, comme `production`.
+2. Remplissez les détails de connexion. Pour SSH, ce sont le **Serveur**, le **Port**, l’**Utilisateur** et, si Docker n’est pas à l’emplacement par défaut, le **Chemin du socket distant**.
 
-3. Remplissez les détails de connexion. Pour SSH, ce sont le **Serveur**, le **Port**, l’**Utilisateur** et, si Docker n’est pas à l’emplacement par défaut, le **Chemin du socket distant**.
+3. Donnez à l’hôte un **Nom** que vous reconnaîtrez, comme `production`. Laissé vide, il prend le nom de son serveur.
 
 4. Choisissez **Ajouter un hôte**. Homeport ouvre la page de l’hôte et commence à se connecter.
 
@@ -43,19 +43,19 @@ Quand l’état passe à **Connecté**, c’est terminé.
 
 ## 2. Faire le tour
 
-La barre latérale a une page pour chaque type de ressource, et toutes montrent l’hôte choisi dans le **sélecteur d’hôte** en haut de la barre latérale :
+La barre latérale commence par **Rechercher**, qui ouvre la [palette de commandes](/docs/guides/keyboard/#palette-de-commandes), et par le **Tableau**. En dessous, elle liste chaque hôte avec son état : sélectionnez-en un et ses pages s’ouvrent en dessous, chacune montrant cet hôte. **Paramètres** est en bas.
 
-| Page               | Ce qu’elle montre                                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------------ |
-| **Vue d’ensemble** | Une carte pour chaque hôte, le moteur, l’utilisation du disque et les événements de l’hôte sélectionné |
-| **Tableau**        | Les conteneurs de tous les hôtes connectés dans un seul tableau                                        |
-| **Conteneurs**     | Chaque conteneur, groupé par stack, avec processeur et mémoire en direct                               |
-| **Images**         | Les images locales, ce qui les utilise, la récupération et le nettoyage                                |
-| **Volumes**        | Les volumes et les conteneurs qui les utilisent                                                        |
-| **Réseaux**        | Les réseaux, leurs sous-réseaux et les conteneurs connectés                                            |
-| **Stacks**         | Les projets Compose : gérés, liés, synchronisés et externes                                            |
-| **Événements**     | Ce que le moteur a signalé, conservé 30 jours                                                          |
-| **Paramètres**     | Le thème et la langue, les identifiants de registre, les sauvegardes, et ce que cette machine possède  |
+| Page               | Ce qu’elle montre                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| **Tableau**        | Tous les hôtes et clusters en un coup d’œil, ce qui est à traiter, et tous les conteneurs dans une seule table          |
+| **Vue d’ensemble** | L’hôte sélectionné : son moteur, ses conteneurs, son CPU, sa mémoire, l’utilisation du disque et les événements récents |
+| **Conteneurs**     | Chaque conteneur, groupé par stack, avec processeur et mémoire en direct                                                |
+| **Images**         | Les images locales, ce qui les utilise, la récupération et le nettoyage                                                 |
+| **Volumes**        | Les volumes et les conteneurs qui les utilisent                                                                         |
+| **Réseaux**        | Les réseaux, leurs sous-réseaux et les conteneurs connectés                                                             |
+| **Stacks**         | Les projets Compose : gérés, liés, synchronisés et externes                                                             |
+| **Événements**     | Ce que le moteur a signalé, conservé 30 jours                                                                           |
+| **Paramètres**     | Le thème et la langue, les identifiants de registre, les sauvegardes, et ce que cette machine possède                   |
 
 Homeport se rafraîchit à mesure que le moteur signale des changements, donc vous n’avez jamais besoin d’un bouton d’actualisation — démarrez un conteneur dans un terminal et il apparaît aussitôt.
 
@@ -79,7 +79,7 @@ De retour sur la page Conteneurs, le port `8080:80/tcp` est un lien : sélectio
 
 ## 4. Ajouter d’autres hôtes
 
-Ajoutez autant d’hôtes que vous le souhaitez avec **Ajouter un hôte…** dans le sélecteur d’hôte. La vue d’ensemble les montre tous ensemble ; sélectionnez une carte pour passer à cet hôte.
+Ajoutez autant d’hôtes que vous le souhaitez avec **Ajouter un hôte ou un cluster**, sous la liste des hôtes dans la barre latérale. Le Tableau les montre tous ensemble ; sélectionnez un hôte dans la barre latérale, ou sa vignette sur le Tableau, pour passer sur lui.
 
 <Aside type="tip">
   Homeport se souvient de l’hôte que vous aviez sélectionné, et se reconnecte à chaque hôte au

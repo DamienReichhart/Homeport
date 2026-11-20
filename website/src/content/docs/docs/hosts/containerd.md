@@ -54,7 +54,7 @@ A containerd too old to connect leaves the Host **Misconfigured**, naming its ve
 
 ## Namespaces
 
-Every containerd object lives in a **namespace**: nerdctl uses `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. The pages show one namespace at a time, picked under the Host switcher, which lists each one with how many containers and images it holds. Homeport remembers the pick for each Host between launches. Until you pick one, a Host shows `default`, or the only namespace holding something when `default` is empty, so a k3s Host opens on `k8s.io`.
+Every containerd object lives in a **namespace**: nerdctl uses `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. The pages show one namespace at a time, picked under the selected Host in the sidebar, which lists each one with how many containers and images it holds. Homeport remembers the pick for each Host between launches. Until you pick one, a Host shows `default`, or the only namespace holding something when `default` is empty, so a k3s Host opens on `k8s.io`.
 
 The **Namespaces** page creates empty namespaces and removes empty ones. containerd refuses to remove a namespace that still holds anything, and Homeport says what it still holds: remove its containers, images and snapshots first.
 

@@ -27,7 +27,7 @@ Was ein Incus-Host ausführt: ein Systemcontainer, der eine ganze Linux-Distribu
 
 ### Project (Incus’s) (dt. _Projekt_)
 
-Auf einem Incus-Host der Raum, in dem seine Instanzen, Images, Profile, benutzerdefinierten Volumes und Netzwerke leben. Die Seiten eines Incus-Hosts zeigen jeweils eines, gewählt unter dem Host-Umschalter. Siehe [Projekte](/docs/hosts/incus/#projekte).
+Auf einem Incus-Host der Raum, in dem seine Instanzen, Images, Profile, benutzerdefinierten Volumes und Netzwerke leben. Die Seiten eines Incus-Hosts zeigen jeweils eines, gewählt unter dem Host in der Seitenleiste. Siehe [Projekte](/docs/hosts/incus/#projekte).
 
 ### Profile (dt. _Profil_)
 

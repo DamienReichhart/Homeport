@@ -7,7 +7,7 @@ import { DocScreenshot } from '@/features/docs';
 
 Um cluster pode ser um cluster **Nomad**, além de um Kubernetes. O Homeport conversa com a API HTTP que um agente Nomad, servidor ou cliente, já serve, a partir do seu computador: nada é instalado no cluster, e nenhuma CLI `nomad` é necessária nesta máquina. Tudo o que ele faz passa pela API com os direitos do token ACL que você lhe dá.
 
-Os clusters Nomad ficam ao lado dos seus hosts e clusters Kubernetes no seletor. Selecionar um mostra a versão, a região e o endereço dele na Visão geral, e as páginas próprias dele na barra lateral: **[Jobs](#jobs)**, onde você [executa jobs](#executar-um-job) e abre os [logs e shells](#logs-e-shell) das alocações deles, e **[Nós](#nós)**. As páginas do Kubernetes ficam ocultas enquanto ele está selecionado.
+Os clusters Nomad aparecem na barra lateral com os seus clusters Kubernetes, cada um com o seu status. Selecionar um mostra a versão, a região e o endereço dele na Visão geral, e as páginas próprias dele na barra lateral: **[Jobs](#jobs)**, onde você [executa jobs](#executar-um-job) e abre os [logs e shells](#logs-e-shell) das alocações deles, e **[Nós](#nós)**. As páginas do Kubernetes ficam ocultas enquanto ele está selecionado.
 
 O que você pode fazer, na ordem em que esta página explica:
 
@@ -20,9 +20,9 @@ O que você pode fazer, na ordem em que esta página explica:
 
 ## Adicionar um cluster Nomad
 
-Escolha **Adicionar cluster…** no seletor, depois a aba **Nomad**, e preencha:
+Escolha **Adicionar host ou cluster**, abaixo da lista de hosts na barra lateral, depois **Adicionar cluster…** e a aba **Nomad**, e preencha:
 
-- **Nome**: o que o seletor e a Visão geral mostram, como `nomad-prod`.
+- **Nome**: o que a barra lateral, o Quadro e a Visão geral mostram, como `nomad-prod`.
 - **Endereço**: a API HTTP do agente, como `NOMAD_ADDR` a informa à CLI `nomad`. `nomad.example.com` vira `http://nomad.example.com:4646`: a porta 4646 é adicionada quando nenhuma é informada, e `https://` é usado quando você fornece material TLS.
 - **Região**: deixe vazio para usar a própria região do agente. Defina-a para gerenciar outra região por um agente federado, como `NOMAD_REGION` faz.
 - **Token ACL**: o secret ID do token, quando o cluster tem as ACLs ativadas. Veja [o token](#o-token-acl) abaixo.

@@ -27,7 +27,7 @@ Ce qu’exécute un hôte Incus : un conteneur système, qui démarre une distr
 
 ### Project (Incus’s) (fr. _projet_)
 
-Sur un hôte Incus, l’espace dans lequel vivent ses instances, images, profils, volumes personnalisés et réseaux. Les pages d’un hôte Incus en montrent un à la fois, choisi sous le sélecteur d’hôte. Voir [projets](/docs/hosts/incus/#projets).
+Sur un hôte Incus, l’espace dans lequel vivent ses instances, images, profils, volumes personnalisés et réseaux. Les pages d’un hôte Incus en montrent un à la fois, choisi sous l’hôte dans la barre latérale. Voir [projets](/docs/hosts/incus/#projets).
 
 ### Profile (fr. _profil_)
 

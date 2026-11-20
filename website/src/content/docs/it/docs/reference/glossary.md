@@ -27,7 +27,7 @@ Ciò che esegue un host Incus: un container di sistema, che avvia un’intera di
 
 ### Project (Incus’s) (it. _progetto_)
 
-Su un host Incus, lo spazio in cui vivono le sue istanze, immagini, profili, volumi personalizzati e reti. Le pagine di un host Incus ne mostrano uno alla volta, scelto sotto il selettore degli host. Vedi [progetti](/docs/hosts/incus/#progetti).
+Su un host Incus, lo spazio in cui vivono le sue istanze, immagini, profili, volumi personalizzati e reti. Le pagine di un host Incus ne mostrano uno alla volta, scelto sotto l’host nella barra laterale. Vedi [progetti](/docs/hosts/incus/#progetti).
 
 ### Profile (it. _profilo_)
 

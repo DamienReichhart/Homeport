@@ -54,7 +54,7 @@ Un containerd trop ancien pour se connecter laisse l’hôte **Mal configuré**,
 
 ## Espaces de noms
 
-Chaque objet containerd vit dans un **espace de noms** : nerdctl utilise `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Les pages montrent un espace de noms à la fois, choisi sous le sélecteur d’hôte, qui liste chacun avec le nombre de conteneurs et d’images qu’il contient. Homeport retient ce choix pour chaque hôte d’un lancement à l’autre. Tant que vous n’en avez pas choisi, un hôte affiche `default`, ou le seul espace de noms qui contient quelque chose quand `default` est vide, donc un hôte k3s s’ouvre sur `k8s.io`.
+Chaque objet containerd vit dans un **espace de noms** : nerdctl utilise `default`, Kubernetes `k8s.io`, Docker `moby`, BuildKit `buildkit`. Les pages montrent un espace de noms à la fois, choisi sous l’hôte sélectionné dans la barre latérale, qui liste chacun avec le nombre de conteneurs et d’images qu’il contient. Homeport retient ce choix pour chaque hôte d’un lancement à l’autre. Tant que vous n’en avez pas choisi, un hôte affiche `default`, ou le seul espace de noms qui contient quelque chose quand `default` est vide, donc un hôte k3s s’ouvre sur `k8s.io`.
 
 La page **Espaces de noms** crée des espaces de noms vides et supprime ceux qui sont vides. containerd refuse de supprimer un espace de noms qui contient encore quelque chose, et Homeport indique ce qu’il contient encore : supprimez d’abord ses conteneurs, ses images et ses instantanés.
 

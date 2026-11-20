@@ -54,7 +54,7 @@ containerd 版本过旧而无法连接时，主机会显示**配置错误**，�
 
 ## 命名空间
 
-每个 containerd 对象都位于一个**命名空间**中：nerdctl 使用 `default`，Kubernetes 使用 `k8s.io`，Docker 使用 `moby`，BuildKit 使用 `buildkit`。页面一次显示一个命名空间，在主机切换器下方选择，那里会列出每个命名空间及其包含的容器和镜像数量。Homeport 会在每次启动之间记住每台主机的选择。在你选择之前，主机显示 `default`；如果 `default` 为空，则显示唯一包含内容的命名空间，因此 k3s 主机会打开 `k8s.io`。
+每个 containerd 对象都位于一个**命名空间**中：nerdctl 使用 `default`，Kubernetes 使用 `k8s.io`，Docker 使用 `moby`，BuildKit 使用 `buildkit`。页面一次显示一个命名空间，在侧边栏中所选主机的下方选择，那里会列出每个命名空间及其包含的容器和镜像数量。Homeport 会在每次启动之间记住每台主机的选择。在你选择之前，主机显示 `default`；如果 `default` 为空，则显示唯一包含内容的命名空间，因此 k3s 主机会打开 `k8s.io`。
 
 **命名空间**页面可以创建空命名空间，也可以删除空的命名空间。containerd 拒绝删除仍包含任何内容的命名空间，Homeport 会说明其中还有什么：请先删除其容器、镜像和快照。
 
