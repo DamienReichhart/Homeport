@@ -66,13 +66,13 @@ export function SplitView({
   }
   if (!wide) return <>{outlet}</>;
   return (
-    <div className="-my-6 -ms-6 flex h-[calc(100%+3rem)] min-h-0">
+    <div className="-mx-6 -my-6 flex h-[calc(100%+3rem)] min-h-0">
       <aside className="bg-background w-[22rem] shrink-0 overflow-y-auto border-e py-6 ps-6 pe-4">
         <SplitPaneContext.Provider value={{ compact: true, selected }}>
           {list}
         </SplitPaneContext.Provider>
       </aside>
-      <div className="min-w-0 flex-1 overflow-y-auto py-6 ps-6">{outlet}</div>
+      <div className="min-w-0 flex-1 overflow-y-auto px-6 py-6">{outlet}</div>
     </div>
   );
 }
