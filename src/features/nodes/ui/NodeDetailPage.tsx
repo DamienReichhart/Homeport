@@ -15,7 +15,7 @@ import {
 } from '@/core/cluster';
 import { RelatedPods } from '@/features/pods';
 import type { ClusterNodeDetail, ClusterView } from '@/shared/api';
-import { Card, CardContent, CardHeader, CardTitle, DataTable, KeyValue } from '@/shared/ui';
+import { Card, CardContent, DataTable, KeyValue } from '@/shared/ui';
 import { nodeQueries } from '../api/queries';
 import { readableQuantity } from '../model/quantity';
 import { NodeMetrics } from './NodeMetrics';
@@ -42,36 +42,32 @@ function Overview({ node }: { node: ClusterNodeDetail }) {
   ];
   const resources = Object.keys({ ...node.capacity, ...node.allocatable }).sort();
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-1 gap-8">
       <Card>
         <CardContent>
           <KeyValue items={items} />
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('nodes.detail.resources')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={[
-              { id: 'name', header: t('nodes.resource.name'), accessorFn: (r) => r },
-              {
-                id: 'capacity',
-                header: t('nodes.resource.capacity'),
-                accessorFn: (r) => readableQuantity(r, node.capacity[r]),
-              },
-              {
-                id: 'allocatable',
-                header: t('nodes.resource.allocatable'),
-                accessorFn: (r) => readableQuantity(r, node.allocatable[r]),
-              },
-            ]}
-            data={resources}
-            getRowId={(r) => r}
-          />
-        </CardContent>
-      </Card>
+      <section className="grid gap-3">
+        <h2 className="text-base font-semibold">{t('nodes.detail.resources')}</h2>
+        <DataTable
+          columns={[
+            { id: 'name', header: t('nodes.resource.name'), accessorFn: (r) => r },
+            {
+              id: 'capacity',
+              header: t('nodes.resource.capacity'),
+              accessorFn: (r) => readableQuantity(r, node.capacity[r]),
+            },
+            {
+              id: 'allocatable',
+              header: t('nodes.resource.allocatable'),
+              accessorFn: (r) => readableQuantity(r, node.allocatable[r]),
+            },
+          ]}
+          data={resources}
+          getRowId={(r) => r}
+        />
+      </section>
     </div>
   );
 }

@@ -2,8 +2,8 @@
 export default {
   'nodes.nav': 'Nodes',
   'nodes.title': 'Nodes',
-  'nodes.summary': '{count, plural, one {# node} other {# nodes}}',
-  'nodes.search': 'Search nodes',
+  'nodes.summary': '{count, plural, one {# Node} other {# Nodes}}',
+  'nodes.search': 'Search Nodes',
   'nodes.ready': 'Ready',
   'nodes.notReady': 'Not ready',
   'nodes.cordoned': 'scheduling disabled',
