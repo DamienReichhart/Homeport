@@ -31,4 +31,5 @@ export default {
   'portforwards.dialog.loopback':
     'لا يمكن الاتصال إلا من هذا الكمبيوتر: تستمع إعادة التوجيه على 127.0.0.1 (و::1).',
   'portforwards.dialog.submit': 'إعادة توجيه',
+  'portforwards.empty.action': 'الانتقال إلى Services',
 } satisfies Translation<typeof en>;

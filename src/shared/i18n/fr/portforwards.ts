@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     'Seul cet ordinateur peut se connecter : la redirection écoute sur 127.0.0.1 (et ::1).',
   'portforwards.dialog.submit': 'Rediriger',
+  'portforwards.empty.action': 'Aller aux Services',
 } satisfies Translation<typeof en>;

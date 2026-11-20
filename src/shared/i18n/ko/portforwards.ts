@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     '이 컴퓨터만 연결할 수 있습니다. 포워딩은 127.0.0.1(및 ::1)에서 수신 대기합니다.',
   'portforwards.dialog.submit': '포워딩',
+  'portforwards.empty.action': 'Service로 이동',
 } satisfies Translation<typeof en>;

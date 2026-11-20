@@ -31,4 +31,5 @@ export default {
   'portforwards.dialog.loopback':
     'Подключиться может только этот компьютер: проброс слушает 127.0.0.1 (и ::1).',
   'portforwards.dialog.submit': 'Пробросить',
+  'portforwards.empty.action': 'Перейти к Service',
 } satisfies Translation<typeof en>;

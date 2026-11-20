@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     'Solo questo computer può connettersi: l’inoltro è in ascolto su 127.0.0.1 (e ::1).',
   'portforwards.dialog.submit': 'Inoltra',
+  'portforwards.empty.action': 'Vai ai Service',
 } satisfies Translation<typeof en>;

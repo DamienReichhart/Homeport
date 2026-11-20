@@ -29,4 +29,5 @@ export default {
   'portforwards.dialog.anyPort': '任意空闲端口',
   'portforwards.dialog.loopback': '只有本机可以连接：转发监听 127.0.0.1（以及 ::1）。',
   'portforwards.dialog.submit': '转发',
+  'portforwards.empty.action': '前往 Service',
 } satisfies Translation<typeof en>;

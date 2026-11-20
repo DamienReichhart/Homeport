@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     'सिर्फ़ यही कंप्यूटर कनेक्ट कर सकता है: फ़ॉरवर्ड 127.0.0.1 (और ::1) पर सुनता है।',
   'portforwards.dialog.submit': 'फ़ॉरवर्ड करें',
+  'portforwards.empty.action': 'Services पर जाएँ',
 } satisfies Translation<typeof en>;

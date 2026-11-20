@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     'Solo este equipo puede conectarse: el reenvío escucha en 127.0.0.1 (y ::1).',
   'portforwards.dialog.submit': 'Reenviar',
+  'portforwards.empty.action': 'Ir a los Services',
 } satisfies Translation<typeof en>;

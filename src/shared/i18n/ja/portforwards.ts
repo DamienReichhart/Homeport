@@ -30,4 +30,5 @@ export default {
   'portforwards.dialog.loopback':
     '接続できるのはこのコンピューターだけです。フォワードは 127.0.0.1（と ::1）で待ち受けます。',
   'portforwards.dialog.submit': 'フォワード',
+  'portforwards.empty.action': 'Service へ移動',
 } satisfies Translation<typeof en>;
