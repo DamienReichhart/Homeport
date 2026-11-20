@@ -78,7 +78,8 @@ export function ManagedDefinition({
       {save.error && <ErrorMessage error={save.error} />}
       <DeployButton
         canDeploy={canDeploy}
-        dirty={dirty}
+        canSave={dirty}
+        unsaved={dirty}
         pending={save.isPending}
         onDeploy={() =>
           deployed ? setReview({ files, env }) : save.mutate({ files, env, deploy: true })

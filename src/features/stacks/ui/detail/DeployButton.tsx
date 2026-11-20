@@ -12,13 +12,14 @@ import { t } from '@/shared/i18n';
 /**
  * A definition's one solid button: deploy what's in the editor (saving it
  * first), with saving without deploying one step away under it. The same
- * for Managed, Linked and Synced Stacks; `dirty` says there's something to save.
+ * for Managed, Linked and Synced Stacks, and for a new one.
  */
 export function DeployButton({
   label = t('stacks.managed.deploy'),
   icon: Icon = RocketIcon,
   canDeploy,
-  dirty,
+  canSave,
+  unsaved = false,
   pending,
   onDeploy,
   onSave,
@@ -27,7 +28,10 @@ export function DeployButton({
   label?: string;
   icon?: LucideIcon;
   canDeploy: boolean;
-  dirty: boolean;
+  /** There's something to save. */
+  canSave: boolean;
+  /** Says there are unsaved changes beside it. */
+  unsaved?: boolean;
   pending: boolean;
   onDeploy: () => void;
   onSave: () => void;
@@ -52,14 +56,14 @@ export function DeployButton({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-56">
-            <DropdownMenuItem disabled={!dirty} onSelect={onSave}>
+            <DropdownMenuItem disabled={!canSave} onSelect={onSave}>
               {t('stacks.managed.saveOnly')}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
       {children}
-      {dirty && (
+      {unsaved && (
         <span className="text-muted-foreground text-sm">{t('stacks.managed.unsaved')}</span>
       )}
     </div>

@@ -1,7 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { deployTool } from '../../model/deployTool';
 import { type ReactNode, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   toAppError,
   useCapabilities,
@@ -25,10 +24,9 @@ import {
   Tabs,
   TabsList,
   TabsTrigger,
-  useConfirm,
   YamlEditor,
 } from '@/shared/ui';
-import { useForgetLinked, useReloadLinked, useWriteLinked } from '../../api/mutations';
+import { useReloadLinked, useWriteLinked } from '../../api/mutations';
 import { stackQueries } from '../../api/queries';
 import { useComposeCheck } from '../../api/useComposeCheck';
 import type { ComposeJob } from '../../model/composeJob';
@@ -37,6 +35,7 @@ import { ComposeChecks } from '../ComposeChecks';
 import { ReviewDialog } from '../dialogs/ReviewDialog';
 import { DeployButton } from './DeployButton';
 import { LinkedFileList } from './LinkedFileList';
+import { ForgetButton } from './LinkedForget';
 import { ProfilesControl } from './ProfilesControl';
 import { t, tRich } from '@/shared/i18n';
 
@@ -236,7 +235,8 @@ function LinkedEditor({
       {write.error && <ErrorMessage error={write.error} />}
       <DeployButton
         canDeploy={canDeploy}
-        dirty={dirty.length > 0}
+        canSave={dirty.length > 0}
+        unsaved={dirty.length > 0}
         pending={write.isPending}
         onDeploy={() =>
           deployed && dirty.length > 0
@@ -278,40 +278,5 @@ function LinkedEditor({
         onClose={() => setReview(null)}
       />
     </div>
-  );
-}
-
-function ForgetButton({
-  owner,
-  stack,
-  linkedId,
-}: {
-  owner: StackOwner;
-  stack: Stack;
-  linkedId: string;
-}) {
-  const navigate = useNavigate();
-  const [dialog, confirm] = useConfirm();
-  const forget = useForgetLinked(owner, linkedId);
-  return (
-    <>
-      <Button
-        variant="outline"
-        onClick={() =>
-          confirm({
-            title: t('stacks.linked.forgetTitle', { name: stack.name }),
-            description: t('stacks.linked.forgetDescription'),
-            confirmLabel: t('stacks.linked.forget'),
-            onConfirm: async () => {
-              await forget.mutateAsync();
-              navigate('/stacks');
-            },
-          })
-        }
-      >
-        {t('stacks.linked.forget')}
-      </Button>
-      {dialog}
-    </>
   );
 }

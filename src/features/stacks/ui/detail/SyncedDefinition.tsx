@@ -100,7 +100,8 @@ function Loaded({
         label={t('stacks.action.sync')}
         icon={RefreshCwIcon}
         canDeploy={canDeploy}
-        dirty={dirty}
+        canSave={dirty}
+        unsaved={dirty}
         pending={save.isPending}
         onDeploy={() =>
           dirty ? save.mutate(env, { onSuccess: () => setSyncing(true) }) : setSyncing(true)
