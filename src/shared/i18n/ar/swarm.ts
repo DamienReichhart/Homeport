@@ -275,4 +275,5 @@ export default {
   'swarm.stacks.remove.submit': 'إزالة المكدس',
   'swarm.stacks.remove.description':
     'تُزال خدماته، ثم شبكاته وأسراره وتكويناته، كما يفعل docker stack rm. يُحتفظ بوحدات التخزين الخاصة به على كل عقدة.',
+  'swarm.nodes.column.host': 'المضيف',
 } satisfies Translation<typeof en>;

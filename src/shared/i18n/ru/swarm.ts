@@ -279,4 +279,5 @@ export default {
   'swarm.stacks.remove.submit': 'Удалить стек',
   'swarm.stacks.remove.description':
     'Удаляются его сервисы, затем сети, секреты и конфигурации, как делает docker stack rm. Его тома сохраняются на каждом узле.',
+  'swarm.nodes.column.host': 'Хост',
 } satisfies Translation<typeof en>;

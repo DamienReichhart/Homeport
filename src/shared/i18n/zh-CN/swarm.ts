@@ -270,4 +270,5 @@ export default {
   'swarm.stacks.remove.submit': '删除堆栈',
   'swarm.stacks.remove.description':
     '先删除其服务，再删除其网络、机密和配置，与 docker stack rm 相同。其卷会保留在各节点上。',
+  'swarm.nodes.column.host': '主机',
 } satisfies Translation<typeof en>;

@@ -57,7 +57,7 @@ describe('the Nodes tab', () => {
     const user = setup(calls);
     renderApp('/swarms/s1/nodes');
     const row = (await screen.findByText('alpha')).closest('tr')!;
-    expect(within(row).getByRole('link', { name: 'host local' })).toHaveAttribute(
+    expect(within(row).getByRole('link', { name: 'local' })).toHaveAttribute(
       'href',
       `/hosts/${connectedHost.host.id}`,
     );

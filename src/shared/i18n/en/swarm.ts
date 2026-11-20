@@ -271,4 +271,5 @@ export default {
   'swarm.stacks.remove.submit': 'Remove Stack',
   'swarm.stacks.remove.description':
     'Its services are removed, then its networks, secrets and configs, as docker stack rm does. Its volumes are kept on each node.',
+  'swarm.nodes.column.host': 'Host',
 };

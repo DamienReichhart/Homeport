@@ -277,4 +277,5 @@ export default {
   'swarm.stacks.remove.submit': 'स्टैक हटाएँ',
   'swarm.stacks.remove.description':
     'इसकी सर्विस हटाई जाती हैं, फिर इसके नेटवर्क, सीक्रेट और कॉन्फ़िग, जैसा docker stack rm करता है। इसके वॉल्यूम हर नोड पर रखे जाते हैं।',
+  'swarm.nodes.column.host': 'होस्ट',
 } satisfies Translation<typeof en>;

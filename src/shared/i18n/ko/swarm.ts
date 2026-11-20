@@ -273,4 +273,5 @@ export default {
   'swarm.stacks.remove.submit': '스택 삭제',
   'swarm.stacks.remove.description':
     'docker stack rm처럼 서비스를 삭제한 다음 네트워크, 시크릿, config를 삭제합니다. 볼륨은 각 노드에 유지됩니다.',
+  'swarm.nodes.column.host': '호스트',
 } satisfies Translation<typeof en>;

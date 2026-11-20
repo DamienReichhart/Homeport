@@ -43,21 +43,32 @@ export function nodeColumns({
       accessorFn: (n) => n.hostname,
       cell: ({ row }) => {
         const node = row.original;
-        const host = hosts?.find((h) => h.host.id === node.hostId);
         return (
           <span className="flex items-center gap-2 font-medium whitespace-nowrap">
             <StatusDot tone={node.state === 'ready' ? 'success' : 'danger'} />
             {node.hostname}
-            {host && (
-              <Link
-                to={`/hosts/${host.host.id}`}
-                className="text-muted-foreground text-xs font-normal hover:underline"
-                onClick={(e) => e.stopPropagation()}
-              >
-                {t('swarm.nodes.isHost', { name: host.host.name })}
-              </Link>
-            )}
           </span>
+        );
+      },
+    },
+    {
+      // Its own column: the name opens the node's tasks, and a link can't sit inside it.
+      id: 'host',
+      header: t('swarm.nodes.column.host'),
+      enableSorting: false,
+      cell: ({ row }) => {
+        const host = hosts?.find((h) => h.host.id === row.original.hostId);
+        return host ? (
+          <Link
+            to={`/hosts/${host.host.id}`}
+            className="text-muted-foreground block max-w-36 truncate text-sm hover:underline"
+            title={t('swarm.nodes.isHost', { name: host.host.name })}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {host.host.name}
+          </Link>
+        ) : (
+          <span className="text-muted-foreground">—</span>
         );
       },
     },

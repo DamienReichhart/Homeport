@@ -276,4 +276,5 @@ export default {
   'swarm.stacks.remove.submit': 'スタックを削除',
   'swarm.stacks.remove.description':
     'docker stack rm と同じように、サービスが削除され、続いてネットワーク、シークレット、コンフィグが削除されます。ボリュームは各ノードに残ります。',
+  'swarm.nodes.column.host': 'ホスト',
 } satisfies Translation<typeof en>;
