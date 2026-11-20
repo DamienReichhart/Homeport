@@ -18,11 +18,13 @@ const { locale } = Astro.props;
 const s = strings(locale);
 
 const stops = [
-  // Each shot shows only the part of the window that answers its question, so its text is readable.
-  { id: 'up', shot: 'board', region: '240 0 880 470', doc: '/docs/guides/overview/' },
-  { id: 'died', shot: 'container-logs', region: '590 8 830 530', doc: '/docs/guides/containers/' },
-  { id: 'changed', shot: 'events', region: '240 0 960 560', doc: '/docs/guides/overview/' },
-  { id: 'act', shot: 'stack-editor', region: '560 0 880 560', doc: '/docs/guides/stacks/' },
+  // Each shot shows the part of the window that answers its question, enlarged. 1040 of the
+  // window's 1440 px keeps it at most 960 CSS px wide, the widest a 1920 px file covers at a
+  // density of 2 (e2e/images.e2e.ts).
+  { id: 'up', shot: 'board', region: '200 0 1040 560', doc: '/docs/guides/overview/' },
+  { id: 'died', shot: 'container-logs', region: '400 8 1040 600', doc: '/docs/guides/containers/' },
+  { id: 'changed', shot: 'events', region: '220 0 1040 600', doc: '/docs/guides/overview/' },
+  { id: 'act', shot: 'stack-editor', region: '400 0 1040 620', doc: '/docs/guides/stacks/' },
 ] as const;
 const also = (['background', 'keyboard'] as const).map((id) => ({
   title: s[`home.questions.${id}.title`],
