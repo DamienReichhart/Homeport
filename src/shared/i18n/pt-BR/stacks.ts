@@ -250,7 +250,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Nenhum chaveiro do sistema está disponível, então um ambiente de stack não pode ser armazenado.',
   'stacks.editor.problems': 'Problemas',
-  'stacks.managed.saveAndRedeploy': 'Salvar e reimplantar',
   'stacks.profiles.title': 'Perfis',
   'stacks.profiles.hint':
     'Os serviços atrás de um perfil só são executados quando ele está ativado. Os serviços sem perfil sempre são executados.',
@@ -293,4 +292,9 @@ export default {
   'stacks.external.descriptionFrom':
     'Ela foi implantada fora do Homeport a partir de <mono>{files}</mono> naquela máquina. Você pode iniciá-la, pará-la e removê-la; adote-a com o arquivo compose dela para editá-la e reimplantá-la.',
   'stacks.palette.new': 'Nova stack',
+  'stacks.managed.deploy': 'Implantar',
+  'stacks.managed.moreSave': 'Outras formas de salvar',
+  'stacks.managed.saveOnly': 'Salvar sem implantar',
+  'stacks.managed.unsaved': 'Alterações não salvas',
+  'stacks.forget.sectionTitle': 'Esquecer este stack',
 } satisfies Translation<typeof en>;

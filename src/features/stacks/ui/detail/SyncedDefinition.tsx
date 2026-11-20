@@ -2,7 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCapabilities, type Stack, type SyncedStack } from '@/shared/api';
-import { Button, EnvTextarea, ErrorMessage, Label, Spinner, useConfirm } from '@/shared/ui';
+import {
+  Button,
+  DangerZone,
+  EnvTextarea,
+  ErrorMessage,
+  Label,
+  Spinner,
+  useConfirm,
+} from '@/shared/ui';
 import { syncedQueries, useForgetSynced, useSaveSyncedEnv } from '../../api/synced';
 import type { ComposeJob } from '../../model/composeJob';
 import { repositoryQueries } from '@/features/repositories';
@@ -95,25 +103,30 @@ function Loaded({
         >
           {t('common.save')}
         </Button>
-        <Button
-          variant="ghost"
-          className="ms-auto"
-          onClick={() =>
-            confirm({
-              title: t('stacks.synced.forgetTitle', { name: stack.name }),
-              description: t('stacks.synced.forgetDescription'),
-              confirmLabel: t('stacks.synced.forget'),
-              destructive: true,
-              onConfirm: async () => {
-                await forget.mutateAsync();
-                navigate('/stacks');
-              },
-            })
-          }
-        >
-          {t('stacks.synced.forget')}
-        </Button>
       </div>
+      <DangerZone
+        title={t('stacks.forget.sectionTitle')}
+        description={t('stacks.synced.forgetDescription')}
+        action={
+          <Button
+            variant="destructive"
+            onClick={() =>
+              confirm({
+                title: t('stacks.synced.forgetTitle', { name: stack.name }),
+                description: t('stacks.synced.forgetDescription'),
+                confirmLabel: t('stacks.synced.forget'),
+                destructive: true,
+                onConfirm: async () => {
+                  await forget.mutateAsync();
+                  navigate('/stacks');
+                },
+              })
+            }
+          >
+            {t('stacks.synced.forget')}
+          </Button>
+        }
+      />
       {dialog}
     </div>
   );

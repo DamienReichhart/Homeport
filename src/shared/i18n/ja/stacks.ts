@@ -246,7 +246,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'OS のキーチェーンを利用できないため、スタックの環境変数を保存できません。',
   'stacks.editor.problems': '問題',
-  'stacks.managed.saveAndRedeploy': '保存して再デプロイ',
   'stacks.profiles.title': 'プロファイル',
   'stacks.profiles.hint':
     'プロファイルに属するサービスは、そのプロファイルがオンのときだけ実行されます。プロファイルのないサービスは常に実行されます。',
@@ -289,4 +288,9 @@ export default {
   'stacks.external.descriptionFrom':
     'そのマシン上の <mono>{files}</mono> から、Homeport の外部でデプロイされたものです。起動、停止、削除はできます。編集や再デプロイをするには、compose ファイルを指定して引き継いでください。',
   'stacks.palette.new': '新しいスタック',
+  'stacks.managed.deploy': 'デプロイ',
+  'stacks.managed.moreSave': 'その他の保存方法',
+  'stacks.managed.saveOnly': 'デプロイせずに保存',
+  'stacks.managed.unsaved': '未保存の変更があります',
+  'stacks.forget.sectionTitle': 'このスタックを破棄',
 } satisfies Translation<typeof en>;

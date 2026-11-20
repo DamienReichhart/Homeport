@@ -243,7 +243,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'لا تتوفر سلسلة مفاتيح في نظام التشغيل، لذا لا يمكن تخزين بيئة مكدس.',
   'stacks.editor.problems': 'المشكلات',
-  'stacks.managed.saveAndRedeploy': 'حفظ وإعادة النشر',
   'stacks.profiles.title': 'ملفات التعريف',
   'stacks.profiles.hint':
     'لا تعمل الخدمات المرتبطة بملف تعريف إلا عند تفعيله. أما الخدمات التي لا ترتبط بأي ملف تعريف فتعمل دائمًا.',
@@ -286,4 +285,9 @@ export default {
   'stacks.external.descriptionFrom':
     'نُشر خارج Homeport من <mono>{files}</mono> على ذلك الجهاز. يمكنك تشغيله وإيقافه وإزالته؛ تبنَّه مع ملف compose الخاص به لتحريره وإعادة نشره.',
   'stacks.palette.new': 'مكدس جديد',
+  'stacks.managed.deploy': 'نشر',
+  'stacks.managed.moreSave': 'طرق أخرى للحفظ',
+  'stacks.managed.saveOnly': 'حفظ دون نشر',
+  'stacks.managed.unsaved': 'تغييرات غير محفوظة',
+  'stacks.forget.sectionTitle': 'نسيان هذا المكدس',
 } satisfies Translation<typeof en>;

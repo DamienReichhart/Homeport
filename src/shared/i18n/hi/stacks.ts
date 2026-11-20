@@ -250,7 +250,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'कोई OS कीचेन उपलब्ध नहीं है, इसलिए स्टैक का परिवेश सहेजा नहीं जा सकता।',
   'stacks.editor.problems': 'समस्याएँ',
-  'stacks.managed.saveAndRedeploy': 'सहेजें और फिर से डिप्लॉय करें',
   'stacks.profiles.title': 'Profiles',
   'stacks.profiles.hint':
     'किसी profile के पीछे की सर्विस सिर्फ़ तभी चलती हैं जब वह चालू हो। बिना profile वाली सर्विस हमेशा चलती हैं।',
@@ -293,4 +292,9 @@ export default {
   'stacks.external.descriptionFrom':
     'इसे Homeport के बाहर उस मशीन पर <mono>{files}</mono> से डिप्लॉय किया गया था। आप इसे शुरू कर सकते हैं, रोक सकते हैं और हटा सकते हैं; संपादित करने और फिर से डिप्लॉय करने के लिए इसे इसकी compose फ़ाइल के साथ अपनाएँ।',
   'stacks.palette.new': 'नया स्टैक',
+  'stacks.managed.deploy': 'डिप्लॉय करें',
+  'stacks.managed.moreSave': 'सहेजने के और तरीके',
+  'stacks.managed.saveOnly': 'डिप्लॉय किए बिना सहेजें',
+  'stacks.managed.unsaved': 'बिना सहेजे बदलाव',
+  'stacks.forget.sectionTitle': 'यह स्टैक भूल जाएँ',
 } satisfies Translation<typeof en>;

@@ -244,7 +244,6 @@ export default {
     '.env 파일과 같습니다. 암호화되어 저장되며, {variable} 치환을 위해 compose에 전달되고, 디스크에 기록되지 않습니다.',
   'stacks.editor.envHintNoKeychain': 'OS 키체인을 사용할 수 없어 스택 환경을 저장할 수 없습니다.',
   'stacks.editor.problems': '문제',
-  'stacks.managed.saveAndRedeploy': '저장 후 다시 배포',
   'stacks.profiles.title': '프로필',
   'stacks.profiles.hint':
     '프로필이 지정된 서비스는 해당 프로필을 켰을 때만 실행됩니다. 프로필이 없는 서비스는 항상 실행됩니다.',
@@ -287,4 +286,9 @@ export default {
   'stacks.external.descriptionFrom':
     '해당 컴퓨터의 <mono>{files}</mono>에서 Homeport 밖에서 배포되었습니다. 시작, 중지, 삭제할 수 있으며, 편집하고 다시 배포하려면 compose 파일과 함께 관리형으로 전환하세요.',
   'stacks.palette.new': '새 스택',
+  'stacks.managed.deploy': '배포',
+  'stacks.managed.moreSave': '다른 저장 방법',
+  'stacks.managed.saveOnly': '배포하지 않고 저장',
+  'stacks.managed.unsaved': '저장하지 않은 변경 사항',
+  'stacks.forget.sectionTitle': '이 스택 잊기',
 } satisfies Translation<typeof en>;

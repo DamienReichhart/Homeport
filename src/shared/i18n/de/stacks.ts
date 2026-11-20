@@ -256,7 +256,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Es ist kein Schlüsselbund des Betriebssystems verfügbar, daher kann keine Stack-Umgebung gespeichert werden.',
   'stacks.editor.problems': 'Probleme',
-  'stacks.managed.saveAndRedeploy': 'Speichern und neu bereitstellen',
   'stacks.profiles.title': 'Profile',
   'stacks.profiles.hint':
     'Services hinter einem Profil laufen nur, wenn es eingeschaltet ist. Services ohne Profil laufen immer.',
@@ -300,4 +299,9 @@ export default {
   'stacks.external.descriptionFrom':
     'Er wurde außerhalb von Homeport aus <mono>{files}</mono> auf jenem Rechner bereitgestellt. Sie können ihn starten, stoppen und entfernen; übernehmen Sie ihn mit seiner Compose-Datei, um ihn zu bearbeiten und neu bereitzustellen.',
   'stacks.palette.new': 'Neuer Stack',
+  'stacks.managed.deploy': 'Bereitstellen',
+  'stacks.managed.moreSave': 'Weitere Speicheroptionen',
+  'stacks.managed.saveOnly': 'Speichern, ohne bereitzustellen',
+  'stacks.managed.unsaved': 'Ungespeicherte Änderungen',
+  'stacks.forget.sectionTitle': 'Diesen Stack vergessen',
 } satisfies Translation<typeof en>;

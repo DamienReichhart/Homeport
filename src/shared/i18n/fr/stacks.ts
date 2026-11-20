@@ -255,7 +255,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Aucun trousseau du système n’est disponible : l’environnement d’une stack ne peut donc pas être enregistré.',
   'stacks.editor.problems': 'Problèmes',
-  'stacks.managed.saveAndRedeploy': 'Enregistrer et redéployer',
   'stacks.profiles.title': 'Profils',
   'stacks.profiles.hint':
     'Les services associés à un profil ne s’exécutent que lorsqu’il est activé. Les services sans profil s’exécutent toujours.',
@@ -299,4 +298,9 @@ export default {
   'stacks.external.descriptionFrom':
     'Elle a été déployée en dehors de Homeport depuis <mono>{files}</mono> sur cette machine. Vous pouvez la démarrer, l’arrêter et la supprimer ; adoptez-la avec son fichier compose pour la modifier et la redéployer.',
   'stacks.palette.new': 'Nouvelle stack',
+  'stacks.managed.deploy': 'Déployer',
+  'stacks.managed.moreSave': 'Autres façons d’enregistrer',
+  'stacks.managed.saveOnly': 'Enregistrer sans déployer',
+  'stacks.managed.unsaved': 'Modifications non enregistrées',
+  'stacks.forget.sectionTitle': 'Oublier cette stack',
 } satisfies Translation<typeof en>;

@@ -250,7 +250,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'No hay ningún llavero del sistema disponible, así que no se puede guardar un entorno de stack.',
   'stacks.editor.problems': 'Problemas',
-  'stacks.managed.saveAndRedeploy': 'Guardar y volver a desplegar',
   'stacks.profiles.title': 'Perfiles',
   'stacks.profiles.hint':
     'Los servicios con un perfil solo se ejecutan cuando ese perfil está activado. Los servicios sin perfil siempre se ejecutan.',
@@ -293,4 +292,9 @@ export default {
   'stacks.external.descriptionFrom':
     'Se desplegó fuera de Homeport desde <mono>{files}</mono> en esa máquina. Puedes iniciarlo, detenerlo y eliminarlo; adóptalo con su archivo compose para editarlo y volver a desplegarlo.',
   'stacks.palette.new': 'Nuevo stack',
+  'stacks.managed.deploy': 'Desplegar',
+  'stacks.managed.moreSave': 'Otras formas de guardar',
+  'stacks.managed.saveOnly': 'Guardar sin desplegar',
+  'stacks.managed.unsaved': 'Cambios sin guardar',
+  'stacks.forget.sectionTitle': 'Olvidar este stack',
 } satisfies Translation<typeof en>;

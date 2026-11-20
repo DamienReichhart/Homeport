@@ -245,7 +245,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'No OS keychain is available, so a Stack environment can’t be stored.',
   'stacks.editor.problems': 'Problems',
-  'stacks.managed.saveAndRedeploy': 'Save and redeploy',
   'stacks.profiles.title': 'Profiles',
   'stacks.profiles.hint':
     'Services behind a profile run only when it’s turned on. Services without one always run.',
@@ -288,4 +287,9 @@ export default {
   'stacks.external.descriptionFrom':
     'It was deployed outside Homeport from <mono>{files}</mono> on that machine. You can start, stop and remove it; adopt it with its compose file to edit and redeploy.',
   'stacks.palette.new': 'New Stack',
+  'stacks.managed.deploy': 'Deploy',
+  'stacks.managed.moreSave': 'More ways to save',
+  'stacks.managed.saveOnly': 'Save without deploying',
+  'stacks.managed.unsaved': 'Unsaved changes',
+  'stacks.forget.sectionTitle': 'Forget this Stack',
 } as const;

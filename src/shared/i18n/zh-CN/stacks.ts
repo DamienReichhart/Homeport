@@ -232,7 +232,6 @@ export default {
     '类似 .env 文件：加密保存，传给 compose 用于 {variable} 替换，绝不会写入磁盘。',
   'stacks.editor.envHintNoKeychain': '没有可用的系统钥匙串，因此无法保存堆栈环境变量。',
   'stacks.editor.problems': '问题',
-  'stacks.managed.saveAndRedeploy': '保存并重新部署',
   'stacks.profiles.title': 'Profile',
   'stacks.profiles.hint':
     '属于某个 profile 的服务只在该 profile 启用时运行。没有 profile 的服务始终运行。',
@@ -274,4 +273,9 @@ export default {
   'stacks.external.descriptionFrom':
     '它是在 Homeport 之外，从那台机器上的 <mono>{files}</mono> 部署的。你可以启动、停止和删除它；提供其 compose 文件接管它后，即可编辑和重新部署。',
   'stacks.palette.new': '新建堆栈',
+  'stacks.managed.deploy': '部署',
+  'stacks.managed.moreSave': '更多保存方式',
+  'stacks.managed.saveOnly': '仅保存，不部署',
+  'stacks.managed.unsaved': '有未保存的更改',
+  'stacks.forget.sectionTitle': '忘记此堆栈',
 } satisfies Translation<typeof en>;

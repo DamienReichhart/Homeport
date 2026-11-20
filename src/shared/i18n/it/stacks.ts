@@ -250,7 +250,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Non è disponibile alcun portachiavi del sistema operativo, quindi l’ambiente di uno stack non può essere memorizzato.',
   'stacks.editor.problems': 'Problemi',
-  'stacks.managed.saveAndRedeploy': 'Salva e ridistribuisci',
   'stacks.profiles.title': 'Profili',
   'stacks.profiles.hint':
     'I servizi legati a un profilo vengono eseguiti solo quando questo è attivo. I servizi senza profilo vengono sempre eseguiti.',
@@ -293,4 +292,9 @@ export default {
   'stacks.external.descriptionFrom':
     'È stato distribuito fuori da Homeport da <mono>{files}</mono> su quel computer. Puoi avviarlo, arrestarlo e rimuoverlo; adottalo con il suo file compose per modificarlo e ridistribuirlo.',
   'stacks.palette.new': 'Nuovo stack',
+  'stacks.managed.deploy': 'Distribuisci',
+  'stacks.managed.moreSave': 'Altri modi per salvare',
+  'stacks.managed.saveOnly': 'Salva senza distribuire',
+  'stacks.managed.unsaved': 'Modifiche non salvate',
+  'stacks.forget.sectionTitle': 'Dimentica questo stack',
 } satisfies Translation<typeof en>;

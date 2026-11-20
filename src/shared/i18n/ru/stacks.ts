@@ -251,7 +251,6 @@ export default {
   'stacks.editor.envHintNoKeychain':
     'Связка ключей ОС недоступна, поэтому окружение стека сохранить нельзя.',
   'stacks.editor.problems': 'Проблемы',
-  'stacks.managed.saveAndRedeploy': 'Сохранить и развернуть заново',
   'stacks.profiles.title': 'Профили',
   'stacks.profiles.hint':
     'Сервисы с профилем работают, только когда он включён. Сервисы без профиля работают всегда.',
@@ -294,4 +293,9 @@ export default {
   'stacks.external.descriptionFrom':
     'Он был развёрнут вне Homeport из <mono>{files}</mono> на той машине. Его можно запускать, останавливать и удалять; возьмите его под управление с его файлом compose, чтобы изменять и разворачивать заново.',
   'stacks.palette.new': 'Новый стек',
+  'stacks.managed.deploy': 'Развернуть',
+  'stacks.managed.moreSave': 'Другие способы сохранить',
+  'stacks.managed.saveOnly': 'Сохранить без развёртывания',
+  'stacks.managed.unsaved': 'Несохранённые изменения',
+  'stacks.forget.sectionTitle': 'Забыть этот стек',
 } satisfies Translation<typeof en>;
