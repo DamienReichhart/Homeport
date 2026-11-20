@@ -2,7 +2,7 @@
 export default {
   'apiresources.nav': 'API resources',
   'apiresources.title': 'API resources',
-  'apiresources.summary': '{count, plural, one {# type} other {# types}} served by this cluster',
+  'apiresources.summary': '{count, plural, one {# type} other {# types}} served by this Cluster',
   'apiresources.refresh': 'Refresh',
   'apiresources.types': 'Resource types',
   'apiresources.search': 'Kind or short name (pvc)',
@@ -10,7 +10,7 @@ export default {
   'apiresources.noMatch': 'No type matches.',
   'apiresources.coreGroup': 'core',
   'apiresources.pick': 'Pick a type to list its objects: built-in ones, and those your CRDs add.',
-  'apiresources.typeGone': 'This cluster doesn’t serve that type (any more).',
+  'apiresources.typeGone': 'This Cluster doesn’t serve that type any more.',
   'apiresources.cantList': 'Can’t be listed',
   'apiresources.notAllowed': 'Your credentials can’t list it',
   'apiresources.cantListWhy':
