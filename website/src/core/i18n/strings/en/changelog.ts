@@ -3,7 +3,6 @@ export default {
   'changelog.title': 'Changelog — Homeport',
   'changelog.description':
     "What's new in each Homeport release: features, fixes and other changes.",
-  'changelog.eyebrow': 'Changelog',
   'changelog.heading': "What's new in Homeport",
   'changelog.lead':
     "Every release, newest first. Notes are generated from the project's commits; the files are on the {link}.",

@@ -1,0 +1,128 @@
+---
+/**
+ * The map's index of stations: every Engine and orchestrator Homeport reaches,
+ * the lines that serve it, and what it gets beyond the shared vocabulary. Each
+ * name leads to its page in the docs.
+ */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath } from '@/core/site';
+import { href } from '@/shared/lib/href';
+import { type LineId, lineById } from '../../model/fleet';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+const engines: { id: string; name: string; lines: LineId[]; doc: string }[] = [
+  {
+    id: 'docker',
+    name: 'Docker Engine',
+    lines: ['socket', 'ssh', 'tls', 'tcp'],
+    doc: '/docs/hosts/',
+  },
+  { id: 'swarm', name: 'Docker Swarm', lines: ['ssh', 'tls', 'tcp'], doc: '/docs/guides/swarm/' },
+  { id: 'podman', name: 'Podman', lines: ['socket', 'ssh'], doc: '/docs/guides/podman-pods/' },
+  {
+    id: 'containerd',
+    name: 'containerd',
+    lines: ['socket', 'ssh'],
+    doc: '/docs/hosts/containerd/',
+  },
+  { id: 'incus', name: 'Incus', lines: ['socket', 'ssh', 'cluster'], doc: '/docs/hosts/incus/' },
+  { id: 'kubernetes', name: 'Kubernetes', lines: ['cluster'], doc: '/docs/clusters/' },
+  { id: 'nomad', name: 'Nomad', lines: ['cluster'], doc: '/docs/clusters/nomad/' },
+];
+const body = (id: string) =>
+  s[
+    `home.engines.${id}.body` as `home.engines.${'docker' | 'swarm' | 'podman' | 'containerd' | 'incus' | 'kubernetes' | 'nomad'}.body`
+  ];
+---
+
+<section class="section section--ruled" id="engines">
+  <div class="container">
+    <div class="section-head">
+      <h2>{s['home.engines.title']}</h2>
+      <p>{s['home.engines.lead']}</p>
+    </div>
+
+    <ul class="index">
+      {engines.map((engine) => (
+        <li class="index__entry">
+          <h3>
+            <span class="station" aria-hidden="true" />
+            <a href={href(localePath(engine.doc, locale))}>{engine.name}</a>
+          </h3>
+          <span class="index__lines" aria-hidden="true">
+            {engine.lines.map((id) => (
+              <span class="line-key" style={`--line: var(${lineById(id).colour})`} />
+            ))}
+          </span>
+          <p>{body(engine.id)}</p>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  /* The index reads like a map's index of stations: one row per Engine. */
+  .index {
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--hp-text);
+    list-style: none;
+  }
+  .index__entry {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem 1.5rem;
+    align-items: baseline;
+    padding-block: 1.35rem;
+    border-bottom: 1px solid var(--hp-border);
+  }
+  @media (min-width: 56rem) {
+    .index__entry {
+      grid-template-columns: 15rem 6.5rem minmax(0, 1fr);
+      gap: 2rem;
+    }
+  }
+  .index__entry h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    font-size: 1.3rem;
+    letter-spacing: -0.01em;
+  }
+  .index__entry h3 a {
+    color: var(--hp-text);
+    text-decoration: underline;
+    text-decoration-color: transparent;
+  }
+  .index__entry h3 a:hover {
+    text-decoration-color: currentColor;
+  }
+  .index__lines {
+    display: flex;
+    gap: 0.3rem;
+    align-items: center;
+    align-self: center;
+  }
+  .index__lines .line-key {
+    width: 1.1rem;
+  }
+  .index__entry p {
+    grid-column: 1 / -1;
+    max-width: 42rem;
+    padding-inline-start: 1.8rem;
+    color: var(--hp-text-muted);
+  }
+  @media (min-width: 56rem) {
+    .index__entry p {
+      grid-column: auto;
+      padding-inline-start: 0;
+    }
+  }
+</style>

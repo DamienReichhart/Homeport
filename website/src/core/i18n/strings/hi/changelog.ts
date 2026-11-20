@@ -5,7 +5,6 @@ import type en from '../en/changelog';
 export default {
   'changelog.title': 'चेंजलॉग — Homeport',
   'changelog.description': 'Homeport की हर रिलीज़ में नया क्या है: सुविधाएँ, सुधार और दूसरे बदलाव।',
-  'changelog.eyebrow': 'चेंजलॉग',
   'changelog.heading': 'Homeport में नया क्या है',
   'changelog.lead':
     'हर रिलीज़, सबसे नई पहले। नोट्स प्रोजेक्ट के कमिट से बनाए जाते हैं; फ़ाइलें {link} पर हैं।',

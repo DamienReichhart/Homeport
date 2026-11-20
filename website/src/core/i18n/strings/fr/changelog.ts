@@ -6,7 +6,6 @@ export default {
   'changelog.title': 'Nouveautés — Homeport',
   'changelog.description':
     'Les nouveautés de chaque version de Homeport : fonctionnalités, corrections et autres changements.',
-  'changelog.eyebrow': 'Nouveautés',
   'changelog.heading': 'Les nouveautés de Homeport',
   'changelog.lead':
     'Chaque version, de la plus récente à la plus ancienne. Les notes sont générées à partir des commits du projet ; les fichiers se trouvent sur la {link}.',

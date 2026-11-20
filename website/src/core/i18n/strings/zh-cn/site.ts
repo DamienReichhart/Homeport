@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Simplified Chinese. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': '所有 Docker Engine，尽在一块看板。',
+  'site.tagline': '一个应用，管理所有容器引擎。',
   'site.description':
-    'Homeport 是一款免费、开源的桌面应用，用于管理任何位置的 Docker Engine：本机的，或通过 SSH、TLS 或 TCP 连接的远程引擎。支持 Windows、macOS 和 Linux。',
-  'site.ogImageAlt': 'Homeport：所有 Docker Engine，尽在一块看板。',
+    'Homeport 是一款免费、开源的桌面应用，用于 Docker、Podman、containerd、Incus、Kubernetes 和 Nomad。它运行在你的电脑上，通过 SSH、TLS 或你的 kubeconfig 连接服务器，服务器上无需安装任何东西。支持 Windows、macOS 和 Linux。',
+  'site.ogImageAlt': 'Homeport：一个应用，管理所有容器引擎。',
   'site.skipToContent': '跳到正文',
 
   // The header, the language menu and the theme switch.
   'header.home': 'Homeport 首页',
   'header.logo': 'Homeport',
   'header.nav': '主导航',
-  'header.features': '功能',
+  'header.engines': '引擎',
   'header.docs': '文档',
   'header.changelog': '更新日志',
   'header.download': '下载',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': '产品',
-  'footer.features': '功能',
+  'footer.engines': '引擎',
   'footer.download': '下载',
   'footer.changelog': '更新日志',
   'footer.releases': '所有版本',

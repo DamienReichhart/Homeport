@@ -2,7 +2,7 @@
 
 Homeport stays on your machine and visits your servers. It never moves in. The identity is built to feel **steady**: calm, neutral and legible from across a room, with one red signal that you trust without thinking. The references are a railway station clock (neutral face, one loud red hand), maritime signal flags (flat colour, one exact meaning each) and Shaker joinery (nothing decorative that doesn't do a job). ADR 0007 records why it replaced the harbour identity.
 
-Tagline: **Every Docker Engine, on one board.**
+Tagline: **Every Docker Engine, on one board.** in the app; the website says **One app for every container Engine.** (§ Website, ADR 0022).
 
 ## Mark
 
@@ -116,6 +116,25 @@ Only claim what is true for every connection type, or say which one it's true fo
 - **No extra open port**: true only for SSH. TLS and TCP need the Engine's API port (usually 2376 and 2375), which the user exposes. Never write "no open port" without saying "over SSH".
 - **Nothing installed**: true. An SSH Host with Homeport's key adds one line to `authorized_keys`; say so where it matters.
 - **Free, open source, Windows, macOS and Linux**, **no account**, **no telemetry**: true.
+
+## Website
+
+The website keeps the mark, the voice and Signal red's one meaning, and draws everything else as a **line map** of the visitor's fleet (ADR 0022): this machine is the terminus, each way of reaching an Engine is a line, each Engine a station, and the station that needs you is the only red. Tokens live in `website/src/app/styles/theme.css`.
+
+| Role          | Light                 | Dark                  | Use                                                   |
+| ------------- | --------------------- | --------------------- | ----------------------------------------------------- |
+| Ground        | `#fbfbf8` map white   | `#0e1013` night map   | The page                                              |
+| Ink           | `#16181b`             | `#eceef0`             | Text, primary buttons, the socket line, station rings |
+| Muted / faint | `#4b5058` / `#5e636b` | `#b3b8bf` / `#9aa0a8` | Secondary text (7.8 / 5.8:1 light, 9.6 / 7.2:1 dark)  |
+| Band          | `#16181b`             | `#07080a`             | The one ink band (keys and security)                  |
+| Signal        | `#c8102e`             | `#ff5c5c`             | **Only** a station or a fact that needs you           |
+
+The five lines, only ever on a line, a rail or the map's key, never on text or a surface: socket (ink), SSH green `#0b7a4b` / `#3fbf7f`, TLS cobalt `#1e4bb8` / `#6f93ff`, TCP ochre `#a8650a` / `#e0a043`, cluster API teal `#0f7a80` / `#33b9bf`. Each is 3:1 or more on both grounds.
+
+- **Type**: Fira Sans (400, 500, 600) for everything read, Fira Mono for what a machine wrote. Headings 600, tight tracking, sentence case, never an eyebrow above them.
+- **Shapes**: lines 6 px on the map (4 px rails in the docs), 45° turns; a station is a ring; the page you are on is a filled one. Corners 2 px. Hairline rules and a 2 px ink rule over a list or table head instead of cards.
+- **Motion**: the map draws itself once on load; nothing else moves, and nothing at all under reduced motion.
+- **Example data** on the map is labelled "An example fleet"; no metric, quote or logo is ever invented.
 
 ## Never
 

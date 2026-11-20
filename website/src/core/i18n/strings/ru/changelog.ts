@@ -6,7 +6,6 @@ export default {
   'changelog.title': 'Список изменений — Homeport',
   'changelog.description':
     'Что нового в каждом выпуске Homeport: возможности, исправления и другие изменения.',
-  'changelog.eyebrow': 'Список изменений',
   'changelog.heading': 'Что нового в Homeport',
   'changelog.lead':
     'Все выпуски, сначала новые. Примечания составляются из коммитов проекта; файлы — на {link}.',

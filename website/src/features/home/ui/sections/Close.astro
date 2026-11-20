@@ -1,0 +1,128 @@
+---
+/** The close: where the visitor starts. The download, and each desktop as a row of the timetable. */
+import { strings } from '@/core/i18n';
+import { type Locale, localePath, REPO_URL } from '@/core/site';
+import { DownloadButton } from '@/features/download';
+import { href } from '@/shared/lib/href';
+import { Icon } from '@/shared/ui';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+const platforms = [
+  { os: 'windows', name: 'Windows', icon: 'windows' },
+  { os: 'macos', name: 'macOS', icon: 'apple' },
+  { os: 'linux', name: 'Linux', icon: 'linux' },
+] as const;
+---
+
+<section class="section close">
+  <div class="container close__inner">
+    <div class="close__text">
+      <h2>{s['home.close.title']}</h2>
+      <p>{s['home.close.body']}</p>
+      <div class="close__actions">
+        <DownloadButton locale={locale} />
+        <a class="button button--secondary button--large" href={REPO_URL}>
+          <Icon name="github" />
+          {s['home.close.github']}
+        </a>
+      </div>
+    </div>
+    <ul class="close__platforms">
+      {platforms.map((platform) => (
+        <li>
+          <a href={href(localePath(`/download/#${platform.os}`, locale))}>
+            <Icon name={platform.icon} size={24} />
+            <strong>{platform.name}</strong>
+            <span>{s[`home.desktops.${platform.os}.versions`]}</span>
+            <span>{s[`home.desktops.${platform.os}.formats`]}</span>
+            <Icon name="arrowRight" size={18} class="flip-rtl close__arrow" />
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<style>
+  .close__inner {
+    display: grid;
+    gap: 3.5rem;
+  }
+  @media (min-width: 64rem) {
+    .close__inner {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      gap: 4rem;
+      align-items: start;
+    }
+  }
+  .close__text {
+    display: grid;
+    gap: 1rem;
+    max-width: 32rem;
+  }
+  .close h2 {
+    font-size: clamp(2rem, 1.35rem + 2.4vw, 3.25rem);
+    letter-spacing: -0.025em;
+    line-height: 1.04;
+  }
+  .close__text p {
+    color: var(--hp-text-muted);
+    font-size: 1.1rem;
+  }
+  .close__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+  }
+  .close__platforms {
+    margin: 0;
+    padding: 0;
+    border-top: 2px solid var(--hp-text);
+    list-style: none;
+  }
+  .close__platforms a {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.2rem 1rem;
+    align-items: center;
+    padding: 1.25rem 0.25rem;
+    border-bottom: 1px solid var(--hp-border);
+    color: var(--hp-text);
+    text-decoration: none;
+    transition: background-color 150ms ease;
+  }
+  .close__platforms a:hover {
+    background: var(--hp-bg-raised);
+  }
+  .close__platforms strong {
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
+  .close__platforms span {
+    grid-column: 2;
+    color: var(--hp-text-muted);
+  }
+  .close__platforms :global(.close__arrow) {
+    grid-column: 3;
+    grid-row: 1 / span 3;
+    color: var(--hp-text-muted);
+  }
+  @media (min-width: 40rem) {
+    .close__platforms a {
+      grid-template-columns: auto 7rem minmax(0, 1fr) minmax(0, 1fr) auto;
+    }
+    .close__platforms span {
+      grid-column: auto;
+    }
+    .close__platforms :global(.close__arrow) {
+      grid-column: auto;
+      grid-row: auto;
+    }
+  }
+</style>

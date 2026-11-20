@@ -58,8 +58,8 @@ describe('strings', () => {
 
 describe('t', () => {
   it('reads a string and fills its placeholders', () => {
-    expect(t(ROOT_LOCALE, 'home.hero.title')).toBe('Every Docker Engine, on one board.');
-    expect(t(ROOT_LOCALE, 'home.hero.release', { version: '0.4.0' })).toBe('Homeport 0.4.0 is out');
+    expect(t(ROOT_LOCALE, 'home.hero.title')).toBe('One app for every container Engine.');
+    expect(t(ROOT_LOCALE, 'download.meta.version', { version: '0.4.0' })).toBe('Version 0.4.0');
     expect(t(fr, 'download.meta.version', { version: '1.2.0' })).toContain('1.2.0');
   });
 

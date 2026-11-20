@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Italian. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': 'Ogni Docker Engine, in un’unica bacheca.',
+  'site.tagline': 'Un’unica app per ogni Engine di container.',
   'site.description':
-    'Homeport è un’app desktop gratuita e open source per gestire i Docker Engine ovunque si trovino — quello di questo computer o quelli remoti tramite SSH, TLS o TCP — per Windows, macOS e Linux.',
-  'site.ogImageAlt': 'Homeport — Ogni Docker Engine, in un’unica bacheca.',
+    'Homeport è un’app desktop gratuita e open source per Docker, Podman, containerd, Incus, Kubernetes e Nomad. Funziona sul tuo computer e raggiunge i tuoi server tramite SSH, TLS o il tuo kubeconfig, senza installarvi nulla. Per Windows, macOS e Linux.',
+  'site.ogImageAlt': 'Homeport — Un’unica app per ogni Engine di container.',
   'site.skipToContent': 'Vai al contenuto',
 
   // The header, the language menu and the theme switch.
   'header.home': 'Home di Homeport',
   'header.logo': 'Homeport',
   'header.nav': 'Principale',
-  'header.features': 'Funzionalità',
+  'header.engines': 'Engine',
   'header.docs': 'Documentazione',
   'header.changelog': 'Novità',
   'header.download': 'Download',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': 'Prodotto',
-  'footer.features': 'Funzionalità',
+  'footer.engines': 'Engine',
   'footer.download': 'Download',
   'footer.changelog': 'Novità',
   'footer.releases': 'Tutte le release',

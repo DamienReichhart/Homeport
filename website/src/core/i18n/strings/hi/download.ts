@@ -21,7 +21,6 @@ export default {
   'download.note.linux': '.deb, .rpm और AppImage',
 
   // The hero.
-  'download.hero.eyebrow': 'डाउनलोड',
   'download.hero.title': 'Homeport पाएँ',
   'download.hero.release': 'संस्करण {version}, {date} को जारी हुआ।',
   'download.hero.whatsNew': 'नया क्या है',
@@ -78,7 +77,7 @@ export default {
   // What to know around the install.
   'download.before.title': 'इंस्टॉल करने से पहले',
   'download.before.body':
-    'Homeport, Docker Engine प्रबंधित करता है — इसमें कोई Docker Engine शामिल नहीं है। इसे Docker Engine, Docker Desktop, Colima, OrbStack, Rancher Desktop या Podman के साथ चलाएँ, या इसे SSH, TLS या TCP से किसी रिमोट सर्वर से जोड़ें।',
+    'Homeport में कोई इंजन शामिल नहीं है: यह उन इंजनों तक पहुँचता है जो आपके पास हैं। इसे Docker Desktop, Colima, OrbStack, Rancher Desktop या Podman के साथ चलाएँ, SSH, TLS या TCP से किसी सर्वर से जोड़ें, या अपनी kubeconfig से किसी क्लस्टर से।',
   'download.before.keychain':
     '{keychain} (macOS Keychain, Windows Credential Manager, या GNOME Keyring जैसी कोई Secret Service), SSH कुंजियाँ, TLS प्रमाणपत्र, स्टैक के परिवेश और रिपॉज़िटरी की डिप्लॉय कुंजियाँ और टोकन सहेजने के लिए।',
   'download.before.keychainName': 'OS कीचेन',

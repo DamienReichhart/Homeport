@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Hindi. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': 'हर Docker Engine, एक ही बोर्ड पर।',
+  'site.tagline': 'हर कंटेनर इंजन के लिए एक ही ऐप।',
   'site.description':
-    'Homeport कहीं भी चल रहे Docker Engine प्रबंधित करने के लिए एक मुफ़्त, ओपन-सोर्स डेस्कटॉप ऐप है — इस मशीन का इंजन, या SSH, TLS या TCP से जुड़े रिमोट इंजन — Windows, macOS और Linux के लिए।',
-  'site.ogImageAlt': 'Homeport — हर Docker Engine, एक ही बोर्ड पर।',
+    'Homeport, Docker, Podman, containerd, Incus, Kubernetes और Nomad के लिए एक मुफ़्त, ओपन-सोर्स डेस्कटॉप ऐप है। यह आपकी मशीन पर चलता है और SSH, TLS या आपकी kubeconfig से आपके सर्वरों तक पहुँचता है, उन पर कुछ भी इंस्टॉल किए बिना। Windows, macOS और Linux के लिए।',
+  'site.ogImageAlt': 'Homeport — हर कंटेनर इंजन के लिए एक ही ऐप।',
   'site.skipToContent': 'सामग्री पर जाएँ',
 
   // The header, the language menu and the theme switch.
   'header.home': 'Homeport होम',
   'header.logo': 'Homeport',
   'header.nav': 'मुख्य',
-  'header.features': 'सुविधाएँ',
+  'header.engines': 'इंजन',
   'header.docs': 'दस्तावेज़',
   'header.changelog': 'चेंजलॉग',
   'header.download': 'डाउनलोड',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': 'प्रोडक्ट',
-  'footer.features': 'सुविधाएँ',
+  'footer.engines': 'इंजन',
   'footer.download': 'डाउनलोड',
   'footer.changelog': 'चेंजलॉग',
   'footer.releases': 'सभी रिलीज़',

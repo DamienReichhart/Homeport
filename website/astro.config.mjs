@@ -41,7 +41,7 @@ export default defineConfig({
     starlight({
       title: 'Homeport',
       description:
-        'A desktop app for managing Docker Engines anywhere: this machine’s, or remote ones over SSH, TLS or TCP.',
+        'A desktop app for every container Engine: Docker, Podman, containerd, Incus, Kubernetes and Nomad, from your own machine.',
       logo: {
         light: '../assets/brand/lockup-light.svg',
         dark: '../assets/brand/lockup-dark.svg',
@@ -55,10 +55,31 @@ export default defineConfig({
       editLink: { baseUrl: `${REPO_URL}/edit/main/website/` },
       lastUpdated: true,
       credits: false,
+      // Code in the site's type, square-cornered, with no shadow: the line-map world's frame.
+      expressiveCode: {
+        themes: ['github-dark-default', 'github-light-default'],
+        styleOverrides: {
+          borderRadius: '3px',
+          borderColor: 'var(--hp-border-strong)',
+          codeFontFamily: "'Fira Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
+          uiFontFamily: "'Fira Sans', ui-sans-serif, system-ui, sans-serif",
+          codeBackground: 'var(--hp-code-bg)',
+          frames: {
+            frameBoxShadowCssValue: 'none',
+            editorActiveTabIndicatorTopColor: 'var(--hp-text)',
+            terminalTitlebarBackground: 'var(--hp-bg-raised)',
+            terminalBackground: 'var(--hp-code-bg)',
+            editorTabBarBackground: 'var(--hp-bg-raised)',
+          },
+        },
+      },
       customCss: [
-        '@fontsource-variable/host-grotesk',
-        '@fontsource/fragment-mono/400.css',
-        '@fontsource/fragment-mono/400-italic.css',
+        '@fontsource/fira-sans/400.css',
+        '@fontsource/fira-sans/400-italic.css',
+        '@fontsource/fira-sans/500.css',
+        '@fontsource/fira-sans/600.css',
+        '@fontsource/fira-mono/400.css',
+        '@fontsource/fira-mono/500.css',
         './src/app/styles/theme.css',
         './src/app/styles/docs.css',
       ],

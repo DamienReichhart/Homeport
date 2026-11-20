@@ -25,6 +25,7 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
 
 <li class="entry" id={release.tag}>
   <div class="entry__meta" lang={lang}>
+    <span class:list={['station', 'entry__station']} aria-hidden="true" />
     <a class="entry__version" href={`#${release.tag}`}>
       {release.version}
     </a>
@@ -38,10 +39,7 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
     <p class="entry__links" lang={lang}>
       <a href={release.url}>{s['changelog.onGitHub']}</a>
       {release.installers.length > 0 && (
-        <>
-          {' · '}
-          <a href={href(localePath('/download/', locale))}>{s['changelog.download']}</a>
-        </>
+        <a href={href(localePath('/download/', locale))}>{s['changelog.download']}</a>
       )}
     </p>
   </article>
@@ -49,16 +47,28 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
 
 <style>
   .entry {
+    position: relative;
     display: grid;
     gap: 1rem;
-    padding: 2.5rem 0;
-    border-top: 1px solid var(--hp-border);
+    padding: 0 0 4rem;
+    padding-inline-start: 3rem;
     scroll-margin-top: 5rem;
   }
-  @media (min-width: 48rem) {
+  /* The line from this release's station down to the next one's. */
+  .entry:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: calc(0.7rem - 3px);
+    top: 0.9rem;
+    bottom: -0.9rem;
+    width: var(--hp-line-weight);
+    border-radius: 1px;
+    background: var(--hp-line-socket);
+  }
+  @media (min-width: 52rem) {
     .entry {
-      grid-template-columns: 10rem 1fr;
-      gap: 2.5rem;
+      grid-template-columns: 11rem minmax(0, 1fr);
+      gap: 3rem;
     }
     .entry__meta {
       position: sticky;
@@ -72,44 +82,58 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
     gap: 0.4rem 0.75rem;
     align-items: center;
   }
-  @media (min-width: 48rem) {
+  @media (min-width: 52rem) {
     .entry__meta {
       display: grid;
       justify-items: start;
     }
   }
+  .entry__station {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.2rem;
+    width: 1.4rem;
+    height: 1.4rem;
+    border-width: 4px;
+  }
+  @media (min-width: 52rem) {
+    .entry__station {
+      inset-inline-start: -3rem;
+    }
+  }
   .entry__version {
     color: var(--hp-text);
     font-family: var(--sl-font-mono);
-    font-size: 1.25rem;
-    font-weight: 600;
+    font-size: 1.35rem;
+    font-weight: 500;
     text-decoration: none;
   }
+  .entry__version:hover {
+    text-decoration: underline;
+  }
   .entry__meta time {
-    color: var(--hp-text-faint);
-    font-size: 0.875rem;
+    color: var(--hp-text-muted);
   }
   .tag {
     padding: 0.1rem 0.55rem;
     border: 1px solid var(--hp-border-strong);
-    border-radius: 2px;
+    border-radius: var(--hp-radius);
     color: var(--hp-text-muted);
-    font-family: var(--sl-font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    font-size: 0.85rem;
   }
   .tag--latest {
-    border-color: transparent;
-    background: var(--hp-primary);
-    color: var(--hp-on-primary);
+    border-color: var(--hp-text);
+    color: var(--hp-text);
+    font-weight: 500;
   }
   /* .prose comes from the global stylesheet: outrank it rather than rely on the order of the CSS chunks. */
   .entry__body.prose {
-    max-width: none;
+    max-width: 46rem;
   }
   .entry__body.prose h2 {
     margin-top: 0;
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
   }
   .entry__body :global(h3) {
     color: var(--hp-text);
@@ -124,8 +148,10 @@ const lang = locale === ROOT_LOCALE ? undefined : locale.lang;
     font-weight: 400;
     text-decoration: none;
   }
-  .entry__links {
-    margin-top: 1.5rem !important;
-    font-size: 0.9rem;
+  .entry__body.prose .entry__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+    margin-top: 1.5rem;
   }
 </style>

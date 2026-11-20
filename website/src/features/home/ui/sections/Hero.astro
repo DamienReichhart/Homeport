@@ -1,16 +1,14 @@
 ---
 /**
- * The headline, the download button and a departure board of Hosts. The board
- * is typeset, not a screenshot: every Engine on one board, healthy rows plain,
- * and one red signal where something needs you.
+ * The hero is the map. A title panel holds the headline, one sentence and the
+ * download; from 64rem it sits in the map's top start corner, where the lines
+ * leave room for it, like the title block of a transit diagram.
  */
 import { strings } from '@/core/i18n';
-import { getLatestRelease } from '@/core/release';
-import { type Locale, localePath, REPO_URL } from '@/core/site';
+import { type Locale, localePath } from '@/core/site';
 import { DownloadButton, DownloadMeta } from '@/features/download';
 import { href } from '@/shared/lib/href';
-import { fill } from '@/shared/lib/template';
-import { Icon } from '@/shared/ui';
+import LineMap from '../LineMap.astro';
 
 interface Props {
   locale: Locale;
@@ -18,209 +16,96 @@ interface Props {
 
 const { locale } = Astro.props;
 const s = strings(locale);
-const release = await getLatestRelease();
-
-interface Row {
-  host: string;
-  engine: string;
-  via: string;
-  stacks: number;
-  status: string;
-  needsYou?: boolean;
-}
-
-const running = s['home.board.allRunning'];
-const rows: Row[] = [
-  { host: 'laptop', engine: 'OrbStack', via: 'socket', stacks: 4, status: running },
-  { host: 'homelab', engine: 'Docker Engine 28.5', via: 'ssh', stacks: 9, status: running },
-  { host: 'nas', engine: 'Podman 5.2', via: 'ssh', stacks: 2, status: running },
-  {
-    host: 'vps-fra-1',
-    engine: 'Docker Engine 27.3',
-    via: 'tls',
-    stacks: 3,
-    status: s['home.board.needsYou'],
-    needsYou: true,
-  },
-  { host: 'client-prod', engine: 'Docker Engine 28.1', via: 'ssh', stacks: 6, status: running },
-];
 ---
 
 <section class="hero">
-  <div class="container hero__inner">
-    {release && (
-      <a class="pill" href={href(localePath('/changelog/', locale))}>
-        <span class="pill__tag">{s['home.hero.new']}</span>
-        {fill(s['home.hero.release'], { version: release.version })}
-        <Icon name="arrowRight" size={14} class="flip-rtl" />
-      </a>
-    )}
-    <h1>{s['home.hero.title']}</h1>
-    <p class="hero__lead">{s['home.hero.lead']}</p>
-    <div class="hero__actions">
-      <DownloadButton locale={locale} />
-      <a class="button button--secondary button--large" href={REPO_URL}>
-        <Icon name="github" />
-        {s['home.hero.source']}
-      </a>
+  <div class="container hero__stage">
+    <div class="hero__panel">
+      <h1>{s['home.hero.title']}</h1>
+      <p class="hero__lead">{s['home.hero.lead']}</p>
+      <div class="hero__actions">
+        <DownloadButton locale={locale} />
+        <a class="button button--secondary button--large" href={href(localePath('/docs/', locale))}>
+          {s['home.hero.docs']}
+        </a>
+      </div>
+      <DownloadMeta locale={locale} />
     </div>
-    <DownloadMeta locale={locale} />
-  </div>
-
-  <div class="container" data-reveal>
-    <figure class="board">
-      <table>
-        <caption class="visually-hidden">{s['home.board.caption']}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{s['home.board.host']}</th>
-            <th scope="col" class="board__engine">
-              {s['home.board.engine']}
-            </th>
-            <th scope="col">{s['home.board.via']}</th>
-            <th scope="col" class="board__num">
-              {s['home.board.stacks']}
-            </th>
-            <th scope="col">{s['home.board.status']}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr class:list={[row.needsYou && 'is-signal']}>
-              <th scope="row">{row.host}</th>
-              <td class="board__engine">{row.engine}</td>
-              <td class="board__via">{row.via}</td>
-              <td class="board__num">{row.stacks}</td>
-              <td class="board__status">
-                <span>
-                  <span class="board__dot" aria-hidden="true" />
-                  {row.status}
-                </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <figcaption>{s['home.board.note']}</figcaption>
-    </figure>
+    <div class="hero__map">
+      <LineMap locale={locale} />
+    </div>
   </div>
 </section>
 
 <style>
   .hero {
-    padding-top: 4.5rem;
+    padding-block: 3.5rem 5rem;
   }
-  @media (min-width: 64rem) {
-    .hero {
-      padding-top: 6.5rem;
-    }
+  .hero__stage {
+    display: grid;
+    gap: 3.5rem;
+    container-type: inline-size;
   }
-  .hero__inner {
+  .hero__panel {
     display: grid;
     justify-items: start;
-    gap: 1.5rem;
+    gap: 1.25rem;
+    max-width: 36rem;
   }
   .hero h1 {
-    max-width: 14ch;
-    font-size: clamp(2.6rem, 1.3rem + 5.4vw, 5rem);
-    font-weight: 700;
-    letter-spacing: -0.035em;
+    font-size: clamp(2.6rem, 1.6rem + 4.6vw, 4.25rem);
+    font-weight: 600;
+    letter-spacing: -0.03em;
     line-height: 1;
   }
   .hero__lead {
-    max-width: 36rem;
+    max-width: 30rem;
     color: var(--hp-text-muted);
-    font-size: clamp(1.05rem, 1rem + 0.35vw, 1.25rem);
+    font-size: clamp(1.1rem, 1rem + 0.4vw, 1.3rem);
+    line-height: 1.45;
   }
   .hero__actions {
     display: flex;
     flex-wrap: wrap;
-    align-items: flex-start;
     gap: 0.75rem;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
   }
 
-  /* The board. .container comes from the global stylesheet; outrank it. */
-  .board {
-    margin: 4rem 0 0;
-  }
-  .board table {
-    width: 100%;
-    border-collapse: collapse;
-    border-radius: var(--hp-radius-lg);
-    background: var(--hp-board);
-    box-shadow: 0 0 0 1px var(--hp-board-edge);
-    color: var(--hp-board-text);
-    font-size: clamp(0.95rem, 0.85rem + 0.5vw, 1.25rem);
-    overflow: hidden;
-  }
-  .board th,
-  .board td {
-    padding: 1rem 1.25rem;
-    border-bottom: 1px solid var(--hp-board-rule);
-    text-align: start;
-    white-space: nowrap;
-  }
-  .board tbody tr:last-child > * {
-    border-bottom: 0;
-  }
-  .board thead th {
-    padding-block: 0.85rem;
-    color: var(--hp-board-muted);
-    font-family: var(--sl-font-mono);
-    font-size: 0.75rem;
-    font-weight: 400;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-  .board tbody th {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .board__engine {
-    color: var(--hp-board-muted);
-  }
-  .board__via {
-    font-family: var(--sl-font-mono);
-    font-size: 0.85em;
-  }
-  .board__num {
-    text-align: end !important;
-    font-variant-numeric: tabular-nums;
-  }
-  .board__status > span {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-  .board__dot {
-    flex: none;
-    width: 0.6rem;
-    height: 0.6rem;
-    border-radius: 50%;
-    background: currentColor;
-  }
-  .board .is-signal .board__status {
-    color: var(--hp-board-signal);
-  }
-  .board figcaption {
-    margin-top: 0.85rem;
-    color: var(--hp-text-faint);
-    font-family: var(--sl-font-mono);
-    font-size: 0.8rem;
-  }
-  @media (max-width: 48rem) {
-    .board__engine {
-      display: none;
+  /*
+   * From 64rem the panel and the map share one cell: the panel takes the map's
+   * top start corner (46% of its width, 60% of its height), which no line enters.
+   */
+  @media (min-width: 64rem) {
+    .hero {
+      padding-block: 3rem 6rem;
     }
-    .board th,
-    .board td {
-      padding: 0.85rem 0.75rem;
+    .hero__stage {
+      grid-template-areas: 'stage';
+    }
+    .hero__panel,
+    .hero__map {
+      grid-area: stage;
+    }
+    .hero__panel {
+      z-index: 1;
+      align-self: start;
+      max-width: 46cqi;
+      gap: 1rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.75rem, 5.2cqi, 4.25rem);
+    }
+    .hero__lead {
+      font-size: clamp(1.05rem, 1.65cqi, 1.3rem);
+    }
+    .hero__actions {
+      margin-top: 0.5rem;
     }
   }
-  @media (max-width: 26rem) {
-    .board__num {
-      display: none;
+  /* The map is drawn left to right in every language, so its free corner is always on the left. */
+  @media (min-width: 64rem) {
+    :global([dir='rtl']) .hero__panel {
+      justify-self: end;
     }
   }
 </style>

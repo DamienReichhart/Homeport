@@ -1,0 +1,226 @@
+---
+/**
+ * The example fleet as a line map: this machine at the terminus, a line per way
+ * of reaching an Engine, a station per Engine, and one red station where
+ * something needs you. Wide screens get the drawn map, with room left at its
+ * top start for the hero's title panel; narrow ones get the same lines as
+ * strips, one under another. The key names every line.
+ */
+import { strings } from '@/core/i18n';
+import type { Locale } from '@/core/site';
+import { KEY_ORDER, LINES, lineById, lineName, MAP, TERMINUS } from '../model/fleet';
+import LineStrips from './LineStrips.astro';
+
+interface Props {
+  locale: Locale;
+}
+
+const { locale } = Astro.props;
+const s = strings(locale);
+
+/** The y of a label's lines: the host's name, then the Engine, then a signal note. */
+const labelY = (y: number, side: 'above' | 'below', row: number, rows: number) =>
+  side === 'above' ? y - 18 - (rows - 1 - row) * 19 : y + 32 + row * 19;
+---
+
+<figure class="line-map">
+  <svg
+    class="line-map__drawn"
+    viewBox={`0 0 ${MAP.width} ${MAP.height}`}
+    role="img"
+    aria-label={s['home.map.label']}
+  >
+    <g class="line-map__lines">
+      {LINES.map((line, index) => (
+        <path
+          d={line.path}
+          pathLength="1"
+          style={`stroke: var(${line.colour}); --i: ${index}`}
+          class="line-map__line"
+        />
+      ))}
+    </g>
+
+    <g class="line-map__terminus">
+      <rect x={TERMINUS.x} y={TERMINUS.y} width={TERMINUS.width} height={TERMINUS.height} rx="3" />
+      <text x={TERMINUS.x} y={TERMINUS.y + TERMINUS.height + 30} class="line-map__host">
+        {s['home.map.thisMachine']}
+      </text>
+    </g>
+
+    {LINES.map((line, index) =>
+      line.stations.map((station) => {
+        const rows = station.signal ? 3 : 2;
+        const anchor = station.anchor ?? 'middle';
+        return (
+          <g
+            class:list={['line-map__station', station.signal && 'is-signal']}
+            style={`--i: ${index}`}
+          >
+            <circle cx={station.x} cy={station.y} r={station.signal ? 11 : 9} />
+            <text text-anchor={anchor} class="line-map__label">
+              <tspan
+                x={station.x}
+                y={labelY(station.y, station.label, 0, rows)}
+                class="line-map__host"
+              >
+                {station.host}
+              </tspan>
+              <tspan
+                x={station.x}
+                y={labelY(station.y, station.label, 1, rows)}
+                class="line-map__engine"
+              >
+                {station.engine}
+              </tspan>
+              {station.signal && (
+                <tspan
+                  x={station.x}
+                  y={labelY(station.y, station.label, 2, rows)}
+                  class="line-map__signal"
+                >
+                  {s['home.map.needsYou']}
+                </tspan>
+              )}
+            </text>
+          </g>
+        );
+      }),
+    )}
+  </svg>
+
+  <LineStrips locale={locale} />
+
+  <figcaption class="line-map__key">
+    <ul>
+      {KEY_ORDER.map((id) => (
+        <li>
+          <span class="line-key" style={`--line: var(${lineById(id).colour})`} aria-hidden="true" />
+          {lineName(id, s)}
+        </li>
+      ))}
+      <li>
+        <span class="station station--signal" aria-hidden="true" />
+        {s['home.map.keyNeedsYou']}
+      </li>
+    </ul>
+    <p>{s['home.map.example']}</p>
+  </figcaption>
+</figure>
+
+<style>
+  .line-map {
+    margin: 0;
+  }
+
+  /* The drawn map, from 64rem. */
+  .line-map__drawn {
+    display: none;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+    /* The map is drawn left to right in every language; its labels still read their own way. */
+    direction: ltr;
+  }
+  .line-map__line {
+    fill: none;
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .line-map__terminus rect {
+    fill: var(--hp-line-socket);
+  }
+  .line-map__station circle {
+    fill: var(--hp-station);
+    stroke: var(--hp-station-ring);
+    stroke-width: 4;
+  }
+  .line-map__station.is-signal circle {
+    fill: var(--hp-signal);
+    stroke: var(--hp-signal);
+  }
+  .line-map__drawn text {
+    font-family: var(--sl-font);
+  }
+  .line-map__host {
+    fill: var(--hp-text);
+    font-size: 17px;
+    font-weight: 600;
+  }
+  .line-map__engine {
+    fill: var(--hp-text-muted);
+    font-size: 14.5px;
+  }
+  .line-map__signal {
+    fill: var(--hp-signal);
+    font-size: 14.5px;
+    font-weight: 600;
+  }
+
+  /* The map draws itself once: each line runs out from the terminus, then its stations appear. */
+  @media (prefers-reduced-motion: no-preference) {
+    .line-map__line {
+      animation: line-draw 1100ms var(--hp-ease) backwards;
+      animation-delay: calc(150ms + var(--i) * 110ms);
+    }
+    .line-map__station {
+      animation: station-in 300ms ease-out backwards;
+      animation-delay: calc(850ms + var(--i) * 110ms);
+    }
+    .line-map__station.is-signal {
+      animation-delay: 1500ms;
+    }
+  }
+  @keyframes line-draw {
+    from {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes station-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .line-map__drawn {
+      display: block;
+    }
+  }
+
+  /* The key, along the map's foot. */
+  .line-map__key {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    margin-top: 2.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--hp-border);
+    color: var(--hp-text-muted);
+    font-size: 0.95rem;
+  }
+  .line-map__key ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .line-map__key li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .line-map__key p {
+    color: var(--hp-text-faint);
+  }
+</style>

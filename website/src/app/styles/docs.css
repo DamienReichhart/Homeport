@@ -1,17 +1,319 @@
-/* Touches on top of Starlight for the docs. */
+/*
+ * The docs, in the site's line-map world. The reading column stays calm; the
+ * world owns the frame: the header, the type, and one signature move used for
+ * wayfinding: a rail with stations. The sidebar's pages, the "On this page"
+ * list and numbered steps all sit on one, and the page you are on is the
+ * filled station.
+ *
+ * These rules are unlayered, so they win over Starlight's own (`@layer starlight.*`).
+ */
 
 :root {
-  --sl-text-h1: 2.25rem;
-  --sl-content-width: 48rem;
+  --sl-text-h1: 2.75rem;
+  --sl-text-h2: 1.85rem;
+  --sl-text-h3: 1.35rem;
+  --sl-text-h4: 1.1rem;
+  --sl-content-width: 46rem;
+  --sl-line-height: 1.7;
+  --sl-nav-height: 4rem;
+  --sl-color-hairline: var(--hp-border);
+  --sl-color-hairline-light: var(--hp-border);
+  --sl-color-hairline-shade: var(--hp-border);
+  --sl-color-bg-nav: var(--hp-bg);
+  --sl-color-bg-sidebar: var(--hp-bg);
+  --sl-color-bg-inline-code: var(--hp-code-bg);
+  --sl-color-text-accent: var(--hp-text);
+  /* The rail: thinner than the home page's lines, so it guides without shouting. */
+  --docs-rail: 4px;
+  --docs-rail-colour: var(--hp-border-strong);
+  --hp-warning: #f2a93b;
+}
+:root[data-theme='light'] {
+  --hp-warning: #9a5b00;
 }
 
+body {
+  font-synthesis: none;
+}
+::selection {
+  background: var(--hp-text);
+  color: var(--hp-bg);
+}
+
+/* The header: the lockup, search, the site's pages, a hairline under it. */
+.header {
+  border-bottom-color: var(--hp-border);
+}
 .site-title img {
   height: 1.375rem;
   width: auto;
 }
 
-.sl-markdown-content :is(h1, h2, h3, h4) {
-  letter-spacing: -0.02em;
+/* Type. */
+.sl-markdown-content :is(h1, h2, h3, h4),
+h1#_top {
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+h1#_top {
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+}
+/* Each section opens on a rule the width of the column. */
+.sl-markdown-content .sl-heading-wrapper.level-h2 {
+  margin-top: 3rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--hp-border);
+}
+.sl-markdown-content :is(p, li) {
+  text-wrap: pretty;
+}
+.sl-markdown-content a:not(:where(.not-content *)) {
+  color: var(--hp-text);
+  text-decoration-color: var(--hp-border-strong);
+  text-underline-offset: 0.22em;
+}
+.sl-markdown-content a:not(:where(.not-content *)):hover {
+  text-decoration-color: currentColor;
+}
+.sl-markdown-content code:not(:where(.not-content *, pre *)) {
+  padding: 0.1em 0.35em;
+  border-radius: var(--hp-radius);
+  font-size: 0.88em;
+}
+.sl-markdown-content strong {
+  font-weight: 600;
+}
+
+/* Tables: a ruled head, hairlines between rows, no zebra and no boxes. */
+.sl-markdown-content table:not(:where(.not-content *)) {
+  border-collapse: collapse;
+  font-size: 0.95em;
+  font-variant-numeric: tabular-nums;
+}
+.sl-markdown-content :is(th, td):not(:where(.not-content *)) {
+  padding: 0.6rem 1rem 0.6rem 0;
+  padding-inline: 0 1rem;
+  border: 0;
+  border-bottom: 1px solid var(--hp-border);
+  background: transparent;
+  vertical-align: top;
+}
+.sl-markdown-content th:not(:where(.not-content *)) {
+  border-bottom: 2px solid var(--hp-text);
+  color: var(--hp-text-muted);
+  font-weight: 500;
+}
+.sl-markdown-content tr:nth-child(2n):not(:where(.not-content *)) {
+  background: transparent;
+}
+
+/* Keyboard keys. */
+.sl-markdown-content kbd {
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--hp-border-strong);
+  border-bottom-width: 2px;
+  border-radius: var(--hp-radius);
+  font-family: var(--sl-font-mono);
+  font-size: 0.85em;
+}
+
+/*
+ * The rail. Each list that leads somewhere (the sidebar's pages, "On this
+ * page") hangs on a line; every entry is a station on it.
+ */
+.sidebar-content .top-level > li > details > ul,
+starlight-toc nav > ul {
+  position: relative;
+  margin-inline-start: 0.35rem;
+  padding-inline-start: 0;
+}
+.sidebar-content .top-level > li > details > ul::before,
+starlight-toc nav > ul::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: calc(0.45rem - var(--docs-rail) / 2);
+  top: 0.75rem;
+  bottom: 0.75rem;
+  width: var(--docs-rail);
+  border-radius: 1px;
+  background: var(--docs-rail-colour);
+}
+/* Entries: no tree lines of Starlight's own; a station before each. */
+.sidebar-content ul ul li {
+  margin-inline-start: 0;
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+.sidebar-content .top-level > li > details > ul a,
+starlight-toc nav > ul > li > a {
+  position: relative;
+  padding-inline-start: 1.6rem;
+  border-radius: var(--hp-radius);
+  color: var(--hp-text-muted);
+}
+.sidebar-content .top-level > li > details > ul a::before,
+starlight-toc nav > ul > li > a::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0.15rem;
+  top: calc(0.3em + 0.7em * 1.4 - 0.3rem);
+  width: 0.6rem;
+  height: 0.6rem;
+  border: 2px solid var(--docs-rail-colour);
+  border-radius: 50%;
+  background: var(--hp-bg);
+}
+.sidebar-content a:hover,
+starlight-toc a:hover {
+  color: var(--hp-text);
+}
+/* Where you are: a filled station, the name in the text colour. No inverted block. */
+.sidebar-content a[aria-current='page'],
+.sidebar-content a[aria-current='page']:hover,
+.sidebar-content a[aria-current='page']:focus {
+  background: transparent;
+  color: var(--hp-text);
+  font-weight: 600;
+}
+.sidebar-content a[aria-current='page']::before,
+starlight-toc a[aria-current='true']::before {
+  border-color: var(--hp-text) !important;
+  background: var(--hp-text) !important;
+}
+starlight-toc a[aria-current='true'] {
+  color: var(--hp-text);
+}
+/* "On this page": its subsections hang off their section without stations of their own. */
+starlight-toc nav > ul ul a {
+  padding-inline-start: 2.6rem;
+  color: var(--hp-text-faint);
+  font-size: 0.85rem;
+}
+starlight-toc h2 {
+  color: var(--hp-text);
+  font-size: var(--sl-text-sm);
+  font-weight: 600;
+}
+.sidebar-content .large {
+  font-size: var(--sl-text-base);
+  font-weight: 600;
+}
+
+/* Numbered steps: stations on the rail, the number inside each. */
+.sl-steps > li::before {
+  border: 3px solid var(--hp-text) !important;
+  background: var(--hp-bg) !important;
+  color: var(--hp-text) !important;
+  font-family: var(--sl-font);
+  font-weight: 600;
+  box-shadow: none !important;
+}
+.sl-steps > li:last-child::after {
+  display: none;
+}
+.sl-steps > li::after {
+  width: var(--docs-rail) !important;
+  background: var(--hp-text) !important;
+  border-radius: 1px;
+}
+
+/* Asides: a hairline box on the raised ground. Only a danger aside is red. */
+.starlight-aside {
+  border: 1px solid var(--hp-border-strong);
+  border-radius: var(--hp-radius-lg);
+  background: var(--hp-bg-raised);
+  color: var(--hp-text);
+}
+.starlight-aside__title {
+  color: var(--hp-text);
+  font-weight: 600;
+}
+.starlight-aside__icon {
+  color: var(--hp-text-muted);
+}
+.starlight-aside--caution {
+  border-color: var(--hp-warning);
+}
+.starlight-aside--caution .starlight-aside__title,
+.starlight-aside--caution .starlight-aside__icon {
+  color: var(--hp-warning);
+}
+.starlight-aside--danger {
+  border-color: var(--hp-signal);
+}
+.starlight-aside--danger .starlight-aside__title,
+.starlight-aside--danger .starlight-aside__icon {
+  color: var(--hp-signal);
+}
+
+/* Cards: an index of stations, not a wall of tiles. */
+.card-grid {
+  gap: 0 2.5rem !important;
+  border-top: 2px solid var(--hp-text);
+}
+.card-grid .card {
+  border: 0;
+  border-bottom: 1px solid var(--hp-border);
+  border-radius: 0;
+  background: transparent;
+  padding: 1.25rem 0;
+}
+.card-grid .card .icon {
+  display: none;
+}
+.card-grid .card .title {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--sl-text-lg);
+  font-weight: 600;
+}
+.card-grid .card .title::before {
+  content: '';
+  flex: none;
+  width: 0.8rem;
+  height: 0.8rem;
+  border: 3px solid var(--hp-station-ring);
+  border-radius: 50%;
+  background: var(--hp-station);
+}
+.card-grid .card .body {
+  color: var(--hp-text-muted);
+}
+.sl-link-card {
+  border: 0;
+  border-top: 2px solid var(--hp-text);
+  border-bottom: 1px solid var(--hp-border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding-inline: 0;
+}
+.sl-link-card:hover {
+  background: var(--hp-bg-raised);
+}
+.sl-link-card .title {
+  font-weight: 600;
+}
+
+/* Previous and next: plain ruled links. */
+.pagination-links a {
+  border: 0;
+  border-top: 2px solid var(--hp-text);
+  border-radius: 0;
+  box-shadow: none;
+  padding-inline: 0;
+}
+.pagination-links a:hover {
+  border-color: var(--hp-text);
+  background: transparent;
+}
+.pagination-links .link-title {
+  color: var(--hp-text);
+  font-weight: 600;
 }
 
 /* Screenshots follow the theme: Screenshot.astro renders a light and a dark variant. */
@@ -22,12 +324,12 @@
 
 /* Screenshots in the docs get a frame so they read as the app's window. */
 figure.screenshot {
-  margin-block: 1.5rem;
+  margin-block: 2rem;
 }
 figure.screenshot .window {
   overflow: hidden;
-  border: 1px solid var(--sl-color-gray-5);
-  border-radius: 0.375rem;
+  border: 1px solid var(--hp-border-strong);
+  border-radius: var(--hp-radius-lg);
 }
 figure.screenshot img {
   display: block;
@@ -35,18 +337,7 @@ figure.screenshot img {
   height: auto;
 }
 figure.screenshot figcaption {
-  color: var(--sl-color-gray-3);
+  margin-top: 0.6rem;
+  color: var(--hp-text-muted);
   font-size: var(--sl-text-sm);
-  margin-top: 0.5rem;
-  text-align: center;
-}
-
-/* Keyboard keys and UI labels. */
-.sl-markdown-content kbd {
-  border: 1px solid var(--sl-color-gray-5);
-  border-bottom-width: 2px;
-  border-radius: 2px;
-  font-family: var(--sl-font-mono);
-  font-size: 0.85em;
-  padding: 0.05rem 0.35rem;
 }

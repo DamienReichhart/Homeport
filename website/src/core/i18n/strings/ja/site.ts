@@ -4,17 +4,17 @@ import type en from '../en/site';
 /** The layout, the header and the footer, in Japanese. */
 export default {
   // The layout and the facts every page repeats.
-  'site.tagline': 'すべての Docker Engine を、1 つのボードで。',
+  'site.tagline': 'あらゆるコンテナエンジンを、1 つのアプリで。',
   'site.description':
-    'Homeport は、どこにある Docker Engine でも管理できる無料のオープンソースのデスクトップアプリです。このマシンのエンジンも、SSH、TLS、TCP で接続するリモートのエンジンも扱えます。Windows、macOS、Linux に対応しています。',
-  'site.ogImageAlt': 'Homeport — すべての Docker Engine を、1 つのボードで。',
+    'Homeport は、Docker、Podman、containerd、Incus、Kubernetes、Nomad のための無料でオープンソースのデスクトップアプリです。あなたのマシンで動作し、SSH、TLS、または kubeconfig でサーバーに接続します。サーバーには何もインストールしません。Windows、macOS、Linux に対応。',
+  'site.ogImageAlt': 'Homeport — あらゆるコンテナエンジンを、1 つのアプリで。',
   'site.skipToContent': '本文へスキップ',
 
   // The header, the language menu and the theme switch.
   'header.home': 'Homeport ホーム',
   'header.logo': 'Homeport',
   'header.nav': 'メイン',
-  'header.features': '機能',
+  'header.engines': 'エンジン',
   'header.docs': 'ドキュメント',
   'header.changelog': '変更履歴',
   'header.download': 'ダウンロード',
@@ -27,7 +27,7 @@ export default {
 
   // The footer.
   'footer.product': '製品',
-  'footer.features': '機能',
+  'footer.engines': 'エンジン',
   'footer.download': 'ダウンロード',
   'footer.changelog': '変更履歴',
   'footer.releases': 'すべてのリリース',

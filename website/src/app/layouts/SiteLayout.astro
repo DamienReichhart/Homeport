@@ -5,9 +5,12 @@
  * theme the visitor picked (localStorage `starlight-theme`). The page's language
  * sets `lang` and `dir` and the text of the header and footer.
  */
-import '@fontsource-variable/host-grotesk';
-import '@fontsource/fragment-mono/400.css';
-import '@fontsource/fragment-mono/400-italic.css';
+import '@fontsource/fira-sans/400.css';
+import '@fontsource/fira-sans/400-italic.css';
+import '@fontsource/fira-sans/500.css';
+import '@fontsource/fira-sans/600.css';
+import '@fontsource/fira-mono/400.css';
+import '@fontsource/fira-mono/500.css';
 import '@/app/styles/theme.css';
 import '@/app/styles/site/index.css';
 import SiteFooter from '@/app/chrome/SiteFooter.astro';
@@ -64,8 +67,8 @@ const alternates = locale
     <link rel="apple-touch-icon" href={`${base}/apple-touch-icon.png`} />
     <link rel="manifest" href={`${base}/site.webmanifest`} />
     <link rel="sitemap" href={`${base}/sitemap-index.xml`} />
-    <meta name="theme-color" content="#f7f7f4" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="#141414" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#fbfbf8" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)" />
     <meta name="generator" content={Astro.generator} />
 
     <meta property="og:type" content="website" />

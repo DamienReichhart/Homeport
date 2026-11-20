@@ -1,95 +1,76 @@
-/* Pieces the pages' sections share: spacing, headings, eyebrows, pills, cards. */
+/*
+ * Pieces the pages' sections share: the section rhythm, the section head, the
+ * line key (a short stroke of a line's colour) and the station mark.
+ */
 
 .section {
-  padding-block: 5rem;
+  padding-block: 5.5rem;
 }
 @media (min-width: 64rem) {
   .section {
-    padding-block: 7rem;
+    padding-block: 8rem;
   }
 }
-.section--raised {
-  border-block: 1px solid var(--hp-border);
-  background: var(--hp-bg-raised);
+/* A section that follows one on the same ground is set off by a rule, not more space. */
+.section--ruled {
+  border-top: 1px solid var(--hp-border);
 }
-.section-heading {
+
+.section-head {
   display: grid;
   gap: 1rem;
-  max-width: 44rem;
-  margin-bottom: 3rem;
+  max-width: 52rem;
+  margin-bottom: 3.5rem;
 }
-.section-heading--center {
-  margin-inline: auto;
-  text-align: center;
-  justify-items: center;
+.section-head h2 {
+  font-size: clamp(2rem, 1.35rem + 2.4vw, 3.25rem);
+  letter-spacing: -0.025em;
+  line-height: 1.04;
 }
-.section-heading h2 {
-  font-size: clamp(1.85rem, 1.3rem + 2vw, 2.75rem);
-}
-.section-heading p {
+.section-head p {
+  max-width: 38rem;
   color: var(--hp-text-muted);
-  font-size: 1.1rem;
+  font-size: 1.15rem;
 }
-.eyebrow {
+
+/* A stroke of a line's colour, as in a map's key. Set `--line` on it. */
+.line-key {
+  display: inline-block;
+  flex: none;
+  width: 1.75rem;
+  height: var(--hp-line-weight);
+  border-radius: 1px;
+  background: var(--line, var(--hp-line-socket));
+}
+
+/*
+ * A station: a ring on the ground, the shape every healthy Engine has. A
+ * station that needs you is a red disc; nothing else on the site is red.
+ */
+.station {
+  display: inline-block;
+  flex: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 3px solid var(--hp-station-ring);
+  border-radius: 50%;
+  background: var(--hp-station);
+}
+.station--signal {
+  border-color: var(--hp-signal);
+  background: var(--hp-signal);
+}
+
+/* Links that read on: underlined, an arrow after a gap, never glued to the words. */
+.more-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  color: var(--hp-text-faint);
-  font-family: var(--sl-font-mono);
-  font-size: 0.8rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  width: fit-content;
+  font-weight: 500;
+  text-decoration: underline;
+  text-decoration-color: var(--hp-border-strong);
 }
-/* A short rule before each eyebrow, like a line on a platform sign. */
-.eyebrow::before {
-  content: '';
-  width: 1.5rem;
-  height: 1px;
-  background: currentColor;
-}
-.section-heading--center .eyebrow::before {
-  display: none;
-}
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.3rem 0.8rem 0.3rem 0.4rem;
-  border: 1px solid var(--hp-border-strong);
-  border-radius: var(--hp-radius);
-  background: var(--hp-surface);
-  color: var(--hp-text-muted);
-  font-size: 0.85rem;
-  text-decoration: none;
-}
-.pill:hover {
-  color: var(--hp-text);
-  border-color: var(--hp-text);
-}
-.pill__tag {
-  padding: 0.1rem 0.45rem;
-  border-radius: 2px;
-  background: var(--hp-primary);
-  color: var(--hp-on-primary);
-  font-family: var(--sl-font-mono);
-  font-size: 0.7rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.card {
-  border: 1px solid var(--hp-border);
-  border-radius: var(--hp-radius-lg);
-  background: var(--hp-surface);
-}
-
-.feature-icon {
-  display: inline-grid;
-  place-items: center;
-  width: 2.5rem;
-  height: 2.5rem;
-  border: 1px solid var(--hp-border-strong);
-  border-radius: var(--hp-radius);
-  color: var(--hp-text);
+.more-link:hover {
+  text-decoration-color: currentColor;
 }

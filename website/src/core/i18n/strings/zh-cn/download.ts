@@ -21,7 +21,6 @@ export default {
   'download.note.linux': '.deb、.rpm 和 AppImage',
 
   // The hero.
-  'download.hero.eyebrow': '下载',
   'download.hero.title': '获取 Homeport',
   'download.hero.release': '版本 {version}，发布于 {date}。',
   'download.hero.whatsNew': '新内容',
@@ -78,7 +77,7 @@ export default {
   // What to know around the install.
   'download.before.title': '安装之前',
   'download.before.body':
-    'Homeport 管理 Docker Engine，但本身不包含引擎。可将它与 Docker Engine、Docker Desktop、Colima、OrbStack、Rancher Desktop 或 Podman 一起运行，或让它通过 SSH、TLS 或 TCP 连接远程服务器。',
+    'Homeport 本身不包含引擎，而是连接你已有的引擎。可将它与 Docker Desktop、Colima、OrbStack、Rancher Desktop 或 Podman 一起运行，让它通过 SSH、TLS 或 TCP 连接服务器，或连接你 kubeconfig 中的集群。',
   'download.before.keychain':
     '{keychain}（macOS 钥匙串、Windows 凭据管理器，或 GNOME Keyring 等 Secret Service），用于存储 SSH 密钥、TLS 证书、堆栈环境变量，以及仓库的部署密钥和令牌。',
   'download.before.keychainName': '系统钥匙串',

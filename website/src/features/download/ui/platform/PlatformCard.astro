@@ -20,7 +20,7 @@ const { platform, release, locale } = Astro.props;
 const s = strings(locale);
 ---
 
-<section class="card platform" id={platform.os} data-os={platform.os}>
+<section class="platform" id={platform.os} data-os={platform.os}>
   <header>
     <Icon name={platform.icon} size={28} />
     <div>
@@ -31,8 +31,10 @@ const s = strings(locale);
       {s['download.platform.yours']}
     </span>
   </header>
-  {platform.os === 'linux' && <LinuxRepository locale={locale} />}
-  <InstallerFiles os={platform.os} release={release} locale={locale} />
+  <div class="platform__files">
+    {platform.os === 'linux' && <LinuxRepository locale={locale} />}
+    <InstallerFiles os={platform.os} release={release} locale={locale} />
+  </div>
   <a class="platform__guide" href={href(localePath(`/docs/installation/#${platform.os}`, locale))}>
     {fill(s['download.platform.guide'], { platform: platform.title })}{' '}
     <Icon name="arrowRight" size={14} class="flip-rtl" />
@@ -42,41 +44,61 @@ const s = strings(locale);
 <style>
   .platform {
     display: grid;
-    gap: 1.25rem;
-    padding: 1.5rem;
+    gap: 1.5rem;
+    padding-block: 2.25rem 2.5rem;
+    border-top: 1px solid var(--hp-border);
     scroll-margin-top: 5.5rem;
   }
   .platform.is-current {
-    border-color: var(--hp-text);
-    box-shadow: 0 0 0 1px var(--hp-text);
+    border-top: 2px solid var(--hp-text);
+  }
+  @media (min-width: 60rem) {
+    .platform {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 8fr);
+      grid-template-rows: auto 1fr;
+      column-gap: 4rem;
+    }
+    .platform__files {
+      grid-column: 2;
+      grid-row: 1 / span 2;
+    }
+    .platform__guide {
+      grid-column: 1;
+      grid-row: 2;
+      align-self: start;
+    }
+  }
+  .platform__files {
+    display: grid;
+    gap: 1.25rem;
+    min-width: 0;
   }
   .platform header {
-    display: flex;
-    gap: 0.9rem;
-    align-items: flex-start;
-  }
-  .platform header > :global(svg) {
-    flex: none;
-    margin-top: 0.15rem;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0.25rem 1rem;
+    align-items: center;
+    align-self: start;
   }
   .platform h2 {
-    font-size: 1.35rem;
+    font-size: 1.75rem;
+    letter-spacing: -0.02em;
   }
   .platform header p {
-    color: var(--hp-text-faint);
-    font-size: 0.85rem;
-    line-height: 1.4;
+    grid-column: 2;
+    color: var(--hp-text-muted);
+    line-height: 1.45;
   }
   .platform__badge {
-    margin-inline-start: auto;
+    grid-column: 2;
+    justify-self: start;
+    margin-top: 0.5rem;
     padding: 0.15rem 0.6rem;
-    border-radius: 2px;
-    background: var(--hp-primary);
-    color: var(--hp-on-primary);
-    font-family: var(--sl-font-mono);
-    font-size: 0.7rem;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
+    border: 1px solid var(--hp-text);
+    border-radius: var(--hp-radius);
+    color: var(--hp-text);
+    font-size: 0.85rem;
+    font-weight: 500;
     white-space: nowrap;
   }
   .platform__badge[hidden] {
@@ -85,9 +107,12 @@ const s = strings(locale);
   .platform__guide {
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: 0.9rem;
+    gap: 0.5rem;
+    width: fit-content;
     font-weight: 500;
-    text-decoration: none;
+    text-decoration-color: var(--hp-border-strong);
+  }
+  .platform__guide:hover {
+    text-decoration-color: currentColor;
   }
 </style>

@@ -19,7 +19,7 @@ const s = strings(locale);
 const url = (path: string) => href(localePath(path, locale));
 
 const links = [
-  { label: s['header.features'], path: '/#features' },
+  { label: s['header.engines'], path: '/#engines' },
   { label: s['header.docs'], path: '/docs/' },
   { label: s['header.changelog'], path: '/changelog/' },
 ];
@@ -48,7 +48,7 @@ const current = Astro.url.pathname;
     </nav>
 
     <div class="site-header__actions">
-      <a class="icon-button" href={REPO_URL} aria-label={s['header.github']}>
+      <a class="icon-button site-header__github" href={REPO_URL} aria-label={s['header.github']}>
         <Icon name="github" />
       </a>
       <LanguageSwitcher currentPath={currentPath} />

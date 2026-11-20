@@ -21,7 +21,6 @@ export default {
   'download.note.linux': '.deb、.rpm、AppImage',
 
   // The hero.
-  'download.hero.eyebrow': 'ダウンロード',
   'download.hero.title': 'Homeport を入手',
   'download.hero.release': 'バージョン {version}（{date} リリース）。',
   'download.hero.whatsNew': '新機能',
@@ -79,7 +78,7 @@ export default {
   // What to know around the install.
   'download.before.title': 'インストールの前に',
   'download.before.body':
-    'Homeport は Docker Engine を管理するアプリで、Docker Engine 自体は含まれていません。Docker Engine、Docker Desktop、Colima、OrbStack、Rancher Desktop、Podman と一緒に使うか、SSH、TLS、TCP でリモートのサーバーに接続してください。',
+    'Homeport にエンジンは含まれていません。お使いのエンジンに接続します。Docker Desktop、Colima、OrbStack、Rancher Desktop、Podman と一緒に実行するか、SSH、TLS、TCP でサーバーに、または kubeconfig のクラスターに接続してください。',
   'download.before.keychain':
     'SSH キー、TLS 証明書、スタックの環境変数、リポジトリのデプロイキーとトークンを保存するための{keychain}（macOS のキーチェーン、Windows の資格情報マネージャー、または GNOME Keyring などの Secret Service）。',
   'download.before.keychainName': 'OS のキーチェーン',

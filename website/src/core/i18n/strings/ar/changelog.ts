@@ -6,7 +6,6 @@ export default {
   'changelog.title': 'سجل التغييرات — Homeport',
   'changelog.description':
     'ما الجديد في كل إصدار من Homeport: الميزات والإصلاحات والتغييرات الأخرى.',
-  'changelog.eyebrow': 'سجل التغييرات',
   'changelog.heading': 'ما الجديد في Homeport',
   'changelog.lead':
     'كل إصدار، الأحدث أولًا. تُولَّد الملاحظات من إيداعات المشروع؛ والملفات موجودة في {link}.',
