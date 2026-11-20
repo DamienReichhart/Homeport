@@ -37,4 +37,20 @@ export default {
   'board.remove.description':
     '익명 볼륨과 함께 삭제되며, 이름 있는 볼륨은 유지됩니다. 실행 중인 컨테이너는 먼저 중지됩니다.',
   'board.remove.onHost': '{host} 호스트: {names}',
+  'board.containers': '컨테이너',
+  'board.needs.title': '확인 필요',
+  'board.needs.none':
+    '확인할 것이 없습니다. 모든 호스트에 연결할 수 있고 실패한 컨테이너가 없습니다.',
+  'board.needs.all': '{count}개 모두 보기',
+  'board.needs.fewer': '간단히 보기',
+  'board.needs.on': '{name}에서',
+  'board.needs.hostUnreachable': '연결할 수 없음',
+  'board.needs.clusterUnreachable': '연결할 수 없음',
+  'board.needs.unhealthy': '{name}이(가) 비정상입니다',
+  'board.needs.dead': '{name}이(가) dead 상태입니다',
+  'board.needs.restarting': '{name}이(가) 계속 다시 시작됩니다',
+  'board.needs.exited': '{name}이(가) 코드 {code}(으)로 종료되었습니다',
+  'board.needs.logs': '로그',
+  'board.needs.details': '세부 정보',
+  'board.needs.reconnect': '다시 연결',
 } satisfies Translation<typeof en>;

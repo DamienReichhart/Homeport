@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': '概要',
-  'overview.title': '概要',
-  'overview.addHost': 'ホストを追加',
-  'overview.addCluster': 'クラスターを追加',
   'overview.cluster.nodes': '{total} 個中 {ready} 個の Node が準備完了',
   'overview.cluster.nodesNotAllowed': 'Node: 許可されていません',
   'overview.cluster.pods': '{total} 個中 {running} 個の Pod が実行中',
@@ -36,7 +33,6 @@ export default {
   'overview.cluster.noWarnings': '警告イベントはありません。',
   'overview.cluster.allEvents': 'すべてのイベント',
   'overview.host.running': '<strong>{running}</strong> / {total} 実行中',
-  'overview.host.images': '{count, plural, other {# 個のイメージ}}',
   'overview.host.containerdContainers':
     '{namespaces, plural, other {# 個の名前空間}}に {count, plural, other {# 個のコンテナ}}',
   'overview.host.incusInstances':
@@ -113,5 +109,12 @@ export default {
   'overview.pruned':
     'コンテナ {containers, plural, other {# 個}}、イメージ {images, plural, other {# 個}}、ネットワーク {networks, plural, other {# 個}}、ボリューム {volumes, plural, other {# 個}}を削除し、{space} を解放しました。',
   'overview.palette.prune': '選択したホストの未使用データを削除',
-  'overview.host.onBoard': 'ボードでこのホストのコンテナを表示',
+  'overview.hostSettings': 'ホストの設定',
+  'overview.clusterSettings': 'クラスターの設定',
+  'overview.vitals.title': '概況',
+  'overview.vitals.containers': 'コンテナ',
+  'overview.vitals.running': '{total} 個中 {running} 個が実行中',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': 'メモリ',
+  'overview.vitals.images': 'イメージ',
 } satisfies Translation<typeof en>;

@@ -37,4 +37,20 @@ export default {
   'board.remove.description':
     'वे अपने अनाम वॉल्यूम के साथ हटा दिए जाते हैं; नाम वाले वॉल्यूम रखे जाते हैं। चल रहे कंटेनर पहले रोके जाते हैं।',
   'board.remove.onHost': '{host} पर: {names}',
+  'board.containers': 'कंटेनर',
+  'board.needs.title': 'आपकी ज़रूरत',
+  'board.needs.none':
+    'किसी चीज़ को आपकी ज़रूरत नहीं है। हर होस्ट तक पहुँचा जा सकता है और कोई कंटेनर विफल नहीं हो रहा।',
+  'board.needs.all': 'सभी {count} दिखाएँ',
+  'board.needs.fewer': 'कम दिखाएँ',
+  'board.needs.on': '{name} पर',
+  'board.needs.hostUnreachable': 'पहुँच से बाहर',
+  'board.needs.clusterUnreachable': 'पहुँच से बाहर',
+  'board.needs.unhealthy': '{name} अस्वस्थ है',
+  'board.needs.dead': '{name} डेड है',
+  'board.needs.restarting': '{name} बार-बार फिर से शुरू हो रहा है',
+  'board.needs.exited': '{name} कोड {code} के साथ बंद हुआ',
+  'board.needs.logs': 'लॉग',
+  'board.needs.details': 'विवरण',
+  'board.needs.reconnect': 'फिर से कनेक्ट करें',
 } satisfies Translation<typeof en>;

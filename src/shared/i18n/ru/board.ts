@@ -39,4 +39,20 @@ export default {
   'board.remove.description':
     'Они удаляются вместе со своими анонимными томами; именованные тома сохраняются. Работающие сначала останавливаются.',
   'board.remove.onHost': 'На {host}: {names}',
+  'board.containers': 'Контейнеры',
+  'board.needs.title': 'Требует внимания',
+  'board.needs.none':
+    'Ничего не требует внимания. Все хосты доступны, и ни один контейнер не сбоит.',
+  'board.needs.all': 'Показать все ({count})',
+  'board.needs.fewer': 'Показать меньше',
+  'board.needs.on': 'на {name}',
+  'board.needs.hostUnreachable': 'Недоступен',
+  'board.needs.clusterUnreachable': 'Недоступен',
+  'board.needs.unhealthy': '{name}: неисправен',
+  'board.needs.dead': '{name}: мёртв',
+  'board.needs.restarting': '{name} постоянно перезапускается',
+  'board.needs.exited': '{name} завершился с кодом {code}',
+  'board.needs.logs': 'Журналы',
+  'board.needs.details': 'Подробнее',
+  'board.needs.reconnect': 'Переподключить',
 } satisfies Translation<typeof en>;

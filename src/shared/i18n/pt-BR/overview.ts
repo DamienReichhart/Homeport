@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': 'Visão geral',
-  'overview.title': 'Visão geral',
-  'overview.addHost': 'Adicionar host',
-  'overview.addCluster': 'Adicionar cluster',
   'overview.cluster.nodes': '{ready} de {total} Nodes prontos',
   'overview.cluster.nodesNotAllowed': 'Nodes: não permitido',
   'overview.cluster.pods': '{running} de {total} Pods em execução',
@@ -36,7 +33,6 @@ export default {
   'overview.cluster.noWarnings': 'Nenhum evento de aviso.',
   'overview.cluster.allEvents': 'Todos os eventos',
   'overview.host.running': '<strong>{running}</strong> / {total} em execução',
-  'overview.host.images': '{count, plural, one {# imagem} other {# imagens}}',
   'overview.host.containerdContainers':
     '{count, plural, one {# contêiner} other {# contêineres}} em {namespaces, plural, one {# namespace} other {# namespaces}}',
   'overview.host.incusInstances':
@@ -112,5 +108,12 @@ export default {
   'overview.pruned':
     '{containers, plural, one {# contêiner} other {# contêineres}}, {images, plural, one {# imagem} other {# imagens}}, {networks, plural, one {# rede} other {# redes}} e {volumes, plural, one {# volume} other {# volumes}} removidos — {space} recuperados.',
   'overview.palette.prune': 'Limpar o host selecionado',
-  'overview.host.onBoard': 'Os contêineres dele no Quadro',
+  'overview.hostSettings': 'Configurações do host',
+  'overview.clusterSettings': 'Configurações do cluster',
+  'overview.vitals.title': 'Resumo rápido',
+  'overview.vitals.containers': 'Contêineres',
+  'overview.vitals.running': '{running} de {total} em execução',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': 'Memória',
+  'overview.vitals.images': 'Imagens',
 } satisfies Translation<typeof en>;

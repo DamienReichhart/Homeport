@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': 'Vue d’ensemble',
-  'overview.title': 'Vue d’ensemble',
-  'overview.addHost': 'Ajouter un hôte',
-  'overview.addCluster': 'Ajouter un cluster',
   'overview.cluster.nodes': '{ready} Nodes prêts sur {total}',
   'overview.cluster.nodesNotAllowed': 'Nodes : non autorisé',
   'overview.cluster.pods': '{running} Pods en cours d’exécution sur {total}',
@@ -35,7 +32,6 @@ export default {
   'overview.cluster.noWarnings': 'Aucun événement d’avertissement.',
   'overview.cluster.allEvents': 'Tous les événements',
   'overview.host.running': '<strong>{running}</strong> / {total} en cours d’exécution',
-  'overview.host.images': '{count, plural, one {# image} other {# images}}',
   'overview.host.containerdContainers':
     '{count, plural, one {# conteneur} other {# conteneurs}} dans {namespaces, plural, one {# espace de noms} other {# espaces de noms}}',
   'overview.host.incusInstances':
@@ -114,5 +110,12 @@ export default {
   'overview.pruned':
     '{containers, plural, one {# conteneur} other {# conteneurs}}, {images, plural, one {# image} other {# images}}, {networks, plural, one {# réseau} other {# réseaux}} et {volumes, plural, one {# volume} other {# volumes}} supprimés — {space} récupérés.',
   'overview.palette.prune': 'Nettoyer l’hôte sélectionné',
-  'overview.host.onBoard': 'Ses conteneurs sur le tableau',
+  'overview.hostSettings': 'Réglages de l’hôte',
+  'overview.clusterSettings': 'Réglages du cluster',
+  'overview.vitals.title': 'En un coup d’œil',
+  'overview.vitals.containers': 'Conteneurs',
+  'overview.vitals.running': '{running} sur {total} en cours d’exécution',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': 'Mémoire',
+  'overview.vitals.images': 'Images',
 } satisfies Translation<typeof en>;

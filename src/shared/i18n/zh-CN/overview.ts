@@ -4,9 +4,6 @@ import type { Translation } from '../types';
 
 export default {
   'overview.nav': '概览',
-  'overview.title': '概览',
-  'overview.addHost': '添加主机',
-  'overview.addCluster': '添加集群',
   'overview.cluster.nodes': '{total} 个 Node 中有 {ready} 个就绪',
   'overview.cluster.nodesNotAllowed': 'Node：无权限',
   'overview.cluster.pods': '{total} 个 Pod 中有 {running} 个正在运行',
@@ -35,7 +32,6 @@ export default {
   'overview.cluster.noWarnings': '没有警告事件。',
   'overview.cluster.allEvents': '所有事件',
   'overview.host.running': '<strong>{running}</strong> / {total} 运行中',
-  'overview.host.images': '{count, plural, other {# 个镜像}}',
   'overview.host.containerdContainers':
     '{count, plural, other {# 个容器}}，分布在 {namespaces, plural, other {# 个命名空间}}中',
   'overview.host.incusInstances':
@@ -110,5 +106,12 @@ export default {
   'overview.pruned':
     '已删除 {containers, plural, other {# 个容器}}、{images, plural, other {# 个镜像}}、{networks, plural, other {# 个网络}}和 {volumes, plural, other {# 个卷}}——回收了 {space}。',
   'overview.palette.prune': '清理所选主机',
-  'overview.host.onBoard': '在看板上查看其容器',
+  'overview.hostSettings': '主机设置',
+  'overview.clusterSettings': '集群设置',
+  'overview.vitals.title': '一览',
+  'overview.vitals.containers': '容器',
+  'overview.vitals.running': '{total} 个中 {running} 个运行中',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': '内存',
+  'overview.vitals.images': '镜像',
 } satisfies Translation<typeof en>;

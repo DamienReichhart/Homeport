@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands, connectedHost } from '@/test/fixtures';
 import { clusterView, workloadView } from '@/test/clusters';
@@ -26,8 +26,8 @@ const summary = {
   warnings: { state: 'read', value: [] },
 };
 
-describe('the Overview with Clusters', () => {
-  it('shows a card per Host and Cluster, and the Cluster dashboard once one is selected', async () => {
+describe('Clusters on the Board and their Overview', () => {
+  it('shows a tile per Host and Cluster on the Board, and a Cluster’s Overview from its tile', async () => {
     const saved: Record<string, unknown>[] = [];
     mockCommands({
       ...baseCommands,
@@ -45,6 +45,7 @@ describe('the Overview with Clusters', () => {
         throw { code: 'unknown', message: 'not under test' };
       },
       hosts_events: () => [],
+      containers_list: () => [],
       usage_subscribe: () => 1,
       stream_cancel: () => null,
     });
@@ -53,7 +54,7 @@ describe('the Overview with Clusters', () => {
     expect(await screen.findByText('3 of 5 pods running')).toBeInTheDocument();
     expect(screen.getByText('Nodes: not allowed')).toBeInTheDocument();
 
-    await user.click(screen.getByText('kind-dev'));
+    await user.click(within(screen.getByRole('main')).getByText('kind-dev'));
     await waitFor(() => expect(saved.at(-1)?.lastSelection).toEqual({ kind: 'cluster', id: 'c1' }));
     expect(await screen.findByText('Workloads not ready')).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /default\/api/ })).toHaveAttribute(

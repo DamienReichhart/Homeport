@@ -1,9 +1,6 @@
 /** English text of the `overview` namespace; every key starts with `overview.`. */
 export default {
   'overview.nav': 'Overview',
-  'overview.title': 'Overview',
-  'overview.addHost': 'Add host',
-  'overview.addCluster': 'Add cluster',
   'overview.cluster.nodes': '{ready} of {total} nodes ready',
   'overview.cluster.nodesNotAllowed': 'Nodes: not allowed',
   'overview.cluster.pods': '{running} of {total} pods running',
@@ -32,7 +29,6 @@ export default {
   'overview.cluster.noWarnings': 'No warning events.',
   'overview.cluster.allEvents': 'All events',
   'overview.host.running': '<strong>{running}</strong> / {total} running',
-  'overview.host.images': '{count, plural, one {# image} other {# images}}',
   'overview.host.containerdContainers':
     '{count, plural, one {# container} other {# containers}} in {namespaces, plural, one {# namespace} other {# namespaces}}',
   'overview.host.incusInstances':
@@ -108,5 +104,12 @@ export default {
   'overview.pruned':
     'Removed {containers, plural, one {# container} other {# containers}}, {images, plural, one {# image} other {# images}}, {networks, plural, one {# network} other {# networks}} and {volumes, plural, one {# volume} other {# volumes}} — {space} reclaimed.',
   'overview.palette.prune': 'Clean up the selected host',
-  'overview.host.onBoard': 'Its containers on the board',
+  'overview.hostSettings': 'Host settings',
+  'overview.clusterSettings': 'Cluster settings',
+  'overview.vitals.title': 'At a glance',
+  'overview.vitals.containers': 'Containers',
+  'overview.vitals.running': '{running} of {total} running',
+  'overview.vitals.cpu': 'CPU',
+  'overview.vitals.memory': 'Memory',
+  'overview.vitals.images': 'Images',
 } as const;

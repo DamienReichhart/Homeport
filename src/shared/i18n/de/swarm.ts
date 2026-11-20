@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarms',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': 'Ein Manager ist verbunden',
   'swarm.unreachable': 'Kein Manager verbunden',
   'swarm.hostCounts':
     '{managers, plural, one {# Manager-Host} other {# Manager-Hosts}}, {workers, plural, one {# Worker-Host} other {# Worker-Hosts}}',

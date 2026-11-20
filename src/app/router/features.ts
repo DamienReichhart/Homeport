@@ -39,8 +39,8 @@ import { navEntriesOf, type FeatureManifest } from '@/core/feature';
 
 /** Every feature with pages or palette commands, in sidebar order. Add one line per new feature. */
 export const features: FeatureManifest[] = [
-  overviewFeature,
   boardFeature,
+  overviewFeature,
   containersFeature,
   imagesFeature,
   volumesFeature,
@@ -72,10 +72,10 @@ export const features: FeatureManifest[] = [
   nomadJobsFeature,
   nomadNodesFeature,
   eventsFeature,
-  settingsFeature,
   hostsFeature,
   clustersFeature,
   updatesFeature,
+  settingsFeature,
 ];
 
 export const navEntries = navEntriesOf(features);

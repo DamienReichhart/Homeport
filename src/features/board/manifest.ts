@@ -1,9 +1,14 @@
-import { TableIcon } from 'lucide-react';
+import { LayoutGridIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
 import { BoardPage } from './ui/BoardPage';
+import { OldBoardLink } from './ui/OldBoardLink';
 
-// Not behind HostGate: it shows every Host at once.
+// The home page, not behind HostGate: it shows every Host and Cluster at once.
+// `/board` is where it lived before 1.1; links to it still land here.
 export const boardFeature = defineFeature({
-  routes: [{ path: 'board', Component: BoardPage }],
-  nav: { path: '/board', label: 'board.nav', icon: TableIcon, scope: 'app' },
+  routes: [
+    { index: true, Component: BoardPage },
+    { path: 'board', Component: OldBoardLink },
+  ],
+  nav: { path: '/', label: 'board.nav', icon: LayoutGridIcon, scope: 'app' },
 });

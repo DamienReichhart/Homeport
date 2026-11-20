@@ -2,7 +2,6 @@
 export default {
   'swarm.nav': 'Swarms',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': 'A manager is connected',
   'swarm.unreachable': 'No manager connected',
   'swarm.hostCounts':
     '{managers, plural, one {# manager host} other {# manager hosts}}, {workers, plural, one {# worker host} other {# worker hosts}}',

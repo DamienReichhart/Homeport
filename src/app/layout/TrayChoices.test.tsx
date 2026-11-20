@@ -28,7 +28,8 @@ describe('tray choices', () => {
     renderApp('/settings');
     expect(await screen.findByRole('heading', { name: 'Settings' })).toBeInTheDocument();
     await act(() => emit('tray-host-chosen', { hostId: 'h2' }));
-    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument();
+    // Its Overview, headed by its name.
+    expect(await screen.findByRole('heading', { name: 'prod' })).toBeInTheDocument();
     await waitFor(() => expect(saved.at(-1)?.lastHostId).toBe('h2'));
   });
 

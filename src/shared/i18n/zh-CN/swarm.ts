@@ -5,7 +5,6 @@ import type { Translation } from '../types';
 export default {
   'swarm.nav': 'Swarm',
   'swarm.badge': 'Swarm',
-  'swarm.reachable': '已连接一个管理节点',
   'swarm.unreachable': '未连接管理节点',
   'swarm.hostCounts':
     '{managers, plural, other {# 个管理节点主机}}，{workers, plural, other {# 个工作节点主机}}',

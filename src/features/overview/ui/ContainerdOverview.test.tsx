@@ -22,12 +22,15 @@ describe('the Overview of a containerd Host', () => {
       system_disk_usage: asked('system_disk_usage'),
       containers_list: asked('containers_list'),
     });
-    renderApp('/');
+    // Its tile on the Board, then its own Overview.
+    const board = renderApp('/');
     expect(await screen.findByText('12 containers in 2 namespaces')).toBeInTheDocument();
+    board.unmount();
+    renderApp('/overview');
+    await screen.findByRole('heading', { level: 1 });
     // In the dashboard and in the namespace picker.
-    expect(screen.getAllByText('12 containers, 30 images').length).toBeGreaterThan(0);
+    expect((await screen.findAllByText('12 containers, 30 images')).length).toBeGreaterThan(0);
     expect(screen.getByText('2.1.4')).toBeInTheDocument();
-    expect(screen.queryByRole('link', { name: 'Its containers on the board' })).toBeNull();
     expect(docker).toEqual([]);
   });
 

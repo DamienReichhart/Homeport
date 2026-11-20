@@ -37,4 +37,20 @@ export default {
   'board.remove.description':
     'Se eliminan junto con sus volúmenes anónimos; los volúmenes con nombre se conservan. Los que están en ejecución se detienen antes.',
   'board.remove.onHost': 'En {host}: {names}',
+  'board.containers': 'Contenedores',
+  'board.needs.title': 'Requiere tu atención',
+  'board.needs.none':
+    'Nada requiere tu atención. Todos los hosts son accesibles y ningún contenedor está fallando.',
+  'board.needs.all': 'Mostrar los {count}',
+  'board.needs.fewer': 'Mostrar menos',
+  'board.needs.on': 'en {name}',
+  'board.needs.hostUnreachable': 'Inaccesible',
+  'board.needs.clusterUnreachable': 'Inaccesible',
+  'board.needs.unhealthy': '{name} no está sano',
+  'board.needs.dead': '{name} está muerto',
+  'board.needs.restarting': '{name} se reinicia sin parar',
+  'board.needs.exited': '{name} terminó con el código {code}',
+  'board.needs.logs': 'Logs',
+  'board.needs.details': 'Detalles',
+  'board.needs.reconnect': 'Reconectar',
 } satisfies Translation<typeof en>;
