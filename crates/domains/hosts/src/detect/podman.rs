@@ -87,7 +87,7 @@ pub(crate) async fn from_cli() -> Option<Vec<Machine>> {
         async move {
             let out = tokio::time::timeout(
                 CLI_TIMEOUT,
-                tokio::process::Command::new(program)
+                homeport_core::programs::command(program)
                     .args(args)
                     .env("PATH", homeport_core::programs::search_path())
                     .kill_on_drop(true)

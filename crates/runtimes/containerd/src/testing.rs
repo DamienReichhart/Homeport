@@ -1,7 +1,7 @@
 //! A connection to this machine's containerd for the tests marked
 //! `#[ignore = "needs a local containerd"]`, and `ctr` to set things up.
 
-use std::{process::Command, sync::Arc};
+use std::sync::Arc;
 
 use homeport_core::host::EngineKind;
 use homeport_transport::LocalDialer;
@@ -32,7 +32,7 @@ pub(crate) async fn client() -> Containerd {
 
 /// Runs `ctr` in the tests' namespace; panics with its output on failure.
 pub(crate) fn ctr(args: &[&str]) -> String {
-    let output = Command::new("ctr")
+    let output = homeport_core::programs::blocking_command("ctr")
         .args(["--address", &socket(), "--namespace", NAMESPACE])
         .args(args)
         .output()
@@ -69,7 +69,7 @@ pub(crate) struct Cleanup(pub(crate) String);
 impl Drop for Cleanup {
     fn drop(&mut self) {
         let run = |args: &[&str]| {
-            Command::new("ctr")
+            homeport_core::programs::blocking_command("ctr")
                 .args(["--address", &socket(), "--namespace", NAMESPACE])
                 .args(args)
                 .output()

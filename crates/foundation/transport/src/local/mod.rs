@@ -112,7 +112,7 @@ impl Dialer for LocalDialer {
                     "this Engine runs in a virtual machine",
                 ));
             }
-            let child = tokio::process::Command::new("sh")
+            let child = homeport_core::programs::command("sh")
                 .arg("-c")
                 .arg(&command)
                 .stdin(std::process::Stdio::null())
@@ -145,7 +145,7 @@ impl Dialer for LocalDialer {
 /// Starts `command` with `sh` on this computer, its stdin and stdout as the
 /// stream; dropping the stream kills it.
 fn spawn_here(command: &str) -> io::Result<Spawned> {
-    let mut child = tokio::process::Command::new("sh")
+    let mut child = homeport_core::programs::command("sh")
         .arg("-c")
         .arg(command)
         .stdin(Stdio::piped())

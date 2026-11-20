@@ -184,7 +184,7 @@ async fn a_stack_started_in_a_folder_here_is_linked() {
         ),
     )
     .unwrap();
-    let up = std::process::Command::new("docker")
+    let up = homeport_core::programs::blocking_command("docker")
         .args(["compose", "--project-name", &project, "up", "--detach"])
         .current_dir(dir.path())
         .env_remove("COMPOSE_FILE")

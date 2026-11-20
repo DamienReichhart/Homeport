@@ -4,7 +4,6 @@
 use std::{path::Path, process::Stdio, time::Duration};
 
 use serde::Serialize;
-use tokio::process::Command;
 
 use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
@@ -46,7 +45,7 @@ pub async fn detect() -> AppResult<GitCli> {
             .with_command(command)
     };
     let program = programs::find("git").ok_or_else(missing)?;
-    let out = Command::new(&program)
+    let out = programs::command(&program)
         .arg("--version")
         .env("PATH", programs::search_path())
         .env("LC_ALL", "C")
@@ -132,7 +131,7 @@ impl GitCli {
         args: &[&str],
         timeout: Duration,
     ) -> Result<Output, Failure> {
-        let mut command = Command::new(&self.program);
+        let mut command = programs::command(&self.program);
         command
             .args(args)
             .current_dir(cwd)

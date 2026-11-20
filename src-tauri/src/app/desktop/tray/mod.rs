@@ -208,7 +208,12 @@ mod linux {
         }
         ["/sbin/ldconfig", "/usr/sbin/ldconfig", "ldconfig"]
             .iter()
-            .filter_map(|ldconfig| std::process::Command::new(ldconfig).arg("-p").output().ok())
+            .filter_map(|ldconfig| {
+                homeport_core::programs::blocking_command(ldconfig)
+                    .arg("-p")
+                    .output()
+                    .ok()
+            })
             .any(|out| in_cache(&String::from_utf8_lossy(&out.stdout)))
     }
 

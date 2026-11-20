@@ -10,7 +10,6 @@ use std::{
 
 use base64::Engine as _;
 use serde::Deserialize;
-use tokio::process::Command;
 
 use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
@@ -64,7 +63,7 @@ pub async fn run(
         return Err(interactive(&exec.command, context, None));
     }
     let program = locate(&exec.command).ok_or_else(|| missing(exec))?;
-    let mut command = Command::new(&program);
+    let mut command = programs::command(&program);
     command
         .args(&exec.args)
         .env("PATH", programs::search_path())

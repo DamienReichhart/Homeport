@@ -69,7 +69,7 @@ pub struct ClusterAccess {
 
 impl CliCommand {
     fn command(&self, proxy: Option<&ClusterProxy>) -> Command {
-        let mut command = Command::new(&self.program);
+        let mut command = programs::command(&self.program);
         command
             .args(&self.args)
             .env("PATH", programs::search_path())

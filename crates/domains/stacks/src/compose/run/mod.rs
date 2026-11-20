@@ -321,7 +321,7 @@ pub(super) fn profiled_command(
     args: &[&str],
     profiles: &[String],
 ) -> Command {
-    let mut command = Command::new(&job.cli.program);
+    let mut command = programs::command(&job.cli.program);
     command
         .args(&job.cli.prefix)
         .args(["--project-name", &job.project])

@@ -82,7 +82,7 @@ async fn no_listening_address_says_how_to_make_incus_listen() {
 
 /// Runs the `incus` CLI on this machine, for the live tests' setup.
 fn incus_cli(args: &[&str]) -> String {
-    let out = std::process::Command::new("incus")
+    let out = homeport_core::programs::blocking_command("incus")
         .args(args)
         .output()
         .expect("the incus CLI runs");
