@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'क्लस्टर',
-  'clusters.summary': '{count, plural, one {# क्लस्टर} other {# क्लस्टर}}',
+  'clusters.description': 'वे Kubernetes और Nomad क्लस्टर जिनसे Homeport कनेक्ट होता है।',
   'clusters.add': 'क्लस्टर जोड़ें',
   'clusters.notFound': 'यह क्लस्टर अब मौजूद नहीं है।',
   'clusters.empty.title': 'अभी कोई क्लस्टर नहीं',
   'clusters.empty.description':
-    'वे Kubernetes क्लस्टर जोड़ें जिन तक आपका kubeconfig पहुँचता है। Homeport उन पर कुछ भी इंस्टॉल नहीं करता।',
+    'वे Kubernetes क्लस्टर जोड़ें जिन तक आपका kubeconfig पहुँचता है, या पते से कोई Nomad agent जोड़ें। Homeport उन पर कुछ भी इंस्टॉल नहीं करता।',
   'clusters.column.name': 'नाम',
   'clusters.column.status': 'स्थिति',
   'clusters.column.kind': 'प्रकार',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'साइन इन का तरीका',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'क्लस्टर जोड़ें',
   'clusters.palette.manage': 'क्लस्टर प्रबंधित करें',
 

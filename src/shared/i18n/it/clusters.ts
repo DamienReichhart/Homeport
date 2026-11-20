@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'Cluster',
-  'clusters.summary': '{count, plural, one {# cluster} other {# cluster}}',
+  'clusters.description': 'I cluster Kubernetes e Nomad a cui Homeport si connette.',
   'clusters.add': 'Aggiungi un cluster',
   'clusters.notFound': 'Questo cluster non esiste più.',
   'clusters.empty.title': 'Ancora nessun cluster',
   'clusters.empty.description':
-    'Aggiungi i cluster Kubernetes raggiunti dal tuo kubeconfig. Homeport non installa nulla su di essi.',
+    'Aggiungi i cluster Kubernetes raggiunti dal tuo kubeconfig, o un agente Nomad tramite il suo indirizzo. Homeport non installa nulla su di essi.',
   'clusters.column.name': 'Nome',
   'clusters.column.status': 'Stato',
   'clusters.column.kind': 'Tipo',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'Accede con',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'Aggiungi un cluster',
   'clusters.palette.manage': 'Gestisci i cluster',
 

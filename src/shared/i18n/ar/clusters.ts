@@ -4,18 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'العناقيد',
-  'clusters.summary':
-    '{count, plural, zero {لا عناقيد} one {عنقود واحد} two {عنقودان} few {# عناقيد} many {# عنقودًا} other {# عنقود}}',
+  'clusters.description': 'عناقيد Kubernetes وNomad التي يتصل بها Homeport.',
   'clusters.add': 'إضافة عنقود',
   'clusters.notFound': 'لم يعد هذا العنقود موجودًا.',
   'clusters.empty.title': 'لا توجد عناقيد بعد',
   'clusters.empty.description':
-    'أضف عناقيد Kubernetes التي يصل إليها ملف kubeconfig. لا يثبّت Homeport أي شيء عليها.',
+    'أضف عناقيد Kubernetes التي يصل إليها ملف kubeconfig، أو وكيل Nomad بعنوانه. لا يثبّت Homeport أي شيء عليها.',
   'clusters.column.name': 'الاسم',
   'clusters.column.status': 'الحالة',
   'clusters.column.kind': 'النوع',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'يسجّل الدخول باستخدام',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'إضافة عنقود',
   'clusters.palette.manage': 'إدارة العناقيد',
 

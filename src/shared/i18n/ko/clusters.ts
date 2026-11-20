@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': '클러스터',
-  'clusters.summary': '{count, plural, other {클러스터 #개}}',
+  'clusters.description': 'Homeport가 연결하는 Kubernetes 및 Nomad 클러스터입니다.',
   'clusters.add': '클러스터 추가',
   'clusters.notFound': '이 클러스터는 더 이상 존재하지 않습니다.',
   'clusters.empty.title': '아직 클러스터가 없습니다',
   'clusters.empty.description':
-    'kubeconfig로 연결할 수 있는 Kubernetes 클러스터를 추가하세요. Homeport는 클러스터에 아무것도 설치하지 않습니다.',
+    'kubeconfig로 연결할 수 있는 Kubernetes 클러스터나, 주소로 Nomad 에이전트를 추가하세요. Homeport는 클러스터에 아무것도 설치하지 않습니다.',
   'clusters.column.name': '이름',
   'clusters.column.status': '상태',
   'clusters.column.kind': '종류',
   'clusters.column.server': 'API',
   'clusters.column.auth': '로그인 방식',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': '클러스터 추가',
   'clusters.palette.manage': '클러스터 관리',
 

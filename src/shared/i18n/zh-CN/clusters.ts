@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': '集群',
-  'clusters.summary': '{count, plural, other {# 个集群}}',
+  'clusters.description': 'Homeport 连接的 Kubernetes 和 Nomad 集群。',
   'clusters.add': '添加集群',
   'clusters.notFound': '此集群已不存在。',
   'clusters.empty.title': '暂无集群',
   'clusters.empty.description':
-    '添加你的 kubeconfig 可访问的 Kubernetes 集群。Homeport 不会在集群上安装任何内容。',
+    '添加你的 kubeconfig 可访问的 Kubernetes 集群，或按地址添加 Nomad agent。Homeport 不会在集群上安装任何内容。',
   'clusters.column.name': '名称',
   'clusters.column.status': '状态',
   'clusters.column.kind': '类型',
   'clusters.column.server': 'API',
   'clusters.column.auth': '登录方式',
+  'clusters.statusTitle': '{label}：{detail}',
   'clusters.palette.add': '添加集群',
   'clusters.palette.manage': '管理集群',
 

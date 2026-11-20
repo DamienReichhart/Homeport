@@ -1,17 +1,18 @@
 /** English text of the `clusters` namespace; every key starts with `clusters.`. */
 export default {
   'clusters.title': 'Clusters',
-  'clusters.summary': '{count, plural, one {# cluster} other {# clusters}}',
+  'clusters.description': 'The Kubernetes and Nomad clusters Homeport connects to.',
   'clusters.add': 'Add a cluster',
   'clusters.notFound': 'This cluster no longer exists.',
   'clusters.empty.title': 'No clusters yet',
   'clusters.empty.description':
-    'Add the Kubernetes clusters your kubeconfig reaches. Homeport installs nothing on them.',
+    'Add the Kubernetes clusters your kubeconfig reaches, or a Nomad agent by its address. Homeport installs nothing on them.',
   'clusters.column.name': 'Name',
   'clusters.column.status': 'Status',
   'clusters.column.kind': 'Kind',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'Signs in with',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'Add a cluster',
   'clusters.palette.manage': 'Manage clusters',
 

@@ -4,18 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'Кластеры',
-  'clusters.summary':
-    '{count, plural, one {# кластер} few {# кластера} many {# кластеров} other {# кластера}}',
+  'clusters.description': 'Кластеры Kubernetes и Nomad, к которым подключается Homeport.',
   'clusters.add': 'Добавить кластер',
   'clusters.notFound': 'Этого кластера больше не существует.',
   'clusters.empty.title': 'Кластеров пока нет',
   'clusters.empty.description':
-    'Добавьте кластеры Kubernetes, до которых доходит ваш kubeconfig. Homeport ничего на них не устанавливает.',
+    'Добавьте кластеры Kubernetes, до которых доходит ваш kubeconfig, или агент Nomad по его адресу. Homeport ничего на них не устанавливает.',
   'clusters.column.name': 'Имя',
   'clusters.column.status': 'Состояние',
   'clusters.column.kind': 'Вид',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'Вход через',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'Добавить кластер',
   'clusters.palette.manage': 'Управление кластерами',
 

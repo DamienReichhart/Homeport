@@ -4,17 +4,18 @@ import type { Translation } from '../types';
 
 export default {
   'clusters.title': 'クラスター',
-  'clusters.summary': '{count, plural, other {# 個のクラスター}}',
+  'clusters.description': 'Homeport が接続する Kubernetes と Nomad のクラスターです。',
   'clusters.add': 'クラスターを追加',
   'clusters.notFound': 'このクラスターはもう存在しません。',
   'clusters.empty.title': 'まだクラスターはありません',
   'clusters.empty.description':
-    'kubeconfig から到達できる Kubernetes クラスターを追加してください。Homeport はクラスターに何もインストールしません。',
+    'kubeconfig から到達できる Kubernetes クラスター、またはアドレスを指定して Nomad エージェントを追加してください。Homeport はクラスターに何もインストールしません。',
   'clusters.column.name': '名前',
   'clusters.column.status': 'ステータス',
   'clusters.column.kind': '種類',
   'clusters.column.server': 'API',
   'clusters.column.auth': 'サインイン方法',
+  'clusters.statusTitle': '{label}: {detail}',
   'clusters.palette.add': 'クラスターを追加',
   'clusters.palette.manage': 'クラスターを管理',
 
