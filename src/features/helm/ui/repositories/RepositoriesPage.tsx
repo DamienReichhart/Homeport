@@ -13,6 +13,9 @@ import {
   DataTable,
   ErrorMessage,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
 } from '@/shared/ui';
 import { useRemoveRepository } from '../../api/mutations';
@@ -36,23 +39,18 @@ function Repositories() {
     <div className="grid gap-4">
       <HelmPageHeader
         current="/helm/repositories"
-        toolbar={
+        description={t('helm.repos.description')}
+        actions={
           <>
-            <Button size="sm" onClick={() => setAdding(true)}>
-              <PlusIcon /> {t('helm.repos.add')}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              disabled={!list.data?.length}
-              onClick={() => setUpdating([])}
-            >
+            <Button variant="outline" disabled={!list.data?.length} onClick={() => setUpdating([])}>
               <RefreshCwIcon /> {t('helm.repos.updateAll')}
+            </Button>
+            <Button onClick={() => setAdding(true)}>
+              <PlusIcon /> {t('helm.repos.add')}
             </Button>
           </>
         }
       />
-      <p className="text-muted-foreground text-sm">{t('helm.repos.description')}</p>
       {list.isPending ? (
         <Spinner />
       ) : list.error ? (
@@ -70,40 +68,58 @@ function Repositories() {
               id: 'url',
               header: t('helm.repos.url'),
               accessorFn: (r) => r.url,
-              cell: ({ row }) => <span className="font-mono text-xs">{row.original.url}</span>,
+              cell: ({ row }) => (
+                <span
+                  className="inline-block max-w-xl truncate align-bottom font-mono text-xs"
+                  title={row.original.url}
+                >
+                  {row.original.url}
+                </span>
+              ),
             },
             {
               id: 'actions',
               header: '',
               enableSorting: false,
               cell: ({ row }) => (
-                <div className="flex justify-end gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setUpdating([row.original.name])}
-                  >
-                    <RefreshCwIcon /> {t('helm.repos.update')}
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    aria-label={t('helm.repos.removeNamed', { name: row.original.name })}
-                    onClick={() =>
-                      confirm({
-                        title: t('helm.repos.removeTitle', { name: row.original.name }),
-                        description: t('helm.repos.removeDescription', {
-                          name: row.original.name,
-                          url: row.original.url,
-                        }),
-                        confirmLabel: t('helm.repos.remove'),
-                        destructive: true,
-                        action: () => remove.mutateAsync(row.original.name),
-                      })
-                    }
-                  >
-                    <Trash2Icon />
-                  </Button>
+                <div className="flex justify-end gap-0.5">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        aria-label={t('helm.repos.updateNamed', { name: row.original.name })}
+                        onClick={() => setUpdating([row.original.name])}
+                      >
+                        <RefreshCwIcon />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('helm.repos.update')}</TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="icon-sm"
+                        variant="ghost"
+                        aria-label={t('helm.repos.removeNamed', { name: row.original.name })}
+                        onClick={() =>
+                          confirm({
+                            title: t('helm.repos.removeTitle', { name: row.original.name }),
+                            description: t('helm.repos.removeDescription', {
+                              name: row.original.name,
+                              url: row.original.url,
+                            }),
+                            confirmLabel: t('helm.repos.remove'),
+                            destructive: true,
+                            action: () => remove.mutateAsync(row.original.name),
+                          })
+                        }
+                      >
+                        <Trash2Icon />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>{t('helm.repos.remove')}</TooltipContent>
+                  </Tooltip>
                 </div>
               ),
             },

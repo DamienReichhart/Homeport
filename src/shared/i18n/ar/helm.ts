@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'إصدارات Helm',
+  'helm.title': 'Helm',
   'helm.summary':
     '{count, plural, zero {لا إصدارات} one {إصدار واحد} two {إصداران} few {# إصدارات} many {# إصدارًا} other {# إصدار}}',
   'helm.section.releases': 'الإصدارات',
@@ -54,12 +54,13 @@ export default {
   'helm.run.done': 'تم.',
   'helm.run.failed': 'انتهى helm بالرمز {code}.',
   'helm.repos.description':
-    'مستودعات المخططات التي يعرفها helm على هذا الكمبيوتر، مشتركة مع helm في الطرفية. المستودعات التي تتطلب تسجيل دخول تُضاف هناك باستخدام helm repo add --username، ثم تظهر هنا.',
+    'مستودعات المخططات التي يعرفها helm على هذا الكمبيوتر، مشتركة مع helm في الطرفية.',
   'helm.repos.name': 'الاسم',
   'helm.repos.url': 'URL',
   'helm.repos.add': 'إضافة مستودع',
   'helm.repos.addTitle': 'إضافة مستودع مخططات',
-  'helm.repos.addDescription': 'ينزّل helm فهرسه الآن. لا يمكن إضافة سوى المستودعات العامة هنا.',
+  'helm.repos.addDescription':
+    'ينزّل helm فهرسه الآن. لا يمكن إضافة سوى المستودعات العامة هنا؛ المستودع الذي يتطلب تسجيل دخول يُضاف في الطرفية باستخدام helm repo add --username، ثم يظهر هنا.',
   'helm.repos.added': 'تمت إضافة مستودع المخططات {name}',
   'helm.repos.update': 'تحديث',
   'helm.repos.updateAll': 'تحديث الكل',
@@ -168,4 +169,6 @@ export default {
   'helm.uninstall.confirm': 'إلغاء تثبيت {name}',
   'helm.uninstall.running': 'جارٍ إلغاء تثبيت {name} من {cluster}',
   'helm.uninstall.backToReleases': 'العودة إلى الإصدارات',
+  'helm.emptyHint': 'تظهر في هذه الصفحة الإصدارات المثبّتة هنا أو باستخدام helm في الطرفية.',
+  'helm.repos.updateNamed': 'تحديث {name}',
 } satisfies Translation<typeof en>;

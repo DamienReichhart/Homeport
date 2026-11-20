@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { PlusIcon, RefreshCwIcon } from 'lucide-react';
+import { PlusIcon, RefreshCwIcon, ShipWheelIcon } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -17,9 +17,13 @@ import {
   AlertDescription,
   Button,
   DataTable,
+  EmptyState,
   ErrorMessage,
   SearchInput,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   WithShortcut,
   type ColumnDef,
 } from '@/shared/ui';
@@ -39,7 +43,14 @@ function columns(showNamespace: boolean): ColumnDef<ReleaseSummary, unknown>[] {
       id: 'name',
       header: t('helm.column.name'),
       accessorFn: (r) => r.name,
-      cell: ({ row }) => <span className="font-medium">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span
+          className="inline-block max-w-64 truncate align-bottom font-medium @max-md:max-w-32"
+          title={row.original.name}
+        >
+          {row.original.name}
+        </span>
+      ),
     },
     ...(showNamespace
       ? [
@@ -55,7 +66,7 @@ function columns(showNamespace: boolean): ColumnDef<ReleaseSummary, unknown>[] {
       header: t('helm.column.chart'),
       accessorFn: (r) => r.chart,
       cell: ({ row }) => (
-        <span>
+        <span className="inline-block max-w-64 truncate align-bottom" title={row.original.chart}>
           {row.original.chartName}{' '}
           <span className="text-muted-foreground font-mono text-xs">
             {row.original.chartVersion}
@@ -63,13 +74,29 @@ function columns(showNamespace: boolean): ColumnDef<ReleaseSummary, unknown>[] {
         </span>
       ),
     },
-    { id: 'app', header: t('helm.column.appVersion'), accessorFn: (r) => r.appVersion || '—' },
-    { id: 'revision', header: t('helm.column.revision'), accessorFn: (r) => r.revision },
+    {
+      id: 'app',
+      header: t('helm.column.appVersion'),
+      accessorFn: (r) => r.appVersion || '—',
+      cell: ({ getValue }) => (
+        <span className="inline-block max-w-40 truncate align-bottom" title={getValue<string>()}>
+          {getValue<string>()}
+        </span>
+      ),
+    },
+    {
+      id: 'revision',
+      header: t('helm.column.revision'),
+      accessorFn: (r) => r.revision,
+      cell: ({ row }) => <span className="tabular-nums">{row.original.revision}</span>,
+    },
     {
       id: 'status',
       header: t('helm.column.status'),
       accessorFn: (r) => r.status,
       cell: ({ row }) => <ReleaseStatus status={row.original.status} />,
+      // Beside an open release, the list still shows a failed one.
+      meta: { compact: true },
     },
     {
       id: 'updated',
@@ -109,14 +136,21 @@ function Releases({ cluster }: { cluster: ClusterView }) {
         toolbar={
           <>
             <SearchInput value={query} onChange={setQuery} placeholder={t('helm.search')} />
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={list.isFetching}
-              onClick={() => void list.refetch()}
-            >
-              <RefreshCwIcon /> {t('helm.refresh')}
-            </Button>
+            {/* A release made in a terminal shows up once the list is read again. */}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  aria-label={t('helm.refresh')}
+                  disabled={list.isFetching}
+                  onClick={() => void list.refetch()}
+                >
+                  <RefreshCwIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('helm.refresh')}</TooltipContent>
+            </Tooltip>
           </>
         }
       />
@@ -130,16 +164,30 @@ function Releases({ cluster }: { cluster: ClusterView }) {
         <Spinner />
       ) : list.error ? (
         <ErrorMessage error={list.error} onRetry={() => void list.refetch()} />
-      ) : (
-        <DataTable<ReleaseSummary>
-          columns={columns(namespace === null && only === null)}
-          data={list.data.releases}
-          getRowId={(r) => `${r.namespace}/${r.name}`}
-          filter={query}
-          pageSize={100}
-          empty={t('helm.empty')}
-          onRowClick={(r) => void navigate(releasePath(r.namespace, r.name))}
+      ) : list.data.releases.length === 0 ? (
+        <EmptyState
+          icon={ShipWheelIcon}
+          title={t('helm.empty')}
+          description={t('helm.emptyHint')}
+          action={
+            <Button variant="outline" onClick={() => setChoosing(true)}>
+              <PlusIcon /> {t('helm.install.open')}
+            </Button>
+          }
         />
+      ) : (
+        // Sized as a container, so a narrow list (beside an open release) cuts names shorter.
+        <div className="@container">
+          <DataTable<ReleaseSummary>
+            columns={columns(namespace === null && only === null)}
+            data={list.data.releases}
+            getRowId={(r) => `${r.namespace}/${r.name}`}
+            filter={query}
+            pageSize={100}
+            empty={t('helm.empty')}
+            onRowClick={(r) => void navigate(releasePath(r.namespace, r.name))}
+          />
+        </div>
       )}
       {choosing && (
         <InstallDialog

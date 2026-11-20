@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Helm Release',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, other {# 个 Release}}',
   'helm.section.releases': 'Release',
   'helm.search': '搜索 Release',
@@ -52,13 +52,13 @@ export default {
   'helm.section.repositories': 'Chart 仓库',
   'helm.run.done': '完成。',
   'helm.run.failed': 'helm 已退出，退出码为 {code}。',
-  'helm.repos.description':
-    'helm 在本机上已知的 Chart 仓库，与终端中的 helm 共享。需要登录的仓库请在终端中使用 helm repo add --username 添加，之后会显示在这里。',
+  'helm.repos.description': 'helm 在本机上已知的 Chart 仓库，与终端中的 helm 共享。',
   'helm.repos.name': '名称',
   'helm.repos.url': 'URL',
   'helm.repos.add': '添加仓库',
   'helm.repos.addTitle': '添加 Chart 仓库',
-  'helm.repos.addDescription': 'helm 会立即下载其索引。此处只能添加公开仓库。',
+  'helm.repos.addDescription':
+    'helm 会立即下载其索引。此处只能添加公开仓库；需要登录的仓库请在终端中使用 helm repo add --username 添加，之后会显示在这里。',
   'helm.repos.added': '已添加 Chart 仓库 {name}',
   'helm.repos.update': '更新',
   'helm.repos.updateAll': '全部更新',
@@ -166,4 +166,6 @@ export default {
   'helm.uninstall.confirm': '卸载 {name}',
   'helm.uninstall.running': '正在从 {cluster} 卸载 {name}',
   'helm.uninstall.backToReleases': '返回 Release',
+  'helm.emptyHint': '在这里或在终端中用 helm 安装的 Release 都会列在此页。',
+  'helm.repos.updateNamed': '更新 {name}',
 } satisfies Translation<typeof en>;

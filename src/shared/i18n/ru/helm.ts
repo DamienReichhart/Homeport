@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Релизы Helm',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, one {# релиз} few {# релиза} many {# релизов} other {# релиза}}',
   'helm.section.releases': 'Релизы',
   'helm.search': 'Поиск релизов',
@@ -53,13 +53,13 @@ export default {
   'helm.run.done': 'Готово.',
   'helm.run.failed': 'helm завершился с кодом {code}.',
   'helm.repos.description':
-    'Репозитории чартов, которые знает helm на этом компьютере, — общие с helm в терминале. Репозитории, требующие входа, добавляются там командой helm repo add --username и затем появляются здесь.',
+    'Репозитории чартов, которые знает helm на этом компьютере, — общие с helm в терминале.',
   'helm.repos.name': 'Имя',
   'helm.repos.url': 'URL',
   'helm.repos.add': 'Добавить репозиторий',
   'helm.repos.addTitle': 'Добавить репозиторий чартов',
   'helm.repos.addDescription':
-    'helm сразу скачает его индекс. Здесь можно добавлять только публичные репозитории.',
+    'helm сразу скачает его индекс. Здесь можно добавлять только публичные репозитории; репозиторий, требующий входа, добавляется в терминале командой helm repo add --username и затем появляется здесь.',
   'helm.repos.added': 'Репозиторий чартов {name} добавлен',
   'helm.repos.update': 'Обновить',
   'helm.repos.updateAll': 'Обновить все',
@@ -173,4 +173,6 @@ export default {
   'helm.uninstall.confirm': 'Удалить {name}',
   'helm.uninstall.running': 'Удаление {name} из {cluster}',
   'helm.uninstall.backToReleases': 'Назад к релизам',
+  'helm.emptyHint': 'Здесь показаны релизы, установленные в Homeport или через helm в терминале.',
+  'helm.repos.updateNamed': 'Обновить {name}',
 } satisfies Translation<typeof en>;

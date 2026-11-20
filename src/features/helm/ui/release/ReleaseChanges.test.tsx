@@ -118,12 +118,13 @@ describe('changing a release', () => {
     );
   });
 
-  it('uninstalls after listing what goes with the release', async () => {
+  it('uninstalls from the menu after listing what goes and the name is typed', async () => {
     const runs: Record<string, unknown[]> = {};
     mockCommands(commands(runs));
     const user = userEvent.setup();
     renderApp('/helm/shop/web');
-    await user.click(await screen.findByRole('button', { name: 'Uninstall' }));
+    await user.click(await screen.findByRole('button', { name: 'More actions' }));
+    await user.click(await screen.findByRole('menuitem', { name: 'Uninstall' }));
     const dialog = screen.getByRole('dialog');
     expect(await within(dialog).findByText('1 object will be deleted:')).toBeInTheDocument();
     expect(within(dialog).getByLabelText('Objects that will be deleted')).toHaveTextContent(
@@ -131,7 +132,10 @@ describe('changing a release', () => {
     );
     expect(within(dialog).getByText(/from the Namespace shop on kind-dev/)).toBeInTheDocument();
     await user.click(within(dialog).getByLabelText('Keep its history, so it can be rolled back'));
-    await user.click(within(dialog).getByRole('button', { name: 'Uninstall web' }));
+    const confirm = within(dialog).getByRole('button', { name: 'Uninstall web' });
+    expect(confirm).toBeDisabled();
+    await user.type(within(dialog).getByLabelText(/Type web/), 'web');
+    await user.click(confirm);
     await waitFor(() =>
       expect(runs.uninstall).toEqual([
         { name: 'web', namespace: 'shop', keepHistory: true, wait: false, timeoutSeconds: null },

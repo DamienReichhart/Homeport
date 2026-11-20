@@ -4,7 +4,7 @@ import type { Translation } from '../types';
 
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Helm リリース',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, other {# 個のリリース}}',
   'helm.section.releases': 'リリース',
   'helm.search': 'リリースを検索',
@@ -53,13 +53,13 @@ export default {
   'helm.run.done': '完了しました。',
   'helm.run.failed': 'helm がコード {code} で終了しました。',
   'helm.repos.description':
-    'このコンピューターで helm が認識しているチャートリポジトリで、ターミナルの helm と共有されています。ログインが必要なリポジトリは、ターミナルで helm repo add --username を使って追加すると、ここに表示されます。',
+    'このコンピューターで helm が認識しているチャートリポジトリで、ターミナルの helm と共有されています。',
   'helm.repos.name': '名前',
   'helm.repos.url': 'URL',
   'helm.repos.add': 'リポジトリを追加',
   'helm.repos.addTitle': 'チャートリポジトリを追加',
   'helm.repos.addDescription':
-    'helm がすぐにインデックスをダウンロードします。ここで追加できるのは公開リポジトリだけです。',
+    'helm がすぐにインデックスをダウンロードします。ここで追加できるのは公開リポジトリだけです。ログインが必要なリポジトリは、ターミナルで helm repo add --username を使って追加すると、ここに表示されます。',
   'helm.repos.added': 'チャートリポジトリ {name} を追加しました',
   'helm.repos.update': '更新',
   'helm.repos.updateAll': 'すべて更新',
@@ -173,4 +173,7 @@ export default {
   'helm.uninstall.confirm': '{name} をアンインストール',
   'helm.uninstall.running': '{cluster} から {name} をアンインストール中',
   'helm.uninstall.backToReleases': 'リリースに戻る',
+  'helm.emptyHint':
+    'ここで、またはターミナルの helm でインストールしたリリースがこのページに表示されます。',
+  'helm.repos.updateNamed': '{name} を更新',
 } satisfies Translation<typeof en>;

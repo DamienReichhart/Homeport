@@ -2,9 +2,19 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { ClusterGate, ResourceTabs } from '@/core/cluster';
-import { ArrowUpCircleIcon, Trash2Icon, Undo2Icon } from 'lucide-react';
+import { ArrowUpCircleIcon, MoreHorizontalIcon, Trash2Icon, Undo2Icon } from 'lucide-react';
 import type { ClusterView, ReleaseRevision } from '@/shared/api';
-import { Badge, Button } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/shared/ui';
 import { helmQueries } from '../../api/queries';
 import { releasePath } from '../../model/paths';
 import { HelmGate } from '../HelmGate';
@@ -53,9 +63,18 @@ function Release({ cluster }: { cluster: ClusterView }) {
             <Button variant="outline" onClick={changes.upgrade}>
               <ArrowUpCircleIcon /> {t('helm.upgrade.open')}
             </Button>
-            <Button variant="outline" onClick={changes.uninstall}>
-              <Trash2Icon /> {t('helm.uninstall.open')}
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+                  <MoreHorizontalIcon />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem variant="destructive" onSelect={changes.uninstall}>
+                  <Trash2Icon /> {t('helm.uninstall.open')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         )}
         description={(h) => {
@@ -80,9 +99,21 @@ function Release({ cluster }: { cluster: ClusterView }) {
                 history={h}
                 action={(r) =>
                   r.revision !== latest(h)?.revision && (
-                    <Button size="sm" variant="ghost" onClick={() => changes.rollback(r)}>
-                      <Undo2Icon /> {t('helm.rollback.open', { revision: r.revision })}
-                    </Button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="ghost"
+                          aria-label={t('helm.rollback.open', { revision: r.revision })}
+                          onClick={() => changes.rollback(r)}
+                        >
+                          <Undo2Icon />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        {t('helm.rollback.open', { revision: r.revision })}
+                      </TooltipContent>
+                    </Tooltip>
                   )
                 }
               />

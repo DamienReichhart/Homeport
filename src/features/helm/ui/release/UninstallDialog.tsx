@@ -13,13 +13,17 @@ import {
   ErrorMessage,
   Label,
   Spinner,
+  TypeToConfirm,
+  typedMatches,
 } from '@/shared/ui';
 import { helmQueries } from '../../api/queries';
 import { t } from '@/shared/i18n';
 
 /**
  * Confirms uninstalling a release, naming it, its Namespace and Cluster
- * and listing the objects that go with it, with Keep history.
+ * and listing the objects that go with it, with Keep history. Its objects
+ * (Secrets, volumes' claims…) are deleted for good, so the release's name
+ * is typed before the button works.
  */
 export function UninstallDialog({
   clusterId,
@@ -41,6 +45,7 @@ export function UninstallDialog({
   const details = useQuery(helmQueries.details(clusterId, namespace, name, revision));
   const [keepHistory, setKeepHistory] = useState(false);
   const [wait, setWait] = useState(false);
+  const [typed, setTyped] = useState('');
   return (
     <Dialog open onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="sm:max-w-xl">
@@ -96,6 +101,7 @@ export function UninstallDialog({
             </Label>
           </div>
         </div>
+        <TypeToConfirm name={name} value={typed} onChange={setTyped} />
         <DialogFooter>
           <Button variant="outline" onClick={onClose}>
             {t('common.cancel')}
@@ -103,7 +109,7 @@ export function UninstallDialog({
           <Button
             variant="destructive"
             className="bg-destructive hover:bg-destructive/90 text-white"
-            disabled={details.isPending}
+            disabled={details.isPending || !typedMatches(typed, name)}
             onClick={() => onConfirm({ name, namespace, keepHistory, wait, timeoutSeconds: null })}
           >
             {t('helm.uninstall.confirm', { name })}

@@ -1,7 +1,7 @@
 /** English text of the `helm` namespace (Helm releases on a Cluster); every key starts with `helm.`. */
 export default {
   'helm.nav': 'Helm',
-  'helm.title': 'Helm releases',
+  'helm.title': 'Helm',
   'helm.summary': '{count, plural, one {# release} other {# releases}}',
   'helm.section.releases': 'Releases',
   'helm.search': 'Search releases',
@@ -50,13 +50,13 @@ export default {
   'helm.run.done': 'Done.',
   'helm.run.failed': 'helm exited with code {code}.',
   'helm.repos.description':
-    'The chart repositories helm knows on this computer, shared with helm in a terminal. Repositories that need a login are added there with helm repo add --username, and then appear here.',
+    'The chart repositories helm knows on this computer, shared with helm in a terminal.',
   'helm.repos.name': 'Name',
   'helm.repos.url': 'URL',
   'helm.repos.add': 'Add repository',
   'helm.repos.addTitle': 'Add a chart repository',
   'helm.repos.addDescription':
-    'helm downloads its index now. Only public repositories can be added here.',
+    'helm downloads its index now. Only public repositories can be added here; one that needs a login is added in a terminal with helm repo add --username, and then appears here.',
   'helm.repos.added': 'Added the chart repository {name}',
   'helm.repos.update': 'Update',
   'helm.repos.updateAll': 'Update all',
@@ -169,4 +169,6 @@ export default {
   'helm.uninstall.confirm': 'Uninstall {name}',
   'helm.uninstall.running': 'Uninstalling {name} from {cluster}',
   'helm.uninstall.backToReleases': 'Back to releases',
+  'helm.emptyHint': 'Releases installed here or with helm in a terminal are listed on this page.',
+  'helm.repos.updateNamed': 'Update {name}',
 };
