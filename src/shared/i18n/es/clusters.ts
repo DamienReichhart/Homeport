@@ -53,6 +53,10 @@ export default {
   'clusters.detail.name': 'Nombre',
   'clusters.detail.rename': 'Cambiar nombre',
   'clusters.detail.renamed': 'Se cambió el nombre del clúster',
+  'clusters.rename.open': 'Cambiar nombre…',
+  'clusters.rename.title': 'Cambiar el nombre de {name}',
+  'clusters.rename.description':
+    'Solo cambia el nombre que le da Homeport; su contexto de kubeconfig conserva el suyo.',
   'clusters.connection.title': 'Conexión',
   'clusters.connection.server': 'Servidor de la API',
   'clusters.connection.address': 'Dirección',
@@ -120,6 +124,9 @@ export default {
   'clusters.remove.title': 'Quitar clúster',
   'clusters.remove.description':
     'Homeport olvida el clúster y sus credenciales guardadas. No cambia nada en el clúster ni en tu kubeconfig.',
+  'clusters.remove.descriptionNomad':
+    'Homeport olvida el clúster y sus credenciales guardadas. No cambia nada en el clúster.',
   'clusters.remove.confirmTitle': '¿Quitar {name}?',
   'clusters.remove.confirmDescription': 'Puedes volver a añadirlo desde su kubeconfig.',
+  'clusters.remove.confirmDescriptionNomad': 'Puedes volver a añadirlo por su dirección.',
 } satisfies Translation<typeof en>;

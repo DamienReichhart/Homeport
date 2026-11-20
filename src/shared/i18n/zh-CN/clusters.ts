@@ -55,6 +55,9 @@ export default {
   'clusters.detail.name': '名称',
   'clusters.detail.rename': '重命名',
   'clusters.detail.renamed': '集群已重命名',
+  'clusters.rename.open': '重命名…',
+  'clusters.rename.title': '重命名 {name}',
+  'clusters.rename.description': '只更改它在 Homeport 中的名称；其 kubeconfig 上下文保留原名。',
   'clusters.connection.title': '连接',
   'clusters.connection.server': 'API 服务器',
   'clusters.connection.address': '地址',
@@ -123,6 +126,8 @@ export default {
   'clusters.remove.title': '删除集群',
   'clusters.remove.description':
     'Homeport 会忘记该集群及其保存的凭据。集群和你的 kubeconfig 都不会有任何更改。',
+  'clusters.remove.descriptionNomad': 'Homeport 会忘记该集群及其保存的凭据。集群不会有任何更改。',
   'clusters.remove.confirmTitle': '删除 {name}？',
   'clusters.remove.confirmDescription': '你可以从其 kubeconfig 重新添加它。',
+  'clusters.remove.confirmDescriptionNomad': '你可以按其地址重新添加它。',
 } satisfies Translation<typeof en>;

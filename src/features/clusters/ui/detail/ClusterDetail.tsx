@@ -1,4 +1,5 @@
-import { RefreshCwIcon } from 'lucide-react';
+import { EllipsisVerticalIcon, PencilIcon, RefreshCwIcon } from 'lucide-react';
+import { useState } from 'react';
 import {
   CLUSTER_KIND_LABELS,
   clusterStatusError,
@@ -6,21 +7,39 @@ import {
   describeClusterStatus,
 } from '@/core/cluster';
 import type { ClusterView } from '@/shared/api';
-import { Badge, Button, ErrorMessage, Label, PageHeader, Switch } from '@/shared/ui';
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  ErrorMessage,
+  Label,
+  PageHeader,
+  Switch,
+} from '@/shared/ui';
 import { useClusterConnection } from '../../api/mutations';
 import { NomadConnectionCard } from '../nomad/NomadConnectionCard';
 import { NomadSettingsCard } from '../nomad/NomadSettingsCard';
 import { ConnectionCard } from './ConnectionCard';
 import { RefreshCard } from './RefreshCard';
 import { RemoveClusterCard } from './RemoveClusterCard';
-import { RenameCard } from './RenameCard';
+import { RenameDialog } from './RenameDialog';
 import { t } from '@/shared/i18n';
 
-/** A Cluster's status, how it is reached, and editing, refreshing or removing it. */
+/**
+ * A Cluster's page: its status and what fixes a failing connection first,
+ * then how it is reached, and removing it at the foot. Renaming a
+ * Kubernetes Cluster is in the "More actions" menu; a Nomad Cluster's name
+ * is among its settings.
+ */
 export function ClusterDetail({ view }: { view: ClusterView }) {
   const { reconnect, enable } = useClusterConnection(view.cluster.id);
   const { detail } = describeClusterStatus(view.status, view.cluster.kind);
   const error = clusterStatusError(view.status);
+  const nomad = view.cluster.kind === 'nomad';
+  const [renaming, setRenaming] = useState(false);
   return (
     <div className="grid max-w-3xl gap-4">
       <PageHeader
@@ -53,11 +72,25 @@ export function ClusterDetail({ view }: { view: ClusterView }) {
             >
               <RefreshCwIcon /> {t('clusters.detail.reconnect')}
             </Button>
+            {!nomad && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label={t('common.moreActions')}>
+                    <EllipsisVerticalIcon />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-auto">
+                  <DropdownMenuItem onSelect={() => setRenaming(true)}>
+                    <PencilIcon /> {t('clusters.rename.open')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </>
         }
       />
       {error && <ErrorMessage error={error} onRetry={() => reconnect.mutate()} />}
-      {view.cluster.kind === 'nomad' ? (
+      {nomad ? (
         <>
           <NomadConnectionCard view={view} />
           <NomadSettingsCard view={view} />
@@ -66,10 +99,12 @@ export function ClusterDetail({ view }: { view: ClusterView }) {
         <>
           <ConnectionCard view={view} />
           <RefreshCard view={view} />
-          <RenameCard view={view} />
         </>
       )}
-      <RemoveClusterCard view={view} />
+      <div className="mt-4">
+        <RemoveClusterCard view={view} />
+      </div>
+      {renaming && <RenameDialog view={view} onClose={() => setRenaming(false)} />}
     </div>
   );
 }

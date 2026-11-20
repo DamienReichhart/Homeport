@@ -55,6 +55,10 @@ export default {
   'clusters.detail.name': '이름',
   'clusters.detail.rename': '이름 바꾸기',
   'clusters.detail.renamed': '클러스터 이름을 바꿨습니다',
+  'clusters.rename.open': '이름 바꾸기…',
+  'clusters.rename.title': '{name} 이름 바꾸기',
+  'clusters.rename.description':
+    'Homeport에서의 이름만 바뀌며, kubeconfig 컨텍스트는 원래 이름을 유지합니다.',
   'clusters.connection.title': '연결',
   'clusters.connection.server': 'API 서버',
   'clusters.connection.address': '주소',
@@ -124,6 +128,9 @@ export default {
   'clusters.remove.title': '클러스터 삭제',
   'clusters.remove.description':
     'Homeport가 클러스터와 저장된 자격 증명을 잊습니다. 클러스터나 kubeconfig에는 아무것도 변경되지 않습니다.',
+  'clusters.remove.descriptionNomad':
+    'Homeport가 클러스터와 저장된 자격 증명을 잊습니다. 클러스터에는 아무것도 변경되지 않습니다.',
   'clusters.remove.confirmTitle': '{name} 클러스터를 삭제하시겠습니까?',
   'clusters.remove.confirmDescription': 'kubeconfig에서 다시 추가할 수 있습니다.',
+  'clusters.remove.confirmDescriptionNomad': '주소로 다시 추가할 수 있습니다.',
 } satisfies Translation<typeof en>;

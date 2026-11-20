@@ -56,6 +56,10 @@ export default {
   'clusters.detail.name': 'नाम',
   'clusters.detail.rename': 'नाम बदलें',
   'clusters.detail.renamed': 'क्लस्टर का नाम बदला गया',
+  'clusters.rename.open': 'नाम बदलें…',
+  'clusters.rename.title': '{name} का नाम बदलें',
+  'clusters.rename.description':
+    'सिर्फ़ Homeport में इसका नाम बदलता है; इसका kubeconfig context अपना नाम रखता है।',
   'clusters.connection.title': 'कनेक्शन',
   'clusters.connection.server': 'API सर्वर',
   'clusters.connection.address': 'पता',
@@ -125,6 +129,9 @@ export default {
   'clusters.remove.title': 'क्लस्टर हटाएँ',
   'clusters.remove.description':
     'Homeport क्लस्टर और उसके सहेजे गए क्रेडेंशियल भूल जाता है। क्लस्टर पर या आपके kubeconfig में कुछ नहीं बदलता।',
+  'clusters.remove.descriptionNomad':
+    'Homeport क्लस्टर और उसके सहेजे गए क्रेडेंशियल भूल जाता है। क्लस्टर पर कुछ नहीं बदलता।',
   'clusters.remove.confirmTitle': '{name} हटाएँ?',
   'clusters.remove.confirmDescription': 'आप इसे इसके kubeconfig से फिर से जोड़ सकते हैं।',
+  'clusters.remove.confirmDescriptionNomad': 'आप इसे इसके पते से फिर से जोड़ सकते हैं।',
 } satisfies Translation<typeof en>;

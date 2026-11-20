@@ -55,6 +55,10 @@ export default {
   'clusters.detail.name': '名前',
   'clusters.detail.rename': '名前を変更',
   'clusters.detail.renamed': 'クラスターの名前を変更しました',
+  'clusters.rename.open': '名前を変更…',
+  'clusters.rename.title': '{name} の名前を変更',
+  'clusters.rename.description':
+    '変わるのは Homeport での名前だけです。kubeconfig のコンテキスト名はそのままです。',
   'clusters.connection.title': '接続',
   'clusters.connection.server': 'API サーバー',
   'clusters.connection.address': 'アドレス',
@@ -124,6 +128,9 @@ export default {
   'clusters.remove.title': 'クラスターを削除',
   'clusters.remove.description':
     'Homeport はクラスターと、保存されている認証情報を破棄します。クラスターや kubeconfig には何の変更も加えません。',
+  'clusters.remove.descriptionNomad':
+    'Homeport はクラスターと、保存されている認証情報を破棄します。クラスターには何の変更も加えません。',
   'clusters.remove.confirmTitle': '{name} を削除しますか？',
   'clusters.remove.confirmDescription': 'kubeconfig から再び追加できます。',
+  'clusters.remove.confirmDescriptionNomad': 'アドレスを指定して再び追加できます。',
 } satisfies Translation<typeof en>;

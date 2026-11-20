@@ -57,6 +57,9 @@ export default {
   'clusters.detail.name': 'الاسم',
   'clusters.detail.rename': 'إعادة التسمية',
   'clusters.detail.renamed': 'تمت إعادة تسمية العنقود',
+  'clusters.rename.open': 'إعادة التسمية…',
+  'clusters.rename.title': 'إعادة تسمية {name}',
+  'clusters.rename.description': 'يتغيّر اسمه في Homeport فقط؛ ويحتفظ سياق kubeconfig باسمه.',
   'clusters.connection.title': 'الاتصال',
   'clusters.connection.server': 'خادم API',
   'clusters.connection.address': 'العنوان',
@@ -126,6 +129,9 @@ export default {
   'clusters.remove.title': 'إزالة العنقود',
   'clusters.remove.description':
     'ينسى Homeport العنقود وبيانات اعتماده المخزنة. لا يتغير شيء على العنقود أو في ملف kubeconfig.',
+  'clusters.remove.descriptionNomad':
+    'ينسى Homeport العنقود وبيانات اعتماده المخزنة. لا يتغير شيء على العنقود.',
   'clusters.remove.confirmTitle': 'هل تريد إزالة {name}؟',
   'clusters.remove.confirmDescription': 'يمكنك إضافته مجددًا من ملف kubeconfig الخاص به.',
+  'clusters.remove.confirmDescriptionNomad': 'يمكنك إضافته مجددًا بعنوانه.',
 } satisfies Translation<typeof en>;
