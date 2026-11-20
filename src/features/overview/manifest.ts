@@ -1,10 +1,10 @@
-import { BrushCleaningIcon, LayoutDashboardIcon } from 'lucide-react';
+import { BrushCleaningIcon, GaugeIcon } from 'lucide-react';
 import { defineFeature } from '@/core/feature';
 import { OverviewPage } from './ui/OverviewPage';
 
 export const overviewFeature = defineFeature({
   routes: [{ path: 'overview', Component: OverviewPage }],
-  nav: { path: '/overview', label: 'overview.nav', icon: LayoutDashboardIcon, scope: 'app' },
+  nav: { path: '/overview', label: 'overview.nav', icon: GaugeIcon, scope: 'app' },
   commands: [
     {
       id: 'overview:prune',
