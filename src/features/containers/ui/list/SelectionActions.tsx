@@ -1,8 +1,9 @@
-import { PlayIcon, RotateCwIcon, CircleStopIcon, Trash2Icon } from 'lucide-react';
+import { CirclePlayIcon, RotateCwIcon, CircleStopIcon, Trash2Icon } from 'lucide-react';
 import type { Container } from '@/shared/api';
 import { Button, type ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../../api/mutations';
 import { removeConfirmation } from '../removeConfirmation';
+import { useHostName } from '../useHostName';
 import { t } from '@/shared/i18n';
 
 /** Start, stop, restart and remove for the selected containers. */
@@ -21,6 +22,7 @@ export function SelectionActions({
   onRemoved: () => void;
   confirm: (options: ConfirmOptions) => void;
 }) {
+  const host = useHostName(hostId);
   const { act, remove } = useContainerMutations(hostId);
   return (
     <div className="ms-auto flex items-center gap-1.5">
@@ -28,7 +30,7 @@ export function SelectionActions({
         {t('containers.selected', { count: selected.length })}
       </span>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'start' })}>
-        <PlayIcon /> {t('containers.action.start')}
+        <CirclePlayIcon /> {t('containers.action.start')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'stop' })}>
         <CircleStopIcon /> {t('containers.action.stop')}
@@ -41,7 +43,7 @@ export function SelectionActions({
         variant="destructive"
         onClick={() =>
           confirm(
-            removeConfirmation(selected, async () => {
+            removeConfirmation(selected, host, async () => {
               await remove.mutateAsync({ ids, volumes: true });
               onRemoved();
             }),

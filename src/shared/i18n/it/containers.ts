@@ -57,9 +57,9 @@ export default {
   'containers.done.kill':
     '{count, plural, one {Container terminato} other {# container terminati}}',
   'containers.done.remove': '{count, plural, one {Container rimosso} other {# container rimossi}}',
-  'containers.remove.title': 'Rimuovere {name}?',
+  'containers.remove.title': 'Rimuovere {name} da {host}?',
   'containers.remove.titleMany':
-    'Rimuovere {count, plural, one {# container} other {# container}}?',
+    'Rimuovere {count, plural, one {# container} other {# container}} da {host}?',
   'containers.remove.deleted':
     '{count, plural, one {Vengono eliminati il container, il suo layer scrivibile e i suoi volumi anonimi.} other {Vengono eliminati i container, il loro layer scrivibile e i loro volumi anonimi.}}',
   'containers.remove.running': 'I {count} in esecuzione verranno prima arrestati.',
@@ -391,4 +391,5 @@ export default {
   'containers.export.done': 'Esportato in {destination}',
   'containers.palette.run': 'Esegui un container',
   'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Apri lo stack {stack}',
 } satisfies Translation<typeof en>;

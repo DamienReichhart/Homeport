@@ -58,8 +58,9 @@ export default {
   'containers.done.kill':
     '{count, plural, one {कंटेनर बलपूर्वक बंद किया गया} other {# कंटेनर बलपूर्वक बंद किए गए}}',
   'containers.done.remove': '{count, plural, one {कंटेनर हटाया गया} other {# कंटेनर हटाए गए}}',
-  'containers.remove.title': '{name} हटाएँ?',
-  'containers.remove.titleMany': '{count, plural, one {# कंटेनर} other {# कंटेनर}} हटाएँ?',
+  'containers.remove.title': '{host} से {name} हटाएँ?',
+  'containers.remove.titleMany':
+    '{host} से {count, plural, one {# कंटेनर} other {# कंटेनर}} हटाएँ?',
   'containers.remove.deleted':
     '{count, plural, one {कंटेनर और उसकी लिखने योग्य लेयर व अनाम वॉल्यूम मिटा दिए जाते हैं।} other {कंटेनर और उनकी लिखने योग्य लेयर व अनाम वॉल्यूम मिटा दिए जाते हैं।}}',
   'containers.remove.running': 'चल रहे {count} कंटेनर पहले रोके जाएँगे।',
@@ -390,4 +391,5 @@ export default {
   'containers.export.done': '{destination} में एक्सपोर्ट किया गया',
   'containers.palette.run': 'कंटेनर चलाएँ',
   'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'स्टैक {stack} खोलें',
 } satisfies Translation<typeof en>;

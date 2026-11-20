@@ -51,8 +51,8 @@ export default {
   'containers.done.unpause': '已恢复{count, plural, =1 {容器} other { # 个容器}}',
   'containers.done.kill': '已强制终止{count, plural, =1 {容器} other { # 个容器}}',
   'containers.done.remove': '已删除{count, plural, =1 {容器} other { # 个容器}}',
-  'containers.remove.title': '删除 {name}？',
-  'containers.remove.titleMany': '删除 {count, plural, other {# 个容器}}？',
+  'containers.remove.title': '从 {host} 删除 {name}？',
+  'containers.remove.titleMany': '从 {host} 删除 {count, plural, other {# 个容器}}？',
   'containers.remove.deleted':
     '{count, plural, =1 {该容器及其可写层和匿名卷会被删除。} other {这些容器及其可写层和匿名卷会被删除。}}',
   'containers.remove.running': '{count} 个正在运行的容器会先被停止。',
@@ -360,4 +360,5 @@ export default {
   'containers.export.done': '已导出到 {destination}',
   'containers.palette.run': '运行容器',
   'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': '打开堆栈 {stack}',
 } satisfies Translation<typeof en>;

@@ -51,8 +51,9 @@ export default {
   'containers.done.unpause': 'Resumed {count, plural, one {container} other {# containers}}',
   'containers.done.kill': 'Killed {count, plural, one {container} other {# containers}}',
   'containers.done.remove': 'Removed {count, plural, one {container} other {# containers}}',
-  'containers.remove.title': 'Remove {name}?',
-  'containers.remove.titleMany': 'Remove {count, plural, one {# container} other {# containers}}?',
+  'containers.remove.title': 'Remove {name} from {host}?',
+  'containers.remove.titleMany':
+    'Remove {count, plural, one {# container} other {# containers}} from {host}?',
   'containers.remove.deleted':
     '{count, plural, one {The container and its writable layer and anonymous volumes are deleted.} other {The containers and their writable layer and anonymous volumes are deleted.}}',
   'containers.remove.running': '{count} running will be stopped first.',
@@ -377,4 +378,5 @@ export default {
   'containers.export.done': 'Exported to {destination}',
   'containers.palette.run': 'Run a container',
   'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Open the Stack {stack}',
 } as const;

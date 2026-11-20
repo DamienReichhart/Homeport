@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ArrowLeftIcon } from 'lucide-react';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   containerFreshness,
   HostGate,
@@ -87,7 +87,16 @@ function ContainerDetail({ hostId, id }: { hostId: string; id: string }) {
             </Button>
             <StatusDot tone={containerTone(container.state, container.health)} />
             {container.name}
-            {container.stack && <Badge variant="outline">{container.stack}</Badge>}
+            {container.stack && (
+              <Badge asChild variant="outline">
+                <Link
+                  to={`/stacks/${encodeURIComponent(container.stack)}`}
+                  title={t('containers.detail.openStack', { stack: container.stack })}
+                >
+                  {container.stack}
+                </Link>
+              </Badge>
+            )}
           </span>
         }
         description={

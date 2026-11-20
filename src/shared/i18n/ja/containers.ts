@@ -62,8 +62,9 @@ export default {
     '{count, plural, one {コンテナを強制終了しました} other {# 個のコンテナを強制終了しました}}',
   'containers.done.remove':
     '{count, plural, one {コンテナを削除しました} other {# 個のコンテナを削除しました}}',
-  'containers.remove.title': '{name} を削除しますか？',
-  'containers.remove.titleMany': '{count, plural, other {# 個のコンテナ}}を削除しますか？',
+  'containers.remove.title': '{host} から {name} を削除しますか？',
+  'containers.remove.titleMany':
+    '{host} から{count, plural, other {# 個のコンテナ}}を削除しますか？',
   'containers.remove.deleted':
     '{count, plural, other {コンテナと、その書き込み可能レイヤーおよび匿名ボリュームが削除されます。}}',
   'containers.remove.running': '実行中の {count} 個は先に停止されます。',
@@ -396,4 +397,5 @@ export default {
   'containers.export.done': '{destination} にエクスポートしました',
   'containers.palette.run': 'コンテナを実行',
   'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'スタック {stack} を開く',
 } satisfies Translation<typeof en>;

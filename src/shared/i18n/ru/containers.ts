@@ -59,9 +59,9 @@ export default {
     '{count, plural, =1 {Контейнер принудительно завершён} one {Принудительно завершён # контейнер} few {Принудительно завершено # контейнера} many {Принудительно завершено # контейнеров} other {Принудительно завершено # контейнера}}',
   'containers.done.remove':
     '{count, plural, =1 {Контейнер удалён} one {Удалён # контейнер} few {Удалено # контейнера} many {Удалено # контейнеров} other {Удалено # контейнера}}',
-  'containers.remove.title': 'Удалить {name}?',
+  'containers.remove.title': 'Удалить {name} с {host}?',
   'containers.remove.titleMany':
-    'Удалить {count, plural, one {# контейнер} few {# контейнера} many {# контейнеров} other {# контейнера}}?',
+    'Удалить {count, plural, one {# контейнер} few {# контейнера} many {# контейнеров} other {# контейнера}} с {host}?',
   'containers.remove.deleted':
     '{count, plural, =1 {Контейнер будет удалён вместе с его записываемым слоем и анонимными томами.} one {Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.} few {Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.} many {Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.} other {Контейнеры будут удалены вместе с их записываемым слоем и анонимными томами.}}',
   'containers.remove.running': 'Работающие ({count}) будут сначала остановлены.',
@@ -384,4 +384,5 @@ export default {
   'containers.export.done': 'Экспортировано в {destination}',
   'containers.palette.run': 'Запустить контейнер',
   'containers.idTitle': 'ID {id}',
+  'containers.detail.openStack': 'Открыть стек {stack}',
 } satisfies Translation<typeof en>;
