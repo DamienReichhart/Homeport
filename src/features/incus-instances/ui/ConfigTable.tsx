@@ -64,7 +64,7 @@ export function DevicesList({
           <div key={name} className="rounded-md border p-3">
             <p className="mb-2 flex items-center gap-2 text-sm font-medium">
               {name}
-              <Badge variant="secondary">{device.type ?? '—'}</Badge>
+              <Badge variant="outline">{device.type ?? '—'}</Badge>
               {!(name in own) && (
                 <Badge variant="outline">{t('incus.instances.config.fromProfile')}</Badge>
               )}
