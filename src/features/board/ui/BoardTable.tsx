@@ -24,7 +24,6 @@ const COLUMNS: { key: SortKey | null; label: MessageKey; className?: string }[] 
   { key: null, label: 'containers.column.ports' },
   { key: 'cpu', label: 'containers.column.cpu', className: 'text-end' },
   { key: 'memory', label: 'containers.column.memory', className: 'text-end' },
-  { key: 'created', label: 'containers.column.created' },
 ];
 /** Past this many rows, only those in view are drawn. */
 export const VIRTUAL_FROM = 300;

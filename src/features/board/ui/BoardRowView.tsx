@@ -1,6 +1,6 @@
 import { ContainerRowMenu, containerTone, portLabels, statusText } from '@/features/containers';
 import type { ContainerUsage } from '@/shared/api';
-import { formatBytes, formatPercent, formatRelative, shortId } from '@/shared/lib';
+import { formatBytes, formatPercent, shortId } from '@/shared/lib';
 import { Badge, Checkbox, StatusDot, TableCell, TableRow } from '@/shared/ui';
 import type { BoardRow } from '../model/board';
 import { t } from '@/shared/i18n';
@@ -70,9 +70,6 @@ export function BoardRowView({
       </TableCell>
       <TableCell className="text-end tabular-nums">
         {usage ? formatBytes(usage.memoryUsage) : '—'}
-      </TableCell>
-      <TableCell className="text-muted-foreground whitespace-nowrap">
-        {formatRelative(c.created)}
       </TableCell>
       <TableCell>
         <ContainerRowMenu hostId={row.hostId} container={c} />
