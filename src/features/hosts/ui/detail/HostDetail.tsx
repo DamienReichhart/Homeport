@@ -10,7 +10,11 @@ import { SshSetupCard } from './SshSetupCard';
 import { TrustPrompt } from './TrustPrompt';
 import { t } from '@/shared/i18n';
 
-/** A Host's status, connection settings and removal. */
+/**
+ * A Host's page, in the order people come for it: its status and what fixes
+ * a connection that fails, then its settings, then its Swarm, and removing
+ * it at the foot.
+ */
 export function HostDetail({ view }: { view: HostView }) {
   const { reconnect, enable } = useHostConnection(view.host.id);
   const { detail } = describeStatus(view.status);
@@ -57,12 +61,14 @@ export function HostDetail({ view }: { view: HostView }) {
       {statusError(view.status) && (
         <ErrorMessage error={statusError(view.status)} onRetry={() => reconnect.mutate()} />
       )}
-      <HostSwarmCard view={view} />
       {view.host.connection.kind === 'ssh' && view.host.connection.publicKey && (
         <SshSetupCard view={view} />
       )}
       <ConnectionCard view={view} />
-      <RemoveHostCard view={view} />
+      <HostSwarmCard view={view} />
+      <div className="mt-4">
+        <RemoveHostCard view={view} />
+      </div>
     </div>
   );
 }

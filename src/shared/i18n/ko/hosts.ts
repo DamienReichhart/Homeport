@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': '사용',
   'hosts.detail.reconnect': '다시 연결',
   'hosts.connection.title': '연결',
+  'hosts.connection.save': '변경 사항 저장',
+  'hosts.connection.discard': '변경 사항 취소',
   'hosts.remove.title': '호스트 삭제',
   'hosts.remove.description':
     'Homeport가 이 호스트와 자격 증명, 관리형 스택 정의를 잊습니다. 호스트에서 실행 중인 항목에는 영향을 주지 않습니다.',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     '저장된 연결, SSH 키 또는 인증서, 관리형 스택의 compose 정의가 삭제됩니다. 호스트의 컨테이너, 이미지, 볼륨은 그대로 유지됩니다.',
   'hosts.sshSetup.title': '서버에서 Homeport 승인',
+  'hosts.sshSetup.show': '명령 보기',
+  'hosts.sshSetup.hide': '명령 숨기기',
   'hosts.sshSetup.description':
     '<mono>{server}</mono>에서 SSH 사용자로 다음 명령을 실행한 다음 다시 연결하세요.',
   'hosts.sshSetup.descriptionBastions':
@@ -111,7 +115,7 @@ export default {
   'hosts.ssh.auth.generated': '이 호스트용 새 키',
   'hosts.ssh.auth.imported': '기존 키',
   'hosts.ssh.generated.editing':
-    '이 호스트는 기존 키를 유지합니다. 호스트 페이지에서 키를 다시 생성하세요.',
+    '이 호스트는 기존 키를 유지합니다. 바꾸려면 위 명령 옆의 키 다시 생성을 사용하세요.',
   'hosts.ssh.generated.new':
     'Homeport가 이 호스트용 Ed25519 키를 만들고, 서버에서 키를 승인하는 명령을 보여 줍니다.',
   'hosts.ssh.privateKey': '개인 키',

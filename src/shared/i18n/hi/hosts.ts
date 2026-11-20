@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': 'सक्षम',
   'hosts.detail.reconnect': 'फिर से कनेक्ट करें',
   'hosts.connection.title': 'कनेक्शन',
+  'hosts.connection.save': 'बदलाव सहेजें',
+  'hosts.connection.discard': 'बदलाव छोड़ें',
   'hosts.remove.title': 'होस्ट हटाएँ',
   'hosts.remove.description':
     'Homeport इस होस्ट को, इसके क्रेडेंशियल और इसके प्रबंधित स्टैक की परिभाषाओं को भूल जाता है। होस्ट पर चल रही किसी चीज़ को छुआ नहीं जाता।',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     'सहेजा गया कनेक्शन, SSH कुंजी या प्रमाणपत्र, और इसके प्रबंधित स्टैक की compose परिभाषाएँ मिटा देता है। होस्ट पर कंटेनर, इमेज और वॉल्यूम जैसे हैं वैसे ही रहते हैं।',
   'hosts.sshSetup.title': 'सर्वर पर Homeport को अधिकृत करें',
+  'hosts.sshSetup.show': 'कमांड दिखाएँ',
+  'hosts.sshSetup.hide': 'कमांड छिपाएँ',
   'hosts.sshSetup.description':
     'इन्हें <mono>{server}</mono> पर SSH यूज़र के रूप में चलाएँ, फिर फिर से कनेक्ट करें।',
   'hosts.sshSetup.descriptionBastions':
@@ -111,7 +115,8 @@ export default {
   'hosts.ssh.auth': 'प्रमाणीकरण',
   'hosts.ssh.auth.generated': 'इस होस्ट के लिए नई कुंजी',
   'hosts.ssh.auth.imported': 'मौजूदा कुंजी',
-  'hosts.ssh.generated.editing': 'यह होस्ट अपनी कुंजी रखता है। इसे होस्ट पेज से फिर से बनाएँ।',
+  'hosts.ssh.generated.editing':
+    'यह होस्ट अपनी कुंजी रखता है। इसे बदलने के लिए ऊपर के कमांड के पास “कुंजी फिर से बनाएँ” इस्तेमाल करें।',
   'hosts.ssh.generated.new':
     'Homeport इस होस्ट के लिए एक Ed25519 कुंजी बनाता है और आपको वह कमांड दिखाता है जो इसे सर्वर पर अधिकृत करती है।',
   'hosts.ssh.privateKey': 'निजी कुंजी',

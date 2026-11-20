@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': 'Activé',
   'hosts.detail.reconnect': 'Reconnecter',
   'hosts.connection.title': 'Connexion',
+  'hosts.connection.save': 'Enregistrer les modifications',
+  'hosts.connection.discard': 'Annuler les modifications',
   'hosts.remove.title': 'Supprimer l’hôte',
   'hosts.remove.description':
     'Homeport oublie cet hôte, ses identifiants et les définitions de ses stacks gérées. Rien de ce qui s’exécute sur l’hôte n’est touché.',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Supprime la connexion enregistrée, la clé SSH ou les certificats, et les définitions compose de ses stacks gérées. Les conteneurs, images et volumes de l’hôte restent tels quels.',
   'hosts.sshSetup.title': 'Autoriser Homeport sur le serveur',
+  'hosts.sshSetup.show': 'Afficher les commandes',
+  'hosts.sshSetup.hide': 'Masquer les commandes',
   'hosts.sshSetup.description':
     'Exécutez ces commandes sur <mono>{server}</mono> en tant qu’utilisateur SSH, puis reconnectez-vous.',
   'hosts.sshSetup.descriptionBastions':
@@ -112,7 +116,8 @@ export default {
   'hosts.ssh.auth': 'Authentification',
   'hosts.ssh.auth.generated': 'Nouvelle clé pour cet hôte',
   'hosts.ssh.auth.imported': 'Clé existante',
-  'hosts.ssh.generated.editing': 'Cet hôte conserve sa clé. Régénérez-la depuis la page de l’hôte.',
+  'hosts.ssh.generated.editing':
+    'Cet hôte conserve sa clé. Pour la remplacer, utilisez Régénérer la clé à côté des commandes plus haut.',
   'hosts.ssh.generated.new':
     'Homeport crée une clé Ed25519 pour cet hôte et vous montre la commande qui l’autorise sur le serveur.',
   'hosts.ssh.privateKey': 'Clé privée',

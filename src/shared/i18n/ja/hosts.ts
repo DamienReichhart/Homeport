@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': '有効',
   'hosts.detail.reconnect': '再接続',
   'hosts.connection.title': '接続',
+  'hosts.connection.save': '変更を保存',
+  'hosts.connection.discard': '変更を破棄',
   'hosts.remove.title': 'ホストを削除',
   'hosts.remove.description':
     'Homeport はこのホスト、その認証情報、管理スタックの定義を破棄します。ホストで動作しているものには手を加えません。',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     '保存されている接続、SSH キーまたは証明書、管理スタックの compose 定義が削除されます。ホスト上のコンテナ、イメージ、ボリュームはそのまま残ります。',
   'hosts.sshSetup.title': 'サーバーで Homeport を許可',
+  'hosts.sshSetup.show': 'コマンドを表示',
+  'hosts.sshSetup.hide': 'コマンドを隠す',
   'hosts.sshSetup.description':
     '<mono>{server}</mono> で SSH ユーザーとして次のコマンドを実行してから、再接続してください。',
   'hosts.sshSetup.descriptionBastions':
@@ -114,7 +118,7 @@ export default {
   'hosts.ssh.auth.generated': 'このホスト用の新しいキー',
   'hosts.ssh.auth.imported': '既存のキー',
   'hosts.ssh.generated.editing':
-    'このホストは現在のキーを使い続けます。再生成はホストのページから行ってください。',
+    'このホストは現在のキーを使い続けます。置き換えるには、上のコマンドの横にある「キーを再生成」を使います。',
   'hosts.ssh.generated.new':
     'Homeport はこのホスト用に Ed25519 キーを作成し、サーバーでそれを許可するためのコマンドを表示します。',
   'hosts.ssh.privateKey': '秘密鍵',

@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': 'Включён',
   'hosts.detail.reconnect': 'Переподключиться',
   'hosts.connection.title': 'Подключение',
+  'hosts.connection.save': 'Сохранить изменения',
+  'hosts.connection.discard': 'Отменить изменения',
   'hosts.remove.title': 'Удалить хост',
   'hosts.remove.description':
     'Homeport забудет этот хост, его учётные данные и определения его управляемых стеков. Ничего из работающего на хосте не затрагивается.',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Удаляются сохранённое подключение, SSH-ключ или сертификаты и определения compose его управляемых стеков. Контейнеры, образы и тома на хосте остаются как есть.',
   'hosts.sshSetup.title': 'Авторизуйте Homeport на сервере',
+  'hosts.sshSetup.show': 'Показать команды',
+  'hosts.sshSetup.hide': 'Скрыть команды',
   'hosts.sshSetup.description':
     'Выполните эти команды на <mono>{server}</mono> от имени пользователя SSH, затем переподключитесь.',
   'hosts.sshSetup.descriptionBastions':
@@ -111,7 +115,7 @@ export default {
   'hosts.ssh.auth.generated': 'Новый ключ для этого хоста',
   'hosts.ssh.auth.imported': 'Существующий ключ',
   'hosts.ssh.generated.editing':
-    'У этого хоста сохраняется его ключ. Создать ключ заново можно на странице хоста.',
+    'У этого хоста сохраняется его ключ. Заменить его можно кнопкой «Создать ключ заново» рядом с командами выше.',
   'hosts.ssh.generated.new':
     'Homeport создаст ключ Ed25519 для этого хоста и покажет команду, которая авторизует его на сервере.',
   'hosts.ssh.privateKey': 'Закрытый ключ',

@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': 'مفعّل',
   'hosts.detail.reconnect': 'إعادة الاتصال',
   'hosts.connection.title': 'الاتصال',
+  'hosts.connection.save': 'حفظ التغييرات',
+  'hosts.connection.discard': 'تجاهل التغييرات',
   'hosts.remove.title': 'إزالة المضيف',
   'hosts.remove.description':
     'ينسى Homeport هذا المضيف وبيانات اعتماده وتعريفات المكدسات المُدارة الخاصة به. لا يُمسّ أي شيء يعمل على المضيف.',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     'يحذف الاتصال المخزن ومفتاح SSH أو الشهادات وتعريفات compose للمكدسات المُدارة الخاصة به. تبقى الحاويات والصور ووحدات التخزين على المضيف كما هي.',
   'hosts.sshSetup.title': 'تخويل Homeport على الخادم',
+  'hosts.sshSetup.show': 'إظهار الأوامر',
+  'hosts.sshSetup.hide': 'إخفاء الأوامر',
   'hosts.sshSetup.description':
     'شغّل هذه الأوامر على <mono>{server}</mono> بصفتك مستخدم SSH، ثم أعد الاتصال.',
   'hosts.sshSetup.descriptionBastions':
@@ -108,7 +112,8 @@ export default {
   'hosts.ssh.auth': 'المصادقة',
   'hosts.ssh.auth.generated': 'مفتاح جديد لهذا المضيف',
   'hosts.ssh.auth.imported': 'مفتاح موجود',
-  'hosts.ssh.generated.editing': 'يحتفظ هذا المضيف بمفتاحه. أعد إنشاءه من صفحة المضيف.',
+  'hosts.ssh.generated.editing':
+    'يحتفظ هذا المضيف بمفتاحه. لاستبداله، استخدم «إعادة إنشاء المفتاح» بجانب الأوامر أعلاه.',
   'hosts.ssh.generated.new':
     'ينشئ Homeport مفتاح Ed25519 لهذا المضيف ويعرض لك الأمر الذي يخوّله على الخادم.',
   'hosts.ssh.privateKey': 'المفتاح الخاص',

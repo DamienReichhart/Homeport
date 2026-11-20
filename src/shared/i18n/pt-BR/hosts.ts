@@ -25,6 +25,8 @@ export default {
   'hosts.detail.enabled': 'Ativado',
   'hosts.detail.reconnect': 'Reconectar',
   'hosts.connection.title': 'Conexão',
+  'hosts.connection.save': 'Salvar alterações',
+  'hosts.connection.discard': 'Descartar alterações',
   'hosts.remove.title': 'Remover host',
   'hosts.remove.description':
     'O Homeport esquece este host, as credenciais dele e as definições das stacks gerenciadas dele. Nada do que está em execução no host é afetado.',
@@ -32,6 +34,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Exclui a conexão armazenada, a chave SSH ou os certificados, e as definições compose das stacks gerenciadas dele. Contêineres, imagens e volumes no host permanecem como estão.',
   'hosts.sshSetup.title': 'Autorizar o Homeport no servidor',
+  'hosts.sshSetup.show': 'Mostrar os comandos',
+  'hosts.sshSetup.hide': 'Ocultar os comandos',
   'hosts.sshSetup.description':
     'Execute estes comandos em <mono>{server}</mono> como o usuário SSH e depois reconecte.',
   'hosts.sshSetup.descriptionBastions':
@@ -110,7 +114,8 @@ export default {
   'hosts.ssh.auth': 'Autenticação',
   'hosts.ssh.auth.generated': 'Nova chave para este host',
   'hosts.ssh.auth.imported': 'Chave existente',
-  'hosts.ssh.generated.editing': 'Este host mantém a chave dele. Gere uma nova na página do host.',
+  'hosts.ssh.generated.editing':
+    'Este host mantém a chave dele. Para substituí-la, use Gerar nova chave junto aos comandos acima.',
   'hosts.ssh.generated.new':
     'O Homeport cria uma chave Ed25519 para este host e mostra o comando que a autoriza no servidor.',
   'hosts.ssh.privateKey': 'Chave privada',

@@ -22,6 +22,8 @@ export default {
   'hosts.detail.enabled': 'Enabled',
   'hosts.detail.reconnect': 'Reconnect',
   'hosts.connection.title': 'Connection',
+  'hosts.connection.save': 'Save changes',
+  'hosts.connection.discard': 'Discard changes',
   'hosts.remove.title': 'Remove host',
   'hosts.remove.description':
     'Homeport forgets this host, its credentials and its Managed Stack definitions. Nothing running on the host is touched.',
@@ -29,6 +31,8 @@ export default {
   'hosts.remove.confirmDescription':
     'Deletes the stored connection, SSH key or certificates, and the compose definitions of its Managed Stacks. Containers, images and volumes on the host stay as they are.',
   'hosts.sshSetup.title': 'Authorize Homeport on the server',
+  'hosts.sshSetup.show': 'Show commands',
+  'hosts.sshSetup.hide': 'Hide commands',
   'hosts.sshSetup.description':
     'Run these on <mono>{server}</mono> as the SSH user, then reconnect.',
   'hosts.sshSetup.descriptionBastions':
@@ -105,7 +109,8 @@ export default {
   'hosts.ssh.auth': 'Authentication',
   'hosts.ssh.auth.generated': 'New key for this host',
   'hosts.ssh.auth.imported': 'Existing key',
-  'hosts.ssh.generated.editing': 'This host keeps its key. Regenerate it from the host page.',
+  'hosts.ssh.generated.editing':
+    'This host keeps its key. To replace it, use Regenerate key beside the commands above.',
   'hosts.ssh.generated.new':
     'Homeport creates an Ed25519 key for this host and shows you the command that authorizes it on the server.',
   'hosts.ssh.privateKey': 'Private key',
