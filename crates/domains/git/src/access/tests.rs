@@ -32,7 +32,7 @@ async fn tokens_go_in_a_header_through_the_environment_only() {
     })
     .await
     .unwrap();
-    let mut command = Command::new("git");
+    let mut command = homeport_core::programs::command("git");
     session.apply(&mut command);
     let env = env_of(&command);
     let n: usize = value(&env, "GIT_CONFIG_COUNT").unwrap().parse().unwrap();
@@ -92,7 +92,7 @@ async fn deploy_keys_are_served_by_an_agent_and_a_stored_host_key_is_written() {
     })
     .await
     .unwrap();
-    let mut command = Command::new("git");
+    let mut command = homeport_core::programs::command("git");
     session.apply(&mut command);
     let env = env_of(&command);
     let socket = value(&env, "SSH_AUTH_SOCK").unwrap();

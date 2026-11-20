@@ -6,7 +6,6 @@
 use std::{
     collections::BTreeMap,
     path::{Path, PathBuf},
-    process::Command,
 };
 
 use homeport_storage::Db;
@@ -77,7 +76,7 @@ fn every_fixture_migrates_without_losing_a_row() {
 /// The versions `git tag` lists, or `None` where there is no git or no tag
 /// (a source archive, a shallow clone without tags).
 fn released_versions() -> Option<Vec<String>> {
-    let output = Command::new("git")
+    let output = homeport_core::programs::blocking_command("git")
         .args(["tag", "--list", "v*"])
         .current_dir(env!("CARGO_MANIFEST_DIR"))
         .output()

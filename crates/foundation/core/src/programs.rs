@@ -7,11 +7,40 @@
 //! looking at PATH alone would report an installed Docker as missing. The
 //! usual install locations are searched too, and handed to the programs
 //! Homeport runs.
+//!
+//! Every program Homeport runs is started with [`command`] or
+//! [`blocking_command`]: on Windows a GUI app that starts a console program
+//! the plain way gets a console window flashing up for each one.
 
 use std::{
-    ffi::OsString,
+    ffi::{OsStr, OsString},
     path::{Path, PathBuf},
 };
+
+/// Windows' `CREATE_NO_WINDOW` process creation flag: the child gets no
+/// console window of its own. Its stdio, piped or null, is unaffected.
+#[cfg(windows)]
+const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+
+/// A command running `program` without opening a console window on Windows,
+/// for blocking code. Use it in place of `std::process::Command::new`.
+#[allow(clippy::disallowed_methods)] // The one place the plain constructor is used.
+pub fn blocking_command(program: impl AsRef<OsStr>) -> std::process::Command {
+    #[cfg_attr(not(windows), allow(unused_mut))] // Only Windows sets a flag.
+    let mut command = std::process::Command::new(program);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt as _;
+        command.creation_flags(CREATE_NO_WINDOW);
+    }
+    command
+}
+
+/// A command running `program` without opening a console window on Windows.
+/// Use it in place of `tokio::process::Command::new`.
+pub fn command(program: impl AsRef<OsStr>) -> tokio::process::Command {
+    tokio::process::Command::from(blocking_command(program))
+}
 
 /// Where Docker, Podman, Colima, OrbStack and Rancher Desktop put their CLIs,
 /// the AWS, Google Cloud and Azure CLIs and kubelogin theirs, and winget,

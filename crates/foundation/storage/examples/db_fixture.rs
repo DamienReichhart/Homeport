@@ -9,10 +9,7 @@
 //! for every release tag that has none. A fixture is never overwritten: it
 //! is what that release left behind, and stays as it was made.
 
-use std::{
-    path::{Path, PathBuf},
-    process::Command,
-};
+use std::path::{Path, PathBuf};
 
 use homeport_storage::fixtures;
 
@@ -28,7 +25,7 @@ fn root() -> PathBuf {
 }
 
 fn git(args: &[&str]) -> Option<String> {
-    let output = Command::new("git")
+    let output = homeport_core::programs::blocking_command("git")
         .args(args)
         .current_dir(root())
         .output()

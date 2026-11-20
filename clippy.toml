@@ -1,2 +1,9 @@
 # A function past this many lines does more than one thing (clippy::too_many_lines).
 too-many-lines-threshold = 150
+
+# On Windows a program started the plain way opens a console window; start
+# them with homeport_core::programs::command (or blocking_command) instead.
+disallowed-methods = [
+    { path = "std::process::Command::new", reason = "opens a console window on Windows: use homeport_core::programs::blocking_command" },
+    { path = "tokio::process::Command::new", reason = "opens a console window on Windows: use homeport_core::programs::command" },
+]

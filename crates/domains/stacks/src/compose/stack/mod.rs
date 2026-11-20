@@ -6,10 +6,7 @@
 
 use std::{collections::VecDeque, process::Stdio};
 
-use tokio::{
-    io::{AsyncBufReadExt, BufReader},
-    process::Command,
-};
+use tokio::io::{AsyncBufReadExt, BufReader};
 
 use homeport_core::{
     error::{AppError, AppResult, ErrorCode},
@@ -35,7 +32,7 @@ pub async fn detect() -> AppResult<ComposeCli> {
             .with_hint(msg::DOCKER_CLI_MISSING_HINT)
     };
     let program = programs::find("docker").ok_or_else(missing)?;
-    let out = Command::new(&program)
+    let out = programs::command(&program)
         .env("PATH", programs::search_path())
         .args(["version", "--format", "{{.Client.Version}}"])
         .stdin(Stdio::null())
@@ -55,7 +52,7 @@ pub async fn detect() -> AppResult<ComposeCli> {
 
 /// Whether this CLI's `stack deploy` can wait for the services to converge.
 async fn waits_for_services(cli: &ComposeCli) -> bool {
-    let out = Command::new(&cli.program)
+    let out = programs::command(&cli.program)
         .env("PATH", programs::search_path())
         .args(["stack", "deploy", "--help"])
         .stdin(Stdio::null())
@@ -173,7 +170,7 @@ pub(crate) async fn execute(
         return Ok(());
     }
     let waits = waits_for_services(&job.cli).await;
-    let mut child = Command::new(&job.cli.program)
+    let mut child = programs::command(&job.cli.program)
         .args(deploy_args(&job, &prepared, waits))
         .current_dir(prepared.workdir.path())
         .env_remove("DOCKER_CONTEXT")

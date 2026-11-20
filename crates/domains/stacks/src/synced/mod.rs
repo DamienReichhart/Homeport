@@ -221,7 +221,7 @@ pub(crate) mod testing {
     use super::{SyncedStacks, SyncedStore};
 
     pub(crate) fn git(dir: &Path, args: &[&str]) -> String {
-        let out = std::process::Command::new("git")
+        let out = homeport_core::programs::blocking_command("git")
             .args(args)
             .current_dir(dir)
             .env("GIT_CONFIG_GLOBAL", dir.join(".no-config"))

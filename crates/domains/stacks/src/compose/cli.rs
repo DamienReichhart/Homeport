@@ -3,7 +3,6 @@
 use std::process::Stdio;
 
 use serde::Serialize;
-use tokio::process::Command;
 
 use homeport_core::error::AppResult;
 use homeport_core::programs;
@@ -54,7 +53,7 @@ fn is_v1(version: &str) -> bool {
 
 /// What `program … version --short` prints, if it runs and succeeds.
 async fn version_of(program: &std::path::Path, prefix: &[&str]) -> Option<String> {
-    let out = Command::new(program)
+    let out = programs::command(program)
         .env("PATH", programs::search_path())
         .args(prefix)
         .args(["version", "--short"])

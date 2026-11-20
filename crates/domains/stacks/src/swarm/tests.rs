@@ -95,7 +95,7 @@ async fn a_stack_deployed_from_a_terminal_is_found_and_removed() {
             testing::IMAGE
         );
     std::fs::write(dir.path().join("compose.yaml"), compose).unwrap();
-    let out = std::process::Command::new("docker")
+    let out = homeport_core::programs::blocking_command("docker")
         .args(["stack", "deploy", "--compose-file", "compose.yaml", &name])
         .current_dir(dir.path())
         .output()

@@ -13,7 +13,6 @@ mod run;
 use std::{path::PathBuf, process::Stdio};
 
 use serde::Serialize;
-use tokio::process::Command;
 
 use homeport_core::{error::AppResult, programs};
 
@@ -72,7 +71,7 @@ pub fn program() -> AppResult<PathBuf> {
 /// when it isn't there.
 pub async fn detect() -> AppResult<HelmCli> {
     let program = program()?;
-    let out = Command::new(&program)
+    let out = programs::command(&program)
         .args(["version", "--short"])
         .env("PATH", programs::search_path())
         .stdin(Stdio::null())
