@@ -17,7 +17,14 @@ export function workloadColumns(
       id: 'name',
       header: t('workloads.column.name'),
       accessorFn: (w) => w.name,
-      cell: ({ row }) => <span className="font-medium break-all">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span
+          className="inline-block max-w-72 truncate align-bottom font-medium"
+          title={row.original.name}
+        >
+          {row.original.name}
+        </span>
+      ),
     },
   ];
   if (showNamespace)
@@ -32,6 +39,8 @@ export function workloadColumns(
       header: t('workloads.column.health'),
       accessorFn: (w) => w.health,
       cell: ({ row }) => <HealthBadge workload={row.original.health} />,
+      // Beside an open workload, the list still shows which ones need a look.
+      meta: { compact: true },
     },
     {
       id: 'ready',
@@ -42,6 +51,7 @@ export function workloadColumns(
             ? t('workloads.column.completions')
             : t('workloads.column.ready'),
       accessorFn: (w) => readyText(w.ready, w.desired, kind),
+      cell: ({ getValue }) => <span className="tabular-nums">{getValue<string>()}</span>,
     },
   );
   if (kind === 'cronJob') {
@@ -64,6 +74,7 @@ export function workloadColumns(
       id: 'upToDate',
       header: t('workloads.column.upToDate'),
       accessorFn: (w) => w.upToDate ?? 0,
+      cell: ({ getValue }) => <span className="tabular-nums">{getValue<number>()}</span>,
     });
   }
   columns.push(
@@ -71,9 +82,17 @@ export function workloadColumns(
       id: 'images',
       header: t('workloads.column.images'),
       accessorFn: (w) => w.images.join(', '),
-      cell: ({ row }) => (
-        <span className="font-mono text-xs break-all">{row.original.images.join(', ')}</span>
-      ),
+      cell: ({ row }) => {
+        const images = row.original.images.join(', ');
+        return (
+          <span
+            className="inline-block max-w-80 truncate align-bottom font-mono text-xs"
+            title={images}
+          >
+            {images}
+          </span>
+        );
+      },
     },
     {
       id: 'age',

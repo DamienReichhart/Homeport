@@ -8,7 +8,6 @@ export default {
   'workloads.summary':
     '{count, plural, zero {لا أحمال عمل} one {حمل عمل واحد} two {حملا عمل} few {# أحمال عمل} many {# حمل عمل} other {# حمل عمل}}',
   'workloads.search': 'البحث في أحمال العمل',
-  'workloads.empty': 'لا شيء هنا.',
   'workloads.kind.deployment': 'Deployments',
   'workloads.kind.statefulSet': 'StatefulSets',
   'workloads.kind.daemonSet': 'DaemonSets',
@@ -70,20 +69,15 @@ export default {
   'workloads.scale.done':
     'تم تغيير عدد نسخ {name} إلى {replicas, plural, zero {0 Pod} one {Pod واحد} two {# Pods} few {# Pods} many {# Pod} other {# Pod}}',
   'workloads.scale.failed': 'تعذّر على Homeport تغيير عدد نسخ {name}',
-  'workloads.restart.title': 'هل تريد إعادة تشغيل {name}؟',
-  'workloads.restart.description':
-    'تُستبدل الـ Pods الخاصة به في الـ Namespace {namespace} على {cluster} واحدًا تلو الآخر، كما تحدد استراتيجية الطرح الخاصة به، مثل kubectl rollout restart.',
-  'workloads.restart.confirm': 'إعادة التشغيل',
   'workloads.restart.done': 'جارٍ إعادة تشغيل {name}',
   'workloads.restart.failed': 'تعذّر على Homeport إعادة تشغيل {name}',
-  'workloads.suspend.title': 'هل تريد تعليق {name}؟',
-  'workloads.suspend.description':
-    'لن يبدأ أي Jobs أخرى في الـ Namespace {namespace} على {cluster} حتى تستأنفه. تستمر الـ Jobs قيد التشغيل بالفعل.',
-  'workloads.suspend.confirm': 'تعليق',
   'workloads.suspend.done': 'تم تعليق {name}',
   'workloads.suspend.failed': 'تعذّر على Homeport تعليق {name}',
   'workloads.resume.done': 'تم استئناف {name}',
   'workloads.resume.failed': 'تعذّر على Homeport استئناف {name}',
   'workloads.trigger.done': 'تم بدء الـ Job {job}',
   'workloads.trigger.failed': 'تعذّر على Homeport بدء Job من {name}',
+  'workloads.kindLabel': 'نوع عبء العمل',
+  'workloads.emptyIn': 'لا توجد {kind} في الـ Namespace {namespace}.',
+  'workloads.emptyAll': 'لا توجد {kind} في أي Namespace.',
 } satisfies Translation<typeof en>;

@@ -7,7 +7,6 @@ export default {
   'workloads.title': 'वर्कलोड',
   'workloads.summary': '{count, plural, one {# वर्कलोड} other {# वर्कलोड}}',
   'workloads.search': 'वर्कलोड खोजें',
-  'workloads.empty': 'यहाँ कुछ नहीं है।',
   'workloads.kind.deployment': 'Deployments',
   'workloads.kind.statefulSet': 'StatefulSets',
   'workloads.kind.daemonSet': 'DaemonSets',
@@ -70,20 +69,15 @@ export default {
   'workloads.scale.done':
     '{name} को {replicas, plural, one {# Pod} other {# Pod}} पर स्केल किया गया',
   'workloads.scale.failed': 'Homeport {name} को स्केल नहीं कर सका',
-  'workloads.restart.title': '{name} फिर से शुरू करें?',
-  'workloads.restart.description':
-    '{cluster} पर Namespace {namespace} में इसके Pods एक के बाद एक बदले जाते हैं, जैसा इसकी रोलआउट रणनीति कहती है, kubectl rollout restart की तरह।',
-  'workloads.restart.confirm': 'फिर से शुरू करें',
   'workloads.restart.done': '{name} फिर से शुरू हो रहा है',
   'workloads.restart.failed': 'Homeport {name} को फिर से शुरू नहीं कर सका',
-  'workloads.suspend.title': '{name} निलंबित करें?',
-  'workloads.suspend.description':
-    'जब तक आप इसे जारी नहीं करते, यह {cluster} पर Namespace {namespace} में कोई नया Job शुरू नहीं करेगा। पहले से चल रहे Jobs चलते रहेंगे।',
-  'workloads.suspend.confirm': 'निलंबित करें',
   'workloads.suspend.done': '{name} निलंबित किया गया',
   'workloads.suspend.failed': 'Homeport {name} को निलंबित नहीं कर सका',
   'workloads.resume.done': '{name} फिर से जारी किया गया',
   'workloads.resume.failed': 'Homeport {name} को जारी नहीं कर सका',
   'workloads.trigger.done': 'Job {job} शुरू किया गया',
   'workloads.trigger.failed': 'Homeport {name} से Job शुरू नहीं कर सका',
+  'workloads.kindLabel': 'वर्कलोड का प्रकार',
+  'workloads.emptyIn': 'Namespace {namespace} में कोई {kind} नहीं है।',
+  'workloads.emptyAll': 'किसी भी Namespace में कोई {kind} नहीं है।',
 } satisfies Translation<typeof en>;

@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { age, Labels } from '@/core/cluster';
 import type { WorkloadDetail } from '@/shared/api';
-import { Card, CardContent, CardHeader, CardTitle, DataTable, KeyValue } from '@/shared/ui';
+import { Card, CardContent, DataTable, KeyValue } from '@/shared/ui';
 import { readyText } from '../../model/kinds';
 import { t } from '@/shared/i18n';
 
@@ -24,39 +24,35 @@ export function WorkloadOverview({ detail }: { detail: WorkloadDetail }) {
   items.push([t('workloads.detail.labels'), <Labels values={detail.labels} />]);
   items.push([t('workloads.detail.annotations'), <Labels values={detail.annotations} />]);
   return (
-    <div className="grid gap-4">
+    <div className="grid gap-8">
       <Card>
         <CardContent>
           <KeyValue items={items} />
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
-          <CardTitle>{t('workloads.detail.containers')}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <DataTable
-            columns={[
-              { id: 'name', header: t('workloads.container.name'), accessorFn: (c) => c.name },
-              {
-                id: 'image',
-                header: t('workloads.container.image'),
-                accessorFn: (c) => c.image,
-                cell: ({ row }) => (
-                  <span className="font-mono text-xs break-all">{row.original.image}</span>
-                ),
-              },
-              {
-                id: 'ports',
-                header: t('workloads.container.ports'),
-                accessorFn: (c) => c.ports.join(', '),
-              },
-            ]}
-            data={detail.containers}
-            getRowId={(c) => c.name}
-          />
-        </CardContent>
-      </Card>
+      <section className="grid gap-3">
+        <h2 className="text-base font-semibold">{t('workloads.detail.containers')}</h2>
+        <DataTable
+          columns={[
+            { id: 'name', header: t('workloads.container.name'), accessorFn: (c) => c.name },
+            {
+              id: 'image',
+              header: t('workloads.container.image'),
+              accessorFn: (c) => c.image,
+              cell: ({ row }) => (
+                <span className="font-mono text-xs break-all">{row.original.image}</span>
+              ),
+            },
+            {
+              id: 'ports',
+              header: t('workloads.container.ports'),
+              accessorFn: (c) => c.ports.join(', '),
+            },
+          ]}
+          data={detail.containers}
+          getRowId={(c) => c.name}
+        />
+      </section>
     </div>
   );
 }
