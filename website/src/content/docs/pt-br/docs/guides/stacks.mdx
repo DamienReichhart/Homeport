@@ -67,7 +67,7 @@ Uma pasta de projeto que ainda não está rodando no host pode ser vinculada pel
 
 4. Confira o **Nome**. Ele vem do `name:` de nível superior dos arquivos, ou do nome da pasta como o Compose o escreve (`My App` vira `myapp`).
 
-5. Escolha **Salvar e implantar** — ou **Salvar** para implantar depois.
+5. Escolha **Salvar e implantar** — ou **Salvar sem implantar**, sob a seta dele, para implantar depois.
 
 </Steps>
 
@@ -86,7 +86,7 @@ A pasta aparece abaixo do nome da stack na lista e na página dela.
 
 ### Editando uma stack vinculada
 
-A aba **Definição** de uma stack vinculada mostra cada um dos seus arquivos compose em uma aba própria, lidos da pasta, com o caminho da pasta acima deles. Edite-os e escolha **Salvar**: o Homeport grava cada arquivo alterado de volta onde ele está, para que o seu próprio editor e o seu controle de versão vejam a mudança. O arquivo é substituído em uma só etapa, mantendo as permissões, então nada nunca o lê pela metade.
+A aba **Definição** de uma stack vinculada mostra cada um dos seus arquivos compose em uma aba própria, lidos da pasta, com o caminho da pasta acima deles. Edite-os e escolha **Salvar sem implantar**: o Homeport grava cada arquivo alterado de volta onde ele está, para que o seu próprio editor e o seu controle de versão vejam a mudança. O arquivo é substituído em uma só etapa, mantendo as permissões, então nada nunca o lê pela metade.
 
 As verificações abaixo do editor seguem as regras das stacks vinculadas: `build:`, `env_file:` e caminhos relativos não são problema, já que a pasta está lá. Não há editor de ambiente: o Compose lê o `.env` da pasta quando é executado, e o Homeport não o mostra nem o altera.
 
@@ -102,9 +102,9 @@ Se a pasta sumiu, ou um arquivo não pode ser lido, a aba diz qual e o que fazer
 
 **Implantar**, **Reimplantar**, **Baixar imagens** e **Desativar** também funcionam para stacks vinculadas. O Homeport executa `docker compose` na pasta da stack, com `--project-directory` apontando para ela e um `--file` para cada um dos seus arquivos compose, em ordem — o mesmo que executá-lo ali você mesmo —, ainda pela sua própria conexão no caso de hosts SSH e TLS. Então `build:`, `env_file:`, caminhos `./relative` e o `.env` da pasta funcionam.
 
-Um serviço com `build:` passa pela build quando ainda não tem imagem. Para refazer a build depois de mudar o código dele, escolha **Refazer a build e implantar** no menu **⋮** da stack (`up --build`). A build roda no Engine do **host**, com o contexto de build enviado deste computador. Os serviços com `build:` nunca são baixados; as imagens base deles são baixadas pela própria build, com o seu próprio `docker login`.
+Um serviço com `build:` passa pela build quando ainda não tem imagem. Para refazer a build depois de mudar o código dele, escolha **Refazer a build e implantar** no menu **Mais ações** da stack (`up --build`). A build roda no Engine do **host**, com o contexto de build enviado deste computador. Os serviços com `build:` nunca são baixados; as imagens base deles são baixadas pela própria build, com o seu próprio `docker login`.
 
-**Salvar e reimplantar**, na aba **Definição**, grava os arquivos que você editou e depois implanta.
+**Implantar**, na aba **Definição**, grava os arquivos que você editou e depois implanta; **Salvar sem implantar**, sob a seta dele, só os grava.
 
 <Aside type="caution" title="Caminhos relativos em um host remoto">
   Um bind mount como `./data:/data` resolve para a pasta **neste** computador, por exemplo
@@ -150,7 +150,7 @@ O próprio Compose nunca recebe um login: nenhum arquivo que o Homeport cria par
 
 5. Coloque as variáveis em **Ambiente**, um `KEY=value` por linha, como em um arquivo `.env`. O Compose as substitui por `${KEY}` no arquivo. Preencha as senhas que um modelo deixa vazias.
 
-6. Escolha **Salvar e implantar** — ou **Salvar** para implantar depois.
+6. Escolha **Salvar e implantar** — ou **Salvar sem implantar**, sob a seta dele, para implantar depois.
 
 </Steps>
 
@@ -207,7 +207,7 @@ services:
 DB_PASSWORD=correct-horse-battery-staple
 ```
 
-Linhas em branco, `# comments` e prefixos `export` são permitidos. Os valores podem estar entre aspas; entre aspas duplas, `\n` é uma nova linha.
+Linhas em branco, `# comments` e prefixos `export` são permitidos. Os valores podem estar entre aspas; entre aspas duplas, `\n` é uma nova linha. Os valores aparecem como pontos, com as chaves e os comentários legíveis, até você escolher **Mostrar valores**; um ambiente vazio já está pronto para digitar.
 
 <Aside>
   Armazenar um ambiente requer um [chaveiro do
@@ -255,11 +255,11 @@ Os perfis da stack são os únicos que contam. Uma variável `COMPOSE_PROFILES` 
   implantação pela metade. Reimplante para concluí-la.
 </Aside>
 
-Para mudar uma stack gerenciada, abra-a, edite a **Definição** dela e escolha **Salvar e reimplantar**. O Compose recria só os serviços que mudaram e remove os serviços que você excluiu do arquivo.
+Para mudar uma stack gerenciada, abra-a, edite a **Definição** e escolha **Implantar**: ele salva a definição, mostra o que muda e depois implanta. O Compose recria só os serviços que mudaram e remove os serviços que você apagou do arquivo. **Alterações não salvas**, ao lado do botão, avisa quando há algo para salvar; **Salvar sem implantar**, sob a seta dele, guarda a mudança para a próxima implantação. Uma stack que nunca foi implantada abre na aba **Definição**, com **Implantar** à mão.
 
 ### Revisando as mudanças antes de uma reimplantação
 
-Antes de uma reimplantação rodar — **Reimplantar**, **Refazer a build e implantar**, ou **Salvar e reimplantar** para uma stack que está rodando —, o Homeport mostra **Revisar as alterações**: a definição implantada da última vez (a entrada bem-sucedida mais recente do [histórico](#histórico-de-implantações-e-reversão) dela) em comparação com a que está para ser implantada.
+Antes de uma reimplantação rodar — **Reimplantar**, **Refazer a build e implantar**, ou **Implantar** para uma stack que está rodando —, o Homeport mostra **Revisar as alterações**: a definição implantada da última vez (a entrada bem-sucedida mais recente do [histórico](#histórico-de-implantações-e-reversão) dela) em comparação com a que está para ser implantada.
 
 - Cada arquivo compose mostra as linhas alteradas no próprio texto: as linhas removidas acima das que as substituem. Um arquivo inalterado fica recolhido; selecione-o para abri-lo. Os arquivos adicionados, removidos ou mesclados em outra ordem são citados.
 - As variáveis de ambiente mostram só os nomes, marcados como **Adicionado**, **Removido** ou **Alterado** — uma senha alterada aparece como **Alterado** sem mostrar nenhum dos valores —, e quantas outras estão inalteradas.
@@ -271,7 +271,7 @@ A comparação é só entre definições, não com a configuração ao vivo dos 
 
 ## Histórico de implantações e reversão
 
-Cada implantação de uma stack gerenciada, vinculada ou sincronizada feita pelo Homeport — **Implantar**, **Reimplantar**, **Refazer a build e implantar**, **Salvar e reimplantar**, uma [sincronização](/docs/guides/synced-stacks/#sincronizando) — é registrada com os arquivos compose, o ambiente e os perfis que usou, quando rodou e como terminou; a de uma stack sincronizada também mostra o commit dela e se a implantação automática a iniciou. A aba **Histórico** da página da stack lista as últimas 20, das mais recentes às mais antigas: **Concluída**, **Falhou** com o código de saída, ou **Não concluída** para uma execução cuja janela foi fechada antes de terminar. **Implantada agora** marca a mais recente que deu certo.
+Cada implantação de uma stack gerenciada, vinculada ou sincronizada feita pelo Homeport — **Implantar**, **Reimplantar**, **Refazer a build e implantar**, uma [sincronização](/docs/guides/synced-stacks/#sincronizando) — é registrada com os arquivos compose, o ambiente e os perfis que usou, quando rodou e como terminou; a de uma stack sincronizada também mostra o commit dela e se a implantação automática a iniciou. A aba **Histórico** da página da stack lista as últimas 20, das mais recentes às mais antigas: **Concluída**, **Falhou** com o código de saída, ou **Não concluída** para uma execução cuja janela foi fechada antes de terminar. **Implantada agora** marca a mais recente que deu certo.
 
 Selecione uma implantação para ver os arquivos compose dela, somente leitura. O ambiente dela é armazenado criptografado como o da própria stack, e a aba mostra só os nomes das variáveis. Sem um chaveiro, a lista ainda funciona; uma implantação com ambiente apenas diz que ele não pode ser aberto.
 
@@ -317,11 +317,13 @@ Uma stack externa também mostra **Atualização disponível**, mas o **Atualiza
 | **Reiniciar**                   | Qualquer                            | Reinicia todos os contêineres.                                                                                                              |
 | **Baixar imagens**              | Gerenciada, vinculada, sincronizada | Baixa a imagem de cada serviço com os logins guardados, para buscar as mais recentes antes de reimplantar.                                  |
 | **Desativar**                   | Gerenciada, vinculada, sincronizada | `docker compose down`: remove os contêineres e as redes, mantém os volumes e a definição.                                                   |
-| **Desativar com os volumes**    | Gerenciada, vinculada, sincronizada | Também exclui os volumes da stack **e os dados deles**.                                                                                     |
+| **Desativar com os volumes**    | Gerenciada, vinculada, sincronizada | Também exclui os volumes da stack **e os dados deles**. Pede antes que você digite o nome da stack.                                         |
 | **Remover contêineres**         | Externa                             | Remove os contêineres e as redes dela. Os volumes são mantidos.                                                                             |
 | **Adotar**                      | Externa                             | Dá ao Homeport o arquivo compose, tornando-a gerenciada.                                                                                    |
 
-**Esquecer definição**, na aba **Definição** de uma stack gerenciada, exclui o arquivo compose e o ambiente do Homeport, mas deixa os contêineres rodando; a stack se torna externa. **Esquecer**, na aba **Definição** de uma stack vinculada, descarta a anotação do Homeport sobre a pasta; a pasta, os arquivos dela e os contêineres não são afetados.
+Na página Stacks, cada linha mostra dois ícones: a ação que deixa a stack em dia (**Atualizar**, **Sincronizar**, **Implantar**, **Reimplantar** ou **Adotar**) e **Parar** ou **Iniciar**. O menu dela tem o resto. A página de uma stack tem o mesmo par no cabeçalho e o resto no menu **Mais ações**; **Reiniciar** e desativar só aparecem para uma stack em execução.
+
+Esquecer fica à parte em **Esquecer este stack**, no rodapé da aba **Definição**. **Esquecer definição**, numa stack gerenciada, exclui do Homeport o arquivo compose e o ambiente, mas deixa os contêineres rodando; a stack vira externa. **Esquecer**, numa stack vinculada, descarta a anotação do Homeport sobre a pasta; a pasta, os arquivos dela e os contêineres ficam como estão.
 
 ## Adotando uma stack externa
 
@@ -333,7 +335,7 @@ Uma stack externa também mostra **Atualização disponível**, mas o **Atualiza
 
 3. Adicione as variáveis de ambiente dela, se ela usava alguma.
 
-4. Escolha **Salvar** para assumi-la sem mexer nos contêineres em execução, ou **Salvar e implantar** para reimplantá-la agora.
+4. Escolha **Salvar sem implantar**, sob a seta de **Salvar e implantar**, para assumi-la sem mexer nos contêineres em execução, ou **Salvar e implantar** para reimplantá-la agora.
 
 </Steps>
 

@@ -70,7 +70,7 @@ Das Entfernen eines Repositorys löscht seinen Schlüssel oder sein Token und se
 
 5. Prüfen Sie den **Name** (er stammt vom Namen des Repositorys) und fügen Sie eine **Umgebung** für das hinzu, was nicht in Git gehört, etwa Passwörter: `KEY=value`-Zeilen, auf diesem Computer verschlüsselt und Compose bei der Bereitstellung als Variablen übergeben.
 
-6. Wählen Sie **Speichern und bereitstellen** – oder **Speichern**, um später bereitzustellen.
+6. Wählen Sie **Speichern und bereitstellen** – oder **Speichern, ohne bereitzustellen** unter seinem Pfeil, um später bereitzustellen.
 
 </Steps>
 
@@ -125,4 +125,6 @@ Was Homeport selbst hält, bleibt im selben Tab bearbeitbar:
 - seine **Profile**, wenn die Compose-Datei welche deklariert;
 - ob er **nach neuen Commits sucht** und **sie automatisch bereitstellt**.
 
-**Vergessen** sorgt dafür, dass Homeport dem Repository nicht mehr folgt; die Container des Stacks laufen weiter, und er wird extern.
+Änderungen daran speichert **Synchronisieren**, das danach bereitstellt, oder **Speichern, ohne bereitzustellen** unter seinem Pfeil, für die nächste Bereitstellung. Die Werte der Umgebung bleiben verborgen, bis Sie **Werte anzeigen** wählen.
+
+**Vergessen** in **Diesen Stack vergessen** am Fuß des Tabs beendet, dass Homeport dem Repository folgt; die Container des Stacks laufen weiter, und er wird extern.

@@ -70,7 +70,7 @@ Rimuovere un repository elimina la sua chiave o il suo token e il suo clone su q
 
 5. Controlla il **Nome** (deriva dal nome del repository), e aggiungi un **Ambiente** per ciò che non deve stare in git, come le password: righe `KEY=value`, cifrate su questo computer e passate a Compose come variabili durante la distribuzione.
 
-6. Scegli **Salva e distribuisci**, oppure **Salva** per distribuire più tardi.
+6. Scegli **Salva e distribuisci**, oppure **Salva senza distribuire**, sotto la sua freccia, per distribuire più tardi.
 
 </Steps>
 
@@ -124,4 +124,6 @@ Ciò che Homeport conserva resta modificabile nella stessa scheda:
 - i suoi **profili**, se il file compose ne dichiara;
 - se **cerca nuovi commit** e se **li distribuisce automaticamente**.
 
-**Dimentica** fa sì che Homeport smetta di seguire il repository; i container dello stack restano in esecuzione, e lo stack diventa esterno.
+Le loro modifiche si salvano con **Sincronizza**, che poi distribuisce, o con **Salva senza distribuire**, sotto la sua freccia, per la prossima distribuzione. I valori dell’ambiente restano nascosti fino a **Mostra i valori**.
+
+**Dimentica**, in **Dimentica questo stack** in fondo alla scheda, fa smettere a Homeport di seguire il repository; i container dello stack continuano a funzionare, e diventa esterno.

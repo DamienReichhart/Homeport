@@ -67,7 +67,7 @@ Una carpeta de proyecto que aún no se ejecuta en el host se puede vincular desd
 
 4. Revisa el **Nombre**. Sale del `name:` de nivel superior de los archivos, o del nombre de la carpeta tal como lo escribe Compose (`My App` pasa a ser `myapp`).
 
-5. Elige **Guardar y desplegar**, o **Guardar** para desplegar más tarde.
+5. Elige **Guardar y desplegar**, o **Guardar sin desplegar**, bajo su flecha, para desplegar más tarde.
 
 </Steps>
 
@@ -86,7 +86,7 @@ La carpeta aparece bajo el nombre del stack en la lista y en su página.
 
 ### Editar un stack vinculado
 
-La pestaña **Definición** de un stack vinculado muestra cada uno de sus archivos compose en una pestaña propia, leídos de la carpeta, con la ruta de la carpeta encima. Edítalos y elige **Guardar**: Homeport vuelve a escribir cada archivo modificado donde está, para que tu propio editor y tu control de versiones vean el cambio. El archivo se sustituye en un solo paso, conservando sus permisos, así que nada lo lee nunca a medio escribir.
+La pestaña **Definición** de un stack vinculado muestra cada uno de sus archivos compose en una pestaña propia, leídos de la carpeta, con la ruta de la carpeta encima. Edítalos y elige **Guardar sin desplegar**: Homeport vuelve a escribir cada archivo modificado donde está, para que tu propio editor y tu control de versiones vean el cambio. El archivo se sustituye en un solo paso, conservando sus permisos, así que nada lo lee nunca a medio escribir.
 
 Las comprobaciones bajo el editor siguen las reglas de los stacks vinculados: `build:`, `env_file:` y las rutas relativas son correctos, ya que la carpeta está ahí. No hay editor de entorno: Compose lee el `.env` de la carpeta al ejecutarse, y Homeport ni lo muestra ni lo cambia.
 
@@ -102,9 +102,9 @@ Si la carpeta ya no existe, o no se puede leer un archivo, la pestaña indica cu
 
 **Desplegar**, **Volver a desplegar**, **Descargar imágenes** y **Desmontar** también funcionan con los stacks vinculados. Homeport ejecuta `docker compose` en la carpeta del stack, con `--project-directory` apuntando a ella y un `--file` por cada uno de sus archivos compose, en orden — lo mismo que si lo ejecutaras tú allí —, y sigue pasando por su propia conexión para los hosts SSH y TLS. Así que `build:`, `env_file:`, las rutas `./relative` y el `.env` de la carpeta funcionan.
 
-Un servicio con `build:` se compila cuando aún no tiene imagen. Para volver a compilarlo después de cambiar su código, elige **Recompilar y desplegar** en el menú **⋮** del stack (`up --build`). La compilación se ejecuta en el Engine del **host**, con el contexto de compilación enviado desde este equipo. Los servicios con `build:` nunca se descargan; la propia compilación descarga sus imágenes base, con tu propio `docker login`.
+Un servicio con `build:` se compila cuando aún no tiene imagen. Para volver a compilarlo después de cambiar su código, elige **Recompilar y desplegar** en el menú **Más acciones** del stack (`up --build`). La compilación se ejecuta en el Engine del **host**, con el contexto de compilación enviado desde este equipo. Los servicios con `build:` nunca se descargan; la propia compilación descarga sus imágenes base, con tu propio `docker login`.
 
-**Guardar y volver a desplegar**, en la pestaña **Definición**, escribe los archivos que editaste y después despliega.
+**Desplegar**, en la pestaña **Definición**, escribe los archivos que editaste y después despliega; **Guardar sin desplegar**, bajo su flecha, solo los escribe.
 
 <Aside type="caution" title="Rutas relativas en un host remoto">
   Un bind mount como `./data:/data` se resuelve a la carpeta de **este** equipo, por ejemplo
@@ -150,7 +150,7 @@ A Compose nunca se le da un inicio de sesión: ningún archivo que Homeport cree
 
 5. Pon las variables en **Entorno**, una `KEY=value` por línea, como en un archivo `.env`. Compose las sustituye por `${KEY}` en el archivo. Rellena las contraseñas que una plantilla deja vacías.
 
-6. Elige **Guardar y desplegar**, o **Guardar** para desplegar más tarde.
+6. Elige **Guardar y desplegar**, o **Guardar sin desplegar**, bajo su flecha, para desplegar más tarde.
 
 </Steps>
 
@@ -207,7 +207,7 @@ services:
 DB_PASSWORD=correct-horse-battery-staple
 ```
 
-Se permiten las líneas vacías, los `# comments` y los prefijos `export`. Los valores pueden ir entre comillas; entre comillas dobles, `\n` es un salto de línea.
+Se permiten las líneas vacías, los `# comments` y los prefijos `export`. Los valores pueden ir entre comillas; entre comillas dobles, `\n` es un salto de línea. Los valores aparecen como puntos, con las claves y los comentarios legibles, hasta que eliges **Mostrar valores**; un entorno vacío está listo para escribir.
 
 <Aside>
   Guardar un entorno necesita un [llavero del
@@ -255,11 +255,11 @@ Los perfiles del stack son los únicos que cuentan. Una variable `COMPOSE_PROFIL
   despliegue a medias. Vuelve a desplegar para terminarlo.
 </Aside>
 
-Para cambiar un stack gestionado, ábrelo, edita su **Definición** y elige **Guardar y volver a desplegar**. Compose solo recrea los servicios que cambiaron y elimina los servicios que hayas borrado del archivo.
+Para cambiar un stack gestionado, ábrelo, edita su **Definición** y elige **Desplegar**: guarda la definición, muestra lo que cambia y después despliega. Compose solo vuelve a crear los servicios que cambiaron y elimina los que borraste del archivo. **Cambios sin guardar**, junto al botón, indica cuándo hay algo que guardar; **Guardar sin desplegar**, bajo su flecha, guarda el cambio para el siguiente despliegue. Un stack que nunca se desplegó se abre en su pestaña **Definición**, con **Desplegar** a mano.
 
 ### Revisar los cambios antes de volver a desplegar
 
-Antes de que se ejecute un nuevo despliegue — **Volver a desplegar**, **Recompilar y desplegar** o **Guardar y volver a desplegar** para un stack en ejecución —, Homeport muestra **Revisar los cambios**: la definición desplegada la última vez (la entrada correcta más reciente de su [historial](#historial-de-despliegues-y-reversión)) frente a la que se va a desplegar.
+Antes de que se ejecute un nuevo despliegue — **Volver a desplegar**, **Recompilar y desplegar** o **Desplegar** para un stack en ejecución —, Homeport muestra **Revisar los cambios**: la definición desplegada la última vez (la entrada correcta más reciente de su [historial](#historial-de-despliegues-y-reversión)) frente a la que se va a desplegar.
 
 - Cada archivo compose muestra sus líneas modificadas en línea: las líneas eliminadas encima de las que las sustituyen. Un archivo sin cambios aparece plegado; selecciónalo para abrirlo. Se nombran los archivos añadidos, eliminados o combinados en otro orden.
 - Las variables de entorno solo muestran sus nombres, marcados como **Añadido**, **Eliminado** o **Modificado** — una contraseña cambiada aparece como **Modificado** sin mostrar ninguno de los dos valores —, y cuántas otras no cambian.
@@ -271,7 +271,7 @@ La comparación es solo entre definiciones, no con la configuración en vivo de 
 
 ## Historial de despliegues y reversión
 
-Cada despliegue de un stack gestionado, vinculado o sincronizado desde Homeport — **Desplegar**, **Volver a desplegar**, **Recompilar y desplegar**, **Guardar y volver a desplegar**, una [sincronización](/docs/guides/synced-stacks/#sincronizar) — se registra con los archivos compose, el entorno y los perfiles que usó, cuándo se ejecutó y cómo terminó; el de un stack sincronizado muestra también su commit y si lo inició el despliegue automático. La pestaña **Historial** de la página del stack lista los 20 últimos, primero los más recientes: **Correcto**, **Con errores** con su código de salida, o **Sin terminar** para una ejecución cuya ventana se cerró antes de que acabara. **Desplegado ahora** marca el más reciente que fue correcto.
+Cada despliegue de un stack gestionado, vinculado o sincronizado desde Homeport — **Desplegar**, **Volver a desplegar**, **Recompilar y desplegar**, una [sincronización](/docs/guides/synced-stacks/#sincronizar) — se registra con los archivos compose, el entorno y los perfiles que usó, cuándo se ejecutó y cómo terminó; el de un stack sincronizado muestra también su commit y si lo inició el despliegue automático. La pestaña **Historial** de la página del stack lista los 20 últimos, primero los más recientes: **Correcto**, **Con errores** con su código de salida, o **Sin terminar** para una ejecución cuya ventana se cerró antes de que acabara. **Desplegado ahora** marca el más reciente que fue correcto.
 
 Selecciona un despliegue para ver sus archivos compose, de solo lectura. Su entorno se guarda cifrado como el del propio stack, y la pestaña solo muestra los nombres de sus variables. Sin llavero, la lista sigue funcionando; un despliegue con entorno simplemente indica que no se puede abrir.
 
@@ -317,11 +317,13 @@ Un stack externo también muestra **Actualización disponible**, pero su **Actua
 | **Reiniciar**                          | Cualquiera                          | Reinicia todos los contenedores.                                                                                                                   |
 | **Descargar imágenes**                 | Gestionado, vinculado, sincronizado | Descarga la imagen de cada servicio con los inicios de sesión guardados, para obtener las más recientes antes de volver a desplegar.               |
 | **Desmontar**                          | Gestionado, vinculado, sincronizado | `docker compose down`: elimina los contenedores y las redes, y conserva los volúmenes y la definición.                                             |
-| **Desmontar con volúmenes**            | Gestionado, vinculado, sincronizado | También borra los volúmenes del stack **y sus datos**.                                                                                             |
+| **Desmontar con volúmenes**            | Gestionado, vinculado, sincronizado | También borra los volúmenes del stack **y sus datos**. Primero pide que escribas el nombre del stack.                                              |
 | **Eliminar contenedores**              | Externo                             | Elimina sus contenedores y sus redes. Los volúmenes se conservan.                                                                                  |
 | **Adoptar**                            | Externo                             | Da a Homeport el archivo compose y lo convierte en gestionado.                                                                                     |
 
-**Olvidar definición**, en la pestaña **Definición** de un stack gestionado, borra de Homeport el archivo compose y el entorno, pero deja los contenedores en ejecución; el stack pasa a ser externo. **Olvidar**, en la pestaña **Definición** de un stack vinculado, descarta la nota de Homeport sobre la carpeta; la carpeta, sus archivos y los contenedores no se tocan.
+En la página Stacks, cada fila muestra dos iconos: la acción que pone el stack al día (**Actualizar**, **Sincronizar**, **Desplegar**, **Volver a desplegar** o **Adoptar**) y **Detener** o **Iniciar**. Su menú tiene el resto. La página de un stack tiene la misma pareja en su encabezado y el resto en su menú **Más acciones**; **Reiniciar** y desmontar solo aparecen en un stack que se ejecuta.
+
+Olvidar queda aparte en **Olvidar este stack**, al pie de la pestaña **Definición**. **Olvidar definición**, en un stack gestionado, borra de Homeport el archivo compose y el entorno, pero deja los contenedores en ejecución; el stack pasa a ser externo. **Olvidar**, en un stack vinculado, descarta la nota de Homeport sobre la carpeta; la carpeta, sus archivos y los contenedores no se tocan.
 
 ## Adoptar un stack externo
 
@@ -333,7 +335,7 @@ Un stack externo también muestra **Actualización disponible**, pero su **Actua
 
 3. Añade sus variables de entorno, si usaba alguna.
 
-4. Elige **Guardar** para tomarlo a tu cargo sin tocar los contenedores en ejecución, o **Guardar y desplegar** para volver a desplegarlo ahora.
+4. Elige **Guardar sin desplegar**, bajo la flecha de **Guardar y desplegar**, para hacerte cargo de él sin tocar los contenedores en ejecución, o **Guardar y desplegar** para volver a desplegarlo ahora.
 
 </Steps>
 

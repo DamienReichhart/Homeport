@@ -67,7 +67,7 @@ A project folder that isn't running on the Host yet can be linked from Homeport:
 
 4. Check the **Name**. It comes from the files' top-level `name:`, or from the folder's name the way Compose writes it (`My App` becomes `myapp`).
 
-5. Choose **Save and deploy** — or **Save** to deploy later.
+5. Choose **Save and deploy** — or **Save without deploying**, under its arrow, to deploy later.
 
 </Steps>
 
@@ -86,7 +86,7 @@ The folder is shown under the Stack's name in the list and on its page.
 
 ### Editing a Linked Stack
 
-A Linked Stack's **Definition** tab shows each of its compose files in a tab of its own, read from the folder, with the folder's path above them. Edit them and choose **Save**: Homeport writes each changed file back where it is, so your own editor and version control see the change. The file is replaced in one step, keeping its permissions, so nothing ever reads it half written.
+A Linked Stack's **Definition** tab shows each of its compose files in a tab of its own, read from the folder, with the folder's path above them. Edit them and choose **Save without deploying**: Homeport writes each changed file back where it is, so your own editor and version control see the change. The file is replaced in one step, keeping its permissions, so nothing ever reads it half written.
 
 The checks under the editor follow the Linked rules: `build:`, `env_file:` and relative paths are fine, since the folder is there. There's no environment editor: Compose reads the folder's `.env` when it runs, and Homeport neither shows nor changes it.
 
@@ -102,9 +102,9 @@ If the folder is gone, or a file can't be read, the tab says which and what to d
 
 **Deploy**, **Redeploy**, **Pull images** and **Take down** work for Linked Stacks too. Homeport runs `docker compose` in the Stack's folder, with `--project-directory` set to it and one `--file` for each of its compose files, in order — the same as running it there yourself — still through its own connection for SSH and TLS Hosts. So `build:`, `env_file:`, `./relative` paths and the folder's `.env` all work.
 
-A service with `build:` is built when it has no image yet. To rebuild after changing its code, choose **Rebuild and deploy** in the Stack's **⋮** menu (`up --build`). The build runs on the **Host's** Engine, with the build context sent from this computer. Services with `build:` are never pulled; their base images are pulled by the build itself, with your own `docker login`.
+A service with `build:` is built when it has no image yet. To rebuild after changing its code, choose **Rebuild and deploy** in the Stack's **More actions** menu (`up --build`). The build runs on the **Host's** Engine, with the build context sent from this computer. Services with `build:` are never pulled; their base images are pulled by the build itself, with your own `docker login`.
 
-**Save and redeploy** in the **Definition** tab writes the files you edited, then deploys.
+**Deploy** in the **Definition** tab writes the files you edited, then deploys; **Save without deploying**, under its arrow, only writes them.
 
 <Aside type="caution" title="Relative paths on a remote Host">
   A bind mount such as `./data:/data` resolves to the folder on **this** computer, for example
@@ -150,7 +150,7 @@ Compose itself is never given a login: no file Homeport creates for the run, and
 
 5. Put variables in **Environment**, one `KEY=value` per line, like a `.env` file. Compose substitutes them for `${KEY}` in the file. Fill in the passwords a template leaves empty.
 
-6. Choose **Save and deploy** — or **Save** to deploy later.
+6. Choose **Save and deploy** — or **Save without deploying**, under its arrow, to deploy later.
 
 </Steps>
 
@@ -207,7 +207,7 @@ services:
 DB_PASSWORD=correct-horse-battery-staple
 ```
 
-Blank lines, `# comments` and `export` prefixes are allowed. Values may be quoted; in double quotes, `\n` is a new line.
+Blank lines, `# comments` and `export` prefixes are allowed. Values may be quoted; in double quotes, `\n` is a new line. Values show as dots, keys and comments stay readable, until you choose **Show values**; an empty environment is ready to type in.
 
 <Aside>
   Storing an environment needs an [OS keychain](/docs/requirements/#optional-an-os-keychain).
@@ -254,11 +254,11 @@ The Stack's profiles are the only ones that count. A `COMPOSE_PROFILES` variable
   Redeploy to finish it.
 </Aside>
 
-To change a Managed Stack, open it, edit its **Definition** and choose **Save and redeploy**. Compose recreates only the services that changed, and removes services you've deleted from the file.
+To change a Managed Stack, open it, edit its **Definition** and choose **Deploy**: it saves the definition, shows what changes, then deploys. Compose recreates only the services that changed, and removes services you've deleted from the file. **Unsaved changes** beside the button says when there is something to save; **Save without deploying**, under its arrow, keeps the change for the next deploy. A Stack that was never deployed opens on its **Definition** tab, with **Deploy** ready.
 
 ### Reviewing changes before a redeploy
 
-Before a redeploy runs — **Redeploy**, **Rebuild and deploy**, or **Save and redeploy** for a Stack that is running — Homeport shows **Review changes**: the definition deployed last time (the newest successful entry of its [history](#deploy-history-and-rolling-back)) against the one about to be.
+Before a redeploy runs — **Redeploy**, **Rebuild and deploy**, or **Deploy** for a Stack that is running — Homeport shows **Review changes**: the definition deployed last time (the newest successful entry of its [history](#deploy-history-and-rolling-back)) against the one about to be.
 
 - Each compose file shows its changed lines inline: removed lines above the lines that replace them. An unchanged file is folded; select it to open it. Files added, removed or merged in another order are named.
 - Environment variables show only their names, marked **Added**, **Removed** or **Changed** — a changed password reads **Changed** without showing either value — and how many others are unchanged.
@@ -270,7 +270,7 @@ The comparison is between definitions only, not the containers' live configurati
 
 ## Deploy history and rolling back
 
-Each deploy of a Managed, Linked or Synced Stack from Homeport — **Deploy**, **Redeploy**, **Rebuild and deploy**, **Save and redeploy**, a [sync](/docs/guides/synced-stacks/#syncing) — is recorded with the compose files, environment and profiles it used, when it ran and how it ended; a Synced Stack's also shows its commit, and whether auto-deploy started it. The **History** tab of the Stack's page lists the last 20, newest first: **Succeeded**, **Failed** with its exit code, or **Not finished** for a run whose window was closed before it ended. **Deployed now** marks the newest one that succeeded.
+Each deploy of a Managed, Linked or Synced Stack from Homeport — **Deploy**, **Redeploy**, **Rebuild and deploy**, a [sync](/docs/guides/synced-stacks/#syncing) — is recorded with the compose files, environment and profiles it used, when it ran and how it ended; a Synced Stack's also shows its commit, and whether auto-deploy started it. The **History** tab of the Stack's page lists the last 20, newest first: **Succeeded**, **Failed** with its exit code, or **Not finished** for a run whose window was closed before it ended. **Deployed now** marks the newest one that succeeded.
 
 Select a deploy to see its compose files, read-only. Its environment is stored encrypted like the Stack's own, and the tab shows only the names of its variables. Without a keychain the list still works; a deploy with an environment just says it can't be opened.
 
@@ -316,11 +316,13 @@ An External Stack shows **Update available** too, but its **Update** is disabled
 | **Restart**                | Any                     | Restarts every container.                                                                                                      |
 | **Pull images**            | Managed, Linked, Synced | Pulls every service's image with the stored logins, to fetch newer ones before redeploying.                                    |
 | **Take down**              | Managed, Linked, Synced | `docker compose down`: removes containers and networks, keeps volumes and the definition.                                      |
-| **Take down with volumes** | Managed, Linked, Synced | Also deletes the Stack's volumes **and their data**.                                                                           |
+| **Take down with volumes** | Managed, Linked, Synced | Also deletes the Stack's volumes **and their data**. Asks you to type the Stack's name first.                                  |
 | **Remove containers**      | External                | Removes its containers and networks. Volumes are kept.                                                                         |
 | **Adopt**                  | External                | Gives Homeport the compose file, making it Managed.                                                                            |
 
-**Forget definition**, in a Managed Stack's **Definition** tab, deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External. **Forget**, in a Linked Stack's **Definition** tab, drops Homeport's note of the folder; the folder, its files and the containers are left alone.
+On the Stacks page, each row shows two icons: the action that brings the Stack up to date (**Update**, **Sync**, **Deploy**, **Redeploy** or **Adopt**) and **Stop** or **Start**. Its menu holds the rest. A Stack's page has the same pair in its header and the rest in its **More actions** menu; **Restart** and taking down show only for a Stack that runs.
+
+Forgetting is set apart in **Forget this Stack**, at the foot of the **Definition** tab. A Managed Stack's **Forget definition** deletes the compose file and environment from Homeport but leaves the containers running; the Stack becomes External. A Linked Stack's **Forget** drops Homeport's note of the folder; the folder, its files and the containers are left alone.
 
 ## Adopting an External Stack
 
@@ -332,7 +334,7 @@ An External Stack shows **Update available** too, but its **Update** is disabled
 
 3. Add its environment variables, if it used any.
 
-4. Choose **Save** to take it over without touching the running containers, or **Save and deploy** to redeploy it now.
+4. Choose **Save without deploying**, under the arrow of **Save and deploy**, to take it over without touching the running containers, or **Save and deploy** to redeploy it now.
 
 </Steps>
 

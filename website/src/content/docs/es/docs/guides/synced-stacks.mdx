@@ -70,7 +70,7 @@ Quitar un repositorio borra su clave o su token y su clon en este equipo. Se rec
 
 5. Revisa el **Nombre** (sale del nombre del repositorio) y añade un **Entorno** para lo que no debe ir en git, como las contraseñas: líneas `KEY=value`, cifradas en este equipo y pasadas a Compose como variables al desplegar.
 
-6. Elige **Guardar y desplegar**, o **Guardar** para desplegar más tarde.
+6. Elige **Guardar y desplegar**, o **Guardar sin desplegar**, bajo su flecha, para desplegar más tarde.
 
 </Steps>
 
@@ -124,4 +124,6 @@ Lo que sí guarda Homeport sigue siendo editable en la misma pestaña:
 - sus **perfiles**, si el archivo compose declara alguno;
 - si **busca commits nuevos** y si **los despliega automáticamente**.
 
-**Olvidar** hace que Homeport deje de seguir el repositorio; los contenedores del stack siguen en ejecución, y pasa a ser externo.
+Sus cambios se guardan con **Sincronizar**, que después despliega, o con **Guardar sin desplegar**, bajo su flecha, para el siguiente despliegue. Los valores del entorno siguen ocultos hasta **Mostrar valores**.
+
+**Olvidar**, en **Olvidar este stack** al pie de la pestaña, hace que Homeport deje de seguir el repositorio; los contenedores del stack siguen en ejecución y pasa a ser externo.

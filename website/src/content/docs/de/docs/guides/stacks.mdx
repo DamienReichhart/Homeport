@@ -67,7 +67,7 @@ Ein Projektordner, der noch nicht auf dem Host läuft, kann aus Homeport verknü
 
 4. Prüfen Sie den **Name**. Er stammt vom `name:` auf oberster Ebene der Dateien oder vom Namen des Ordners in der Schreibweise von Compose (`My App` wird zu `myapp`).
 
-5. Wählen Sie **Speichern und bereitstellen** – oder **Speichern**, um später bereitzustellen.
+5. Wählen Sie **Speichern und bereitstellen** – oder **Speichern, ohne bereitzustellen** unter seinem Pfeil, um später bereitzustellen.
 
 </Steps>
 
@@ -86,7 +86,7 @@ Der Ordner wird in der Liste und auf der Seite des Stacks unter dessen Namen ang
 
 ### Einen verknüpften Stack bearbeiten
 
-Der Tab **Definition** eines verknüpften Stacks zeigt jede seiner Compose-Dateien in einem eigenen Tab, aus dem Ordner gelesen, mit dem Pfad des Ordners darüber. Bearbeiten Sie sie und wählen Sie **Speichern**: Homeport schreibt jede geänderte Datei dorthin zurück, wo sie liegt, sodass Ihr eigener Editor und Ihre Versionskontrolle die Änderung sehen. Die Datei wird in einem Schritt ersetzt, unter Beibehaltung ihrer Berechtigungen, sodass nichts sie je halb geschrieben liest.
+Der Tab **Definition** eines verknüpften Stacks zeigt jede seiner Compose-Dateien in einem eigenen Tab, aus dem Ordner gelesen, mit dem Pfad des Ordners darüber. Bearbeiten Sie sie und wählen Sie **Speichern, ohne bereitzustellen**: Homeport schreibt jede geänderte Datei dorthin zurück, wo sie liegt, sodass Ihr eigener Editor und Ihre Versionskontrolle die Änderung sehen. Die Datei wird in einem Schritt ersetzt, unter Beibehaltung ihrer Berechtigungen, sodass nichts sie je halb geschrieben liest.
 
 Die Prüfungen unter dem Editor folgen den Regeln für verknüpfte Stacks: `build:`, `env_file:` und relative Pfade sind in Ordnung, da der Ordner vorhanden ist. Es gibt keinen Umgebungseditor: Compose liest die `.env` des Ordners bei der Ausführung, und Homeport zeigt sie weder an noch ändert es sie.
 
@@ -102,9 +102,9 @@ Ist der Ordner verschwunden oder lässt sich eine Datei nicht lesen, sagt der Ta
 
 **Bereitstellen**, **Neu bereitstellen**, **Images pullen** und **Herunterfahren** funktionieren auch für verknüpfte Stacks. Homeport führt `docker compose` im Ordner des Stacks aus, mit `--project-directory` auf diesen gesetzt und einem `--file` für jede seiner Compose-Dateien, der Reihe nach – genauso, als würden Sie es dort selbst ausführen –, bei SSH- und TLS-Hosts weiterhin über seine eigene Verbindung. Daher funktionieren `build:`, `env_file:`, `./relative`-Pfade und die `.env` des Ordners.
 
-Ein Service mit `build:` wird gebaut, wenn er noch kein Image hat. Um nach einer Änderung seines Codes neu zu bauen, wählen Sie **Neu bauen und bereitstellen** im Menü **⋮** des Stacks (`up --build`). Der Build läuft auf der Engine des **Hosts**, wobei der Build-Kontext von diesem Computer gesendet wird. Services mit `build:` werden nie gepullt; ihre Basis-Images pullt der Build selbst, mit Ihrem eigenen `docker login`.
+Ein Service mit `build:` wird gebaut, wenn er noch kein Image hat. Um nach einer Änderung seines Codes neu zu bauen, wählen Sie **Neu bauen und bereitstellen** im Menü **Weitere Aktionen** des Stacks (`up --build`). Der Build läuft auf der Engine des **Hosts**, wobei der Build-Kontext von diesem Computer gesendet wird. Services mit `build:` werden nie gepullt; ihre Basis-Images pullt der Build selbst, mit Ihrem eigenen `docker login`.
 
-**Speichern und neu bereitstellen** im Tab **Definition** schreibt die bearbeiteten Dateien und stellt dann bereit.
+**Bereitstellen** im Tab **Definition** schreibt die bearbeiteten Dateien und stellt dann bereit; **Speichern, ohne bereitzustellen** unter seinem Pfeil schreibt sie nur.
 
 <Aside type="caution" title="Relative Pfade auf einem entfernten Host">
   Ein Bind-Mount wie `./data:/data` wird zum Ordner auf **diesem** Computer aufgelöst, zum Beispiel
@@ -151,7 +151,7 @@ Compose selbst erhält nie eine Anmeldung: Weder eine Datei, die Homeport für d
 
 5. Tragen Sie Variablen unter **Umgebung** ein, ein `KEY=value` pro Zeile, wie in einer `.env`-Datei. Compose setzt sie für `${KEY}` in der Datei ein. Füllen Sie die Passwörter aus, die eine Vorlage leer lässt.
 
-6. Wählen Sie **Speichern und bereitstellen** – oder **Speichern**, um später bereitzustellen.
+6. Wählen Sie **Speichern und bereitstellen** – oder **Speichern, ohne bereitzustellen** unter seinem Pfeil, um später bereitzustellen.
 
 </Steps>
 
@@ -208,7 +208,7 @@ services:
 DB_PASSWORD=correct-horse-battery-staple
 ```
 
-Leere Zeilen, `# comments` und `export`-Präfixe sind erlaubt. Werte dürfen in Anführungszeichen stehen; in doppelten Anführungszeichen ist `\n` ein Zeilenumbruch.
+Leere Zeilen, `# comments` und `export`-Präfixe sind erlaubt. Werte dürfen in Anführungszeichen stehen; in doppelten Anführungszeichen ist `\n` ein Zeilenumbruch. Die Werte erscheinen als Punkte, Schlüssel und Kommentare bleiben lesbar, bis Sie **Werte anzeigen** wählen; eine leere Umgebung ist zum Eintippen bereit.
 
 <Aside>
   Das Speichern einer Umgebung erfordert einen [Schlüsselbund des
@@ -256,11 +256,11 @@ Nur die Profile des Stacks zählen. Eine Variable `COMPOSE_PROFILES` in Ihrer Sh
   fertig zurücklassen kann. Stellen Sie neu bereit, um sie abzuschließen.
 </Aside>
 
-Um einen verwalteten Stack zu ändern, öffnen Sie ihn, bearbeiten Sie seine **Definition** und wählen Sie **Speichern und neu bereitstellen**. Compose erstellt nur die geänderten Services neu und entfernt Services, die Sie aus der Datei gelöscht haben.
+Um einen verwalteten Stack zu ändern, öffnen Sie ihn, bearbeiten Sie seine **Definition** und wählen Sie **Bereitstellen**: Es speichert die Definition, zeigt, was sich ändert, und stellt dann bereit. Compose erstellt nur die geänderten Services neu und entfernt Services, die Sie aus der Datei gelöscht haben. **Ungespeicherte Änderungen** neben der Schaltfläche zeigt, wann es etwas zu speichern gibt; **Speichern, ohne bereitzustellen** unter ihrem Pfeil hebt die Änderung für die nächste Bereitstellung auf. Ein Stack, der nie bereitgestellt wurde, öffnet sich auf seinem Tab **Definition**, mit **Bereitstellen** zur Hand.
 
 ### Änderungen vor einer erneuten Bereitstellung prüfen
 
-Bevor eine erneute Bereitstellung läuft – **Neu bereitstellen**, **Neu bauen und bereitstellen** oder **Speichern und neu bereitstellen** bei einem laufenden Stack –, zeigt Homeport **Änderungen an … prüfen**: die zuletzt bereitgestellte Definition (der neueste erfolgreiche Eintrag ihres [Verlaufs](#bereitstellungsverlauf-und-zurücksetzen)) gegenüber der, die bereitgestellt werden soll.
+Bevor eine erneute Bereitstellung läuft – **Neu bereitstellen**, **Neu bauen und bereitstellen** oder **Bereitstellen** bei einem laufenden Stack –, zeigt Homeport **Änderungen an … prüfen**: die zuletzt bereitgestellte Definition (der neueste erfolgreiche Eintrag ihres [Verlaufs](#bereitstellungsverlauf-und-zurücksetzen)) gegenüber der, die bereitgestellt werden soll.
 
 - Jede Compose-Datei zeigt ihre geänderten Zeilen inline: entfernte Zeilen über den Zeilen, die sie ersetzen. Eine unveränderte Datei ist eingeklappt; wählen Sie sie aus, um sie zu öffnen. Hinzugefügte, entfernte oder in anderer Reihenfolge zusammengeführte Dateien werden genannt.
 - Umgebungsvariablen zeigen nur ihre Namen, markiert als **Hinzugefügt**, **Entfernt** oder **Geändert** – ein geändertes Passwort lautet **Geändert**, ohne einen der beiden Werte zu zeigen –, und wie viele andere unverändert sind.
@@ -272,7 +272,7 @@ Verglichen werden nur Definitionen, nicht die Live-Konfiguration der Container a
 
 ## Bereitstellungsverlauf und Zurücksetzen
 
-Jede Bereitstellung eines verwalteten, verknüpften oder synchronisierten Stacks aus Homeport – **Bereitstellen**, **Neu bereitstellen**, **Neu bauen und bereitstellen**, **Speichern und neu bereitstellen**, eine [Synchronisierung](/docs/guides/synced-stacks/#synchronisieren) – wird mit den verwendeten Compose-Dateien, der Umgebung und den Profilen festgehalten, mit dem Zeitpunkt und dem Ergebnis; bei einem synchronisierten Stack zusätzlich mit seinem Commit und der Angabe, ob die automatische Bereitstellung sie gestartet hat. Der Tab **Verlauf** auf der Seite des Stacks listet die letzten 20 auf, die neuesten zuerst: **Erfolgreich**, **Fehlgeschlagen** mit seinem Exit-Code oder **Nicht abgeschlossen** für eine Ausführung, deren Fenster vor dem Ende geschlossen wurde. **Derzeit bereitgestellt** markiert die neueste erfolgreiche.
+Jede Bereitstellung eines verwalteten, verknüpften oder synchronisierten Stacks aus Homeport – **Bereitstellen**, **Neu bereitstellen**, **Neu bauen und bereitstellen**, eine [Synchronisierung](/docs/guides/synced-stacks/#synchronisieren) – wird mit den verwendeten Compose-Dateien, der Umgebung und den Profilen festgehalten, mit dem Zeitpunkt und dem Ergebnis; bei einem synchronisierten Stack zusätzlich mit seinem Commit und der Angabe, ob die automatische Bereitstellung sie gestartet hat. Der Tab **Verlauf** auf der Seite des Stacks listet die letzten 20 auf, die neuesten zuerst: **Erfolgreich**, **Fehlgeschlagen** mit seinem Exit-Code oder **Nicht abgeschlossen** für eine Ausführung, deren Fenster vor dem Ende geschlossen wurde. **Derzeit bereitgestellt** markiert die neueste erfolgreiche.
 
 Wählen Sie eine Bereitstellung aus, um ihre Compose-Dateien schreibgeschützt zu sehen. Ihre Umgebung wird wie die des Stacks selbst verschlüsselt gespeichert, und der Tab zeigt nur die Namen ihrer Variablen. Ohne Schlüsselbund funktioniert die Liste weiterhin; eine Bereitstellung mit Umgebung sagt lediglich, dass sie nicht geöffnet werden kann.
 
@@ -318,11 +318,13 @@ Auch ein externer Stack zeigt **Update verfügbar**, aber sein **Aktualisieren**
 | **Neu starten**                           | Alle                                 | Startet jeden Container neu.                                                                                                                                         |
 | **Images pullen**                         | Verwaltet, verknüpft, synchronisiert | Pullt das Image jedes Services mit den gespeicherten Anmeldungen, um vor einer erneuten Bereitstellung neuere zu holen.                                              |
 | **Herunterfahren**                        | Verwaltet, verknüpft, synchronisiert | `docker compose down`: entfernt Container und Netzwerke, behält Volumes und die Definition.                                                                          |
-| **Mit Volumes herunterfahren**            | Verwaltet, verknüpft, synchronisiert | Löscht außerdem die Volumes des Stacks **und ihre Daten**.                                                                                                           |
+| **Mit Volumes herunterfahren**            | Verwaltet, verknüpft, synchronisiert | Löscht außerdem die Volumes des Stacks **und ihre Daten**. Fragt zuerst nach dem Namen des Stacks.                                                                   |
 | **Container entfernen**                   | Extern                               | Entfernt seine Container und Netzwerke. Volumes bleiben erhalten.                                                                                                    |
 | **Übernehmen**                            | Extern                               | Gibt Homeport die Compose-Datei und macht ihn zu einem verwalteten Stack.                                                                                            |
 
-**Definition vergessen** im Tab **Definition** eines verwalteten Stacks löscht die Compose-Datei und die Umgebung aus Homeport, lässt die Container aber weiterlaufen; der Stack wird extern. **Vergessen** im Tab **Definition** eines verknüpften Stacks verwirft Homeports Notiz über den Ordner; der Ordner, seine Dateien und die Container bleiben unberührt.
+Auf der Seite „Stacks“ zeigt jede Zeile zwei Symbole: die Aktion, die den Stack auf den neuesten Stand bringt (**Aktualisieren**, **Synchronisieren**, **Bereitstellen**, **Neu bereitstellen** oder **Übernehmen**), und **Stoppen** oder **Starten**. Ihr Menü enthält den Rest. Die Seite eines Stacks hat dasselbe Paar in ihrem Kopf und den Rest im Menü **Weitere Aktionen**; **Neu starten** und das Herunterfahren erscheinen nur bei einem laufenden Stack.
+
+Das Vergessen steht abgesetzt in **Diesen Stack vergessen** am Fuß des Tabs **Definition**. **Definition vergessen** löscht bei einem verwalteten Stack die Compose-Datei und die Umgebung aus Homeport, lässt die Container aber weiterlaufen; der Stack wird extern. **Vergessen** verwirft bei einem verknüpften Stack Homeports Notiz über den Ordner; der Ordner, seine Dateien und die Container bleiben unberührt.
 
 ## Einen externen Stack übernehmen
 
@@ -334,7 +336,7 @@ Auch ein externer Stack zeigt **Update verfügbar**, aber sein **Aktualisieren**
 
 3. Fügen Sie seine Umgebungsvariablen hinzu, falls er welche verwendet hat.
 
-4. Wählen Sie **Speichern**, um ihn zu übernehmen, ohne die laufenden Container anzurühren, oder **Speichern und bereitstellen**, um ihn jetzt neu bereitzustellen.
+4. Wählen Sie **Speichern, ohne bereitzustellen** unter dem Pfeil von **Speichern und bereitstellen**, um ihn zu übernehmen, ohne die laufenden Container anzurühren, oder **Speichern und bereitstellen**, um ihn jetzt neu bereitzustellen.
 
 </Steps>
 
