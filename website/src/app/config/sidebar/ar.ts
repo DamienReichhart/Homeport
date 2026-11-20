@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': 'تطبيق YAML وتحريره',
   'docs/clusters/helm': 'إصدارات Helm',
   'docs/clusters/nomad': 'عناقيد Nomad',
-  'docs/guides/overview': 'النظرة العامة والأحداث',
+  'docs/guides/overview': 'اللوحة والنظرة العامة والأحداث',
   'docs/guides/containers': 'الحاويات',
   'docs/guides/images': 'الصور',
   'docs/guides/volumes-networks': 'وحدات التخزين والشبكات',

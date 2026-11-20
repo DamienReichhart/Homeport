@@ -335,7 +335,7 @@ Exec en una máquina virtual pasa por el `incus-agent` que hay dentro, que las p
 
 ### «Algo salió mal»
 
-Una página de Homeport se encontró con un problema inesperado y muestra esto en lugar de su contenido; la barra lateral sigue funcionando. **Volver a cargar** suele recuperar la página, y **Volver al resumen** sale de ella. Si sigue pasando, copia el informe de **Detalles** en [una issue](https://github.com/DamienReichhart/homeport/issues/new/choose), junto con el [archivo de diagnóstico](#exportar-el-diagnóstico-para-un-informe-de-error).
+Una página de Homeport se encontró con un problema inesperado y muestra esto en lugar de su contenido; la barra lateral sigue funcionando. **Volver a cargar** suele recuperar la página, y **Volver al Tablero** sale de ella. Si sigue pasando, copia el informe de **Detalles** en [una issue](https://github.com/DamienReichhart/homeport/issues/new/choose), junto con el [archivo de diagnóstico](#exportar-el-diagnóstico-para-un-informe-de-error).
 
 ### «… no está conectado»
 

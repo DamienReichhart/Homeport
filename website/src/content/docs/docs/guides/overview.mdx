@@ -1,42 +1,84 @@
 ---
-title: Overview and events
-description: See every Host and Cluster at once, every container on one board, check disk usage, clean up, and follow the Engine's live events.
+title: Board, Overview and events
+description: See what needs you on every Host and Cluster, every container in one table, a Host's or Cluster's own page with its disk usage and clean-up, and the Engine's live events.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
+## Board
+
+The **Board** is Homeport's home page. It opens when Homeport starts, and **Board**, at the top of the sidebar, brings you back to it. It answers "is anything wrong, anywhere?" first, then lists every container of every Host.
+
+<DocScreenshot
+  name="board"
+  alt="The Board: a tile for each Host and Cluster, Needs you, then the containers of every Host with a Host column, filters, and live CPU and memory."
+/>
+
+### Tiles
+
+The Board starts with a tile for each Host, then each Swarm, then each Cluster:
+
+- A connected Host's tile shows its name, connection type and address, its running and total containers, and the CPU and memory its containers use, live. CPU is a percentage of one CPU: `250%` on an 8-CPU Host means two and a half CPUs are busy. A containerd Host's tile counts its containers and namespaces instead, and an Incus Host's its Instances and projects.
+- A connected [Cluster](/docs/clusters/)'s tile shows how many of its Nodes are ready and how many of its Pods run (in the namespace its pages show). Homeport counts them on its side and asks again every 30 seconds while the Board is open. A count your credentials aren't allowed to read says **not allowed** instead.
+- A Host or a Cluster that isn't connected shows its status.
+
+Select a Host's or a Cluster's tile to select it and open its [Overview](#overview); a Swarm's opens the [Swarm](/docs/guides/swarm/).
+
+### Needs you
+
+**Needs you** lists what asks for your attention, on every Host and Cluster at once, the red ones first. Each comes with the one action that answers it:
+
+| What                                                                               | Action                                     |
+| ---------------------------------------------------------------------------------- | ------------------------------------------ |
+| A Host or a Cluster that can't be reached                                          | **Reconnect**, or **Details** for its page |
+| A container that is unhealthy, dead, keeps restarting or exited with an error code | **Logs**                                   |
+| A Kubernetes workload that isn't ready, in red when none of its Pods is            | **Open**                                   |
+| A Stack whose containers run images with a newer version published                 | **Open**                                   |
+
+Healthy things never appear in it, and when nothing needs you, it says so. A long list shows its first items; **Show all N** lists the rest. Newer images are the ones the [Containers page checks for](/docs/guides/containers/#newer-images).
+
+### Containers
+
+Under **Containers**, the Board lists the containers of every connected Host in one table: what runs where, and what's down, without switching Host.
+
+- **Columns** — Host, Name, Image, Status (with its health), Stack, Ports, CPU and Memory. Select a column's name to sort by it, again to reverse. CPU and memory update live.
+- **Filters** — the Hosts to show (all by default), the state (**Running**, **Stopped** or **Unhealthy**), one Stack, and a search that matches names, short IDs, images, Stacks and Host names. <kbd>/</kbd> jumps to the search. **Clear filters** shows everything again. The filters stay as they were when you open a container and come back.
+- **Actions** — each row has **Restart** and **Stop** or **Start**, and the same menu as on the Containers page, acting on that row's Host. Tick several rows, on one Host or several, to start, stop, restart or remove them together; removing asks first and lists the containers Host by Host.
+- **Opening a container** — select a row: Homeport switches to its Host and opens the container. **Back** returns to the Board.
+
+To find one container among every Host's without opening the Board, [search from the command palette](/docs/guides/keyboard/#searching-every-host).
+
+A Host that isn't connected — unreachable, disabled, waiting for you — gets one line above the table, such as _nas (Unreachable) isn't shown._, with a link to its page; the other Hosts are listed as usual. Past a few hundred containers, only the rows in view are drawn, so the Board stays quick.
+
 ## Overview
 
-The **Overview** is the only page that shows every Host and [Cluster](/docs/clusters/) together. It opens when Homeport starts. **Add host** and **Add cluster** at the top lead to the pages that add them.
+The **Overview** is the selected Host's or Cluster's own page, the first of its pages in the sidebar. Its header shows its name, status, connection type and address, with a link to its Swarm for a Host that belongs to one, and **Host settings** or **Cluster settings** opens its settings page. To see every Host and Cluster at once, use the [Board](#board).
 
 <DocScreenshot
   name="overview"
-  alt="The Overview page with host cards, the Engine card, disk usage and recent events."
+  alt="A Host's Overview: its name, status and address, its containers, CPU, memory and images at a glance, then the Engine, disk usage and recent events."
 />
 
-### Host cards
+### A Host's Overview
 
-Each Host has a card with its name, address, type and status. For a connected Host it also shows:
+For a connected Docker Host, the Overview shows:
 
-- running and total containers, and the number of images;
-- live CPU use of its containers, as a percentage of one CPU — `250%` on an 8-CPU Host means two and a half CPUs are busy;
-- memory used by its containers, out of the Host's total.
+- **At a glance** — running and total containers, the CPU and memory its containers use, and the number of images. Each opens its page.
+- **Engine** — name, version, operating system, kernel, architecture, CPUs and memory, storage driver and root directory.
+- **Disk usage** — how much space images, containers, volumes and the build cache take, how much is in use, and how much could be reclaimed. Docker Engines older than version 29 report less: image sizes are then estimated, volume and build cache sizes show as **—**, and the card says so.
+- **Recent events** — the last few things the Engine reported. **All events** opens the Events page.
 
-Select a card to switch to that Host. If it's connected, Homeport opens its **Containers**. **Its containers on the board** opens the [Board](#board) showing that Host only.
+A containerd Host's Overview shows its version and platform and what each namespace holds; an Incus Host's, its version and system and what each project holds.
 
-### Cluster cards
+### A Cluster's Overview
 
-After the Host cards, each Cluster has a card with its name, API server, status and Kubernetes version, and, once connected, how many of its Nodes are ready and how many of its Pods run (in the namespace its pages show). Homeport counts them on its side and asks again every 30 seconds while the Overview is open. A count your credentials aren't allowed to read says **not allowed** instead. Select a card to switch to that Cluster.
-
-### The selected Cluster
-
-When a Cluster is selected, the section below the cards shows it instead of a Host:
+For a Kubernetes Cluster, the Overview shows:
 
 <DocScreenshot
   name="cluster-overview"
-  alt="The Overview with three Host cards, two Cluster cards, and the selected EKS Cluster's summary: version, Nodes 4 of 5 ready, Pods by phase, workloads not ready and recent warnings."
-  caption="The Overview with eks-prod selected: one Node isn't ready, and api and search are short of Pods."
+  alt="The Overview of the eks-prod Cluster: version, Nodes 4 of 5 ready, Pods by phase, workloads not ready and recent warnings."
+  caption="The Overview of eks-prod: one Node isn't ready, and api and search are short of Pods."
 />
 
 - **Cluster** — its version, platform, API server and the namespace its pages show.
@@ -45,19 +87,11 @@ When a Cluster is selected, the section below the cards shows it instead of a Ho
 - **Workloads not ready** — Deployments, StatefulSets and DaemonSets with fewer Pods ready than they want, linked to their pages.
 - **Recent warnings** — the last Warning events, each linked to its object. **All events** opens the Cluster's Events.
 
-A part your credentials may not read says so, and the others still show.
-
-### The selected Host
-
-Below the cards, a section for the selected Host shows:
-
-- **Engine** — name, version, operating system, kernel, architecture, CPUs and memory, storage driver and root directory.
-- **Disk usage** — how much space images, containers, volumes and the build cache take, how much is in use, and how much could be reclaimed. Docker Engines older than version 29 report less: image sizes are then estimated, volume and build cache sizes show as **—**, and the card says so.
-- **Recent events** — the last few things the Engine reported. **All events** opens the Events page.
+A part your credentials may not read says so, and the others still show. A [Nomad Cluster](/docs/clusters/nomad/)'s Overview shows its version, region and address.
 
 ### Cleaning up
 
-**Clean up…** in the Disk usage card removes what nothing uses, on the selected Host only. Pick what to remove:
+**Clean up…** in a Host's Disk usage card removes what nothing uses, on that Host only. Pick what to remove:
 
 | Option                 | Default | Removes                                                    |
 | ---------------------- | :-----: | ---------------------------------------------------------- |
@@ -74,24 +108,6 @@ Containers go first, so the images, networks and volumes they held count as unus
   **Unused volumes** deletes data, named volumes included, and can't be undone. When it's ticked,
   the button reads **Delete, including volume data** as a last reminder.
 </Aside>
-
-## Board
-
-The **Board**, second in the sidebar, lists the containers of every connected Host in one table: what runs where, and what's down, without switching Host.
-
-<DocScreenshot
-  name="board"
-  alt="The Board, listing the containers of three Hosts with a Host column, filters, and live CPU and memory."
-/>
-
-- **Columns** — Host, Name, Image, Status (with its health), Stack, Ports, CPU, Memory and Created. Select a column's name to sort by it, again to reverse. CPU and memory update live.
-- **Filters** — the Hosts to show (all by default), the state (**Running**, **Stopped** or **Unhealthy**), one Stack, and a search that matches names, short IDs, images, Stacks and Host names. <kbd>/</kbd> jumps to the search. **Clear filters** shows everything again. The filters stay as they were when you open a container and come back.
-- **Actions** — each row has the same start/stop button and menu as on the Containers page, acting on that row's Host. Tick several rows, on one Host or several, to start, stop, restart or remove them together; removing asks first and lists the containers Host by Host.
-- **Opening a container** — select a row: Homeport switches to its Host and opens the container. **Back** returns to the Board.
-
-To find one container among every Host's without opening the Board, [search from the command palette](/docs/guides/keyboard/#searching-every-host).
-
-A Host that isn't connected — unreachable, disabled, waiting for you — gets one line above the table, such as _nas (Unreachable) isn't shown._, with a link to its page; the other Hosts are listed as usual. Past a few hundred containers, only the rows in view are drawn, so the Board stays quick.
 
 ## System tray
 

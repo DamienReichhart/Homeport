@@ -35,7 +35,7 @@ Homeport loads the lists only once you've typed two characters, and keeps them f
 | Keys                                       | Does                                                                              |
 | ------------------------------------------ | --------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Show the keyboard shortcuts                                                       |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Open the sidebar's pages in order: Overview, Board, Containers…                   |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Open the sidebar's pages in order: Board, Overview, Containers…                   |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Open Settings                                                                     |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Select the previous or next Host, in the order the Hosts page lists them          |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Refresh the selected Host's lists: containers, images, volumes, networks, Stacks… |

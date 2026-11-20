@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': 'YAML 적용과 편집',
   'docs/clusters/helm': 'Helm 릴리스',
   'docs/clusters/nomad': 'Nomad 클러스터',
-  'docs/guides/overview': '개요와 이벤트',
+  'docs/guides/overview': '보드, 개요, 이벤트',
   'docs/guides/containers': '컨테이너',
   'docs/guides/images': '이미지',
   'docs/guides/volumes-networks': '볼륨과 네트워크',

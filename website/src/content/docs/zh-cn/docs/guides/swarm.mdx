@@ -14,7 +14,7 @@ import { DocScreenshot } from '@/features/docs';
 将 Swarm 的一个管理节点添加为主机，方式与添加其他主机相同（请参阅[主机和连接](/docs/hosts/)）。一旦连接，Swarm 就会出现在：
 
 - 侧边栏中的 **Swarm** 下，
-- **概览**中，作为单独的一张卡片，
+- **看板**中，作为单独的一个磁贴，
 - 它的每个主机上，显示为该 Swarm 的**管理节点**或**工作节点**。
 
 Docker 给每个 Swarm 起的名称都相同，因此 Homeport 以其首个管理节点主机来称呼它，即“_主机名_ **的 Swarm**”，并附上其 swarm ID 的开头部分。添加同一 Swarm 的第二个管理节点不会让它显示两次：Swarm 是按 swarm ID 区分的。只有当某个 Swarm 的一个管理节点也是主机时，工作节点主机才会显示它所属的 Swarm。

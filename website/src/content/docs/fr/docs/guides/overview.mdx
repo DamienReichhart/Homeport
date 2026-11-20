@@ -1,42 +1,84 @@
 ---
-title: Vue d’ensemble et événements
-description: Voir tous les hôtes et clusters d’un coup, tous les conteneurs sur un seul tableau, vérifier l’utilisation du disque, nettoyer et suivre en direct les événements du moteur.
+title: Tableau, Vue d’ensemble et événements
+description: Voir ce qui est à traiter sur tous les hôtes et clusters, tous les conteneurs dans une seule table, la page propre à un hôte ou à un cluster avec son utilisation du disque et son nettoyage, et suivre en direct les événements du moteur.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
+## Tableau
+
+Le **Tableau** est la page d’accueil de Homeport. Il s’ouvre au démarrage de Homeport, et **Tableau**, en haut de la barre latérale, y ramène. Il répond d’abord à la question « quelque chose ne va-t-il pas, où que ce soit ? », puis liste tous les conteneurs de tous les hôtes.
+
+<DocScreenshot
+  name="board"
+  alt="Le Tableau : une vignette pour chaque hôte et chaque cluster, À traiter, puis les conteneurs de tous les hôtes avec une colonne Hôte, des filtres, et le CPU et la mémoire en direct."
+/>
+
+### Vignettes
+
+Le Tableau commence par une vignette pour chaque hôte, puis chaque Swarm, puis chaque cluster :
+
+- La vignette d’un hôte connecté indique son nom, son type de connexion et son adresse, ses conteneurs en cours d’exécution et leur total, et le CPU et la mémoire qu’utilisent ses conteneurs, en direct. Le CPU est un pourcentage d’un CPU : `250%` sur un hôte à 8 CPU signifie que deux CPU et demi sont occupés. La vignette d’un hôte containerd compte plutôt ses conteneurs et ses espaces de noms, celle d’un hôte Incus ses instances et ses projets.
+- La vignette d’un [cluster](/docs/clusters/) connecté indique le nombre de ses Nodes prêts et de ses Pods en cours d’exécution (dans le namespace que montrent ses pages). Homeport les compte de son côté et redemande toutes les 30 secondes tant que le Tableau est ouvert. Un nombre que vos identifiants ne sont pas autorisés à lire indique **Non autorisé.** à la place.
+- Un hôte ou un cluster qui n’est pas connecté affiche son état.
+
+Sélectionnez la vignette d’un hôte ou d’un cluster pour le sélectionner et ouvrir sa [Vue d’ensemble](#vue-densemble) ; celle d’un Swarm ouvre le [Swarm](/docs/guides/swarm/).
+
+### À traiter
+
+**À traiter** liste ce qui demande votre attention, sur tous les hôtes et clusters à la fois, le rouge en premier. Chaque élément s’accompagne de l’action qui y répond :
+
+| Quoi                                                                                                      | Action                                       |
+| --------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Un hôte ou un cluster injoignable                                                                         | **Reconnecter**, ou **Détails** pour sa page |
+| Un conteneur en mauvaise santé, mort, qui redémarre sans cesse ou qui s’est terminé avec un code d’erreur | **Journaux**                                 |
+| Une charge de travail Kubernetes qui n’est pas prête, en rouge quand aucun de ses Pods ne l’est           | **Ouvrir**                                   |
+| Une stack dont les conteneurs exécutent des images dont une version plus récente est publiée              | **Ouvrir**                                   |
+
+Ce qui est en bonne santé n’y figure jamais, et quand rien n’est à traiter, la liste le dit. Une longue liste montre ses premiers éléments ; **Tout afficher (N)** liste les autres. Les images plus récentes sont celles que [vérifie la page Conteneurs](/docs/guides/containers/#images-plus-récentes).
+
+### Conteneurs
+
+Sous **Conteneurs**, le Tableau liste les conteneurs de tous les hôtes connectés dans une seule table : ce qui tourne où, et ce qui est arrêté, sans changer d’hôte.
+
+- **Colonnes** — Hôte, Nom, Image, État (avec sa santé), Stack, Ports, CPU et Mémoire. Sélectionnez le nom d’une colonne pour trier selon elle, et à nouveau pour inverser l’ordre. Le CPU et la mémoire se mettent à jour en direct.
+- **Filtres** — les hôtes à montrer (tous par défaut), l’état (**En cours d’exécution**, **Arrêté** ou **En mauvaise santé**), une stack, et une recherche qui porte sur les noms, les ID courts, les images, les stacks et les noms d’hôtes. <kbd>/</kbd> mène à la recherche. **Effacer les filtres** affiche à nouveau tout. Les filtres restent tels quels quand vous ouvrez un conteneur puis revenez.
+- **Actions** — chaque ligne a **Redémarrer** et **Arrêter** ou **Démarrer**, et le même menu que sur la page Conteneurs, qui agissent sur l’hôte de cette ligne. Cochez plusieurs lignes, sur un ou plusieurs hôtes, pour les démarrer, les arrêter, les redémarrer ou les supprimer ensemble ; la suppression demande d’abord confirmation et liste les conteneurs hôte par hôte.
+- **Ouvrir un conteneur** — sélectionnez une ligne : Homeport passe sur son hôte et ouvre le conteneur. **Retour** ramène au Tableau.
+
+Pour trouver un conteneur parmi ceux de tous les hôtes sans ouvrir le Tableau, [cherchez depuis la palette de commandes](/docs/guides/keyboard/#rechercher-sur-tous-les-hôtes).
+
+Un hôte qui n’est pas connecté — injoignable, désactivé, qui attend une action de votre part — a droit à une ligne au-dessus de la table, comme _nas (Injoignable) n’est pas affiché._, avec un lien vers sa page ; les autres hôtes sont listés comme d’habitude. Au-delà de quelques centaines de conteneurs, seules les lignes visibles sont dessinées, pour que le Tableau reste rapide.
+
 ## Vue d’ensemble
 
-La **Vue d’ensemble** est la seule page qui montre ensemble tous les hôtes et tous les [clusters](/docs/clusters/). Elle s’ouvre au démarrage de Homeport. **Ajouter un hôte** et **Ajouter un cluster**, en haut, mènent aux pages qui permettent de les ajouter.
+La **Vue d’ensemble** est la page propre à l’hôte ou au cluster sélectionné, la première de ses pages dans la barre latérale. Son en-tête indique son nom, son état, son type de connexion et son adresse, avec un lien vers son Swarm pour un hôte qui en fait partie, et **Réglages de l’hôte** ou **Réglages du cluster** ouvre sa page de réglages. Pour voir tous les hôtes et clusters à la fois, utilisez le [Tableau](#tableau).
 
 <DocScreenshot
   name="overview"
-  alt="La page Vue d’ensemble avec les cartes des hôtes, la carte du moteur, l’utilisation du disque et les événements récents."
+  alt="La Vue d’ensemble d’un hôte : son nom, son état et son adresse, ses conteneurs, son CPU, sa mémoire et ses images en un coup d’œil, puis le moteur, l’utilisation du disque et les événements récents."
 />
 
-### Cartes des hôtes
+### La Vue d’ensemble d’un hôte
 
-Chaque hôte a une carte avec son nom, son adresse, son type et son état. Pour un hôte connecté, elle indique aussi :
+Pour un hôte Docker connecté, la Vue d’ensemble montre :
 
-- les conteneurs en cours d’exécution et le total, ainsi que le nombre d’images ;
-- l’utilisation du CPU par ses conteneurs, en direct, en pourcentage d’un CPU — `250%` sur un hôte à 8 CPU signifie que deux CPU et demi sont occupés ;
-- la mémoire utilisée par ses conteneurs, sur le total de l’hôte.
+- **En un coup d’œil** — les conteneurs en cours d’exécution et leur total, le CPU et la mémoire qu’utilisent ses conteneurs, et le nombre d’images. Chacun ouvre sa page.
+- **Moteur** — nom, version, système d’exploitation, noyau, architecture, CPU et mémoire, pilote de stockage et répertoire racine.
+- **Utilisation du disque** — la place qu’occupent les images, les conteneurs, les volumes et le cache de build, la part utilisée et ce qui pourrait être récupéré. Les Docker Engines antérieurs à la version 29 en indiquent moins : la taille des images est alors estimée, celle des volumes et du cache de build s’affiche **—**, et la carte le signale.
+- **Événements récents** — les dernières choses signalées par le moteur. **Tous les événements** ouvre la page Événements.
 
-Sélectionnez une carte pour passer sur cet hôte. S’il est connecté, Homeport ouvre ses **Conteneurs**. **Ses conteneurs sur le tableau** ouvre le [Tableau](#tableau) en ne montrant que cet hôte.
+La Vue d’ensemble d’un hôte containerd montre sa version, sa plateforme et ce que contient chaque espace de noms ; celle d’un hôte Incus, sa version, son système et ce que contient chaque projet.
 
-### Cartes des clusters
+### La Vue d’ensemble d’un cluster
 
-Après les cartes des hôtes, chaque cluster a une carte avec son nom, son serveur d’API, son état et sa version de Kubernetes, et, une fois connecté, le nombre de ses Nodes prêts et de ses Pods en cours d’exécution (dans le namespace que montrent ses pages). Homeport les compte de son côté et redemande toutes les 30 secondes tant que la Vue d’ensemble est ouverte. Un nombre que vos identifiants ne sont pas autorisés à lire indique **Non autorisé.** à la place. Sélectionnez une carte pour passer sur ce cluster.
-
-### Le cluster sélectionné
-
-Quand un cluster est sélectionné, la section sous les cartes le montre à la place d’un hôte :
+Pour un cluster Kubernetes, la Vue d’ensemble montre :
 
 <DocScreenshot
   name="cluster-overview"
-  alt="La Vue d’ensemble avec trois cartes d’hôtes, deux cartes de clusters et la synthèse du cluster EKS sélectionné : version, 4 Nodes prêts sur 5, Pods par phase, charges de travail non prêtes et avertissements récents."
-  caption="La Vue d’ensemble avec eks-prod sélectionné : un Node n’est pas prêt, et il manque des Pods à api et à search."
+  alt="La Vue d’ensemble du cluster eks-prod : version, 4 Nodes prêts sur 5, Pods par phase, charges de travail non prêtes et avertissements récents."
+  caption="La Vue d’ensemble d’eks-prod : un Node n’est pas prêt, et il manque des Pods à api et à search."
 />
 
 - **Cluster** — sa version, sa plateforme, son serveur d’API et le namespace que montrent ses pages.
@@ -45,19 +87,11 @@ Quand un cluster est sélectionné, la section sous les cartes le montre à la p
 - **Charges de travail non prêtes** — les Deployments, StatefulSets et DaemonSets qui ont moins de Pods prêts que voulu, avec un lien vers leurs pages.
 - **Avertissements récents** — les derniers événements Warning, chacun avec un lien vers son objet. **Tous les événements** ouvre les événements du cluster.
 
-Une partie que vos identifiants ne peuvent pas lire le signale, et les autres s’affichent quand même.
-
-### L’hôte sélectionné
-
-Sous les cartes, une section consacrée à l’hôte sélectionné montre :
-
-- **Moteur** — nom, version, système d’exploitation, noyau, architecture, CPU et mémoire, pilote de stockage et répertoire racine.
-- **Utilisation du disque** — la place qu’occupent les images, les conteneurs, les volumes et le cache de build, la part utilisée et ce qui pourrait être récupéré. Les Docker Engines antérieurs à la version 29 en indiquent moins : la taille des images est alors estimée, celle des volumes et du cache de build s’affiche **—**, et la carte le signale.
-- **Événements récents** — les dernières choses signalées par le moteur. **Tous les événements** ouvre la page Événements.
+Une partie que vos identifiants ne peuvent pas lire le signale, et les autres s’affichent quand même. La Vue d’ensemble d’un [cluster Nomad](/docs/clusters/nomad/) montre sa version, sa région et son adresse.
 
 ### Nettoyage
 
-**Nettoyer…**, dans la carte Utilisation du disque, supprime ce que rien n’utilise, sur l’hôte sélectionné uniquement. Choisissez ce qu’il faut supprimer :
+**Nettoyer…**, dans la carte Utilisation du disque d’un hôte, supprime ce que rien n’utilise, sur cet hôte uniquement. Choisissez ce qu’il faut supprimer :
 
 | Option                            | Par défaut | Supprime                                                                        |
 | --------------------------------- | :--------: | ------------------------------------------------------------------------------- |
@@ -75,24 +109,6 @@ Les conteneurs partent en premier, si bien que les images, réseaux et volumes q
   Quand cette option est cochée, le bouton indique **Supprimer, données des volumes comprises**,
   comme un dernier rappel.
 </Aside>
-
-## Tableau
-
-Le **Tableau**, deuxième dans la barre latérale, liste les conteneurs de tous les hôtes connectés dans une seule table : ce qui tourne où, et ce qui est arrêté, sans changer d’hôte.
-
-<DocScreenshot
-  name="board"
-  alt="Le Tableau, qui liste les conteneurs de trois hôtes avec une colonne Hôte, des filtres, et le CPU et la mémoire en direct."
-/>
-
-- **Colonnes** — Hôte, Nom, Image, État (avec sa santé), Stack, Ports, CPU, Mémoire et Créé. Sélectionnez le nom d’une colonne pour trier selon elle, et à nouveau pour inverser l’ordre. Le CPU et la mémoire se mettent à jour en direct.
-- **Filtres** — les hôtes à montrer (tous par défaut), l’état (**En cours d’exécution**, **Arrêté** ou **En mauvaise santé**), une stack, et une recherche qui porte sur les noms, les ID courts, les images, les stacks et les noms d’hôtes. <kbd>/</kbd> mène à la recherche. **Effacer les filtres** affiche à nouveau tout. Les filtres restent tels quels quand vous ouvrez un conteneur puis revenez.
-- **Actions** — chaque ligne a le même bouton démarrer/arrêter et le même menu que sur la page Conteneurs, qui agissent sur l’hôte de cette ligne. Cochez plusieurs lignes, sur un ou plusieurs hôtes, pour les démarrer, les arrêter, les redémarrer ou les supprimer ensemble ; la suppression demande d’abord confirmation et liste les conteneurs hôte par hôte.
-- **Ouvrir un conteneur** — sélectionnez une ligne : Homeport passe sur son hôte et ouvre le conteneur. **Retour** ramène au Tableau.
-
-Pour trouver un conteneur parmi ceux de tous les hôtes sans ouvrir le Tableau, [cherchez depuis la palette de commandes](/docs/guides/keyboard/#rechercher-sur-tous-les-hôtes).
-
-Un hôte qui n’est pas connecté — injoignable, désactivé, qui attend une action de votre part — a droit à une ligne au-dessus de la table, comme _nas (Injoignable) n’est pas affiché._, avec un lien vers sa page ; les autres hôtes sont listés comme d’habitude. Au-delà de quelques centaines de conteneurs, seules les lignes visibles sont dessinées, pour que le Tableau reste rapide.
 
 ## Zone de notification
 

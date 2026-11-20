@@ -35,7 +35,7 @@ Homeport ne charge les listes qu’une fois deux caractères tapés, puis les ti
 | Touches                                    | Effet                                                                                       |
 | ------------------------------------------ | ------------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Afficher les raccourcis clavier                                                             |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Ouvrir les pages de la barre latérale dans l’ordre : Vue d’ensemble, Tableau, Conteneurs…   |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Ouvrir les pages de la barre latérale dans l’ordre : Tableau, Vue d’ensemble, Conteneurs…   |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Ouvrir les Paramètres                                                                       |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Sélectionner l’hôte précédent ou suivant, dans l’ordre où la page Hôtes les liste           |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Actualiser les listes de l’hôte sélectionné : conteneurs, images, volumes, réseaux, stacks… |

@@ -127,7 +127,15 @@ Un container `busybox` di breve durata che Homeport crea su un host per aprire u
 
 ### Board (it. _Bacheca_)
 
-La pagina che elenca i container di ogni host connesso in un’unica tabella, ciascuno etichettato con il suo host. Vedi [Bacheca](/docs/guides/overview/#bacheca).
+La pagina iniziale: un riquadro per ogni host, Swarm e cluster, ciò che c’è da gestire su tutti loro e i container di ogni host connesso in un’unica tabella, ciascuno etichettato con il suo host. Vedi [Bacheca](/docs/guides/overview/#bacheca).
+
+### Needs you (it. _Da gestire_)
+
+L’elenco della Bacheca con ciò che richiede la tua attenzione: un host o un cluster non raggiungibile, un container non integro, morto, che si riavvia o uscito con un errore, un carico di lavoro Kubernetes non pronto, uno stack le cui immagini hanno una versione più recente pubblicata. Ciò che è integro non vi compare mai. Vedi [Da gestire](/docs/guides/overview/#da-gestire).
+
+### Overview (it. _Panoramica_)
+
+La pagina di un singolo host o cluster: il suo stato e indirizzo, il suo Engine o server API, il suo utilizzo e i suoi eventi recenti. Non è la Bacheca, che copre tutti gli host e i cluster. Vedi [Panoramica](/docs/guides/overview/#panoramica).
 
 ### Command palette (it. _riquadro comandi_)
 
@@ -167,6 +175,8 @@ L’app, la documentazione e il sito in italiano usano questi termini, così una
 | External Stack | stack esterno         |
 | Adopt          | adottare              |
 | Board          | Bacheca               |
+| Needs you      | Da gestire            |
+| Overview       | Panoramica            |
 | Bastion        | bastion (m.)          |
 | Deploy key     | chiave di deploy (f.) |
 | Port forward   | inoltro di porta (m.) |

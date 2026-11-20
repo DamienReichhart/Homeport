@@ -127,7 +127,15 @@ Um contêiner `busybox` de curta duração que o Homeport cria em um host para a
 
 ### Board (pt-BR: _Quadro_)
 
-A página que lista os contêineres de todos os hosts conectados em uma única tabela, cada um marcado com o seu host. Veja [Quadro](/docs/guides/overview/#quadro).
+A página inicial: um bloco para cada host, Swarm e cluster, o que precisa de você em todos eles e os contêineres de todos os hosts conectados em uma única tabela, cada um marcado com o seu host. Veja [Quadro](/docs/guides/overview/#quadro).
+
+### Needs you (pt-BR: _Precisa de você_)
+
+A lista do Quadro com o que pede a sua atenção: um host ou cluster inacessível, um contêiner não íntegro, morto, reiniciando ou que saiu com um erro, uma carga de trabalho do Kubernetes que não está pronta, uma stack cujas imagens têm uma versão mais nova publicada. O que está saudável nunca aparece nela. Veja [Precisa de você](/docs/guides/overview/#precisa-de-você).
+
+### Overview (pt-BR: _Visão geral_)
+
+A página própria de um host ou cluster: o status e o endereço, o Engine ou o servidor da API, o uso e os eventos recentes. Não é o Quadro, que abrange todos os hosts e clusters. Veja [Visão geral](/docs/guides/overview/#visão-geral).
 
 ### Command palette (pt-BR: _paleta de comandos_)
 
@@ -167,6 +175,8 @@ O aplicativo, a documentação e o site em português do Brasil usam estes termo
 | External Stack | stack externa                |
 | Adopt          | adotar                       |
 | Board          | Quadro                       |
+| Needs you      | Precisa de você              |
+| Overview       | Visão geral                  |
 | Bastion        | bastion (m.)                 |
 | Deploy key     | chave de deploy (f.)         |
 | Port forward   | encaminhamento de porta (m.) |

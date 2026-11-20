@@ -35,7 +35,7 @@ Homeport carica gli elenchi solo dopo che hai digitato due caratteri, e da lì l
 | Tasti                                      | Azione                                                                                |
 | ------------------------------------------ | ------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostra le scorciatoie da tastiera                                                     |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Apre le pagine della barra laterale nell’ordine: Panoramica, Bacheca, Container…      |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Apre le pagine della barra laterale nell’ordine: Bacheca, Panoramica, Container…      |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Apre le Impostazioni                                                                  |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Seleziona l’host precedente o successivo, nell’ordine in cui li elenca la pagina Host |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Aggiorna gli elenchi dell’host selezionato: container, immagini, volumi, reti, stack… |

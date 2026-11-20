@@ -127,7 +127,15 @@ Un contenedor `busybox` de corta duración que Homeport crea en un host para abr
 
 ### Board (es. _Tablero_)
 
-La página que lista los contenedores de todos los hosts conectados en una sola tabla, cada uno etiquetado con su host. Consulta [Tablero](/docs/guides/overview/#tablero).
+La página de inicio: un mosaico por cada host, Swarm y clúster, lo que requiere tu atención en todos ellos y los contenedores de todos los hosts conectados en una sola tabla, cada uno etiquetado con su host. Consulta [Tablero](/docs/guides/overview/#tablero).
+
+### Needs you (es. _Requiere tu atención_)
+
+La lista del Tablero con lo que pide tu atención: un host o un clúster inaccesible, un contenedor no saludable, muerto, que se reinicia o que salió con un error, una carga de trabajo de Kubernetes que no está lista, un stack cuyas imágenes tienen publicada una versión más reciente. Lo que está sano nunca aparece en ella. Consulta [Requiere tu atención](/docs/guides/overview/#requiere-tu-atención).
+
+### Overview (es. _Resumen_)
+
+La página propia de un host o de un clúster: su estado y su dirección, su Engine o su servidor de la API, su uso y sus eventos recientes. No es el Tablero, que abarca todos los hosts y clústeres. Consulta [Resumen](/docs/guides/overview/#resumen).
 
 ### Command palette (es. _paleta de comandos_)
 
@@ -167,6 +175,8 @@ La app, la documentación y el sitio web en español usan estos términos, para 
 | External Stack | stack externo            |
 | Adopt          | adoptar                  |
 | Board          | Tablero                  |
+| Needs you      | Requiere tu atención     |
+| Overview       | Resumen                  |
 | Bastion        | bastión (m.)             |
 | Deploy key     | clave de despliegue (f.) |
 | Port forward   | reenvío de puerto (m.)   |

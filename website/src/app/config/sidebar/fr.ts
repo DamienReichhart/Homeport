@@ -33,7 +33,7 @@ export default {
   'docs/clusters/yaml': 'Appliquer et modifier du YAML',
   'docs/clusters/helm': 'Releases Helm',
   'docs/clusters/nomad': 'Clusters Nomad',
-  'docs/guides/overview': 'Vue d’ensemble et événements',
+  'docs/guides/overview': 'Tableau, Vue d’ensemble et événements',
   'docs/guides/containers': 'Conteneurs',
   'docs/guides/images': 'Images',
   'docs/guides/volumes-networks': 'Volumes et réseaux',

@@ -335,7 +335,7 @@ Incus 运行虚拟机需要 KVM（`/dev/kvm`）和 QEMU。请在服务器的固�
 
 ### “出现问题”
 
-Homeport 的某个页面遇到了意外问题，因此显示这条消息而不是其内容；侧边栏仍可使用。**重新加载**通常能让页面恢复，**返回概览**则会离开该页面。如果问题反复出现，请从**详细信息**中复制报告，连同[诊断包](#为-bug-报告导出诊断信息)一起提交到 [issue](https://github.com/DamienReichhart/homeport/issues/new/choose) 中。
+Homeport 的某个页面遇到了意外问题，因此显示这条消息而不是其内容；侧边栏仍可使用。**重新加载**通常能让页面恢复，**返回看板**则会离开该页面。如果问题反复出现，请从**详细信息**中复制报告，连同[诊断包](#为-bug-报告导出诊断信息)一起提交到 [issue](https://github.com/DamienReichhart/homeport/issues/new/choose) 中。
 
 ### “… 未连接。”
 

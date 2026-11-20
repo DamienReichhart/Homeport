@@ -35,7 +35,7 @@ Homeport solo carga las listas cuando has escrito dos caracteres, y después las
 | Teclas                                     | Hace                                                                                           |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | <kbd>?</kbd>                               | Mostrar los atajos de teclado                                                                  |
-| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir las páginas de la barra lateral en orden: Resumen, Tablero, Contenedores…                |
+| <kbd>Mod</kbd> <kbd>1</kbd> … <kbd>9</kbd> | Abrir las páginas de la barra lateral en orden: Tablero, Resumen, Contenedores…                |
 | <kbd>Mod</kbd> <kbd>,</kbd>                | Abrir Ajustes                                                                                  |
 | <kbd>Alt</kbd> <kbd>↑</kbd> / <kbd>↓</kbd> | Seleccionar el host anterior o el siguiente, en el orden en que los lista la página Hosts      |
 | <kbd>Mod</kbd> <kbd>R</kbd>                | Actualizar las listas del host seleccionado: contenedores, imágenes, volúmenes, redes, stacks… |

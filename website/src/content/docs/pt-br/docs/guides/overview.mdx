@@ -1,42 +1,84 @@
 ---
-title: Visão geral e eventos
-description: Veja todos os hosts e clusters de uma vez, todos os contêineres em um só quadro, verifique o uso de disco, faça limpeza e acompanhe os eventos do Engine ao vivo.
+title: Quadro, Visão geral e eventos
+description: Veja o que precisa de você em todos os hosts e clusters, todos os contêineres em uma só tabela, a página de um host ou cluster com o uso de disco e a limpeza, e acompanhe os eventos do Engine ao vivo.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
+## Quadro
+
+O **Quadro** é a página inicial do Homeport. Ele abre quando o Homeport inicia, e **Quadro**, no topo da barra lateral, leva de volta a ele. Primeiro ele responde "tem algo errado em algum lugar?", depois lista todos os contêineres de todos os hosts.
+
+<DocScreenshot
+  name="board"
+  alt="O Quadro: um bloco para cada host e cluster, Precisa de você, depois os contêineres de todos os hosts com uma coluna Host, filtros e CPU e memória ao vivo."
+/>
+
+### Blocos
+
+O Quadro começa com um bloco para cada host, depois para cada Swarm, depois para cada cluster:
+
+- O bloco de um host conectado mostra o nome, o tipo de conexão e o endereço, os contêineres em execução e o total, e a CPU e a memória que os seus contêineres usam, ao vivo. A CPU é uma porcentagem de uma CPU: `250%` em um host com 8 CPUs significa que duas CPUs e meia estão ocupadas. O bloco de um host containerd conta os seus contêineres e namespaces, e o de um host Incus as suas instâncias e projetos.
+- O bloco de um [cluster](/docs/clusters/) conectado mostra quantos dos seus Nodes estão prontos e quantos dos seus Pods estão rodando (no Namespace que as suas páginas mostram). O Homeport faz a contagem do lado dele e pergunta de novo a cada 30 segundos enquanto o Quadro está aberto. Uma contagem que as suas credenciais não têm permissão para ler diz **não permitido**.
+- Um host ou cluster que não está conectado mostra o seu status.
+
+Selecione o bloco de um host ou cluster para selecioná-lo e abrir a sua [Visão geral](#visão-geral); o de um Swarm abre o [Swarm](/docs/guides/swarm/).
+
+### Precisa de você
+
+**Precisa de você** lista o que pede a sua atenção, em todos os hosts e clusters ao mesmo tempo, o que está em vermelho primeiro. Cada item vem com a ação que o resolve:
+
+| O quê                                                                                                 | Ação                                          |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| Um host ou cluster inacessível                                                                        | **Reconectar**, ou **Detalhes** para a página |
+| Um contêiner não íntegro, morto, que reinicia sem parar ou que saiu com um código de erro             | **Logs**                                      |
+| Uma carga de trabalho do Kubernetes que não está pronta, em vermelho quando nenhum dos seus Pods está | **Abrir**                                     |
+| Uma stack cujos contêineres rodam imagens com uma versão mais nova publicada                          | **Abrir**                                     |
+
+O que está saudável nunca aparece ali, e quando nada precisa de você, ele avisa. Uma lista longa mostra os primeiros itens; **Mostrar todos (N)** lista o resto. As imagens mais novas são as que [a página Contêineres verifica](/docs/guides/containers/#imagens-mais-recentes).
+
+### Contêineres
+
+Em **Contêineres**, o Quadro lista os contêineres de todos os hosts conectados em uma só tabela: o que roda onde, e o que está fora do ar, sem mudar de host.
+
+- **Colunas** — Host, Nome, Imagem, Status (com a integridade), Stack, Portas, CPU e Memória. Selecione o nome de uma coluna para ordenar por ela, e de novo para inverter. A CPU e a memória se atualizam ao vivo.
+- **Filtros** — os hosts a mostrar (todos por padrão), o estado (**Em execução**, **Parado** ou **Não íntegro**), uma stack e uma pesquisa que compara nomes, IDs curtos, imagens, stacks e nomes de hosts. <kbd>/</kbd> vai para a pesquisa. **Limpar filtros** mostra tudo de novo. Os filtros ficam como estavam quando você abre um contêiner e volta.
+- **Ações** — cada linha tem **Reiniciar** e **Parar** ou **Iniciar**, e o mesmo menu que na página Contêineres, agindo sobre o host dessa linha. Marque várias linhas, em um host ou em vários, para iniciá-las, pará-las, reiniciá-las ou removê-las juntas; remover pergunta antes e lista os contêineres host por host.
+- **Abrindo um contêiner** — selecione uma linha: o Homeport muda para o host dela e abre o contêiner. **Voltar** retorna ao Quadro.
+
+Para encontrar um contêiner entre os de todos os hosts sem abrir o Quadro, [pesquise na paleta de comandos](/docs/guides/keyboard/#pesquisando-em-todos-os-hosts).
+
+Um host que não está conectado — inacessível, desativado, esperando por você — ganha uma linha acima da tabela, como _nas (Inacessível) não é mostrado._, com um link para a página dele; os outros hosts são listados normalmente. Acima de algumas centenas de contêineres, só as linhas visíveis são desenhadas, para que o Quadro continue rápido.
+
 ## Visão geral
 
-A **Visão geral** é a única página que mostra todos os hosts e [clusters](/docs/clusters/) juntos. Ela abre quando o Homeport inicia. **Adicionar host** e **Adicionar cluster**, no topo, levam às páginas que os adicionam.
+A **Visão geral** é a página própria do host ou cluster selecionado, a primeira das suas páginas na barra lateral. O cabeçalho mostra o nome, o status, o tipo de conexão e o endereço, com um link para o Swarm de um host que faz parte de um, e **Configurações do host** ou **Configurações do cluster** abre a página de configurações dele. Para ver todos os hosts e clusters de uma vez, use o [Quadro](#quadro).
 
 <DocScreenshot
   name="overview"
-  alt="A página Visão geral com os cartões dos hosts, o cartão do Engine, o uso de disco e os eventos recentes."
+  alt="A Visão geral de um host: nome, status e endereço, os seus contêineres, CPU, memória e imagens em um resumo rápido, depois o Engine, o uso de disco e os eventos recentes."
 />
 
-### Cartões dos hosts
+### A Visão geral de um host
 
-Cada host tem um cartão com o seu nome, endereço, tipo e status. Para um host conectado, ele também mostra:
+Para um host Docker conectado, a Visão geral mostra:
 
-- os contêineres em execução e o total, e o número de imagens;
-- o uso de CPU ao vivo dos seus contêineres, como uma porcentagem de uma CPU — `250%` em um host com 8 CPUs significa que duas CPUs e meia estão ocupadas;
-- a memória usada pelos seus contêineres, do total do host.
+- **Resumo rápido** — os contêineres em execução e o total, a CPU e a memória que os seus contêineres usam, e o número de imagens. Cada um abre a sua página.
+- **Engine** — nome, versão, sistema operacional, kernel, arquitetura, CPUs e memória, driver de armazenamento e diretório raiz.
+- **Uso de disco** — quanto espaço ocupam as imagens, os contêineres, os volumes e o cache de build, quanto está em uso e quanto poderia ser recuperado. Os Docker Engines anteriores à versão 29 informam menos: os tamanhos das imagens são então estimados, os tamanhos dos volumes e do cache de build aparecem como **—**, e o cartão avisa.
+- **Eventos recentes** — as últimas coisas que o Engine informou. **Todos os eventos** abre a página Eventos.
 
-Selecione um cartão para mudar para esse host. Se ele estiver conectado, o Homeport abre os seus **Contêineres**. **Os contêineres dele no Quadro** abre o [Quadro](#quadro) mostrando só esse host.
+A Visão geral de um host containerd mostra a versão, a plataforma e o que cada namespace contém; a de um host Incus, a versão, o sistema e o que cada projeto contém.
 
-### Cartões dos clusters
+### A Visão geral de um cluster
 
-Depois dos cartões dos hosts, cada cluster tem um cartão com o seu nome, servidor da API, status e versão do Kubernetes e, depois de conectado, quantos dos seus Nodes estão prontos e quantos dos seus Pods estão rodando (no Namespace que as suas páginas mostram). O Homeport faz a contagem do lado dele e pergunta de novo a cada 30 segundos enquanto a Visão geral está aberta. Uma contagem que as suas credenciais não têm permissão para ler diz **não permitido**. Selecione um cartão para mudar para esse cluster.
-
-### O cluster selecionado
-
-Quando um cluster está selecionado, a seção abaixo dos cartões mostra esse cluster em vez de um host:
+Para um cluster Kubernetes, a Visão geral mostra:
 
 <DocScreenshot
   name="cluster-overview"
-  alt="A Visão geral com três cartões de host, dois cartões de cluster e o resumo do cluster EKS selecionado: versão, Nodes 4 de 5 prontos, Pods por fase, cargas de trabalho não prontas e avisos recentes."
-  caption="A Visão geral com eks-prod selecionado: um Node não está pronto, e faltam Pods para api e search."
+  alt="A Visão geral do cluster eks-prod: versão, Nodes 4 de 5 prontos, Pods por fase, cargas de trabalho não prontas e avisos recentes."
+  caption="A Visão geral de eks-prod: um Node não está pronto, e faltam Pods para api e search."
 />
 
 - **Cluster** — a versão, a plataforma, o servidor da API e o Namespace que as suas páginas mostram.
@@ -45,19 +87,11 @@ Quando um cluster está selecionado, a seção abaixo dos cartões mostra esse c
 - **Cargas de trabalho não prontas** — Deployments, StatefulSets e DaemonSets com menos Pods prontos do que desejam, com link para as suas páginas.
 - **Avisos recentes** — os últimos eventos Warning, cada um com link para o seu objeto. **Todos os eventos** abre os Eventos do cluster.
 
-Uma parte que as suas credenciais não podem ler diz isso, e as outras continuam aparecendo.
-
-### O host selecionado
-
-Abaixo dos cartões, uma seção para o host selecionado mostra:
-
-- **Engine** — nome, versão, sistema operacional, kernel, arquitetura, CPUs e memória, driver de armazenamento e diretório raiz.
-- **Uso de disco** — quanto espaço ocupam as imagens, os contêineres, os volumes e o cache de build, quanto está em uso e quanto poderia ser recuperado. Os Docker Engines anteriores à versão 29 informam menos: os tamanhos das imagens são então estimados, os tamanhos dos volumes e do cache de build aparecem como **—**, e o cartão avisa.
-- **Eventos recentes** — as últimas coisas que o Engine informou. **Todos os eventos** abre a página Eventos.
+Uma parte que as suas credenciais não podem ler diz isso, e as outras continuam aparecendo. A Visão geral de um [cluster Nomad](/docs/clusters/nomad/) mostra a versão, a região e o endereço.
 
 ### Fazendo limpeza
 
-**Limpar…**, no cartão Uso de disco, remove o que nada usa, somente no host selecionado. Escolha o que remover:
+**Limpar…**, no cartão Uso de disco de um host, remove o que nada usa, somente nesse host. Escolha o que remover:
 
 | Opção                           |   Padrão   | Remove                                                                  |
 | ------------------------------- | :--------: | ----------------------------------------------------------------------- |
@@ -75,24 +109,6 @@ Os contêineres vão primeiro, então as imagens, as redes e os volumes que eles
   Quando essa opção está marcada, o botão diz **Excluir, incluindo os dados dos volumes** como um
   último lembrete.
 </Aside>
-
-## Quadro
-
-O **Quadro**, segundo na barra lateral, lista os contêineres de todos os hosts conectados em uma só tabela: o que roda onde, e o que está fora do ar, sem mudar de host.
-
-<DocScreenshot
-  name="board"
-  alt="O Quadro, listando os contêineres de três hosts com uma coluna Host, filtros e CPU e memória ao vivo."
-/>
-
-- **Colunas** — Host, Nome, Imagem, Status (com a integridade), Stack, Portas, CPU, Memória e Criado. Selecione o nome de uma coluna para ordenar por ela, e de novo para inverter. A CPU e a memória se atualizam ao vivo.
-- **Filtros** — os hosts a mostrar (todos por padrão), o estado (**Em execução**, **Parado** ou **Não íntegro**), uma stack e uma pesquisa que compara nomes, IDs curtos, imagens, stacks e nomes de hosts. <kbd>/</kbd> vai para a pesquisa. **Limpar filtros** mostra tudo de novo. Os filtros ficam como estavam quando você abre um contêiner e volta.
-- **Ações** — cada linha tem o mesmo botão de iniciar/parar e o mesmo menu que na página Contêineres, agindo sobre o host dessa linha. Marque várias linhas, em um host ou em vários, para iniciá-las, pará-las, reiniciá-las ou removê-las juntas; remover pergunta antes e lista os contêineres host por host.
-- **Abrindo um contêiner** — selecione uma linha: o Homeport muda para o host dela e abre o contêiner. **Voltar** retorna ao Quadro.
-
-Para encontrar um contêiner entre os de todos os hosts sem abrir o Quadro, [pesquise na paleta de comandos](/docs/guides/keyboard/#pesquisando-em-todos-os-hosts).
-
-Um host que não está conectado — inacessível, desativado, esperando por você — ganha uma linha acima da tabela, como _nas (Inacessível) não é mostrado._, com um link para a página dele; os outros hosts são listados normalmente. Acima de algumas centenas de contêineres, só as linhas visíveis são desenhadas, para que o Quadro continue rápido.
 
 ## Bandeja do sistema
 

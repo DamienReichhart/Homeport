@@ -1,42 +1,84 @@
 ---
-title: Resumen y eventos
-description: Ve todos los hosts y clústeres a la vez y todos los contenedores en un tablero, consulta el uso del disco, limpia y sigue los eventos en directo del Engine.
+title: Tablero, Resumen y eventos
+description: Ve lo que requiere tu atención en todos los hosts y clústeres, todos los contenedores en una sola tabla, la página propia de un host o un clúster con su uso del disco y su limpieza, y sigue los eventos del Engine en directo.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 import { DocScreenshot } from '@/features/docs';
 
+## Tablero
+
+El **Tablero** es la página de inicio de Homeport. Se abre al iniciar Homeport, y **Tablero**, en la parte superior de la barra lateral, te devuelve a él. Primero responde a «¿hay algo mal en alguna parte?» y después lista todos los contenedores de todos los hosts.
+
+<DocScreenshot
+  name="board"
+  alt="El Tablero: un mosaico por cada host y clúster, Requiere tu atención y después los contenedores de todos los hosts con una columna Host, filtros y la CPU y la memoria en directo."
+/>
+
+### Mosaicos
+
+El Tablero empieza con un mosaico por cada host, después cada Swarm y después cada clúster:
+
+- El mosaico de un host conectado muestra su nombre, su tipo de conexión y su dirección, sus contenedores en ejecución y el total, y la CPU y la memoria que usan sus contenedores, en directo. La CPU es un porcentaje de una CPU: `250%` en un host de 8 CPU significa que dos CPU y media están ocupadas. El mosaico de un host de containerd cuenta en cambio sus contenedores y namespaces, y el de un host de Incus sus instancias y proyectos.
+- El mosaico de un [clúster](/docs/clusters/) conectado muestra cuántos de sus Nodes están listos y cuántos de sus Pods están en ejecución (en el Namespace que muestran sus páginas). Homeport los cuenta por su cuenta y vuelve a preguntar cada 30 segundos mientras el Tablero está abierto. Un recuento que tus credenciales no pueden leer muestra **no permitido** en su lugar.
+- Un host o un clúster que no está conectado muestra su estado.
+
+Selecciona el mosaico de un host o de un clúster para seleccionarlo y abrir su [Resumen](#resumen); el de un Swarm abre el [Swarm](/docs/guides/swarm/).
+
+### Requiere tu atención
+
+**Requiere tu atención** lista lo que pide tu atención, en todos los hosts y clústeres a la vez, lo rojo primero. Cada elemento trae la acción que lo resuelve:
+
+| Qué                                                                                              | Acción                                        |
+| ------------------------------------------------------------------------------------------------ | --------------------------------------------- |
+| Un host o un clúster inaccesible                                                                 | **Reconectar**, o **Detalles** para su página |
+| Un contenedor no saludable, muerto, que se reinicia sin parar o que salió con un código de error | **Logs**                                      |
+| Una carga de trabajo de Kubernetes que no está lista, en rojo cuando ninguno de sus Pods lo está | **Abrir**                                     |
+| Un stack cuyos contenedores ejecutan imágenes con una versión más reciente publicada             | **Abrir**                                     |
+
+Lo que está sano nunca aparece en ella, y cuando nada requiere tu atención, lo dice. Una lista larga muestra sus primeros elementos; **Mostrar los N** lista el resto. Las imágenes más recientes son las que [comprueba la página Contenedores](/docs/guides/containers/#imágenes-más-recientes).
+
+### Contenedores
+
+En **Contenedores**, el Tablero lista en una sola tabla los contenedores de todos los hosts conectados: qué se ejecuta dónde, y qué está caído, sin cambiar de host.
+
+- **Columnas** — Host, Nombre, Imagen, Estado (con su salud), Stack, Puertos, CPU y Memoria. Selecciona el nombre de una columna para ordenar por ella, y otra vez para invertir el orden. La CPU y la memoria se actualizan en directo.
+- **Filtros** — los hosts que mostrar (todos por defecto), el estado (**En ejecución**, **Detenidos** o **No saludables**), un stack y una búsqueda que coincide con nombres, ID cortos, imágenes, stacks y nombres de host. <kbd>/</kbd> salta a la búsqueda. **Borrar filtros** vuelve a mostrarlo todo. Los filtros se quedan como estaban cuando abres un contenedor y vuelves.
+- **Acciones** — cada fila tiene **Reiniciar** y **Detener** o **Iniciar**, y el mismo menú que en la página Contenedores, y actúan sobre el host de esa fila. Marca varias filas, de un host o de varios, para iniciarlas, detenerlas, reiniciarlas o eliminarlas juntas; eliminar pide confirmación y lista los contenedores host por host.
+- **Abrir un contenedor** — selecciona una fila: Homeport cambia a su host y abre el contenedor. **Volver** regresa al Tablero.
+
+Para encontrar un contenedor entre los de todos los hosts sin abrir el Tablero, [busca desde la paleta de comandos](/docs/guides/keyboard/#buscar-en-todos-los-hosts).
+
+Un host que no está conectado — inaccesible, desactivado o esperándote — ocupa una línea encima de la tabla, como _nas (Inaccesible) no se muestra._, con un enlace a su página; los demás hosts se listan como siempre. A partir de unos cientos de contenedores, solo se dibujan las filas visibles, así que el Tablero sigue siendo rápido.
+
 ## Resumen
 
-El **Resumen** es la única página que muestra juntos todos los hosts y [clústeres](/docs/clusters/). Se abre al iniciar Homeport. **Añadir host** y **Añadir clúster**, en la parte superior, llevan a las páginas para añadirlos.
+El **Resumen** es la página propia del host o del clúster seleccionado, la primera de sus páginas en la barra lateral. Su encabezado muestra su nombre, su estado, su tipo de conexión y su dirección, con un enlace a su Swarm para un host que forma parte de uno, y **Ajustes del host** o **Ajustes del clúster** abre su página de ajustes. Para ver todos los hosts y clústeres a la vez, usa el [Tablero](#tablero).
 
 <DocScreenshot
   name="overview"
-  alt="La página Resumen con las tarjetas de los hosts, la tarjeta del Engine, el uso del disco y los eventos recientes."
+  alt="El Resumen de un host: su nombre, su estado y su dirección, sus contenedores, CPU, memoria e imágenes de un vistazo, y después el Engine, el uso del disco y los eventos recientes."
 />
 
-### Tarjetas de host
+### El Resumen de un host
 
-Cada host tiene una tarjeta con su nombre, dirección, tipo y estado. Para un host conectado, también muestra:
+Para un host de Docker conectado, el Resumen muestra:
 
-- los contenedores en ejecución y el total, y el número de imágenes;
-- el uso de CPU en directo de sus contenedores, como porcentaje de una CPU: `250%` en un host de 8 CPU significa que dos CPU y media están ocupadas;
-- la memoria que usan sus contenedores, sobre el total del host.
+- **De un vistazo** — los contenedores en ejecución y el total, la CPU y la memoria que usan sus contenedores, y el número de imágenes. Cada uno abre su página.
+- **Engine** — nombre, versión, sistema operativo, kernel, arquitectura, CPU y memoria, driver de almacenamiento y directorio raíz.
+- **Uso del disco** — cuánto espacio ocupan las imágenes, los contenedores, los volúmenes y la caché de compilación, cuánto está en uso y cuánto se podría recuperar. Los Docker Engines anteriores a la versión 29 informan de menos: los tamaños de las imágenes se estiman, los tamaños de los volúmenes y de la caché de compilación aparecen como **—**, y la tarjeta lo indica.
+- **Eventos recientes** — las últimas cosas que informó el Engine. **Todos los eventos** abre la página Eventos.
 
-Selecciona una tarjeta para cambiar a ese host. Si está conectado, Homeport abre sus **Contenedores**. **Sus contenedores en el Tablero** abre el [Tablero](#tablero) mostrando solo ese host.
+El Resumen de un host de containerd muestra su versión, su plataforma y lo que contiene cada namespace; el de un host de Incus, su versión, su sistema y lo que contiene cada proyecto.
 
-### Tarjetas de clúster
+### El Resumen de un clúster
 
-Después de las tarjetas de los hosts, cada clúster tiene una tarjeta con su nombre, servidor de la API, estado y versión de Kubernetes y, una vez conectado, cuántos de sus Nodes están listos y cuántos de sus Pods están en ejecución (en el Namespace que muestran sus páginas). Homeport los cuenta por su cuenta y vuelve a preguntar cada 30 segundos mientras el Resumen está abierto. Un recuento que tus credenciales no pueden leer muestra **no permitido** en su lugar. Selecciona una tarjeta para cambiar a ese clúster.
-
-### El clúster seleccionado
-
-Cuando hay un clúster seleccionado, la sección bajo las tarjetas lo muestra a él en lugar de un host:
+Para un clúster de Kubernetes, el Resumen muestra:
 
 <DocScreenshot
   name="cluster-overview"
-  alt="El Resumen con tres tarjetas de host, dos tarjetas de clúster y el resumen del clúster EKS seleccionado: versión, 4 de 5 Nodes listos, Pods por fase, cargas de trabajo no listas y advertencias recientes."
-  caption="El Resumen con eks-prod seleccionado: un Node no está listo, y a api y search les faltan Pods."
+  alt="El Resumen del clúster eks-prod: versión, 4 de 5 Nodes listos, Pods por fase, cargas de trabajo no listas y advertencias recientes."
+  caption="El Resumen de eks-prod: un Node no está listo, y a api y search les faltan Pods."
 />
 
 - **Clúster** — su versión, plataforma, servidor de la API y el Namespace que muestran sus páginas.
@@ -45,19 +87,11 @@ Cuando hay un clúster seleccionado, la sección bajo las tarjetas lo muestra a 
 - **Cargas de trabajo no listas** — Deployments, StatefulSets y DaemonSets con menos Pods listos de los que quieren, con un enlace a sus páginas.
 - **Advertencias recientes** — los últimos eventos Warning, cada uno con un enlace a su objeto. **Todos los eventos** abre los Eventos del clúster.
 
-Una parte que tus credenciales no pueden leer lo indica, y las demás se siguen mostrando.
-
-### El host seleccionado
-
-Bajo las tarjetas, una sección para el host seleccionado muestra:
-
-- **Engine** — nombre, versión, sistema operativo, kernel, arquitectura, CPU y memoria, driver de almacenamiento y directorio raíz.
-- **Uso del disco** — cuánto espacio ocupan las imágenes, los contenedores, los volúmenes y la caché de compilación, cuánto está en uso y cuánto se podría recuperar. Los Docker Engines anteriores a la versión 29 informan de menos: los tamaños de las imágenes se estiman, los tamaños de los volúmenes y de la caché de compilación aparecen como **—**, y la tarjeta lo indica.
-- **Eventos recientes** — las últimas cosas que informó el Engine. **Todos los eventos** abre la página Eventos.
+Una parte que tus credenciales no pueden leer lo indica, y las demás se siguen mostrando. El Resumen de un [clúster de Nomad](/docs/clusters/nomad/) muestra su versión, su región y su dirección.
 
 ### Limpiar
 
-**Limpiar…**, en la tarjeta Uso del disco, elimina lo que nada usa, solo en el host seleccionado. Elige qué eliminar:
+**Limpiar…**, en la tarjeta Uso del disco de un host, elimina lo que nada usa, solo en ese host. Elige qué eliminar:
 
 | Opción                          | Por defecto | Elimina                                                                         |
 | ------------------------------- | :---------: | ------------------------------------------------------------------------------- |
@@ -75,24 +109,6 @@ Los contenedores van primero, así que las imágenes, las redes y los volúmenes
   Cuando está marcado, el botón dice **Eliminar, incluidos los datos de los volúmenes** como último
   aviso.
 </Aside>
-
-## Tablero
-
-El **Tablero**, segundo en la barra lateral, lista en una sola tabla los contenedores de todos los hosts conectados: qué se ejecuta dónde, y qué está caído, sin cambiar de host.
-
-<DocScreenshot
-  name="board"
-  alt="El Tablero, con los contenedores de tres hosts, una columna Host, filtros y la CPU y la memoria en directo."
-/>
-
-- **Columnas** — Host, Nombre, Imagen, Estado (con su salud), Stack, Puertos, CPU, Memoria y Creado. Selecciona el nombre de una columna para ordenar por ella, y otra vez para invertir el orden. La CPU y la memoria se actualizan en directo.
-- **Filtros** — los hosts que mostrar (todos por defecto), el estado (**En ejecución**, **Detenidos** o **No saludables**), un stack y una búsqueda que coincide con nombres, ID cortos, imágenes, stacks y nombres de host. <kbd>/</kbd> salta a la búsqueda. **Borrar filtros** vuelve a mostrarlo todo. Los filtros se quedan como estaban cuando abres un contenedor y vuelves.
-- **Acciones** — cada fila tiene el mismo botón de iniciar/detener y el mismo menú que en la página Contenedores, y actúan sobre el host de esa fila. Marca varias filas, de un host o de varios, para iniciarlas, detenerlas, reiniciarlas o eliminarlas juntas; eliminar pide confirmación y lista los contenedores host por host.
-- **Abrir un contenedor** — selecciona una fila: Homeport cambia a su host y abre el contenedor. **Volver** regresa al Tablero.
-
-Para encontrar un contenedor entre los de todos los hosts sin abrir el Tablero, [busca desde la paleta de comandos](/docs/guides/keyboard/#buscar-en-todos-los-hosts).
-
-Un host que no está conectado — inaccesible, desactivado o esperándote — ocupa una línea encima de la tabla, como _nas (Inaccesible) no se muestra._, con un enlace a su página; los demás hosts se listan como siempre. A partir de unos cientos de contenedores, solo se dibujan las filas visibles, así que el Tablero sigue siendo rápido.
 
 ## Bandeja del sistema
 

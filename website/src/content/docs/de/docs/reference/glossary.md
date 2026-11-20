@@ -127,7 +127,15 @@ Ein kurzlebiger `busybox`-Container, den Homeport auf einem Host erstellt, um ei
 
 ### Board (dt. _Board_)
 
-Die Seite, die die Container jedes verbundenen Hosts in einer Tabelle auflistet, jeweils mit ihrem Host beschriftet. Siehe [Board](/docs/guides/overview/#board).
+Die Startseite: eine Kachel für jeden Host, Swarm und Cluster, was auf ihnen allen Sie braucht, und die Container jedes verbundenen Hosts in einer Tabelle, jeweils mit ihrem Host beschriftet. Siehe [Board](/docs/guides/overview/#board).
+
+### Needs you (dt. _Braucht dich_)
+
+Die Liste des Boards mit dem, was Ihre Aufmerksamkeit verlangt: ein Host oder Cluster, der nicht erreichbar ist, ein Container, der fehlerhaft oder tot ist, neu startet oder mit einem Fehler beendet wurde, ein Kubernetes-Workload, der nicht bereit ist, ein Stack, von dessen Images eine neuere Version veröffentlicht ist. Was gesund ist, erscheint dort nie. Siehe [Braucht dich](/docs/guides/overview/#braucht-dich).
+
+### Overview (dt. _Übersicht_)
+
+Die eigene Seite eines Hosts oder Clusters: Status und Adresse, seine Engine oder sein API-Server, seine Auslastung und seine aktuellen Ereignisse. Nicht das Board, das alle Hosts und Cluster umfasst. Siehe [Übersicht](/docs/guides/overview/#übersicht).
 
 ### Command palette (dt. _Befehlspalette_)
 
@@ -167,6 +175,8 @@ Die deutsche App, Dokumentation und Website verwenden diese Begriffe, damit ein 
 | External Stack | externer Stack         |
 | Adopt          | übernehmen             |
 | Board          | Board (n.)             |
+| Needs you      | Braucht dich           |
+| Overview       | Übersicht (f.)         |
 | Bastion        | Bastion (f.)           |
 | Deploy key     | Deploy-Key (m.)        |
 | Port forward   | Portweiterleitung (f.) |
