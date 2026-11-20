@@ -89,6 +89,7 @@ export function JoinSwarmDialog({ view, onClose }: { view: HostView; onClose: ()
                 <Label htmlFor="join-token">{t('swarm.membership.join.token')}</Label>
                 <Input
                   id="join-token"
+                  type="password"
                   autoComplete="off"
                   spellCheck={false}
                   className="font-mono text-xs"
@@ -101,6 +102,7 @@ export function JoinSwarmDialog({ view, onClose }: { view: HostView; onClose: ()
                 <Label htmlFor="join-address">{t('swarm.membership.join.address')}</Label>
                 <Input
                   id="join-address"
+                  className="font-mono"
                   placeholder={t('swarm.membership.join.addressPlaceholder')}
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
@@ -125,6 +127,7 @@ export function JoinSwarmDialog({ view, onClose }: { view: HostView; onClose: ()
             <Label htmlFor="join-advertise">{t('swarm.membership.advertise')}</Label>
             <Input
               id="join-advertise"
+              className="font-mono"
               value={advertise}
               placeholder={t('swarm.membership.advertisePlaceholder')}
               onChange={(e) => setAdvertise(e.target.value)}
