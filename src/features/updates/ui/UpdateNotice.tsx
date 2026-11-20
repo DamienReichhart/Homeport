@@ -17,9 +17,9 @@ export function UpdateNotice() {
     <div
       role="status"
       aria-label={t('updates.notice.label')}
-      className="bg-primary/10 flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-6 py-2 text-sm"
+      className="bg-card flex flex-wrap items-center gap-x-3 gap-y-2 border-b px-6 py-2 text-sm"
     >
-      <ArrowUpCircleIcon className="text-primary size-4" />
+      <ArrowUpCircleIcon className="text-muted-foreground size-4 shrink-0" />
       <span>
         {tRich(
           viaPackageManager ? 'updates.notice.availablePackageManager' : 'updates.notice.available',
