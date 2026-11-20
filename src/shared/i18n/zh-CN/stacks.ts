@@ -148,7 +148,7 @@ export default {
   'stacks.newPage.useFolder': '使用本机上的文件夹',
   'stacks.newPage.useRepository': '使用 Git 仓库',
   'stacks.newSynced.description':
-    'Git 仓库中的 compose 文件。Homeport 会在本机克隆它，显示更改内容，并从中部署某个提交。它从不编辑该仓库。',
+    'Git 仓库中的 compose 文件。Homeport 部署其提交，从不编辑该仓库。',
   'stacks.newSynced.repository': '仓库',
   'stacks.newSynced.pickRepository': '选择仓库',
   'stacks.newSynced.addRepository': '添加仓库',
@@ -208,8 +208,7 @@ export default {
   'stacks.synced.forgetTitle': '忘记 {name}？',
   'stacks.synced.forgetDescription':
     'Homeport 将停止跟踪其仓库，并删除本机上的检出副本。其容器会继续运行，它将成为外部堆栈。该仓库仍保留在“设置 → 仓库”中。',
-  'stacks.newLinked.description':
-    '本机文件夹中的 Compose 项目。Homeport 就地处理其文件，并从该文件夹部署。',
+  'stacks.newLinked.description': '本机文件夹中的 Compose 项目，就地部署。',
   'stacks.newLinked.choose': '选择文件夹…',
   'stacks.newLinked.pickTitle': '选择 Compose 项目的文件夹',
   'stacks.newLinked.files': 'Compose 文件（按顺序）',

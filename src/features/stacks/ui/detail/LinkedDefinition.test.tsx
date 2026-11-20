@@ -60,12 +60,8 @@ describe('a Linked Stack’s definition', () => {
     renderApp('/stacks/site');
     await screen.findByRole('tab', { name: 'compose.yaml' });
     expect(screen.getByRole('button', { name: 'Deploy' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'More ways to save' }));
-    expect(await screen.findByRole('menuitem', { name: 'Save without deploying' })).toHaveAttribute(
-      'aria-disabled',
-      'true',
-    );
-    await userEvent.keyboard('{Escape}');
+    // Nothing is edited yet, so there's nothing to save without deploying.
+    expect(screen.getByRole('button', { name: 'More ways to save' })).toBeDisabled();
     const forget = screen.getByRole('region', { name: 'Forget this Stack' });
     expect(within(forget).getByRole('button', { name: 'Forget' })).toBeInTheDocument();
   });

@@ -156,7 +156,7 @@ export default {
   'stacks.newPage.useFolder': 'このコンピューター上のフォルダーを使う',
   'stacks.newPage.useRepository': 'Git リポジトリを使う',
   'stacks.newSynced.description':
-    'Git リポジトリにある compose ファイルです。Homeport はこのコンピューターにクローンし、変更内容を表示して、コミットをデプロイします。リポジトリを編集することはありません。',
+    'Git リポジトリにある compose ファイルです。Homeport はそのコミットをデプロイし、リポジトリを編集することはありません。',
   'stacks.newSynced.repository': 'リポジトリ',
   'stacks.newSynced.pickRepository': 'リポジトリを選択',
   'stacks.newSynced.addRepository': 'リポジトリを追加',
@@ -223,7 +223,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport はリポジトリの追跡をやめ、このコンピューター上のチェックアウトを削除します。コンテナは実行し続け、外部スタックになります。リポジトリは「設定 → リポジトリ」に残ります。',
   'stacks.newLinked.description':
-    'このコンピューター上のフォルダーにある Compose プロジェクトです。Homeport はファイルをその場所で扱い、そのフォルダーからデプロイします。',
+    'このコンピューター上のフォルダーにある Compose プロジェクトを、その場所からデプロイします。',
   'stacks.newLinked.choose': 'フォルダーを選択…',
   'stacks.newLinked.pickTitle': 'Compose プロジェクトのフォルダーを選択',
   'stacks.newLinked.files': 'compose ファイル（順番どおり）',

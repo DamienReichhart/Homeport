@@ -163,7 +163,7 @@ export default {
   'stacks.newPage.useFolder': 'Utiliser un dossier de cet ordinateur',
   'stacks.newPage.useRepository': 'Utiliser un dépôt git',
   'stacks.newSynced.description':
-    'Un fichier compose dans un dépôt git. Homeport le clone sur cet ordinateur, montre ce qui change et en déploie un commit. Il ne modifie jamais le dépôt.',
+    'Un fichier compose dans un dépôt git. Homeport en déploie les commits et ne le modifie jamais.',
   'stacks.newSynced.repository': 'Dépôt',
   'stacks.newSynced.pickRepository': 'Choisir un dépôt',
   'stacks.newSynced.addRepository': 'Ajouter un dépôt',
@@ -232,7 +232,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport cesse de suivre son dépôt et supprime sa copie de travail sur cet ordinateur. Ses conteneurs continuent de s’exécuter, et elle devient une stack externe. Le dépôt reste dans Paramètres → Dépôts.',
   'stacks.newLinked.description':
-    'Un projet compose dans un dossier de cet ordinateur. Homeport travaille sur ses fichiers là où ils sont et déploie depuis ce dossier.',
+    'Un projet compose dans un dossier de cet ordinateur, déployé depuis là où il est.',
   'stacks.newLinked.choose': 'Choisir un dossier…',
   'stacks.newLinked.pickTitle': 'Choisir le dossier d’un projet compose',
   'stacks.newLinked.files': 'Fichiers compose, dans l’ordre',

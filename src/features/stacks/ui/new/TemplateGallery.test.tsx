@@ -53,14 +53,16 @@ describe('starting a Stack from a template', () => {
     });
     const page = renderApp('/stacks/new');
     await userEvent.click(await screen.findByRole('button', { name: /Static site/ }));
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More ways to save' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Save without deploying' }));
     await screen.findByText(/refused|already runs/);
     expect(created).toEqual([expect.objectContaining({ name: 'site', adopt: false })]);
     page.unmount();
 
     renderApp('/stacks/new?adopt=blog');
     await screen.findByLabelText('Name');
-    await userEvent.click(screen.getByRole('button', { name: 'Save' }));
+    await userEvent.click(screen.getByRole('button', { name: 'More ways to save' }));
+    await userEvent.click(await screen.findByRole('menuitem', { name: 'Save without deploying' }));
     await vi.waitFor(() =>
       expect(created).toEqual([
         expect.objectContaining({ adopt: false }),

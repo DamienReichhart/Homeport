@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
   Spinner,
-  Textarea,
+  EnvTextarea,
   ToggleGroup,
   ToggleGroupItem,
 } from '@/shared/ui';
@@ -24,6 +24,7 @@ import { useCreateSynced } from '../../api/synced';
 import type { ComposeJob } from '../../model/composeJob';
 import { nameFromRepository, refChoices } from '../../model/newSynced';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
+import { DeployButton } from '../detail/DeployButton';
 import { stackPath } from '../../api/owner';
 import { deployTool } from '../../model/deployTool';
 import type { StackOwner } from '@/shared/api';
@@ -158,14 +159,12 @@ export function NewSyncedStack({ owner }: { owner: StackOwner }) {
       </div>
       <div className="grid gap-1.5">
         <Label htmlFor="synced-env">{t('stacks.newSynced.env')}</Label>
-        <Textarea
+        <EnvTextarea
           id="synced-env"
-          className="font-mono text-xs"
-          rows={4}
+          className="min-h-24"
           value={env}
-          onChange={(e) => setEnv(e.target.value)}
+          onChange={setEnv}
           disabled={!(capabilities.data?.keychain ?? true)}
-          spellCheck={false}
         />
         <p className="text-muted-foreground text-xs">{t('stacks.newSynced.envHelp')}</p>
       </div>
@@ -173,17 +172,18 @@ export function NewSyncedStack({ owner }: { owner: StackOwner }) {
         <p className="text-muted-foreground text-sm">{t('stacks.newSynced.fetching')}</p>
       )}
       {save.error && <ErrorMessage error={save.error} />}
-      <div className="flex gap-2">
-        <Button disabled={save.isPending || !ready || !canDeploy} onClick={() => create(true)}>
-          {t('stacks.newPage.saveAndDeploy')}
-        </Button>
-        <Button variant="outline" disabled={save.isPending || !ready} onClick={() => create(false)}>
-          {t('common.save')}
-        </Button>
+      <DeployButton
+        label={t('stacks.newPage.saveAndDeploy')}
+        canDeploy={!!ready && canDeploy}
+        canSave={!!ready}
+        pending={save.isPending}
+        onDeploy={() => create(true)}
+        onSave={() => create(false)}
+      >
         <Button variant="ghost" onClick={() => navigate(-1)}>
           {t('common.cancel')}
         </Button>
-      </div>
+      </DeployButton>
       {adding && (
         <RepositoryDialog
           repositoryId={null}

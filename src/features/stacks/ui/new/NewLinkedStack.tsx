@@ -19,6 +19,7 @@ import type { ComposeJob } from '../../model/composeJob';
 import { fileName } from '../../model/linkedEdit';
 import { takenOver } from '../../model/newLinked';
 import { ComposeChecks } from '../ComposeChecks';
+import { DeployButton } from '../detail/DeployButton';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
 import { stackPath } from '../../api/owner';
 import { stackQueries } from '../../api/queries';
@@ -68,7 +69,11 @@ export function NewLinkedStack({ owner }: { owner: StackOwner }) {
   return (
     <div className="grid gap-4">
       <div className="flex flex-wrap items-center gap-3">
-        <Button variant="outline" onClick={() => void choose()} disabled={inspect.isPending}>
+        <Button
+          variant={project ? 'outline' : 'default'}
+          onClick={() => void choose()}
+          disabled={inspect.isPending}
+        >
           <FolderOpenIcon /> {t('stacks.newLinked.choose')}
         </Button>
         {project && <span className="font-mono text-sm">{project.workingDir}</span>}
@@ -99,21 +104,18 @@ export function NewLinkedStack({ owner }: { owner: StackOwner }) {
           )}
           <ComposeChecks check={check} />
           {save.error && <ErrorMessage error={save.error} />}
-          <div className="flex gap-2">
-            <Button disabled={save.isPending || !canDeploy || !name} onClick={() => create(true)}>
-              {t('stacks.newPage.saveAndDeploy')}
-            </Button>
-            <Button
-              variant="outline"
-              disabled={save.isPending || !name}
-              onClick={() => create(false)}
-            >
-              {t('common.save')}
-            </Button>
+          <DeployButton
+            label={t('stacks.newPage.saveAndDeploy')}
+            canDeploy={canDeploy && !!name}
+            canSave={!!name}
+            pending={save.isPending}
+            onDeploy={() => create(true)}
+            onSave={() => create(false)}
+          >
             <Button variant="ghost" onClick={() => navigate(-1)}>
               {t('common.cancel')}
             </Button>
-          </div>
+          </DeployButton>
         </>
       )}
       <ComposeRunDialog

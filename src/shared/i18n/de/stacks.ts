@@ -164,7 +164,7 @@ export default {
   'stacks.newPage.useFolder': 'Ordner auf diesem Computer verwenden',
   'stacks.newPage.useRepository': 'Git-Repository verwenden',
   'stacks.newSynced.description':
-    'Eine Compose-Datei in einem Git-Repository. Homeport klont es auf diesem Computer, zeigt, was sich ändert, und stellt daraus einen Commit bereit. Das Repository wird nie bearbeitet.',
+    'Eine Compose-Datei in einem Git-Repository. Homeport stellt seine Commits bereit und bearbeitet es nie.',
   'stacks.newSynced.repository': 'Repository',
   'stacks.newSynced.pickRepository': 'Repository wählen',
   'stacks.newSynced.addRepository': 'Repository hinzufügen',
@@ -232,7 +232,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport folgt seinem Repository nicht mehr und löscht seinen Checkout auf diesem Computer. Seine Container laufen weiter, und er wird zu einem externen Stack. Das Repository bleibt unter Einstellungen → Repositorys.',
   'stacks.newLinked.description':
-    'Ein Compose-Projekt in einem Ordner auf diesem Computer. Homeport arbeitet mit seinen Dateien an Ort und Stelle und stellt aus diesem Ordner bereit.',
+    'Ein Compose-Projekt in einem Ordner auf diesem Computer, bereitgestellt von dort, wo es liegt.',
   'stacks.newLinked.choose': 'Ordner wählen…',
   'stacks.newLinked.pickTitle': 'Ordner eines Compose-Projekts wählen',
   'stacks.newLinked.files': 'Compose-Dateien, der Reihe nach',

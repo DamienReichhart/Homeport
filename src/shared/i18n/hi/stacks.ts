@@ -160,7 +160,7 @@ export default {
   'stacks.newPage.useFolder': 'इस कंप्यूटर का कोई फ़ोल्डर इस्तेमाल करें',
   'stacks.newPage.useRepository': 'कोई git रिपॉज़िटरी इस्तेमाल करें',
   'stacks.newSynced.description':
-    'किसी git रिपॉज़िटरी में एक compose फ़ाइल। Homeport इसे इस कंप्यूटर पर क्लोन करता है, दिखाता है कि क्या बदलता है, और इससे एक commit डिप्लॉय करता है। यह रिपॉज़िटरी को कभी संपादित नहीं करता।',
+    'किसी git रिपॉज़िटरी में एक compose फ़ाइल। Homeport इसके commit डिप्लॉय करता है और इसे कभी संपादित नहीं करता।',
   'stacks.newSynced.repository': 'रिपॉज़िटरी',
   'stacks.newSynced.pickRepository': 'रिपॉज़िटरी चुनें',
   'stacks.newSynced.addRepository': 'रिपॉज़िटरी जोड़ें',
@@ -227,7 +227,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport इसकी रिपॉज़िटरी को फ़ॉलो करना बंद कर देता है और इस कंप्यूटर पर इसका checkout मिटा देता है। इसके कंटेनर चलते रहते हैं, और यह एक बाहरी स्टैक बन जाता है। रिपॉज़िटरी सेटिंग्स → रिपॉज़िटरी में बनी रहती है।',
   'stacks.newLinked.description':
-    'इस कंप्यूटर के किसी फ़ोल्डर में एक compose प्रोजेक्ट। Homeport इसकी फ़ाइलों पर वहीं काम करता है जहाँ वे हैं और उसी फ़ोल्डर से डिप्लॉय करता है।',
+    'इस कंप्यूटर के किसी फ़ोल्डर में एक compose प्रोजेक्ट, जहाँ है वहीं से डिप्लॉय किया जाता है।',
   'stacks.newLinked.choose': 'फ़ोल्डर चुनें…',
   'stacks.newLinked.pickTitle': 'किसी compose प्रोजेक्ट का फ़ोल्डर चुनें',
   'stacks.newLinked.files': 'Compose फ़ाइलें, क्रम से',

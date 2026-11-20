@@ -161,7 +161,7 @@ export default {
   'stacks.newPage.useFolder': 'Usar una carpeta de este equipo',
   'stacks.newPage.useRepository': 'Usar un repositorio git',
   'stacks.newSynced.description':
-    'Un archivo compose en un repositorio git. Homeport lo clona en este equipo, muestra lo que cambia y despliega un commit desde él. Nunca edita el repositorio.',
+    'Un archivo compose en un repositorio git. Homeport despliega sus commits y nunca lo edita.',
   'stacks.newSynced.repository': 'Repositorio',
   'stacks.newSynced.pickRepository': 'Elige un repositorio',
   'stacks.newSynced.addRepository': 'Añadir repositorio',
@@ -228,7 +228,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport deja de seguir su repositorio y borra su copia de trabajo en este equipo. Sus contenedores siguen en ejecución y pasa a ser un stack externo. El repositorio se queda en Ajustes → Repositorios.',
   'stacks.newLinked.description':
-    'Un proyecto de Compose en una carpeta de este equipo. Homeport trabaja con sus archivos donde están y despliega desde esa carpeta.',
+    'Un proyecto de Compose en una carpeta de este equipo, desplegado desde donde está.',
   'stacks.newLinked.choose': 'Elegir una carpeta…',
   'stacks.newLinked.pickTitle': 'Elige la carpeta de un proyecto de Compose',
   'stacks.newLinked.files': 'Archivos compose, en orden',

@@ -156,7 +156,7 @@ export default {
   'stacks.newPage.useFolder': '이 컴퓨터의 폴더 사용',
   'stacks.newPage.useRepository': 'git 저장소 사용',
   'stacks.newSynced.description':
-    'git 저장소의 compose 파일입니다. Homeport가 이 컴퓨터에 저장소를 클론하고, 변경 사항을 보여 주고, 커밋을 배포합니다. 저장소는 절대 편집하지 않습니다.',
+    'git 저장소의 compose 파일입니다. Homeport가 커밋을 배포하며 저장소는 절대 편집하지 않습니다.',
   'stacks.newSynced.repository': '저장소',
   'stacks.newSynced.pickRepository': '저장소 선택',
   'stacks.newSynced.addRepository': '저장소 추가',
@@ -222,7 +222,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport가 저장소 추적을 중단하고 이 컴퓨터의 체크아웃을 삭제합니다. 컨테이너는 계속 실행되며 외부 스택이 됩니다. 저장소는 설정 → 저장소에 남아 있습니다.',
   'stacks.newLinked.description':
-    '이 컴퓨터의 폴더에 있는 compose 프로젝트입니다. Homeport는 파일을 그 자리에서 다루고 그 폴더에서 배포합니다.',
+    '이 컴퓨터의 폴더에 있는 compose 프로젝트를 그 자리에서 배포합니다.',
   'stacks.newLinked.choose': '폴더 선택…',
   'stacks.newLinked.pickTitle': 'compose 프로젝트 폴더 선택',
   'stacks.newLinked.files': 'Compose 파일(순서대로)',

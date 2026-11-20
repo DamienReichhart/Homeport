@@ -50,7 +50,7 @@ export function DeployButton({
               size="icon"
               className="border-primary-foreground/20 rounded-s-none border-s"
               aria-label={t('stacks.managed.moreSave')}
-              disabled={pending}
+              disabled={pending || !canSave}
             >
               <ChevronDownIcon />
             </Button>

@@ -160,7 +160,7 @@ export default {
   'stacks.newPage.useFolder': 'Использовать папку на этом компьютере',
   'stacks.newPage.useRepository': 'Использовать git-репозиторий',
   'stacks.newSynced.description':
-    'Файл compose в git-репозитории. Homeport клонирует его на этот компьютер, показывает изменения и разворачивает из него коммит. Репозиторий он никогда не изменяет.',
+    'Файл compose в git-репозитории. Homeport разворачивает его коммиты и никогда его не изменяет.',
   'stacks.newSynced.repository': 'Репозиторий',
   'stacks.newSynced.pickRepository': 'Выберите репозиторий',
   'stacks.newSynced.addRepository': 'Добавить репозиторий',
@@ -228,7 +228,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport перестанет следить за его репозиторием и удалит его рабочую копию на этом компьютере. Его контейнеры продолжат работать, и он станет внешним стеком. Репозиторий останется в «Настройки → Репозитории».',
   'stacks.newLinked.description':
-    'Проект compose в папке на этом компьютере. Homeport работает с его файлами там, где они лежат, и разворачивает из этой папки.',
+    'Проект compose в папке на этом компьютере, разворачиваемый оттуда, где он лежит.',
   'stacks.newLinked.choose': 'Выбрать папку…',
   'stacks.newLinked.pickTitle': 'Выберите папку проекта compose',
   'stacks.newLinked.files': 'Файлы compose по порядку',

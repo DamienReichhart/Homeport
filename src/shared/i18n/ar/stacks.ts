@@ -157,7 +157,7 @@ export default {
   'stacks.newPage.useFolder': 'استخدام مجلد على هذا الكمبيوتر',
   'stacks.newPage.useRepository': 'استخدام مستودع git',
   'stacks.newSynced.description':
-    'ملف compose في مستودع git. ينسخه Homeport على هذا الكمبيوتر، ويعرض ما يتغير، وينشر إيداعًا منه. لا يحرر المستودع أبدًا.',
+    'ملف compose في مستودع git. ينشر Homeport إيداعاته ولا يحرره أبدًا.',
   'stacks.newSynced.repository': 'المستودع',
   'stacks.newSynced.pickRepository': 'اختر مستودعًا',
   'stacks.newSynced.addRepository': 'إضافة مستودع',
@@ -219,8 +219,7 @@ export default {
   'stacks.synced.forgetTitle': 'هل تريد نسيان {name}؟',
   'stacks.synced.forgetDescription':
     'يتوقف Homeport عن تتبّع مستودعه ويحذف نسخته المستخرجة على هذا الكمبيوتر. تستمر حاوياته في العمل، ويصبح مكدسًا خارجيًا. يبقى المستودع في الإعدادات ← المستودعات.',
-  'stacks.newLinked.description':
-    'مشروع compose في مجلد على هذا الكمبيوتر. يعمل Homeport على ملفاته في مكانها وينشر من ذلك المجلد.',
+  'stacks.newLinked.description': 'مشروع compose في مجلد على هذا الكمبيوتر، يُنشر من مكانه.',
   'stacks.newLinked.choose': 'اختيار مجلد…',
   'stacks.newLinked.pickTitle': 'اختر مجلد مشروع compose',
   'stacks.newLinked.files': 'ملفات compose، بالترتيب',

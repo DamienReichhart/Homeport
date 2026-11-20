@@ -156,7 +156,7 @@ export default {
   'stacks.newPage.useFolder': 'Use a folder on this computer',
   'stacks.newPage.useRepository': 'Use a git repository',
   'stacks.newSynced.description':
-    'A compose file in a git repository. Homeport clones it on this computer, shows what changes, and deploys a commit from it. It never edits the repository.',
+    'A compose file in a git repository. Homeport deploys its commits and never edits it.',
   'stacks.newSynced.repository': 'Repository',
   'stacks.newSynced.pickRepository': 'Choose a repository',
   'stacks.newSynced.addRepository': 'Add repository',
@@ -222,7 +222,7 @@ export default {
   'stacks.synced.forgetDescription':
     'Homeport stops following its repository and deletes its checkout on this computer. Its containers keep running, and it becomes an External Stack. The repository stays in Settings → Repositories.',
   'stacks.newLinked.description':
-    'A compose project in a folder on this computer. Homeport works on its files where they are and deploys from that folder.',
+    'A compose project in a folder on this computer, deployed from where it is.',
   'stacks.newLinked.choose': 'Choose a folder…',
   'stacks.newLinked.pickTitle': 'Choose the folder of a compose project',
   'stacks.newLinked.files': 'Compose files, in order',

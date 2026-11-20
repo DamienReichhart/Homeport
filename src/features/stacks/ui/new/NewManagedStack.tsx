@@ -6,6 +6,7 @@ import { useCreateStack } from '../../api/mutations';
 import type { ComposeJob } from '../../model/composeJob';
 import { TEMPLATES, type StackTemplate } from '../../model/templates';
 import { ComposeRunDialog } from '../dialogs/ComposeRunDialog';
+import { DeployButton } from '../detail/DeployButton';
 import { StackEditor } from '../StackEditor';
 import { TemplateGallery } from './TemplateGallery';
 import { stackPath } from '../../api/owner';
@@ -85,24 +86,18 @@ function ManagedForm({
         swarm={owner.kind === 'swarm'}
       />
       {save.error && <ErrorMessage error={save.error} />}
-      <div className="flex gap-2">
-        <Button
-          disabled={save.isPending || !canDeploy || !name}
-          onClick={() => save.mutate({ name, files, env, deploy: true, adopt: !!adopting })}
-        >
-          {t('stacks.newPage.saveAndDeploy')}
-        </Button>
-        <Button
-          variant="outline"
-          disabled={save.isPending || !name}
-          onClick={() => save.mutate({ name, files, env, deploy: false, adopt: !!adopting })}
-        >
-          {t('common.save')}
-        </Button>
+      <DeployButton
+        label={t('stacks.newPage.saveAndDeploy')}
+        canDeploy={canDeploy && !!name}
+        canSave={!!name}
+        pending={save.isPending}
+        onDeploy={() => save.mutate({ name, files, env, deploy: true, adopt: !!adopting })}
+        onSave={() => save.mutate({ name, files, env, deploy: false, adopt: !!adopting })}
+      >
         <Button variant="ghost" onClick={() => navigate(-1)}>
           {t('common.cancel')}
         </Button>
-      </div>
+      </DeployButton>
       {tool?.state === 'unavailable' && <ErrorMessage error={tool.problem} />}
       <ComposeRunDialog
         owner={owner}

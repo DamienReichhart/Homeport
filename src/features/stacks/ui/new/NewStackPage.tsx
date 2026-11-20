@@ -91,18 +91,21 @@ function NewStack({ owner }: { owner: StackOwner }) {
           <AlertDescription>{t('stacks.newPage.sameDefinition.description')}</AlertDescription>
         </Alert>
       ) : (
-        <ToggleGroup
-          type="single"
-          variant="outline"
-          value={mode}
-          onValueChange={(m) => m && setMode(m as Mode)}
-          aria-label={t('stacks.newPage.source')}
-          className="justify-start"
-        >
-          <ToggleGroupItem value="managed">{t('stacks.newPage.writeCompose')}</ToggleGroupItem>
-          <ToggleGroupItem value="linked">{t('stacks.newPage.useFolder')}</ToggleGroupItem>
-          <ToggleGroupItem value="synced">{t('stacks.newPage.useRepository')}</ToggleGroupItem>
-        </ToggleGroup>
+        <div className="grid gap-1.5">
+          <Label id="stack-source">{t('stacks.newPage.source')}</Label>
+          <ToggleGroup
+            type="single"
+            variant="outline"
+            value={mode}
+            onValueChange={(m) => m && setMode(m as Mode)}
+            aria-labelledby="stack-source"
+            className="justify-start"
+          >
+            <ToggleGroupItem value="managed">{t('stacks.newPage.writeCompose')}</ToggleGroupItem>
+            <ToggleGroupItem value="linked">{t('stacks.newPage.useFolder')}</ToggleGroupItem>
+            <ToggleGroupItem value="synced">{t('stacks.newPage.useRepository')}</ToggleGroupItem>
+          </ToggleGroup>
+        </div>
       )}
       {mode === 'linked' && !adopting ? (
         <NewLinkedStack owner={owner} />
