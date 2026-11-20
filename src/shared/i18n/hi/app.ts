@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'इस पेज पर Homeport को एक अनपेक्षित समस्या आई। आम तौर पर फिर से लोड करने से मदद मिलती है; अगर यह बार-बार हो, तो विवरण से रिपोर्ट कॉपी करके एक issue में डालें।',
   'app.crash.reload': 'फिर से लोड करें',
-  'app.crash.backToOverview': 'अवलोकन पर वापस जाएँ',
+  'app.crash.backToBoard': 'बोर्ड पर वापस जाएँ',
   'app.shortcuts.title': 'कीबोर्ड शॉर्टकट',
   'app.shortcuts.description':
     'यहाँ काम करने वाले शॉर्टकट। जब आप किसी फ़ील्ड में टाइप कर रहे हों, तब N और / जैसी कुंजियाँ काम नहीं करतीं।',

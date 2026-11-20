@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'このページで Homeport に予期しない問題が発生しました。通常は再読み込みで解決します。繰り返し発生する場合は、「詳細」からレポートをコピーして issue に貼り付けてください。',
   'app.crash.reload': '再読み込み',
-  'app.crash.backToOverview': '概要に戻る',
+  'app.crash.backToBoard': 'ボードに戻る',
   'app.shortcuts.title': 'キーボードショートカット',
   'app.shortcuts.description':
     'ここで使えるショートカットです。N や / などのキーは、フィールドに入力している間は反応しません。',

@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'O Homeport encontrou um problema inesperado nesta página. Recarregar costuma resolver; se continuar acontecendo, copie o relatório em Detalhes para uma issue.',
   'app.crash.reload': 'Recarregar',
-  'app.crash.backToOverview': 'Voltar à visão geral',
+  'app.crash.backToBoard': 'Voltar ao Quadro',
   'app.shortcuts.title': 'Atalhos de teclado',
   'app.shortcuts.description':
     'Os atalhos que funcionam aqui. Teclas como N e / não funcionam enquanto você digita em um campo.',

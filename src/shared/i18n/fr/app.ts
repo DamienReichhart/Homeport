@@ -19,7 +19,7 @@ export default {
   'app.crash.description':
     'Homeport a rencontré un problème inattendu sur cette page. Recharger la page suffit en général ; si cela se reproduit, copiez le rapport depuis Détails dans une issue.',
   'app.crash.reload': 'Recharger',
-  'app.crash.backToOverview': 'Retour à la vue d’ensemble',
+  'app.crash.backToBoard': 'Retour au Tableau',
   'app.shortcuts.title': 'Raccourcis clavier',
   'app.shortcuts.description':
     'Les raccourcis qui fonctionnent ici. Les touches comme N et / sont sans effet pendant la saisie dans un champ.',

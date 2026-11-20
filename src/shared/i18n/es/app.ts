@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'Homeport tuvo un problema inesperado en esta página. Volver a cargarla suele ayudar; si sigue pasando, copia el informe de Detalles en una incidencia.',
   'app.crash.reload': 'Volver a cargar',
-  'app.crash.backToOverview': 'Volver al resumen',
+  'app.crash.backToBoard': 'Volver al Tablero',
   'app.shortcuts.title': 'Atajos de teclado',
   'app.shortcuts.description':
     'Los atajos que funcionan aquí. Teclas como N y / no actúan mientras escribes en un campo.',

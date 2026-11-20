@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'Homeport ist auf dieser Seite auf ein unerwartetes Problem gestoßen. Neu laden hilft meistens; wenn es weiterhin auftritt, kopieren Sie den Bericht aus „Details“ in ein Issue.',
   'app.crash.reload': 'Neu laden',
-  'app.crash.backToOverview': 'Zurück zur Übersicht',
+  'app.crash.backToBoard': 'Zurück zum Board',
   'app.shortcuts.title': 'Tastenkürzel',
   'app.shortcuts.description':
     'Die Tastenkürzel, die hier funktionieren. Tasten wie N und / lösen nichts aus, während Sie in einem Feld tippen.',

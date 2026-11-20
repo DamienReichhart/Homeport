@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'Homeport가 이 페이지에서 예기치 않은 문제를 만났습니다. 대개 다시 불러오면 해결됩니다. 계속 발생하면 세부 정보에서 보고서를 복사해 이슈에 붙여 넣으세요.',
   'app.crash.reload': '다시 불러오기',
-  'app.crash.backToOverview': '개요로 돌아가기',
+  'app.crash.backToBoard': '보드로 돌아가기',
   'app.shortcuts.title': '키보드 단축키',
   'app.shortcuts.description':
     '여기에서 작동하는 단축키입니다. N, / 같은 키는 입력란에 입력하는 동안에는 작동하지 않습니다.',

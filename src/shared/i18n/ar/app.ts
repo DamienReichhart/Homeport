@@ -18,7 +18,7 @@ export default {
   'app.crash.description':
     'واجه Homeport مشكلة غير متوقعة في هذه الصفحة. عادةً ما تساعد إعادة التحميل؛ وإذا تكرر الأمر، فانسخ التقرير من «التفاصيل» إلى بلاغ (issue).',
   'app.crash.reload': 'إعادة التحميل',
-  'app.crash.backToOverview': 'العودة إلى النظرة العامة',
+  'app.crash.backToBoard': 'العودة إلى اللوحة',
   'app.shortcuts.title': 'اختصارات لوحة المفاتيح',
   'app.shortcuts.description':
     'الاختصارات التي تعمل هنا. لا تعمل مفاتيح مثل N و/ أثناء الكتابة في حقل.',
