@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { baseCommands, connectedHost, hostView } from '@/test/fixtures';
 import { mockCommands } from '@/test/ipc';
@@ -31,7 +31,9 @@ describe('hosts page', () => {
       ],
     });
     renderApp('/hosts');
-    expect(await screen.findByText('prod')).toBeInTheDocument();
+    // The sidebar names every Host too; the list is in the page.
+    const page = within(screen.getByRole('main'));
+    expect(await page.findByText('prod')).toBeInTheDocument();
     expect(screen.getByText('deploy@prod.example.com')).toBeInTheDocument();
     expect(screen.getByText('edge.example.com:2376')).toBeInTheDocument();
     expect(screen.getAllByText('Connected').length).toBeGreaterThan(0);

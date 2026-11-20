@@ -38,4 +38,10 @@ export default {
   'app.palette.hosts': 'Hosts',
   'app.palette.actions': 'Actions',
   'app.palette.switchTo': 'Switch to {name}',
+  'app.nav.search': 'Search',
+  'app.nav.hosts': 'Hosts',
+  'app.nav.clusters': 'Clusters',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '{running} of {total} containers running',
+  'app.nav.add': 'Add host or cluster',
 } as const;

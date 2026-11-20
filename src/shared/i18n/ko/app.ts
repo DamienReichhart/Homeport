@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': '호스트',
   'app.palette.actions': '작업',
   'app.palette.switchTo': '{name} 호스트로 전환',
+  'app.nav.search': '검색',
+  'app.nav.hosts': '호스트',
+  'app.nav.clusters': '클러스터',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '컨테이너 {total}개 중 {running}개 실행 중',
+  'app.nav.add': '호스트 또는 클러스터 추가',
 } satisfies Translation<typeof en>;

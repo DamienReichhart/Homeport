@@ -44,7 +44,10 @@ describe('pages of what is selected', () => {
     withCluster('host');
     renderApp('/settings');
     const nav = screen.getByRole('navigation', { name: 'Main' });
-    expect(await within(nav).findByRole('link', { name: /Containers/ })).toBeInTheDocument();
+    // The pages open under the selected Host once the lists arrive.
+    await waitFor(() =>
+      expect(within(nav).getByRole('link', { name: /Containers/ })).toBeInTheDocument(),
+    );
   });
 
   it('goes to the Overview when a Host page opens while a Cluster is selected', async () => {
@@ -53,13 +56,15 @@ describe('pages of what is selected', () => {
     await waitFor(() =>
       expect(screen.queryByRole('heading', { name: 'Containers' })).not.toBeInTheDocument(),
     );
-    expect(await screen.findByRole('heading', { name: 'Overview' })).toBeInTheDocument();
+    // The Cluster's own Overview, headed by its name.
+    expect(await screen.findByRole('heading', { name: 'kind-dev' })).toBeInTheDocument();
   });
 
-  it('lists Clusters under their own heading in the switcher', async () => {
+  it('lists Clusters under their own heading in the sidebar, the selected one open', async () => {
     withCluster('cluster');
     renderApp('/settings');
-    const trigger = await screen.findByRole('combobox', { name: 'Host' });
-    await waitFor(() => expect(trigger).toHaveTextContent('kind-dev'));
+    const clusters = await screen.findByRole('region', { name: 'Clusters' });
+    const cluster = within(clusters).getByRole('button', { name: /^kind-dev/ });
+    await waitFor(() => expect(cluster).toHaveAttribute('aria-expanded', 'true'));
   });
 });

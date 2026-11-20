@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'Hosts',
   'app.palette.actions': 'Ações',
   'app.palette.switchTo': 'Trocar para {name}',
+  'app.nav.search': 'Pesquisar',
+  'app.nav.hosts': 'Hosts',
+  'app.nav.clusters': 'Clusters',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '{running} de {total} contêineres em execução',
+  'app.nav.add': 'Adicionar host ou cluster',
 } satisfies Translation<typeof en>;

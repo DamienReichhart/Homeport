@@ -40,4 +40,10 @@ export default {
   'app.palette.hosts': '主机',
   'app.palette.actions': '操作',
   'app.palette.switchTo': '切换到 {name}',
+  'app.nav.search': '搜索',
+  'app.nav.hosts': '主机',
+  'app.nav.clusters': '集群',
+  'app.nav.target': '{name}，{status}',
+  'app.nav.running': '{total} 个容器中有 {running} 个正在运行',
+  'app.nav.add': '添加主机或集群',
 } satisfies Translation<typeof en>;

@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'Хосты',
   'app.palette.actions': 'Действия',
   'app.palette.switchTo': 'Переключиться на {name}',
+  'app.nav.search': 'Поиск',
+  'app.nav.hosts': 'Хосты',
+  'app.nav.clusters': 'Кластеры',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': 'Запущено контейнеров: {running} из {total}',
+  'app.nav.add': 'Добавить хост или кластер',
 } satisfies Translation<typeof en>;

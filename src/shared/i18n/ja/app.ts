@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'ホスト',
   'app.palette.actions': '操作',
   'app.palette.switchTo': '{name} に切り替え',
+  'app.nav.search': '検索',
+  'app.nav.hosts': 'ホスト',
+  'app.nav.clusters': 'クラスター',
+  'app.nav.target': '{name}、{status}',
+  'app.nav.running': '{total} 個中 {running} 個のコンテナが実行中',
+  'app.nav.add': 'ホストまたはクラスターを追加',
 } satisfies Translation<typeof en>;

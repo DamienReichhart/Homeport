@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'होस्ट',
   'app.palette.actions': 'कार्रवाइयाँ',
   'app.palette.switchTo': '{name} पर जाएँ',
+  'app.nav.search': 'खोजें',
+  'app.nav.hosts': 'होस्ट',
+  'app.nav.clusters': 'क्लस्टर',
+  'app.nav.target': '{name}, {status}',
+  'app.nav.running': '{total} में से {running} कंटेनर चल रहे हैं',
+  'app.nav.add': 'होस्ट या क्लस्टर जोड़ें',
 } satisfies Translation<typeof en>;

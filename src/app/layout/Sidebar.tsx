@@ -1,71 +1,110 @@
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { BookOpenIcon, ExternalLinkIcon } from 'lucide-react';
+import {
+  BookOpenIcon,
+  ExternalLinkIcon,
+  LayoutGridIcon,
+  SearchIcon,
+  SettingsIcon,
+  type LucideIcon,
+} from 'lucide-react';
 import type { ComponentType } from 'react';
-import { NavLink } from 'react-router-dom';
-import { ContainerdNamespacePicker, IncusProjectPicker } from '@/core/host';
-import { HostSwitcher } from '@/features/hosts';
-import { SwarmNav } from '@/features/swarm';
+import { NavLink, useMatch } from 'react-router-dom';
+import type { NavEntry } from '@/core/feature';
 import { cn, DOCS_URL, REPO_URL } from '@/shared/lib';
-import { GitHubIcon, Logo, toastError, WithShortcut } from '@/shared/ui';
+import { GitHubIcon, Keys, Logo, toastError, WithShortcut } from '@/shared/ui';
+import { usePalette } from '../palette/paletteContext';
 import { useNavEntries } from '../shortcuts/navShortcuts';
+import { FleetNav } from './FleetNav';
+import { navItem } from './navItem';
 import { direction, t } from '@/shared/i18n';
 
+/**
+ * The sidebar: search, the Board, then the fleet (every Host, Swarm and
+ * Cluster with its status, the selected one opened onto its pages), and the
+ * app's own links at the foot.
+ */
 export function Sidebar() {
   const { entries, shortcuts } = useNavEntries();
+  const keysOf = (entry: NavEntry) => shortcuts.find((s) => s.entry.path === entry.path)?.keys;
+  const board = entries.find((e) => e.path === '/');
+  const pages = entries.filter((e) => e.scope !== 'app' || e.path === '/overview');
+  const settings = entries.find((e) => e.path === '/settings');
   return (
     <nav
       aria-label={t('app.nav.main')}
-      className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-56 shrink-0 flex-col border-e p-3"
+      className="bg-sidebar text-sidebar-foreground border-sidebar-border flex w-60 shrink-0 flex-col border-e"
     >
-      <Logo className="mb-3 px-1.5 pt-1" />
-      <div className="mb-3 grid gap-1.5">
-        <HostSwitcher />
-        <ContainerdNamespacePicker />
-        <IncusProjectPicker />
+      <div className="grid gap-3 p-3 pb-2">
+        <Logo className="px-1 pt-1" />
+        <PaletteButton />
       </div>
-      {/* The pages scroll when the window is short; the links below stay put.
+      {/* The fleet scrolls when the window is short; search and the foot stay put.
           The padding leaves room for the focus ring inside the scroll box. */}
-      <div className="-m-1 flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto p-1">
-        {entries.map(({ path, label, icon: Icon }) => {
-          const link = (
-            <NavLink
-              key={path}
-              to={path}
-              end={path === '/'}
-              className={({ isActive }) =>
-                cn(
-                  'group flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition-colors',
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground font-medium'
-                    : 'text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground',
-                )
-              }
-            >
-              <Icon className="text-muted-foreground group-aria-[current=page]:text-sidebar-primary size-4" />
-              {t(label)}
-            </NavLink>
-          );
-          const keys = shortcuts.find((s) => s.entry.path === path)?.keys;
-          return keys ? (
-            <WithShortcut
-              key={path}
-              keys={keys}
-              label={t(label)}
-              side={direction() === 'rtl' ? 'left' : 'right'}
-            >
-              {link}
-            </WithShortcut>
-          ) : (
-            link
-          );
-        })}
-        <SwarmNav />
+      <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-3">
+        {board && <PageLink entry={board} icon={LayoutGridIcon} keys={keysOf(board)} end />}
+        <FleetNav
+          pages={pages.map((entry) => (
+            <PageLink key={entry.path} entry={entry} keys={keysOf(entry)} nested />
+          ))}
+        />
       </div>
-      <div className="border-sidebar-border mt-3 grid shrink-0 gap-0.5 border-t pt-3">
+      <div className="border-sidebar-border grid shrink-0 gap-0.5 border-t p-3">
+        {settings && <PageLink entry={settings} icon={SettingsIcon} keys={keysOf(settings)} />}
         <ExternalLink url={DOCS_URL} label={t('app.nav.docs')} icon={BookOpenIcon} />
         <ExternalLink url={REPO_URL} label={t('app.nav.github')} icon={GitHubIcon} />
       </div>
     </nav>
+  );
+}
+
+/** Opens the command palette; it says how to open it from the keyboard too. */
+function PaletteButton() {
+  const { setOpen } = usePalette();
+  return (
+    <button
+      type="button"
+      onClick={() => setOpen(true)}
+      className="border-sidebar-border bg-background text-muted-foreground hover:text-foreground focus-visible:ring-sidebar-ring/50 flex h-8 min-w-0 items-center gap-2 rounded-md border ps-2.5 pe-1.5 text-sm transition-colors outline-none focus-visible:ring-2"
+    >
+      <SearchIcon className="size-4 shrink-0" />
+      <span className="min-w-0 flex-1 truncate text-start">{t('app.nav.search')}</span>
+      <Keys keys="Mod+K" className="shrink-0" />
+    </button>
+  );
+}
+
+function PageLink({
+  entry,
+  icon,
+  keys,
+  end,
+  nested,
+}: {
+  entry: NavEntry;
+  icon?: LucideIcon;
+  keys?: string;
+  end?: boolean;
+  nested?: boolean;
+}) {
+  const Icon = icon ?? entry.icon;
+  // A class string, not NavLink's function: the tooltip's trigger merges classes as strings.
+  const current = useMatch({ path: entry.path, end: end ?? false }) !== null;
+  const link = (
+    <NavLink to={entry.path} end={end} className={cn(navItem(current), nested && 'h-7 ps-3')}>
+      <Icon className="text-muted-foreground group-aria-[current=page]:text-sidebar-primary size-4 shrink-0" />
+      <span className="truncate">{t(entry.label)}</span>
+    </NavLink>
+  );
+  return keys ? (
+    <WithShortcut
+      keys={keys}
+      label={t(entry.label)}
+      side={direction() === 'rtl' ? 'left' : 'right'}
+    >
+      {link}
+    </WithShortcut>
+  ) : (
+    link
   );
 }
 
@@ -86,7 +125,7 @@ function ExternalLink({
     <a
       href={url}
       aria-label={t('app.nav.opensInBrowser', { label })}
-      className="text-sidebar-foreground/80 hover:bg-sidebar-accent/60 hover:text-sidebar-accent-foreground flex items-center gap-2.5 rounded-md px-3 py-1.5 text-sm transition-colors"
+      className={navItem(false)}
       onClick={(event) => {
         event.preventDefault();
         openUrl(url).catch(toastError);

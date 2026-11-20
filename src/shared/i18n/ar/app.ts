@@ -41,4 +41,10 @@ export default {
   'app.palette.hosts': 'المضيفات',
   'app.palette.actions': 'الإجراءات',
   'app.palette.switchTo': 'التبديل إلى {name}',
+  'app.nav.search': 'بحث',
+  'app.nav.hosts': 'المضيفات',
+  'app.nav.clusters': 'العناقيد',
+  'app.nav.target': '{name}، {status}',
+  'app.nav.running': '{running} من {total} حاويات قيد التشغيل',
+  'app.nav.add': 'إضافة مضيف أو عنقود',
 } satisfies Translation<typeof en>;
