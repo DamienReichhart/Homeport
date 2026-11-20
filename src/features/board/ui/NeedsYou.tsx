@@ -1,9 +1,17 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { clusterStatusError, useClusters, useReconnectCluster } from '@/core/cluster';
-import { statusError, useHosts, useReconnectHost } from '@/core/host';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  clusterStatusError,
+  objectPath,
+  useClusters,
+  useClusterSelection,
+  useReconnectCluster,
+} from '@/core/cluster';
+import { statusError, useHosts, useHostSelection, useReconnectHost } from '@/core/host';
+import { useClusterUnready } from '@/features/overview';
 import { Button, StatusDot, toastError } from '@/shared/ui';
 import type { BoardRow } from '../model/board';
+import { useStackUpdates } from '../api/stackUpdates';
 import { needsYou, type Need } from '../model/needsYou';
 import { t } from '@/shared/i18n';
 
@@ -18,6 +26,8 @@ export function NeedsYou({ rows, onOpen }: { rows: BoardRow[]; onOpen: (row: Boa
   const hosts = useHosts();
   const clusters = useClusters();
   const [all, setAll] = useState(false);
+  const unready = useClusterUnready();
+  const updates = useStackUpdates(rows);
   const needs = needsYou({
     hosts: (hosts.data ?? []).map((h) => ({
       id: h.host.id,
@@ -31,6 +41,8 @@ export function NeedsYou({ rows, onOpen }: { rows: BoardRow[]; onOpen: (row: Boa
         c.status.state === 'unreachable' ? (clusterStatusError(c.status)?.message ?? '') : null,
     })),
     rows,
+    unready,
+    updates,
   });
   const shown = all ? needs : needs.slice(0, SHOWN);
   return (
@@ -104,12 +116,57 @@ function describe(need: Need): { title: string; detail?: string } {
         title: t('board.needs.exited', { name, code: need.reason.code }),
         detail: need.row?.container.status,
       };
+    case 'workload-unready': {
+      const w = need.reason.workload;
+      return {
+        title: t('board.needs.unready', { name: `${w.namespace}/${w.name}` }),
+        detail: t('board.needs.podsReady', { ready: w.ready, desired: w.desired }),
+      };
+    }
+    case 'stack-updates':
+      return {
+        title: t('board.needs.stackUpdates', { name: need.reason.stack }),
+        detail: t('board.needs.newerImages', { count: need.reason.containers }),
+      };
   }
 }
 
 function NeedAction({ need, onOpen }: { need: Need; onOpen: (row: BoardRow) => void }) {
   const reconnectHost = useReconnectHost();
   const reconnectCluster = useReconnectCluster();
+  const navigate = useNavigate();
+  const { select: selectHost } = useHostSelection();
+  const { select: selectCluster } = useClusterSelection();
+  const { reason } = need;
+  if (reason.kind === 'workload-unready') {
+    const w = reason.workload;
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          selectCluster(need.targetId);
+          void navigate(objectPath(w.kind, w.namespace, w.name) ?? '/workloads');
+        }}
+      >
+        {t('board.needs.open')}
+      </Button>
+    );
+  }
+  if (reason.kind === 'stack-updates') {
+    return (
+      <Button
+        variant="outline"
+        size="sm"
+        onClick={() => {
+          selectHost(need.targetId);
+          void navigate(`/stacks/${encodeURIComponent(reason.stack)}`);
+        }}
+      >
+        {t('board.needs.open')}
+      </Button>
+    );
+  }
   if (need.row) {
     const row = need.row;
     return (

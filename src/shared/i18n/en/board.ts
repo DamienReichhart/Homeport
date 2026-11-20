@@ -49,4 +49,10 @@ export default {
   'board.needs.logs': 'Logs',
   'board.needs.details': 'Details',
   'board.needs.reconnect': 'Reconnect',
+  'board.needs.unready': '{name} isn’t ready',
+  'board.needs.podsReady': '{ready} of {desired} Pods ready',
+  'board.needs.stackUpdates': 'Stack {name} has newer images',
+  'board.needs.newerImages':
+    '{count, plural, one {# container runs an image} other {# containers run images}} with a newer version published',
+  'board.needs.open': 'Open',
 } as const;

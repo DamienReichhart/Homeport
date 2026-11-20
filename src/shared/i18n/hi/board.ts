@@ -53,4 +53,10 @@ export default {
   'board.needs.logs': 'लॉग',
   'board.needs.details': 'विवरण',
   'board.needs.reconnect': 'फिर से कनेक्ट करें',
+  'board.needs.unready': '{name} तैयार नहीं है',
+  'board.needs.podsReady': '{desired} में से {ready} Pod तैयार',
+  'board.needs.stackUpdates': 'स्टैक {name} की नई इमेज उपलब्ध हैं',
+  'board.needs.newerImages':
+    '{count, plural, one {# कंटेनर ऐसी इमेज चला रहा है} other {# कंटेनर ऐसी इमेज चला रहे हैं}} जिसका नया संस्करण प्रकाशित है',
+  'board.needs.open': 'खोलें',
 } satisfies Translation<typeof en>;

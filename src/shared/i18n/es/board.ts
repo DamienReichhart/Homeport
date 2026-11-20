@@ -53,4 +53,10 @@ export default {
   'board.needs.logs': 'Logs',
   'board.needs.details': 'Detalles',
   'board.needs.reconnect': 'Reconectar',
+  'board.needs.unready': '{name} no está listo',
+  'board.needs.podsReady': '{ready} de {desired} pods listos',
+  'board.needs.stackUpdates': 'El stack {name} tiene imágenes más recientes',
+  'board.needs.newerImages':
+    '{count, plural, one {# contenedor usa una imagen} other {# contenedores usan imágenes}} con una versión más reciente publicada',
+  'board.needs.open': 'Abrir',
 } satisfies Translation<typeof en>;

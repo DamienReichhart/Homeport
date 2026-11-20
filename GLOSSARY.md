@@ -112,7 +112,7 @@ _Avoid_: Dashboard, all hosts view, home
 _French_: Tableau (m.); _avoid_ tableau de bord
 
 **Needs you**:
-What on the Board asks for the user's attention: a Host that can't be reached, a container that is unhealthy or exited with an error, a Stack whose last deploy failed or whose images have updates, a Cluster workload that isn't ready. Healthy things never appear in it.
+What on the Board asks for the user's attention: a Host or a Cluster that can't be reached, a container that is unhealthy, dead, restarting or exited with an error, a Stack whose images have a newer version published, a Cluster workload that isn't ready. Healthy things never appear in it.
 _Avoid_: Alerts, issues, problems, incidents
 _French_: À traiter; _avoid_ alertes, incidents
 

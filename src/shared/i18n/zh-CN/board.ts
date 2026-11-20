@@ -51,4 +51,9 @@ export default {
   'board.needs.logs': '日志',
   'board.needs.details': '详情',
   'board.needs.reconnect': '重新连接',
+  'board.needs.unready': '{name} 未就绪',
+  'board.needs.podsReady': '{desired} 个 Pod 中 {ready} 个就绪',
+  'board.needs.stackUpdates': '堆栈 {name} 有更新的镜像',
+  'board.needs.newerImages': '{count} 个容器使用的镜像已发布更新版本',
+  'board.needs.open': '打开',
 } satisfies Translation<typeof en>;

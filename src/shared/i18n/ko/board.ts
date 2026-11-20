@@ -53,4 +53,9 @@ export default {
   'board.needs.logs': '로그',
   'board.needs.details': '세부 정보',
   'board.needs.reconnect': '다시 연결',
+  'board.needs.unready': '{name}이(가) 준비되지 않았습니다',
+  'board.needs.podsReady': 'Pod {desired}개 중 {ready}개 준비됨',
+  'board.needs.stackUpdates': '스택 {name}에 더 새로운 이미지가 있습니다',
+  'board.needs.newerImages': '컨테이너 {count}개가 새 버전이 게시된 이미지를 사용합니다',
+  'board.needs.open': '열기',
 } satisfies Translation<typeof en>;

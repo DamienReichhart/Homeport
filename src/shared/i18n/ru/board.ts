@@ -55,4 +55,10 @@ export default {
   'board.needs.logs': 'Журналы',
   'board.needs.details': 'Подробнее',
   'board.needs.reconnect': 'Переподключить',
+  'board.needs.unready': '{name} не готов',
+  'board.needs.podsReady': 'Готово подов: {ready} из {desired}',
+  'board.needs.stackUpdates': 'У стека {name} есть более новые образы',
+  'board.needs.newerImages':
+    '{count, plural, one {# контейнер использует образ} few {# контейнера используют образы} many {# контейнеров используют образы} other {# контейнера используют образы}}, для которых опубликована более новая версия',
+  'board.needs.open': 'Открыть',
 } satisfies Translation<typeof en>;

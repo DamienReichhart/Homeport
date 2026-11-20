@@ -53,4 +53,10 @@ export default {
   'board.needs.logs': 'ログ',
   'board.needs.details': '詳細',
   'board.needs.reconnect': '再接続',
+  'board.needs.unready': '{name} の準備ができていません',
+  'board.needs.podsReady': '{desired} 個中 {ready} 個の Pod が準備完了',
+  'board.needs.stackUpdates': 'スタック {name} に新しいイメージがあります',
+  'board.needs.newerImages':
+    '{count} 個のコンテナが、新しいバージョンが公開されたイメージを使っています',
+  'board.needs.open': '開く',
 } satisfies Translation<typeof en>;

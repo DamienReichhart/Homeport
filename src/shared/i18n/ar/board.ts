@@ -54,4 +54,10 @@ export default {
   'board.needs.logs': 'السجلات',
   'board.needs.details': 'التفاصيل',
   'board.needs.reconnect': 'إعادة الاتصال',
+  'board.needs.unready': '{name} غير جاهز',
+  'board.needs.podsReady': '{ready} من {desired} Pods جاهزة',
+  'board.needs.stackUpdates': 'للمكدس {name} صور أحدث',
+  'board.needs.newerImages':
+    '{count, plural, zero {لا حاويات تستخدم صورًا} one {حاوية واحدة تستخدم صورة} two {حاويتان تستخدمان صورًا} few {# حاويات تستخدم صورًا} many {# حاوية تستخدم صورًا} other {# حاوية تستخدم صورًا}} نُشر لها إصدار أحدث',
+  'board.needs.open': 'فتح',
 } satisfies Translation<typeof en>;

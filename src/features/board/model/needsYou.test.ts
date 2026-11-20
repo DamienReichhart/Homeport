@@ -1,6 +1,6 @@
 import type { Container } from '@/shared/api';
 import type { BoardRow } from './board';
-import { exitCode, needsYou } from './needsYou';
+import { exitCode, needsYou, stackUpdates } from './needsYou';
 
 const row = (
   name: string,
@@ -41,6 +41,37 @@ describe('needs you', () => {
       ['h/sick', 'danger'],
       ['h/crashed', 'warning'],
       ['h/looping', 'warning'],
+    ]);
+  });
+
+  it('lists unready workloads, red when none of their Pods is ready', () => {
+    const workload = (name: string, ready: number) =>
+      ({ kind: 'deployment', namespace: 'shop', name, ready, desired: 2 }) as never;
+    const needs = needsYou({
+      hosts: [],
+      clusters: [],
+      rows: [],
+      unready: [
+        {
+          clusterId: 'c',
+          clusterName: 'eks',
+          workloads: [workload('api', 1), workload('search', 0)],
+        },
+      ],
+    });
+    expect(needs.map((n) => [n.key, n.tone])).toEqual([
+      ['workload/c/deployment/shop/search', 'danger'],
+      ['workload/c/deployment/shop/api', 'warning'],
+    ]);
+  });
+
+  it('counts the containers with newer images per Stack and Host', () => {
+    const newer = [row('a', 'running', 'Up'), row('b', 'running', 'Up'), row('c', 'running', 'Up')];
+    newer[0]!.container.stack = 'shop';
+    newer[1]!.container.stack = 'shop';
+    newer[2]!.container.stack = null;
+    expect(stackUpdates(newer)).toEqual([
+      { hostId: 'h', hostName: 'prod', stack: 'shop', containers: 2 },
     ]);
   });
 });
