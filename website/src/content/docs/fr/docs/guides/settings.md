@@ -3,7 +3,7 @@ title: Paramètres
 description: Thème et langue, la zone de notification, le démarrage à l’ouverture de session, les notifications, les mises à jour, les identifiants de registre, les dépôts, la fréquence de vérification des stacks synchronisées, ce que cette machine prend en charge, la version et les licences.
 ---
 
-**Paramètres** est la dernière page de la barre latérale, au-dessus des liens **Documentation** et **GitHub**, qui s’ouvrent dans votre navigateur.
+**Paramètres** est la dernière page de la barre latérale, au-dessus des liens **Documentation** et **GitHub**, qui s’ouvrent dans votre navigateur. Sur une fenêtre large, un index de ses sections reste à côté d’elles et marque celle que vous lisez ; sur une fenêtre plus étroite, c’est une rangée de liens au-dessus. **Rechercher des mises à jour**, dans la palette de commandes, ouvre les Paramètres sur **Mises à jour**.
 
 ## Apparence
 

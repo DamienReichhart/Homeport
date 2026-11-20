@@ -3,7 +3,7 @@ title: Einstellungen
 description: Design und Sprache, der Infobereich, der Start bei der Anmeldung, Benachrichtigungen, Updates, Registry-Anmeldungen, Repositorys, wie oft synchronisierte Stacks geprüft werden, was dieser Rechner unterstützt, Version und Lizenzen.
 ---
 
-**Einstellungen** ist die letzte Seite in der Seitenleiste, über den Links **Dokumentation** und **GitHub**, die sich in Ihrem Browser öffnen.
+**Einstellungen** ist die letzte Seite in der Seitenleiste, über den Links **Dokumentation** und **GitHub**, die sich in Ihrem Browser öffnen. In einem breiten Fenster bleibt ein Verzeichnis der Abschnitte daneben stehen und markiert den, den Sie gerade lesen; in einem schmaleren ist es eine Reihe von Links darüber. **Nach Updates suchen** in der Befehlspalette öffnet die Einstellungen bei **Updates**.
 
 ## Darstellung
 

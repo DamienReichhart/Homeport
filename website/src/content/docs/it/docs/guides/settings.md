@@ -3,7 +3,7 @@ title: Impostazioni
 description: Tema e lingua, l’area di notifica, l’avvio all’accesso, le notifiche, gli aggiornamenti, gli accessi ai registri, i repository, la frequenza di controllo degli stack sincronizzati, cosa supporta questo computer, versione e licenze.
 ---
 
-**Impostazioni** è l’ultima pagina della barra laterale, sopra i collegamenti **Documentazione** e **GitHub**, che si aprono nel browser.
+**Impostazioni** è l’ultima pagina della barra laterale, sopra i collegamenti **Documentazione** e **GitHub**, che si aprono nel browser. In una finestra larga, un indice delle sezioni resta accanto a esse e segna quella che stai leggendo; in una più stretta, è una fila di collegamenti sopra di esse. **Cerca aggiornamenti**, nel riquadro comandi, apre le Impostazioni su **Aggiornamenti**.
 
 ## Aspetto
 

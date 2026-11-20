@@ -3,7 +3,7 @@ title: Ajustes
 description: Tema e idioma, la bandeja del sistema, el inicio al iniciar sesión, las notificaciones, las actualizaciones, los inicios de sesión de registros, los repositorios, cada cuánto se comprueban los stacks sincronizados, lo que admite este equipo, la versión y las licencias.
 ---
 
-**Ajustes** es la última página de la barra lateral, encima de los enlaces **Documentación** y **GitHub**, que se abren en tu navegador.
+**Ajustes** es la última página de la barra lateral, encima de los enlaces **Documentación** y **GitHub**, que se abren en tu navegador. En una ventana ancha, un índice de sus secciones se queda a su lado y marca la que estás leyendo; en una más estrecha, es una fila de enlaces encima de ellas. **Buscar actualizaciones**, en la paleta de comandos, abre Ajustes en **Actualizaciones**.
 
 ## Apariencia
 

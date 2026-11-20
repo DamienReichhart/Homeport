@@ -3,7 +3,7 @@ title: Settings
 description: Theme and language, the system tray, starting at login, notifications, updates, registry logins, repositories, how often Synced Stacks are checked, what this machine supports, version and licences.
 ---
 
-**Settings** is the last page in the sidebar, above the **Documentation** and **GitHub** links, which open in your browser.
+**Settings** is the last page in the sidebar, above the **Documentation** and **GitHub** links, which open in your browser. On a wide window, an index of its sections stays beside them and marks the one you're reading; on a narrower one, it's a row of links above them. **Check for updates** in the command palette opens Settings at **Updates**.
 
 ## Appearance
 
