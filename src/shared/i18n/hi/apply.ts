@@ -5,8 +5,7 @@ import type { Translation } from '../types';
 export default {
   'apply.nav': 'YAML लागू करें',
   'apply.title': 'YAML लागू करें',
-  'apply.description':
-    'मैनिफ़ेस्ट पेस्ट करें या खोलें, देखें कि वे {cluster} पर क्या बदलेंगे, फिर उन्हें लागू करें, kubectl apply की तरह।',
+  'apply.description': 'देखें कि मैनिफ़ेस्ट {cluster} पर क्या बदलेंगे, फिर उन्हें लागू करें।',
   'apply.open': 'फ़ाइल खोलें…',
   'apply.openTitle': 'मैनिफ़ेस्ट खोलें',
   'apply.openFailed': 'Homeport वह फ़ाइल नहीं पढ़ सका',

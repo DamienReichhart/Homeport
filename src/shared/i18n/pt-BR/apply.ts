@@ -5,8 +5,7 @@ import type { Translation } from '../types';
 export default {
   'apply.nav': 'Aplicar YAML',
   'apply.title': 'Aplicar YAML',
-  'apply.description':
-    'Cole ou abra manifestos, veja o que eles alterariam em {cluster} e depois aplique-os, como o kubectl apply.',
+  'apply.description': 'Veja o que manifestos alterariam em {cluster} e depois aplique-os.',
   'apply.open': 'Abrir arquivo…',
   'apply.openTitle': 'Abrir manifestos',
   'apply.openFailed': 'O Homeport não conseguiu ler esse arquivo',

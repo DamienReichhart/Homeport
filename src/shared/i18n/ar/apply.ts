@@ -5,8 +5,7 @@ import type { Translation } from '../types';
 export default {
   'apply.nav': 'تطبيق YAML',
   'apply.title': 'تطبيق YAML',
-  'apply.description':
-    'الصق ملفات البيان أو افتحها، واطّلع على ما ستغيّره في {cluster}، ثم طبّقها، مثل kubectl apply.',
+  'apply.description': 'اطّلع على ما ستغيّره ملفات البيان في {cluster}، ثم طبّقها.',
   'apply.open': 'فتح ملف…',
   'apply.openTitle': 'فتح ملفات البيان',
   'apply.openFailed': 'تعذّر على Homeport قراءة ذلك الملف',
