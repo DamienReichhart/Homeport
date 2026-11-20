@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { PlusIcon, SettingsIcon, Trash2Icon } from 'lucide-react';
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import {
   Button,
   Card,
@@ -11,6 +11,9 @@ import {
   CardTitle,
   ErrorMessage,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirm,
 } from '@/shared/ui';
 import { useRemoveRepository } from '../api/mutations';
@@ -50,21 +53,19 @@ export function RepositoriesCard() {
             {repositories.data.map((r) => (
               <li key={r.id} className="flex items-center gap-2 py-2">
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{repositoryLabel(r)}</p>
+                  <p className="truncate font-medium" title={r.url}>
+                    {repositoryLabel(r)}
+                  </p>
                   <p className="text-muted-foreground truncate text-xs">{describeAuth(r)}</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('repositories.manageOne', { repository: repositoryLabel(r) })}
+                <IconAction
+                  label={t('repositories.manageOne', { repository: repositoryLabel(r) })}
                   onClick={() => setOpen(r.id)}
                 >
                   <SettingsIcon />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t('repositories.removeOne', { repository: repositoryLabel(r) })}
+                </IconAction>
+                <IconAction
+                  label={t('repositories.removeOne', { repository: repositoryLabel(r) })}
                   onClick={() =>
                     confirm({
                       title: t('repositories.remove.title', { repository: repositoryLabel(r) }),
@@ -76,7 +77,7 @@ export function RepositoriesCard() {
                   }
                 >
                   <Trash2Icon />
-                </Button>
+                </IconAction>
               </li>
             ))}
           </ul>
@@ -90,5 +91,27 @@ export function RepositoriesCard() {
       )}
       {dialog}
     </Card>
+  );
+}
+
+/** A row's ghost icon button, named by its tooltip. */
+function IconAction({
+  label,
+  onClick,
+  children,
+}: {
+  label: string;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button variant="ghost" size="icon-sm" aria-label={label} onClick={onClick}>
+          {children}
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   );
 }
