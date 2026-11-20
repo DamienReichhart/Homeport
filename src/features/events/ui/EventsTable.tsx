@@ -40,15 +40,16 @@ export function EventsTable({ events }: { events: EngineEvent[] }) {
                 <TableCell className="text-muted-foreground w-28 capitalize">{e.kind}</TableCell>
                 <TableCell>
                   <span
-                    className={cn(
-                      'inline-flex max-w-xs items-center gap-1.5 font-medium',
-                      trouble && 'text-warning',
-                    )}
+                    className={cn('block max-w-xs truncate font-medium', trouble && 'text-warning')}
+                    title={e.action}
                   >
-                    {trouble && <TriangleAlertIcon className="size-3.5 shrink-0" aria-hidden />}
-                    <span className="truncate" title={e.action}>
-                      {e.action}
-                    </span>
+                    {trouble && (
+                      <TriangleAlertIcon
+                        className="me-1.5 inline size-3.5 align-[-2px]"
+                        aria-hidden
+                      />
+                    )}
+                    {e.action}
                   </span>
                 </TableCell>
                 <TableCell>
