@@ -28,7 +28,7 @@ export default {
   'rbac.refused':
     'Some RBAC objects can’t be listed with your credentials, so what is shown leaves them out:',
   'rbac.forbidden':
-    'Your credentials can’t list this cluster’s RBAC objects, so only what they allow you is shown, as the API server reports it.',
+    'Your credentials can’t list this Cluster’s RBAC objects, so only what they allow you is shown, as the API server reports it.',
   'rbac.role.kind': 'Kind',
   'rbac.role.namespace': 'Namespace',
   'rbac.role.aggregation': 'Aggregates the ClusterRoles matching',

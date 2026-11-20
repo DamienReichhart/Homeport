@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { RefreshCwIcon } from 'lucide-react';
+import { LockIcon, RefreshCwIcon } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { ClusterGate, NamespacePicker, useNamespace } from '@/core/cluster';
 import { toAppError, type ClusterView } from '@/shared/api';
@@ -14,6 +14,9 @@ import {
   TabsContent,
   TabsList,
   TabsTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from '@/shared/ui';
 import { rbacQueries } from '../api/queries';
 import { RBAC_TABS, type RbacTab } from '../model/paths';
@@ -51,14 +54,20 @@ function Rbac({ cluster }: { cluster: ClusterView }) {
         actions={
           <>
             <NamespacePicker clusterId={id} value={namespace} onChange={setNamespace} />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void index.refetch()}
-              disabled={index.isFetching}
-            >
-              <RefreshCwIcon /> {t('rbac.refresh')}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label={t('rbac.refresh')}
+                  onClick={() => void index.refetch()}
+                  disabled={index.isFetching}
+                >
+                  <RefreshCwIcon />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{t('rbac.refresh')}</TooltipContent>
+            </Tooltip>
           </>
         }
       />
@@ -66,10 +75,14 @@ function Rbac({ cluster }: { cluster: ClusterView }) {
         <Spinner />
       ) : forbidden ? (
         <div className="grid gap-4">
+          {/* Not a failure: the credentials see less, and the panel says what they may do. */}
           <Alert>
-            <AlertDescription>{t('rbac.forbidden')}</AlertDescription>
+            <LockIcon />
+            <AlertDescription>
+              <p>{t('rbac.forbidden')}</p>
+              <p className="font-mono text-xs">{toAppError(index.error).message}</p>
+            </AlertDescription>
           </Alert>
-          <ErrorMessage error={index.error} />
           <AccessPanel cluster={cluster} namespace={namespace} />
         </div>
       ) : index.error ? (

@@ -15,7 +15,9 @@ const roleColumns: ColumnDef<RoleView, unknown>[] = [
     accessorFn: (r) => r.name,
     cell: ({ row }) => (
       <span className="flex items-center gap-2">
-        <span className="font-medium">{row.original.name}</span>
+        <span className="max-w-80 truncate font-medium" title={row.original.name}>
+          {row.original.name}
+        </span>
         {row.original.aggregation.length > 0 && (
           <Badge variant="outline">{t('rbac.aggregated')}</Badge>
         )}
@@ -24,7 +26,12 @@ const roleColumns: ColumnDef<RoleView, unknown>[] = [
   },
   { id: 'kind', header: t('rbac.column.kind'), accessorFn: (r) => r.kind },
   { id: 'namespace', header: t('rbac.column.namespace'), accessorFn: (r) => scopeOf(r.namespace) },
-  { id: 'rules', header: t('rbac.column.rules'), accessorFn: (r) => r.rules.length },
+  {
+    id: 'rules',
+    header: t('rbac.column.rules'),
+    accessorFn: (r) => r.rules.length,
+    cell: ({ row }) => <span className="tabular-nums">{row.original.rules.length}</span>,
+  },
   {
     id: 'age',
     header: t('rbac.column.age'),
@@ -40,13 +47,22 @@ export function BoundRole({ binding }: { binding: BindingView }) {
       <Link className="text-primary" to={boundRolePath(binding)}>
         {binding.roleKind}/{binding.roleName}
       </Link>
-      {!binding.roleFound && <Badge variant="destructive">{t('rbac.roleMissing')}</Badge>}
+      {!binding.roleFound && <Badge variant="warning">{t('rbac.roleMissing')}</Badge>}
     </span>
   );
 }
 
 const bindingColumns: ColumnDef<BindingView, unknown>[] = [
-  { id: 'name', header: t('rbac.column.name'), accessorFn: (b) => b.name },
+  {
+    id: 'name',
+    header: t('rbac.column.name'),
+    accessorFn: (b) => b.name,
+    cell: ({ row }) => (
+      <span className="inline-block max-w-72 truncate align-bottom" title={row.original.name}>
+        {row.original.name}
+      </span>
+    ),
+  },
   { id: 'kind', header: t('rbac.column.kind'), accessorFn: (b) => b.kind },
   { id: 'namespace', header: t('rbac.column.namespace'), accessorFn: (b) => scopeOf(b.namespace) },
   {
@@ -60,7 +76,8 @@ const bindingColumns: ColumnDef<BindingView, unknown>[] = [
     header: t('rbac.column.subjects'),
     accessorFn: (b) => b.subjects.map(subjectName).join(' '),
     cell: ({ row }) => (
-      <span className="flex flex-wrap gap-x-3 gap-y-1">
+      // Several subjects wrap within the cell rather than widen the table.
+      <span className="flex max-w-md flex-wrap gap-x-3 gap-y-1 whitespace-normal">
         {row.original.subjects.map((s) => (
           <Link key={subjectPath(s)} className="text-primary" to={subjectPath(s)}>
             {s.kind}/{subjectName(s)}
@@ -82,7 +99,14 @@ const subjectColumns: ColumnDef<SubjectEntry, unknown>[] = [
     id: 'name',
     header: t('rbac.column.name'),
     accessorFn: (s) => s.subject.name,
-    cell: ({ row }) => <span className="font-medium">{row.original.subject.name}</span>,
+    cell: ({ row }) => (
+      <span
+        className="inline-block max-w-80 truncate align-bottom font-medium"
+        title={row.original.subject.name}
+      >
+        {row.original.subject.name}
+      </span>
+    ),
   },
   { id: 'kind', header: t('rbac.column.kind'), accessorFn: (s) => s.subject.kind },
   {
@@ -90,7 +114,12 @@ const subjectColumns: ColumnDef<SubjectEntry, unknown>[] = [
     header: t('rbac.column.namespace'),
     accessorFn: (s) => s.subject.namespace ?? '',
   },
-  { id: 'bindings', header: t('rbac.column.bindings'), accessorFn: (s) => s.bindings },
+  {
+    id: 'bindings',
+    header: t('rbac.column.bindings'),
+    accessorFn: (s) => s.bindings,
+    cell: ({ row }) => <span className="tabular-nums">{row.original.bindings}</span>,
+  },
 ];
 
 function Searchable<T>({
