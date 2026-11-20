@@ -359,4 +359,5 @@ export default {
   'containers.export.finished': '完成。可在“镜像”页面或使用 docker import 导入它。',
   'containers.export.done': '已导出到 {destination}',
   'containers.palette.run': '运行容器',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

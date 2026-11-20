@@ -1,4 +1,4 @@
-import { PauseIcon, PlayIcon, SquareIcon, Trash2Icon, ZapIcon } from 'lucide-react';
+import { PauseIcon, PlayIcon, CircleStopIcon, Trash2Icon, ZapIcon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { ContainerdContainer, TaskAction } from '@/shared/api';
 import { Button } from '@/shared/ui';
@@ -13,7 +13,7 @@ const ACTIONS: Record<TaskAction, { icon: LucideIcon; label: MessageKey; one: Me
     one: 'containerd.containers.actionOne.start',
   },
   stop: {
-    icon: SquareIcon,
+    icon: CircleStopIcon,
     label: 'containerd.containers.action.stop',
     one: 'containerd.containers.actionOne.stop',
   },

@@ -1,4 +1,4 @@
-import { PlayIcon, RotateCwIcon, SquareIcon } from 'lucide-react';
+import { PlayIcon, RotateCwIcon, CircleStopIcon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { QuadletUnit, QuadletUnits, UnitAction } from '@/shared/api';
 import { Button } from '@/shared/ui';
@@ -8,7 +8,7 @@ import { t, type MessageKey } from '@/shared/i18n';
 
 const ACTIONS: Record<UnitAction, { icon: LucideIcon; label: MessageKey; one: MessageKey }> = {
   start: { icon: PlayIcon, label: 'quadlets.action.start', one: 'quadlets.actionOne.start' },
-  stop: { icon: SquareIcon, label: 'quadlets.action.stop', one: 'quadlets.actionOne.stop' },
+  stop: { icon: CircleStopIcon, label: 'quadlets.action.stop', one: 'quadlets.actionOne.stop' },
   restart: {
     icon: RotateCwIcon,
     label: 'quadlets.action.restart',

@@ -1,4 +1,4 @@
-import { PauseIcon, PlayIcon, RotateCwIcon, SquareIcon, Trash2Icon } from 'lucide-react';
+import { PauseIcon, PlayIcon, RotateCwIcon, CircleStopIcon, Trash2Icon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import type { PodmanPod, PodmanPodAction } from '@/shared/api';
 import { Button, type ConfirmedAction } from '@/shared/ui';
@@ -9,7 +9,7 @@ import { t, type MessageKey } from '@/shared/i18n';
 
 const ACTIONS: Record<PodmanPodAction, { icon: LucideIcon; label: MessageKey; one: MessageKey }> = {
   start: { icon: PlayIcon, label: 'podmanpods.action.start', one: 'podmanpods.actionOne.start' },
-  stop: { icon: SquareIcon, label: 'podmanpods.action.stop', one: 'podmanpods.actionOne.stop' },
+  stop: { icon: CircleStopIcon, label: 'podmanpods.action.stop', one: 'podmanpods.actionOne.stop' },
   restart: {
     icon: RotateCwIcon,
     label: 'podmanpods.action.restart',

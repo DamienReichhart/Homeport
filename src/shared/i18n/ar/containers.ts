@@ -376,4 +376,5 @@ export default {
   'containers.export.finished': 'تم. استورده في صفحة «الصور»، أو باستخدام docker import.',
   'containers.export.done': 'تم التصدير إلى {destination}',
   'containers.palette.run': 'تشغيل حاوية',
+  'containers.idTitle': 'المعرّف {id}',
 } satisfies Translation<typeof en>;

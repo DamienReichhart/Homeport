@@ -389,4 +389,5 @@ export default {
   'containers.export.finished': 'हो गया। इसे इमेज पेज पर, या docker import से इम्पोर्ट करें।',
   'containers.export.done': '{destination} में एक्सपोर्ट किया गया',
   'containers.palette.run': 'कंटेनर चलाएँ',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

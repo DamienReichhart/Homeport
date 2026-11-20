@@ -372,4 +372,5 @@ export default {
     '완료되었습니다. 이미지 페이지에서 또는 docker import로 가져오세요.',
   'containers.export.done': '내보내기 완료: {destination}',
   'containers.palette.run': '컨테이너 실행',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

@@ -1,4 +1,4 @@
-import { PlayIcon, RotateCwIcon, SquareIcon, Trash2Icon } from 'lucide-react';
+import { PlayIcon, RotateCwIcon, CircleStopIcon, Trash2Icon } from 'lucide-react';
 import type { Container } from '@/shared/api';
 import { Button, type ConfirmOptions } from '@/shared/ui';
 import { useContainerMutations } from '../../api/mutations';
@@ -31,7 +31,7 @@ export function SelectionActions({
         <PlayIcon /> {t('containers.action.start')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'stop' })}>
-        <SquareIcon /> {t('containers.action.stop')}
+        <CircleStopIcon /> {t('containers.action.stop')}
       </Button>
       <Button size="sm" variant="outline" onClick={() => act.mutate({ ids, action: 'restart' })}>
         <RotateCwIcon /> {t('containers.action.restart')}

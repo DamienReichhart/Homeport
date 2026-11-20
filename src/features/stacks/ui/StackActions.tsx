@@ -7,7 +7,7 @@ import {
   RocketIcon,
   RefreshCwIcon,
   RotateCwIcon,
-  SquareIcon,
+  CircleStopIcon,
   Trash2Icon,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -134,7 +134,7 @@ export function StackActions({
             variant="outline"
             onClick={() => act.mutate({ name: stack.name, action: 'stop' })}
           >
-            <SquareIcon /> {t('stacks.action.stop')}
+            <CircleStopIcon /> {t('stacks.action.stop')}
           </Button>
         ) : (
           <Button
@@ -188,7 +188,7 @@ export function StackActions({
                   })
                 }
               >
-                <SquareIcon /> {t('stacks.down.confirm')}
+                <CircleStopIcon /> {t('stacks.down.confirm')}
               </DropdownMenuItem>
               <DropdownMenuItem
                 variant="destructive"

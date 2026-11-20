@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ArrowLeftIcon, PencilIcon, SquareIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon, CircleStopIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { age, ClusterGate } from '@/core/cluster';
@@ -156,7 +156,7 @@ function JobDetail({
             </Button>
             {!view.stopped && (
               <Button variant="outline" onClick={() => setStopping(true)}>
-                <SquareIcon /> {t('nomad.job.stop')}
+                <CircleStopIcon /> {t('nomad.job.stop')}
               </Button>
             )}
           </>

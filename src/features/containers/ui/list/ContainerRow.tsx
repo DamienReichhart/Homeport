@@ -12,7 +12,7 @@ import {
   TableRow,
   toastError,
 } from '@/shared/ui';
-import { containerTone } from '../../model/containerTone';
+import { containerTone, statusText } from '../../model/containerTone';
 import { portLabels } from '../../model/grouping';
 import { ContainerMenu } from '../ContainerMenu';
 import type { ContainerDialogRequest } from '../dialogs/ContainerDialogs';
@@ -72,6 +72,7 @@ export function ContainerRow({
               {/* The row's keyboard stop; a click anywhere else on the row goes there too. */}
               <Link
                 to={`/containers/${c.id}/logs`}
+                title={t('containers.idTitle', { id: shortId(c.id) })}
                 className="focus-visible:ring-ring/50 truncate rounded-sm outline-none focus-visible:ring-[3px]"
                 onClick={(e) => e.stopPropagation()}
               >
@@ -100,7 +101,6 @@ export function ContainerRow({
                 </Badge>
               )}
             </p>
-            <p className="text-muted-foreground font-mono text-xs">{shortId(c.id)}</p>
           </div>
         </div>
       </TableCell>
@@ -111,7 +111,8 @@ export function ContainerRow({
         </span>
       </TableCell>
       <TableCell>
-        <span className="text-sm">{c.status || c.state}</span>
+        {/* The health shows as a badge, not repeated in the status. */}
+        <span className="text-sm">{statusText(c)}</span>
         {c.health && (
           <Badge variant={c.health === 'unhealthy' ? 'destructive' : 'outline'} className="ms-1.5">
             {c.health}

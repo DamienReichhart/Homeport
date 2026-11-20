@@ -395,4 +395,5 @@ export default {
     '完了しました。「イメージ」ページまたは docker import でインポートしてください。',
   'containers.export.done': '{destination} にエクスポートしました',
   'containers.palette.run': 'コンテナを実行',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

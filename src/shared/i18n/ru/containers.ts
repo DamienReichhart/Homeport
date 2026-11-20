@@ -383,4 +383,5 @@ export default {
     'Готово. Импортируйте его на странице «Образы» или командой docker import.',
   'containers.export.done': 'Экспортировано в {destination}',
   'containers.palette.run': 'Запустить контейнер',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

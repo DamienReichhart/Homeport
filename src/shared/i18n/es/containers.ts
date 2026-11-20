@@ -369,4 +369,5 @@ export default {
   'containers.export.finished': 'Listo. Impórtalo en la página Imágenes o con docker import.',
   'containers.export.done': 'Exportado a {destination}',
   'containers.palette.run': 'Ejecutar un contenedor',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

@@ -376,4 +376,5 @@ export default {
   'containers.export.finished': 'Done. Import it on the Images page, or with docker import.',
   'containers.export.done': 'Exported to {destination}',
   'containers.palette.run': 'Run a container',
+  'containers.idTitle': 'ID {id}',
 } as const;

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { openUrl } from '@tauri-apps/plugin-opener';
-import { ExternalLinkIcon, SquareIcon } from 'lucide-react';
+import { ExternalLinkIcon, CircleStopIcon } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { objectPath } from '@/core/cluster';
 import type { PortForward } from '@/shared/api';
@@ -72,7 +72,7 @@ function columns(stop: (id: number) => void): ColumnDef<PortForward, unknown>[] 
             <ExternalLinkIcon /> {t('portforwards.open')}
           </Button>
           <Button variant="ghost" size="sm" onClick={() => stop(row.original.id)}>
-            <SquareIcon /> {t('portforwards.stop')}
+            <CircleStopIcon /> {t('portforwards.stop')}
           </Button>
         </div>
       ),

@@ -1,4 +1,6 @@
 import {
+  CirclePlayIcon,
+  CircleStopIcon,
   CopyIcon,
   EllipsisVerticalIcon,
   FileArchiveIcon,
@@ -10,7 +12,6 @@ import {
   ScrollTextIcon,
   SlidersHorizontalIcon,
   SkullIcon,
-  SquareIcon,
   SquareTerminalIcon,
   Trash2Icon,
 } from 'lucide-react';
@@ -53,6 +54,22 @@ export function ContainerMenu({
 
   return (
     <div className="flex items-center justify-end gap-0.5" onClick={(e) => e.stopPropagation()}>
+      {(running || paused) && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label={t('containers.action.restart')}
+              disabled={act.isPending}
+              onClick={() => act.mutate({ ids, action: 'restart' })}
+            >
+              <RotateCwIcon />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t('containers.action.restart')}</TooltipContent>
+        </Tooltip>
+      )}
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
@@ -64,7 +81,7 @@ export function ContainerMenu({
             disabled={act.isPending}
             onClick={() => act.mutate({ ids, action: running || paused ? 'stop' : 'start' })}
           >
-            {running || paused ? <SquareIcon /> : <PlayIcon />}
+            {running || paused ? <CircleStopIcon /> : <CirclePlayIcon />}
           </Button>
         </TooltipTrigger>
         <TooltipContent>

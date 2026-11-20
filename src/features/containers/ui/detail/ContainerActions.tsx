@@ -8,7 +8,7 @@ import {
   PlayIcon,
   RotateCwIcon,
   SlidersHorizontalIcon,
-  SquareIcon,
+  CircleStopIcon,
   Trash2Icon,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
@@ -48,7 +48,7 @@ export function ContainerActions({
     <>
       {running || paused ? (
         <Button variant="outline" onClick={() => act.mutate({ ids, action: 'stop' })}>
-          <SquareIcon /> {t('containers.action.stop')}
+          <CircleStopIcon /> {t('containers.action.stop')}
         </Button>
       ) : (
         <Button variant="outline" onClick={() => act.mutate({ ids, action: 'start' })}>

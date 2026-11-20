@@ -393,4 +393,5 @@ export default {
     'Terminé. Importez-le depuis la page Images, ou avec docker import.',
   'containers.export.done': 'Exporté vers {destination}',
   'containers.palette.run': 'Exécuter un conteneur',
+  'containers.idTitle': 'ID {id}',
 } satisfies Translation<typeof en>;

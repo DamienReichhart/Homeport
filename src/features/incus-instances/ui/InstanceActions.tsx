@@ -4,7 +4,7 @@ import {
   PlayIcon,
   PowerOffIcon,
   RotateCwIcon,
-  SquareIcon,
+  CircleStopIcon,
   Trash2Icon,
   type LucideIcon,
 } from 'lucide-react';
@@ -23,7 +23,7 @@ import { t, type MessageKey } from '@/shared/i18n';
 
 const ACTIONS: Record<InstanceAction, { icon: LucideIcon; label: MessageKey; one: MessageKey }> = {
   start: { icon: PlayIcon, label: 'incus.action.start', one: 'incus.actionOne.start' },
-  stop: { icon: SquareIcon, label: 'incus.action.stop', one: 'incus.actionOne.stop' },
+  stop: { icon: CircleStopIcon, label: 'incus.action.stop', one: 'incus.actionOne.stop' },
   restart: { icon: RotateCwIcon, label: 'incus.action.restart', one: 'incus.actionOne.restart' },
   freeze: { icon: PauseIcon, label: 'incus.action.freeze', one: 'incus.actionOne.freeze' },
   unfreeze: { icon: PlayIcon, label: 'incus.action.unfreeze', one: 'incus.actionOne.unfreeze' },
