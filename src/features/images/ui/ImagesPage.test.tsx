@@ -83,12 +83,16 @@ describe('images page', () => {
       ],
     });
     renderApp('/images');
-    const mark = await screen.findByLabelText('A newer nginx:1.27 was published');
-    expect(mark).toHaveTextContent('Newer version');
+    const mark = (await screen.findByText('Newer version')).closest('[data-variant]');
     expect(mark).toHaveAttribute('data-variant', 'warning');
+    // Its tooltip names the tag.
+    const user = userEvent.setup();
+    await user.hover(mark!);
+    expect(await screen.findByRole('tooltip')).toHaveTextContent(
+      'A newer nginx:1.27 was published',
+    );
 
     // The row's menu offers to pull it, with the reference filled in.
-    const user = userEvent.setup();
     await user.click(screen.getByRole('button', { name: 'More actions for nginx:1.27' }));
     await user.click(await screen.findByRole('menuitem', { name: 'Pull the newer nginx:1.27' }));
     const dialog = await screen.findByRole('dialog', { name: 'Pull an image' });

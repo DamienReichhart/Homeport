@@ -15,12 +15,7 @@ export function ImageStatus({ image, newer }: { image: Image; newer: string[] })
       {newer.length > 0 && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Badge
-              variant="warning"
-              tabIndex={0}
-              aria-label={newerLabel(newer)}
-              onClick={(e) => e.stopPropagation()}
-            >
+            <Badge variant="warning" tabIndex={0} onClick={(e) => e.stopPropagation()}>
               <CircleArrowUpIcon /> {t('images.newer')}
             </Badge>
           </TooltipTrigger>
