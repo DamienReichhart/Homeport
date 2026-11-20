@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { ContainerdSnapshot } from '@/shared/api';
 import { containerdHost } from '@/test/containerd';
@@ -69,6 +69,11 @@ describe('containerd snapshots', () => {
         key: 'orphan',
       }),
     );
+    await user.click(screen.getByRole('button', { name: 'Remove unused' }));
+    const dialog = await screen.findByRole('alertdialog');
+    expect(within(dialog).getByText('Remove 1 unused snapshot?')).toBeInTheDocument();
+    await user.click(within(dialog).getByRole('button', { name: 'Remove unused' }));
+    await waitFor(() => expect(calls.filter((c) => c.key === 'orphan')).toHaveLength(2));
     await user.click(screen.getByLabelText('Only unused'));
     expect(screen.queryByText('web')).toBeNull();
     // The Host’s default snapshotter until another is picked.

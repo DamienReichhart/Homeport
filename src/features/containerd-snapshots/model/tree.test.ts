@@ -1,5 +1,5 @@
 import type { ContainerdSnapshot } from '@/shared/api';
-import { removable, shortKey, snapshotTree } from './tree';
+import { prunable, removable, shortKey, snapshotTree } from './tree';
 
 const snap = (key: string, parent: string, size: number, over: Partial<ContainerdSnapshot> = {}) =>
   ({
@@ -39,6 +39,18 @@ describe('the snapshots tree', () => {
     expect(removable(snap('web', 'top', 1, { users: [{ kind: 'container', id: 'web' }] }))).toBe(
       false,
     );
+  });
+
+  it('prunes whole unused chains, children before their parent', () => {
+    const keys = prunable([
+      snap('base', '', 1, { children: 1 }),
+      snap('mid', 'base', 1, { children: 1 }),
+      snap('leaf', 'mid', 1),
+      snap('used', '', 1, { children: 1 }),
+      snap('web', 'used', 1, { users: [{ kind: 'container', id: 'web' }] }),
+      snap('elsewhere', '', 1, { children: 1 }),
+    ]).map((s) => s.key);
+    expect(keys).toEqual(['leaf', 'mid', 'base']);
   });
 
   it('shortens chain IDs only', () => {

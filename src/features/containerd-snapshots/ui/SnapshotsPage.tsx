@@ -24,11 +24,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
 } from '@/shared/ui';
-import { useRemoveSnapshot } from '../api/mutations';
+import { usePruneSnapshots, useRemoveSnapshot } from '../api/mutations';
 import { snapshotQueries } from '../api/queries';
-import { removable, shortKey, snapshotTree } from '../model/tree';
+import { prunable, removable, shortKey, snapshotTree } from '../model/tree';
 import { t, type MessageKey } from '@/shared/i18n';
 
 const KINDS: Record<SnapshotKind, MessageKey> = {
@@ -41,15 +44,19 @@ const KINDS: Record<SnapshotKind, MessageKey> = {
 function UsedBy({ snapshot }: { snapshot: ContainerdSnapshot }) {
   if (snapshot.users.length === 0)
     return <span className="text-muted-foreground">{t('containerd.snapshots.unused')}</span>;
+  const names = snapshot.users.map((u) =>
+    u.kind === 'container'
+      ? t('containerd.snapshots.usedByContainer', { id: u.id })
+      : t('containerd.snapshots.usedByImage', { name: u.name }),
+  );
   return (
-    <span className="flex flex-wrap gap-1">
-      {snapshot.users.map((u) => (
-        <Badge key={u.kind === 'container' ? `c:${u.id}` : `i:${u.name}`} variant="outline">
-          {u.kind === 'container'
-            ? t('containerd.snapshots.usedByContainer', { id: u.id })
-            : t('containerd.snapshots.usedByImage', { name: u.name })}
+    <span className="flex max-w-96 gap-1 overflow-hidden" title={names.join('\n')}>
+      {names.slice(0, 2).map((name) => (
+        <Badge key={name} variant="outline" className="max-w-72 truncate">
+          {name}
         </Badge>
       ))}
+      {names.length > 2 && <Badge variant="outline">+{names.length - 2}</Badge>}
     </span>
   );
 }
@@ -59,6 +66,7 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
   const [unusedOnly, setUnusedOnly] = useState(false);
   const snapshots = useQuery(snapshotQueries.list(hostId, namespace, snapshotter));
   const remove = useRemoveSnapshot(hostId, namespace);
+  const prune = usePruneSnapshots(hostId, namespace);
   const [dialog, confirm] = useConfirmedAction();
 
   if (snapshots.isPending) return <Spinner />;
@@ -66,7 +74,8 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
     return <ErrorMessage error={snapshots.error} onRetry={() => void snapshots.refetch()} />;
   const data = snapshots.data;
   const rows = snapshotTree(data.snapshots).filter((r) => !unusedOnly || removable(r.snapshot));
-  const unused = data.snapshots.filter(removable);
+  const unused = prunable(data.snapshots);
+  const unusedSize = formatBytes(unused.reduce((sum, s) => sum + (s.size ?? 0), 0));
   return (
     <div>
       <PageHeader
@@ -75,9 +84,30 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
           count: data.snapshots.length,
           total: formatBytes(data.total),
           unused: unused.length,
-          unusedSize: formatBytes(unused.reduce((sum, s) => sum + (s.size ?? 0), 0)),
+          unusedSize,
           namespace,
         })}
+        actions={
+          <Button
+            variant="outline"
+            disabled={unused.length === 0 || prune.isPending}
+            onClick={() =>
+              confirm({
+                title: t('containerd.snapshots.prune.title', { count: unused.length }),
+                description: t('containerd.snapshots.prune.description', { size: unusedSize }),
+                confirmLabel: t('containerd.snapshots.prune.open'),
+                destructive: true,
+                action: () =>
+                  prune.mutateAsync({
+                    snapshotter: data.snapshotter,
+                    keys: unused.map((s) => s.key),
+                  }),
+              })
+            }
+          >
+            <Trash2Icon /> {t('containerd.snapshots.prune.open')}
+          </Button>
+        }
       />
       <div className="mb-3 flex flex-wrap items-center gap-4">
         <Select value={data.snapshotter} onValueChange={setSnapshotter}>
@@ -126,39 +156,53 @@ function SnapshotsList({ hostId, namespace }: { hostId: string; namespace: strin
                     {shortKey(snapshot.key)}
                   </span>
                 </TableCell>
-                <TableCell>{t(KINDS[snapshot.kind])}</TableCell>
-                <TableCell className="text-end whitespace-nowrap">
+                <TableCell className="text-muted-foreground">{t(KINDS[snapshot.kind])}</TableCell>
+                <TableCell className="text-end whitespace-nowrap tabular-nums">
                   {snapshot.size === null ? '—' : formatBytes(snapshot.size)}
                 </TableCell>
                 <TableCell>
                   <UsedBy snapshot={snapshot} />
                 </TableCell>
                 <TableCell className="text-end">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    aria-label={t('containerd.snapshots.removeOne', {
-                      key: shortKey(snapshot.key),
-                    })}
-                    title={removable(snapshot) ? undefined : t('containerd.snapshots.inUse')}
-                    disabled={!removable(snapshot) || remove.isPending}
-                    onClick={() =>
-                      confirm({
-                        title: t('containerd.snapshots.remove.title', {
-                          key: shortKey(snapshot.key),
-                        }),
-                        description: t('containerd.snapshots.remove.description', {
-                          size: snapshot.size === null ? '—' : formatBytes(snapshot.size),
-                        }),
-                        confirmLabel: t('common.remove'),
-                        destructive: true,
-                        action: () =>
-                          remove.mutateAsync({ snapshotter: data.snapshotter, key: snapshot.key }),
-                      })
-                    }
-                  >
-                    <Trash2Icon />
-                  </Button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      {/* A disabled button shows no tooltip; its wrapper does. */}
+                      <span tabIndex={removable(snapshot) ? -1 : 0}>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          aria-label={t('containerd.snapshots.removeOne', {
+                            key: shortKey(snapshot.key),
+                          })}
+                          disabled={!removable(snapshot) || remove.isPending}
+                          onClick={() =>
+                            confirm({
+                              title: t('containerd.snapshots.remove.title', {
+                                key: shortKey(snapshot.key),
+                              }),
+                              description: t('containerd.snapshots.remove.description', {
+                                size: snapshot.size === null ? '—' : formatBytes(snapshot.size),
+                              }),
+                              confirmLabel: t('common.remove'),
+                              destructive: true,
+                              action: () =>
+                                remove.mutateAsync({
+                                  snapshotter: data.snapshotter,
+                                  key: snapshot.key,
+                                }),
+                            })
+                          }
+                        >
+                          <Trash2Icon />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {removable(snapshot)
+                        ? t('containerd.snapshots.removeOne', { key: shortKey(snapshot.key) })
+                        : t('containerd.snapshots.inUse')}
+                    </TooltipContent>
+                  </Tooltip>
                 </TableCell>
               </TableRow>
             ))}

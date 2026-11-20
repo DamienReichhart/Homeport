@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': '{name} を停止',
   'containerd.containers.actionOne.pause': '{name} を一時停止',
   'containerd.containers.actionOne.resume': '{name} を再開',
-  'containerd.containers.removeOne': '{name} を削除',
+  'containerd.containers.actionsFor': '{name} の操作',
   'containerd.containers.done.start': '{name} を起動しました',
   'containerd.containers.done.stop': '{name} を停止しました',
   'containerd.containers.done.pause': '{name} を一時停止しました',
@@ -138,11 +138,17 @@ export default {
   'containerd.snapshots.kind.unknown': '不明',
   'containerd.snapshots.removeOne': '{key} を削除',
   'containerd.snapshots.removed': 'スナップショット {key} を削除しました',
+  'containerd.snapshots.pruned': '{count, plural, other {# 件のスナップショット}}を削除しました',
   'containerd.snapshots.inUse':
     '使用中か、これを基にしたものがあります。先にコンテナまたはイメージを削除してください。',
   'containerd.snapshots.remove.title': 'スナップショット {key} を削除しますか？',
   'containerd.snapshots.remove.description':
     '使用しているものはありません。そのファイル（{size}）がホストから削除されます。',
+  'containerd.snapshots.prune.open': '未使用のものを削除',
+  'containerd.snapshots.prune.title':
+    '未使用のスナップショット {count, plural, other {# 件}}を削除しますか？',
+  'containerd.snapshots.prune.description':
+    '使用しているものも、その上に構築されたものもありません。それらのファイル（{size}）がホストから削除されます。',
   'containerd.namespaces.nav': '名前空間',
   'containerd.namespaces.title': '名前空間',
   'containerd.namespaces.summary':
@@ -151,7 +157,8 @@ export default {
   'containerd.namespaces.created': '名前空間 {name} を作成しました',
   'containerd.namespaces.removed': '名前空間 {name} を削除しました',
   'containerd.namespaces.shown': '表示中',
-  'containerd.namespaces.show': '表示',
+  'containerd.namespaces.show': 'そのコンテナとイメージを表示',
+  'containerd.namespaces.showOne': '{name} を表示',
   'containerd.namespaces.removeOne': '{name} を削除',
   'containerd.namespaces.notEmpty':
     '削除できるのは空の名前空間だけです。先にそのコンテナとイメージを削除してください。',

@@ -1,5 +1,5 @@
 import type { ContainerdContainer } from '@/shared/api';
-import { formatRelative } from '@/shared/lib';
+import { formatDateTime, formatRelative } from '@/shared/lib';
 import { Badge, StatusDot, type ColumnDef } from '@/shared/ui';
 import { seconds, STATE_LABELS, stateTone } from '../model/containers';
 import { TaskActions } from './TaskActions';
@@ -42,13 +42,19 @@ export function containerColumns({
       header: t('containerd.containers.column.image'),
       accessorFn: (c) => c.image,
       cell: ({ row }) => (
-        <span className="text-muted-foreground font-mono text-xs">{row.original.image}</span>
+        <span
+          className="text-muted-foreground block max-w-72 truncate font-mono text-xs"
+          title={row.original.image}
+        >
+          {row.original.image}
+        </span>
       ),
     },
     {
       id: 'state',
       header: t('containerd.containers.column.state'),
       accessorFn: (c) => c.state,
+      meta: { compact: true },
       cell: ({ row }) =>
         row.original.state === 'stopped' && row.original.exitStatus !== null
           ? t('containerd.state.exited', { code: row.original.exitStatus })
@@ -59,10 +65,15 @@ export function containerColumns({
       header: t('containerd.containers.column.createdBy'),
       accessorFn: (c) => c.createdBy,
       cell: ({ row }) => (
-        <span className="flex flex-wrap items-center gap-1">
-          <Badge variant="secondary">{t(CREATED_BY[row.original.createdBy])}</Badge>
+        <span className="flex items-center gap-1.5 whitespace-nowrap">
+          <Badge variant="outline">{t(CREATED_BY[row.original.createdBy])}</Badge>
           {row.original.pod && (
-            <span className="text-muted-foreground text-xs">{row.original.pod}</span>
+            <span
+              className="text-muted-foreground max-w-48 truncate text-xs"
+              title={row.original.pod}
+            >
+              {row.original.pod}
+            </span>
           )}
         </span>
       ),
@@ -72,7 +83,10 @@ export function containerColumns({
       header: t('containerd.containers.column.created'),
       accessorFn: (c) => seconds(c.createdAt),
       cell: ({ row }) => (
-        <span className="text-muted-foreground whitespace-nowrap">
+        <span
+          className="text-muted-foreground whitespace-nowrap"
+          title={row.original.createdAt ? formatDateTime(row.original.createdAt) : undefined}
+        >
           {row.original.createdAt ? formatRelative(seconds(row.original.createdAt)) : '—'}
         </span>
       ),
@@ -82,15 +96,13 @@ export function containerColumns({
       header: '',
       enableSorting: false,
       cell: ({ row }) => (
-        <div className="flex justify-end" onClick={(e) => e.stopPropagation()}>
-          <TaskActions
-            hostId={hostId}
-            namespace={namespace}
-            container={row.original}
-            compact
-            onRemove={() => onRemove(row.original)}
-          />
-        </div>
+        <TaskActions
+          hostId={hostId}
+          namespace={namespace}
+          container={row.original}
+          compact
+          onRemove={() => onRemove(row.original)}
+        />
       ),
     },
   ];

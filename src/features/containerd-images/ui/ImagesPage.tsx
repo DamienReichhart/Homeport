@@ -5,7 +5,7 @@ import { useActionRequest, usePageQuery } from '@/core/feature';
 import { ContainerdGate } from '@/core/host';
 import { PullDialog } from '@/features/images';
 import type { ContainerdImage } from '@/shared/api';
-import { formatBytes, formatRelative } from '@/shared/lib';
+import { formatBytes, formatDateTime, formatRelative } from '@/shared/lib';
 import {
   Badge,
   Button,
@@ -15,6 +15,9 @@ import {
   PageHeader,
   SearchInput,
   Spinner,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   useConfirmedAction,
   WithShortcut,
   type ColumnDef,
@@ -46,21 +49,25 @@ function ImagesList({ hostId, namespace }: { hostId: string; namespace: string }
       id: 'name',
       header: t('containerd.images.column.name'),
       accessorFn: (i) => i.name,
-      cell: ({ row }) => <span className="font-mono text-xs">{row.original.name}</span>,
+      cell: ({ row }) => (
+        <span className="block max-w-96 truncate font-mono text-xs" title={row.original.name}>
+          {row.original.name}
+        </span>
+      ),
     },
     {
       id: 'platforms',
       header: t('containerd.images.column.platforms'),
       accessorFn: (i) => i.platforms.join(' '),
       cell: ({ row }) => (
-        <span className="flex flex-wrap gap-1">
-          {row.original.platforms.slice(0, 4).map((p) => (
-            <Badge key={p} variant="outline">
+        <span className="flex gap-1" title={row.original.platforms.join('\n') || undefined}>
+          {row.original.platforms.slice(0, 2).map((p) => (
+            <Badge key={p} variant="outline" className="font-mono">
               {p}
             </Badge>
           ))}
-          {row.original.platforms.length > 4 && (
-            <Badge variant="outline">+{row.original.platforms.length - 4}</Badge>
+          {row.original.platforms.length > 2 && (
+            <Badge variant="outline">+{row.original.platforms.length - 2}</Badge>
           )}
         </span>
       ),
@@ -69,26 +76,41 @@ function ImagesList({ hostId, namespace }: { hostId: string; namespace: string }
       id: 'size',
       header: t('containerd.images.column.size'),
       accessorFn: (i) => i.size ?? -1,
-      cell: ({ row }) =>
-        row.original.size === null ? (
-          <span className="text-muted-foreground" title={t('containerd.images.sizeUnknown')}>
-            —
-          </span>
-        ) : (
-          formatBytes(row.original.size)
-        ),
+      cell: ({ row }) => (
+        <div className="text-end whitespace-nowrap tabular-nums">
+          {row.original.size === null ? (
+            <span className="text-muted-foreground" title={t('containerd.images.sizeUnknown')}>
+              —
+            </span>
+          ) : (
+            formatBytes(row.original.size)
+          )}
+        </div>
+      ),
     },
     {
       id: 'containers',
       header: t('containerd.images.column.containers'),
       accessorFn: (i) => i.containers,
+      cell: ({ row }) => (
+        <div
+          className={
+            row.original.containers > 0 ? 'text-end tabular-nums' : 'text-muted-foreground text-end'
+          }
+        >
+          {row.original.containers}
+        </div>
+      ),
     },
     {
       id: 'created',
       header: t('containerd.images.column.created'),
       accessorFn: (i) => seconds(i.createdAt),
       cell: ({ row }) => (
-        <span className="text-muted-foreground whitespace-nowrap">
+        <span
+          className="text-muted-foreground whitespace-nowrap"
+          title={row.original.createdAt ? formatDateTime(row.original.createdAt) : undefined}
+        >
           {row.original.createdAt ? formatRelative(seconds(row.original.createdAt)) : '—'}
         </span>
       ),
@@ -99,24 +121,35 @@ function ImagesList({ hostId, namespace }: { hostId: string; namespace: string }
       enableSorting: false,
       cell: ({ row }) => (
         <div className="flex justify-end">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label={t('containerd.images.removeOne', { name: row.original.name })}
-            title={row.original.containers > 0 ? t('containerd.images.inUse') : undefined}
-            disabled={row.original.containers > 0 || remove.isPending}
-            onClick={() =>
-              confirm({
-                title: t('containerd.images.remove.title', { name: row.original.name }),
-                description: t('containerd.images.remove.description'),
-                confirmLabel: t('common.remove'),
-                destructive: true,
-                action: () => remove.mutateAsync(row.original.name),
-              })
-            }
-          >
-            <Trash2Icon />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {/* A disabled button shows no tooltip; its wrapper does. */}
+              <span tabIndex={row.original.containers > 0 ? 0 : -1}>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label={t('containerd.images.removeOne', { name: row.original.name })}
+                  disabled={row.original.containers > 0 || remove.isPending}
+                  onClick={() =>
+                    confirm({
+                      title: t('containerd.images.remove.title', { name: row.original.name }),
+                      description: t('containerd.images.remove.description'),
+                      confirmLabel: t('common.remove'),
+                      destructive: true,
+                      action: () => remove.mutateAsync(row.original.name),
+                    })
+                  }
+                >
+                  <Trash2Icon />
+                </Button>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              {row.original.containers > 0
+                ? t('containerd.images.inUse')
+                : t('containerd.images.removeOne', { name: row.original.name })}
+            </TooltipContent>
+          </Tooltip>
         </div>
       ),
     },
@@ -135,18 +168,25 @@ function ImagesList({ hostId, namespace }: { hostId: string; namespace: string }
           </WithShortcut>
         }
       />
-      <div className="mb-3">
-        <SearchInput
-          value={query}
-          onChange={setQuery}
-          placeholder={t('containerd.images.search')}
-        />
-      </div>
+      {images.data.length > 0 && (
+        <div className="mb-3">
+          <SearchInput
+            value={query}
+            onChange={setQuery}
+            placeholder={t('containerd.images.search')}
+          />
+        </div>
+      )}
       {images.data.length === 0 ? (
         <EmptyState
           icon={LayersIcon}
           title={t('containerd.images.empty', { namespace })}
           description={t('containerd.images.emptyDescription')}
+          action={
+            <Button onClick={() => setPulling(true)}>
+              <DownloadIcon /> {t('containerd.images.pull')}
+            </Button>
+          }
         />
       ) : (
         <DataTable columns={columns} data={images.data} getRowId={(i) => i.name} filter={query} />

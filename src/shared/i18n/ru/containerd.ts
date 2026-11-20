@@ -39,7 +39,7 @@ export default {
   'containerd.containers.actionOne.stop': 'Остановить {name}',
   'containerd.containers.actionOne.pause': 'Приостановить {name}',
   'containerd.containers.actionOne.resume': 'Возобновить {name}',
-  'containerd.containers.removeOne': 'Удалить {name}',
+  'containerd.containers.actionsFor': 'Действия для {name}',
   'containerd.containers.done.start': '{name} запущен',
   'containerd.containers.done.stop': '{name} остановлен',
   'containerd.containers.done.pause': '{name} приостановлен',
@@ -140,11 +140,18 @@ export default {
   'containerd.snapshots.kind.unknown': 'Неизвестно',
   'containerd.snapshots.removeOne': 'Удалить {key}',
   'containerd.snapshots.removed': 'Снимок {key} удалён',
+  'containerd.snapshots.pruned':
+    '{count, plural, one {Удалён # снимок} few {Удалено # снимка} many {Удалено # снимков} other {Удалено # снимка}}',
   'containerd.snapshots.inUse':
     'Его что-то использует или построено на нём. Сначала удалите контейнер или образ.',
   'containerd.snapshots.remove.title': 'Удалить снимок {key}?',
   'containerd.snapshots.remove.description':
     'Его ничто не использует. Его файлы ({size}) будут удалены с хоста.',
+  'containerd.snapshots.prune.open': 'Удалить неиспользуемые',
+  'containerd.snapshots.prune.title':
+    'Удалить {count, plural, one {# неиспользуемый снимок} few {# неиспользуемых снимка} many {# неиспользуемых снимков} other {# неиспользуемого снимка}}?',
+  'containerd.snapshots.prune.description':
+    'Их ничто не использует, и на них ничего не построено. Их файлы ({size}) будут удалены с хоста.',
   'containerd.namespaces.nav': 'Пространства имён',
   'containerd.namespaces.title': 'Пространства имён',
   'containerd.namespaces.summary':
@@ -153,7 +160,8 @@ export default {
   'containerd.namespaces.created': 'Пространство имён {name} создано',
   'containerd.namespaces.removed': 'Пространство имён {name} удалено',
   'containerd.namespaces.shown': 'Показано',
-  'containerd.namespaces.show': 'Показать',
+  'containerd.namespaces.show': 'Показать его контейнеры и образы',
+  'containerd.namespaces.showOne': 'Показать {name}',
   'containerd.namespaces.removeOne': 'Удалить {name}',
   'containerd.namespaces.notEmpty':
     'Удалить можно только пустые пространства имён. Сначала удалите его контейнеры и образы.',

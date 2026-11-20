@@ -36,7 +36,7 @@ export default {
   'containerd.containers.actionOne.stop': 'Stop {name}',
   'containerd.containers.actionOne.pause': 'Pause {name}',
   'containerd.containers.actionOne.resume': 'Resume {name}',
-  'containerd.containers.removeOne': 'Remove {name}',
+  'containerd.containers.actionsFor': 'Actions for {name}',
   'containerd.containers.done.start': '{name} started',
   'containerd.containers.done.stop': '{name} stopped',
   'containerd.containers.done.pause': '{name} paused',
@@ -134,11 +134,18 @@ export default {
   'containerd.snapshots.kind.unknown': 'Unknown',
   'containerd.snapshots.removeOne': 'Remove {key}',
   'containerd.snapshots.removed': 'Snapshot {key} removed',
+  'containerd.snapshots.pruned':
+    '{count, plural, one {# snapshot removed} other {# snapshots removed}}',
   'containerd.snapshots.inUse':
     'Something uses it or is built on it. Remove the container or image first.',
   'containerd.snapshots.remove.title': 'Remove the snapshot {key}?',
   'containerd.snapshots.remove.description':
     'Nothing uses it. Its files, {size}, are deleted from the host.',
+  'containerd.snapshots.prune.open': 'Remove unused',
+  'containerd.snapshots.prune.title':
+    'Remove {count, plural, one {# unused snapshot} other {# unused snapshots}}?',
+  'containerd.snapshots.prune.description':
+    'Nothing uses them or is built on them. Their files, {size}, are deleted from the host.',
   'containerd.namespaces.nav': 'Namespaces',
   'containerd.namespaces.title': 'Namespaces',
   'containerd.namespaces.summary':
@@ -147,7 +154,8 @@ export default {
   'containerd.namespaces.created': 'Namespace {name} created',
   'containerd.namespaces.removed': 'Namespace {name} removed',
   'containerd.namespaces.shown': 'Shown',
-  'containerd.namespaces.show': 'Show',
+  'containerd.namespaces.show': 'Show its containers and images',
+  'containerd.namespaces.showOne': 'Show {name}',
   'containerd.namespaces.removeOne': 'Remove {name}',
   'containerd.namespaces.notEmpty':
     'Only empty namespaces can be removed. Remove its containers and images first.',

@@ -11,6 +11,33 @@ export function removable(snapshot: ContainerdSnapshot): boolean {
   return snapshot.users.length === 0 && snapshot.children === 0;
 }
 
+/**
+ * Every snapshot that can go once the ones built on it have gone: nothing
+ * uses it, and all its children are listed and can go too. In removal
+ * order, children before their parent.
+ */
+export function prunable(snapshots: ContainerdSnapshot[]): ContainerdSnapshot[] {
+  const children = new Map<string, ContainerdSnapshot[]>();
+  for (const s of snapshots)
+    if (s.parent) children.set(s.parent, [...(children.get(s.parent) ?? []), s]);
+  const out: ContainerdSnapshot[] = [];
+  const verdict = new Map<string, boolean>();
+  const check = (s: ContainerdSnapshot): boolean => {
+    const known = verdict.get(s.key);
+    if (known !== undefined) return known;
+    verdict.set(s.key, false); // a cycle never prunes
+    const kids = children.get(s.key) ?? [];
+    // Check every child, so each prunable one is listed before its parent.
+    const kidsGo = kids.map(check).every(Boolean);
+    const ok = s.users.length === 0 && kids.length === s.children && kidsGo;
+    verdict.set(s.key, ok);
+    if (ok) out.push(s);
+    return ok;
+  };
+  snapshots.forEach(check);
+  return out;
+}
+
 const bySize = (a: ContainerdSnapshot, b: ContainerdSnapshot) =>
   (b.size ?? -1) - (a.size ?? -1) || a.key.localeCompare(b.key);
 
