@@ -80,7 +80,7 @@ export default {
     'See which containers use what. Create, connect and disconnect, with deletion that tells you exactly what you are about to lose.',
   'home.features.board.title': 'One board for every Host',
   'home.features.board.body':
-    'Every container of every Host in one table, filtered and acted on together. Each Host on one page too: engine details, disk usage with a one-dialog clean-up, and a live stream of what the Engine is doing.',
+    'A tile for every Host, Swarm and Cluster, and what needs you on all of them first. Every container of every Host in one table, filtered and acted on together. Each Host on one page too: engine details, disk usage with a one-dialog clean-up, and a live stream of what the Engine is doing.',
   'home.features.keyboard.title': 'Keyboard first',
   'home.features.keyboard.body':
     'A command palette to go anywhere, switch Host or run a command, and to find any container, image or volume on whichever Host has it. Shortcuts for every page, listed with ?.',
@@ -129,7 +129,7 @@ export default {
     'Keep a compose file and its environment in Homeport and deploy it to any Host — start from a template, combine several files, choose profiles; variables are stored encrypted, never written to disk. Or link a project folder on this computer: Homeport edits its files in place and deploys from it, builds included. Or follow a branch of a git repository, with a deploy key or a token: each sync shows the new commits and what they change before deploying, and while Homeport is open it checks for them, deploying on its own if you ask. Every redeploy shows what changes first, each deploy is kept so you can roll back, and Update pulls newer images and redeploys in one step. Stacks someone deployed by hand show up too: start, stop or remove them, or adopt them.',
   'home.stacks.link': 'Managing Stacks',
   'home.stacks.screenshot':
-    "A Managed Stack's definition: the compose.yaml editor, its environment and the Save and redeploy button.",
+    "A Managed Stack's definition: the compose.yaml editor, its environment and the Deploy button.",
 
   // Home: security.
   'home.security.eyebrow': 'Security',
