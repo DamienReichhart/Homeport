@@ -16,8 +16,11 @@ set -eu
 
 here=$(cd "$(dirname "$0")" && pwd)
 home=$(mktemp -d "${TMPDIR:-/tmp}/homeport-e2e.XXXXXX")
-# The document portal may have mounted itself in the runtime folder.
-trap 'fusermount -u "$home/runtime/doc" 2>/dev/null; rm -rf "$home" 2>/dev/null || true' EXIT
+# The document portal may have mounted itself in the runtime folder, or not:
+# it races the app. Under set -e a failing command in this trap would end the
+# script with 1 after a run that passed, so neither step may fail, and the
+# script keeps wdio's exit status.
+trap 'fusermount -u "$home/runtime/doc" 2>/dev/null || true; rm -rf "$home" 2>/dev/null || true' EXIT
 
 # Tauri puts the app's data, config and logs under these.
 export XDG_DATA_HOME="$home/data" XDG_CONFIG_HOME="$home/config" XDG_CACHE_HOME="$home/cache"
