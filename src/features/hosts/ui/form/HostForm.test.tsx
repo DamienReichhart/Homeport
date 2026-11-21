@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react';
+import { fireEvent, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 import { emptyForm, type HostFormState } from '../../model/form';
@@ -25,7 +25,8 @@ function Harness({
       form={form}
       editing={editing}
       keychain={keychain}
-      onChange={(next) => {
+      onChange={(update) => {
+        const next = typeof update === 'function' ? update(form) : update;
         setForm(next);
         onChange(next);
       }}
@@ -151,6 +152,21 @@ describe('host form', () => {
     await user.click(screen.getByRole('radio', { name: 'ssh-agent' }));
     expect(screen.queryByText('Private key')).toBeNull();
     expect(changes.at(-1)?.sshAuth).toBe('agent');
+  });
+
+  it('applies each change to the latest form, so quick edits never undo one another', () => {
+    const onChange = vi.fn();
+    renderWithProviders(
+      <HostForm form={emptyForm('ssh')} onChange={onChange} editing={false} keychain />,
+    );
+    // The server is typed while this render's form still has no name, as when
+    // two keystrokes land before React re-renders.
+    fireEvent.change(screen.getByLabelText('Server'), { target: { value: '127.0.0.1' } });
+    const update = onChange.mock.calls[0]?.[0] as (form: HostFormState) => HostFormState;
+    expect(update({ ...emptyForm('ssh'), name: 'e2e-ssh' })).toMatchObject({
+      name: 'e2e-ssh',
+      sshHost: '127.0.0.1',
+    });
   });
 
   it('hides the kind picker when editing and keeps stored credentials by default', () => {

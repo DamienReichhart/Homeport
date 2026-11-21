@@ -1,5 +1,5 @@
 import { TriangleAlertIcon } from 'lucide-react';
-import { useId } from 'react';
+import { useId, type Dispatch, type SetStateAction } from 'react';
 import { ENGINE_LABELS } from '@/core/host';
 import type { EngineKind } from '@/shared/api';
 import {
@@ -37,6 +37,10 @@ import { t } from '@/shared/i18n';
  * where it is, its name (which defaults from there), its Engine, then how to
  * log in. `editing` relaxes credentials (blank keeps the stored ones);
  * `keychain: false` disables what would need stored secrets.
+ *
+ * Every change is applied to the latest state, not to the `form` this render
+ * was given: two changes that land before React re-renders (a fast typist, a
+ * paste, autofill, a test driver) each keep the other's.
  */
 export function HostForm({
   form,
@@ -45,12 +49,12 @@ export function HostForm({
   keychain,
 }: {
   form: HostFormState;
-  onChange: (form: HostFormState) => void;
+  onChange: Dispatch<SetStateAction<HostFormState>>;
   editing: boolean;
   keychain: boolean;
 }) {
   const set = <K extends keyof HostFormState>(key: K, value: HostFormState[K]) =>
-    onChange({ ...form, [key]: value });
+    onChange((current) => ({ ...current, [key]: value }));
   const keepHint = editing ? t('hosts.form.keepHint') : undefined;
   const suggested = defaultName(form);
   const kindId = useId();
@@ -102,13 +106,14 @@ export function HostForm({
         >
           <Input
             value={form.socketPath}
-            onChange={(e) =>
-              onChange({
-                ...form,
-                socketPath: e.target.value,
-                engine: engineForSocket(e.target.value),
-              })
-            }
+            onChange={(e) => {
+              const socketPath = e.target.value;
+              onChange((current) => ({
+                ...current,
+                socketPath,
+                engine: engineForSocket(socketPath),
+              }));
+            }}
           />
         </Field>
       )}
@@ -140,7 +145,9 @@ export function HostForm({
       <Field label={t('hosts.form.engine')} hint={t('hosts.form.engineHint')}>
         <Select
           value={form.engine}
-          onValueChange={(engine) => onChange(withEngine(form, engine as EngineKind))}
+          onValueChange={(engine) =>
+            onChange((current) => withEngine(current, engine as EngineKind))
+          }
         >
           <SelectTrigger className="w-full" aria-label={t('hosts.form.engine')}>
             <SelectValue />
